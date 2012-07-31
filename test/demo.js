@@ -17,7 +17,7 @@ function onClick() {
 }
 
 function updateButton() {
-	document.querySelector("#myButton").innerHTML = obj.prop;
+	document.querySelector("#myButton").innerHTML = "I've been clicked " obj.prop + " times";
 }
 
 function foo() {
