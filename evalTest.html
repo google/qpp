@@ -1,0 +1,23 @@
+<html>
+<head>
+	<title>Test eval</title>
+	<script>
+	function load(url, callback) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.onreadystatechange = function(event) {
+			if (xhr.readyState === 4) {
+				callback(xhr.responseText);
+			}
+		}
+		xhr.send(null);
+	}
+	load("test/demo.js", function(content) {
+		eval(content + '\n//@ sourceURL="demo.js"\n');
+	});
+	</script>
+	
+</head>
+<body>
+	<h1>Does sourceURL work?</h1>
+</body>
