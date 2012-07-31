@@ -111,7 +111,7 @@
         var scriptElement = document.createElement('script');
         scriptElement.setAttribute('data-traceur-src-url', entry.name);
         scriptElement.textContent = result;
- 
+
         var parent = entry.parentNode;
         parent.insertBefore(scriptElement, entry.scriptElement || null);
       });
