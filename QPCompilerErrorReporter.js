@@ -30,8 +30,8 @@ QPCompiler.ErrorReporter  = (function() {
   QPCompilerErrorReporter.prototype = traceur.createObject(
       ErrorReporter.prototype, {
     reportMessageInternal: function(location, kind, format, args) {
-        
-      console[kind].apply(console, [format].concat(args, location.source.name));
+      var url = location.source.name + ':' + location.line + ':' + location.column;  
+      console[kind].apply(console, [url + ': ' +format].concat(args));
     },
 
     hasMatchingError: function(expected) {
