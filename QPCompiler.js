@@ -86,6 +86,10 @@
     }, false);
 
     function compileScripts() {
+      traceur.options.setFromObject({
+          linearize: true,
+          sourceMaps: true
+      });
       var reporter = new QPCompiler.ErrorReporter();
       var project = new traceur.semantics.symbols.Project(document.location.href);
 
@@ -103,17 +107,20 @@
         console.warn('Traceur compilation errors', reporter);
         return;
       }
-
+          
       results.keys().forEach(function(file) {
         var tree = results.get(file);
         var result = TreeWriter.write(tree, {showLineNumbers: false});
         var entry = fileToEntry.get(file);
+        eval(result + "//@ sourceURL="+entry.name+".js");
+        /* 
         var scriptElement = document.createElement('script');
         scriptElement.setAttribute('data-traceur-src-url', entry.name);
         scriptElement.textContent = result;
 
         var parent = entry.parentNode;
         parent.insertBefore(scriptElement, entry.scriptElement || null);
+        */  
       });
     }
   };

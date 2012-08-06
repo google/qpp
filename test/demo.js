@@ -1,3 +1,5 @@
+// Demo app for Querypoint debugging
+
 var obj = {
   prop: 1
 };
