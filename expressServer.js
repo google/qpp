@@ -1,9 +1,16 @@
 var express = require('express');
 var app = express();
 
-function serve(path, port) {
-  app.use(express.directory(your_path));
-  app.use(express.static(your_path));	
+function servePathAtPort(path, port) {
+  app.use(express.static(path));   // before directory to allow index.html to work
+  app.use(express.directory(path));
+  app.listen(port);
+  console.log('serving ' + path + ' at ' + port);
 }
 
 
+servePathAtPort(__dirname, 8686);
+
+servePathAtPort('../sirius/extension/atopwi', 9696);
+
+servePathAtPort('../webdev-examples', 7676);
