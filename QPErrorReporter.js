@@ -1,9 +1,7 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-var QPCompiler = QPCompiler || {};
-
-QPCompiler.ErrorReporter  = (function() {
+var QPErrorReporter  = (function() {
   'use strict';
 
   var ErrorReporter = traceur.util.ErrorReporter;
@@ -12,11 +10,11 @@ QPCompiler.ErrorReporter  = (function() {
    * An error reporter that is used with the tests. It doesn't output anything
    * to the console but it does keep track of reported errors
    */
-  function QPCompilerErrorReporter() {
+  function QPErrorReporter() {
     this.errors = [];
   }
 
-  QPCompilerErrorReporter.prototype = traceur.createObject(
+  QPErrorReporter.prototype = traceur.createObject(
       ErrorReporter.prototype, {
     reportMessageInternal: function(location, kind, format, args) {
       var url = location.source.name + ':' + location.line + ':' + location.column;  
@@ -30,6 +28,6 @@ QPCompiler.ErrorReporter  = (function() {
     }
   });
 
-  return QPCompilerErrorReporter;
+  return QPErrorReporter;
   
 }());

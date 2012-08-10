@@ -1,20 +1,57 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-(function() {
+var QPCompiler = (function() {
   'use strict';
 
   var TreeWriter = traceur.outputgeneration.TreeWriter;
+  
+  var QPCompiler = {
+      /**
+      @param scriptEntries array of {name: string, contents: string}
+       */
+    compileScripts: function(scriptEntries) {
+      traceur.options.setFromObject({
+          linearize: true,
+          sourceMaps: true
+      });
+      var reporter = new QPErrorReporter();
+      var project = new traceur.semantics.symbols.Project(document.location.href);
 
-  function compileAll() {
+      var fileToEntry = new traceur.util.ObjectMap();
+
+      for (var i = 0; i < scriptEntries.length; i++) {
+        var entry = scriptEntries[i];
+        var file = new traceur.syntax.SourceFile(entry.name, entry.contents);
+        project.addFile(file);
+        fileToEntry.put(file, entry);
+      }
+
+      var results = traceur.codegeneration.Compiler.compile(reporter, project);
+      if (reporter.hadError()) {
+        console.warn('Traceur compilation errors', reporter);
+        return;
+      }
+          
+      results.keys().forEach(function(file) {
+        var tree = results.get(file);
+        tree = traceur.outputgeneration.QPTransformer.transformTree(tree);
+        var result = TreeWriter.write(tree, {showLineNumbers: true});
+        var entry = fileToEntry.get(file);
+        eval(result + "//@ sourceURL="+entry.name+".js");  
+      });
+    }
+  };
+
+  function loadAllTraceurTags(callback) {
     // Code to handle automatically loading and running all scripts with type
     // text/traceur after the DOMContentLoaded event has fired.
-    var scriptsToRun = [];
+    var scriptEntries = [];
     var numPending = 0;
 
     function compileScriptsIfNonePending() {
       if (numPending == 0) {
-        compileScripts();
+        callback(scriptEntries);
       }
     }
 
@@ -26,14 +63,12 @@
       }
 
       /* TODO: add traceur runtime library here
-      scriptsToRun.push(
+      scriptEntries.push(
         { scriptElement: null,
           parentNode: scripts[0].parentNode,
           name: 'Runtime Library',
           contents: runtime });
       */
-
-
 
       for (var i = 0, length = scripts.length; i < length; i++) {
         var script = scripts[i];
@@ -44,8 +79,9 @@
           contents: ''
         };
 
-        scriptsToRun.push(entry);
-        if (!script.src) {
+        scriptEntries.push(entry);
+        
+        if (!script.src) {  // inline script tag
           entry.contents = script.textContent;
           entry.name = document.location + ':' + i;
         } else {
@@ -73,38 +109,9 @@
       }
       compileScriptsIfNonePending();
     }, false);
-
-    function compileScripts() {
-      traceur.options.setFromObject({
-          linearize: true,
-          sourceMaps: true
-      });
-      var reporter = new QPCompiler.ErrorReporter();
-      var project = new traceur.semantics.symbols.Project(document.location.href);
-
-      var fileToEntry = new traceur.util.ObjectMap();
-
-      for (var i = 0; i < scriptsToRun.length; i++) {
-        var entry = scriptsToRun[i];
-        var file = new traceur.syntax.SourceFile(entry.name, entry.contents);
-        project.addFile(file);
-        fileToEntry.put(file, entry);
-      }
-
-      var results = traceur.codegeneration.Compiler.compile(reporter, project);
-      if (reporter.hadError()) {
-        console.warn('Traceur compilation errors', reporter);
-        return;
-      }
-          
-      results.keys().forEach(function(file) {
-        var tree = results.get(file);
-        tree = traceur.outputgeneration.QPTransformer.transformTree(tree);
-        var result = TreeWriter.write(tree, {showLineNumbers: true});
-        var entry = fileToEntry.get(file);
-        eval(result + "//@ sourceURL="+entry.name+".js");  
-      });
-    }
   };
-  compileAll();
+    
+  loadAllTraceurTags(QPCompiler.compileScripts);
+  
+  return QPCompiler;
 })();

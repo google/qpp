@@ -1,26 +1,26 @@
 <html>
 <head>
-	<title>Querypoint Prototype</title>
+	<title>Querypoint Test Driver</title>
 	<script src="traceur/src/traceur.js"></script>
-    <script src="QPCompilerErrorReporter.js"></script>
+    <script src="QPErrorReporter.js"></script>
     <script src="QPTransformer.js"></script>
     <script src="QPCompiler.js"></script>
     <script src="QPController.js"></script>
 	<script src="QPModel.js"></script>
-    <script type="QPTestController.js"></script>
+    <script src="QPTestController.js"></script>
 </head>
 <body>
-	<h1>Querypoint Testing</h1>
+	<h1>Querypoint Test Driver</h1>
 	<div class="test-case">
-		<h2>Object created</h2>
+		<h2 class="name">ObjectCreation</h2>
 		<pre class="source">
 			var b = {foo:1}; 
 		</pre>
-		<pre class="query">
+		<pre class="queries">
 			QPController.traceObjectCreation('b');
 			QPController.rerun();
-	    <pre>
-	    <pre class="output">
+	    </pre>
+	    <pre class="expected">
 	    	TBD
 	    </pre>
 	</dic>
