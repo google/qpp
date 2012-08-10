@@ -1,16 +1,5 @@
-// Copyright 2011 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the 'License');
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an 'AS IS' BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2012 Google Inc. johnjbarton@google.com
 
 traceur.outputgeneration.QPTransformer = (function() {
   'use strict';
@@ -53,7 +42,7 @@ traceur.outputgeneration.QPTransformer = (function() {
    * @constructor
    */
   function QPTransformer(identifierQueries) {
-    this.identifierQueries = identifierQueries; 
+    this.identifierQueries = identifierQueries || {}; 
     this.identifierGenerator_ = new traceur.codegeneration.UniqueIdentifierGenerator();
   }
 
@@ -77,7 +66,7 @@ traceur.outputgeneration.QPTransformer = (function() {
       transformAny: function(tree) {
         var output_tree = 
           ParseTreeTransformer.prototype.transformAny.call(this, tree);
-        if (tree) console.log('QPTransformer ' + tree.type);
+        //if (tree) console.log('QPTransformer ' + tree.type);
         if (output_tree) {
           ParseTreeValidator.validate(output_tree);
         }
@@ -90,8 +79,9 @@ traceur.outputgeneration.QPTransformer = (function() {
        */
       transformBindingIdentifier: function(tree) {
         var id = tree.identifierToken.value;
-        if (this.identifierQueiries.hasOwnProperty(id)) {
-            console.log(tree.type + ' id ');
+        console.log(tree.type + ' id ' + id);
+        if (this.identifierQueries.hasOwnProperty(id)) {
+            console.log('Matched ' + tree.type + ' id ' + id);
         }
         return tree;
       },

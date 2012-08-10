@@ -1,0 +1,27 @@
+<html>
+<head>
+	<title>Querypoint Prototype</title>
+	<script src="traceur/src/traceur.js"></script>
+    <script src="QPCompilerErrorReporter.js"></script>
+    <script src="QPTransformer.js"></script>
+    <script src="QPCompiler.js"></script>
+    <script src="QPController.js"></script>
+	<script src="QPModel.js"></script>
+    <script type="QPTestController.js"></script>
+</head>
+<body>
+	<h1>Querypoint Testing</h1>
+	<div class="test-case">
+		<h2>Object created</h2>
+		<pre class="source">
+			var b = {foo:1}; 
+		</pre>
+		<pre class="query">
+			QPController.traceObjectCreation('b');
+			QPController.rerun();
+	    <pre>
+	    <pre class="output">
+	    	TBD
+	    </pre>
+	</dic>
+</body>
