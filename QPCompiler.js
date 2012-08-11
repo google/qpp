@@ -35,7 +35,8 @@ var QPCompiler = (function() {
           
       results.keys().forEach(function(file) {
         var tree = results.get(file);
-        tree = traceur.outputgeneration.QPTransformer.transformTree(tree);
+        var transformer = QPController.transformer();
+        tree = traceur.outputgeneration.QPTransformer.transformTree(tree, transformer);
         var result = TreeWriter.write(tree, {showLineNumbers: true});
         var entry = fileToEntry.get(file);
         eval(result + "//@ sourceURL="+entry.name+".js");  

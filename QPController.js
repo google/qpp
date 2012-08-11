@@ -2,10 +2,11 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 var QPController = {
+    
     // Query Definitions
 
     traceObjectCreation: function(identifier) {
-        this._objectCreationIdentifiers.push(identifier);
+        this._objectCreationIdentifiers[identifier] = [];
     },
 
     setConsole: function(qpConsole) {
@@ -14,11 +15,17 @@ var QPController = {
 
     // Query Actions
     
-    rerun: function() {
-
+    transformer: function() {
+        return new traceur.outputgeneration.QPTransformer(this._objectCreationIdentifiers);
+    },
+    
+    tracingSource: function() {
+       
+        
+        __qp__("IdentifierTrace", "b", "ObjectLiteral", "foo.js:4:1");
     },
     
     initialize: function() {
-        this._objectCreationIdentifiers = [];
+        this._objectCreationIdentifiers = {};
     },
 };
