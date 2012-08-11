@@ -34,11 +34,13 @@ var QPCompiler = (function() {
       }
           
       results.keys().forEach(function(file) {
+        var entry = fileToEntry.get(file);
+        var generatedSourceName = entry.name+".js"; // eg foo.js.js
         var tree = results.get(file);
         var transformer = QPController.transformer();
         tree = traceur.outputgeneration.QPTransformer.transformTree(tree, transformer);
-        var result = TreeWriter.write(tree, {showLineNumbers: true});
-        var entry = fileToEntry.get(file);
+        var writer = new QPTreeWriter(generatedSourceName);
+        var result = writer.generateSource(tree).generatedSource;
         eval(result + "//@ sourceURL="+entry.name+".js");  
       });
     }

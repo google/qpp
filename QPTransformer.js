@@ -96,9 +96,8 @@ traceur.outputgeneration.QPTransformer = (function() {
             }
             builder.push(transformed);
             if (this.traceStack.length) {
-              builder.push(this.traceStack.map(function(staticInfo) {
-                console.log('staticInfo ', staticInfo);
-              }));
+              transformed.traceInfo = this.traceStack.slice(0);
+              this.traceStack = [];
             }
           }
         }
