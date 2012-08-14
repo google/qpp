@@ -15,6 +15,7 @@
 traceur.define('semantics', function() {
   'use strict';
 
+  var Analyzer = traceur.semantics.Analyzer;
   var ExportVisitor = traceur.codegeneration.module.ExportVisitor;
   var ImportStarVisitor = traceur.codegeneration.module.ImportStarVisitor;
   var ModuleDeclarationVisitor = traceur.codegeneration.module.ModuleDeclarationVisitor;
@@ -32,63 +33,27 @@ traceur.define('semantics', function() {
    * @constructor
    */
   function ModuleAnalyzer(reporter, project) {
-    this.reporter_ = reporter;
-    this.project_ = project;
-  }
-
-  ModuleAnalyzer.prototype = {
-    /**
-     * @return {void}
-     */
-    analyze: function() {
-      this.analyzeTrees(this.project_.getSourceTrees());
-    },
-
-    /**
-     * @param {SourceFile} sourceFile
-     * @return {void}
-     */
-    analyzeFile: function(sourceFile) {
-      var trees = [this.project_.getParseTree(sourceFile)];
-      this.analyzeTrees(trees);
-    },
-
-    /**
-     * @param {Array.<ParseTree>} trees
-     * @return {void}
-     */
-    analyzeTrees: function(trees) {
-      this.analyzeModuleTrees(trees);
-    },
-
-    /**
-     * @param {ParseTree} tree
-     * @param {ModuleSymbol} root
-     * @return {void}
-     */
-    analyzeModuleTrees: function(trees, opt_roots) {
-      var reporter = this.reporter_;
-      var project = this.project_;
-      var root = project.getRootModule();
-
-      function getRoot(i) {
-        return opt_roots ? opt_roots[i] : root;
-      }
-
-      function doVisit(ctor) {
-        for (var i = 0; i < trees.length; i++) {
-          var visitor = new ctor(reporter, project, getRoot(i));
-          visitor.visitAny(trees[i]);
-        }
-      }
-
-      doVisit(ModuleDefinitionVisitor);
-      doVisit(ExportVisitor);
-      doVisit(ModuleDeclarationVisitor);
-      doVisit(ValidationVisitor);
-      doVisit(ImportStarVisitor);
+    Analyzer.call(this, project);
+    
+    var visitors = this.visitors_ = [];
+    function addVisitor(ctor) {
+      visitors.push(new ctor(reporter, project, project.getRootModule()));
     }
-  };
+
+    addVisitor(ModuleDefinitionVisitor);
+    addVisitor(ExportVisitor);
+    addVisitor(ModuleDeclarationVisitor);
+    addVisitor(ValidationVisitor);
+    addVisitor(ImportStarVisitor);
+  }
+  
+  ModuleAnalyzer.prototype = traceur.createObject(
+    Analyzer.prototype, {
+      getVisitors: function() {
+        return this.visitors_;
+      }
+    }
+  );
 
   return {
     ModuleAnalyzer: ModuleAnalyzer

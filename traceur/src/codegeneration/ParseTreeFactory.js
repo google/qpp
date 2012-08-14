@@ -167,7 +167,7 @@ traceur.define('codegeneration', function() {
    * @return {BindingElement}
    */
   function createBindingElement(arg) {
-    var binding = new createBindingIdentifier(arg);
+    var binding = createBindingIdentifier(arg);
     return new BindingElement(null, binding, null);
   }
 
@@ -900,13 +900,11 @@ traceur.define('codegeneration', function() {
   }
 
   /**
-   * @param {string|IdentifierToken} identifier
+   * @param {string|IdentifierToken|BindingIdentifier} identifier
    * @return {RestParameter}
    */
   function createRestParameter(identifier) {
-    if (typeof identifier == 'string')
-      identifier = createIdentifierToken(identifier);
-    return new RestParameter(null, identifier);
+    return new RestParameter(null, createBindingIdentifier(identifier));
   }
 
   /**
@@ -1057,6 +1055,17 @@ traceur.define('codegeneration', function() {
   }
 
   /**
+   * Creates a (void 0) expression.
+   * @return {ParenExpression}
+   */
+  function createVoid0() {
+    return createParenExpression(
+      createUnaryExpression(
+        createOperatorToken(TokenType.VOID),
+        createNumberLiteral(0)));
+  }
+
+  /**
    * @param {ParseTree} condition
    * @param {ParseTree} body
    * @return {WhileStatement}
@@ -1178,6 +1187,7 @@ traceur.define('codegeneration', function() {
       createVariableDeclaration: createVariableDeclaration,
       createVariableDeclarationList: createVariableDeclarationList,
       createVariableStatement: createVariableStatement,
+      createVoid0: createVoid0,
       createWhileStatement: createWhileStatement,
       createWithStatement: createWithStatement,
       createYieldStatement: createYieldStatement

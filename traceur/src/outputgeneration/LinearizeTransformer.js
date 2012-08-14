@@ -21,7 +21,7 @@
 traceur.define('outputgeneration', function() {
   'use strict';
 
-  var debug = false;
+  var debug = true;
 
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;
