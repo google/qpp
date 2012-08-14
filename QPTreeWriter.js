@@ -31,6 +31,7 @@ var QPTreeWriter = (function() {
     ParseTreeMapWriter.call(this, false, false, this.sourceMapGenerator);
   }
 
+
   QPTreeWriter.prototype = traceur.createObject(
       ParseTreeMapWriter.prototype, {
 

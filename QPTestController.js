@@ -14,23 +14,38 @@ var QPTestController = {
   runTest: function() {
       var reporter = new QPErrorReporter();
       var cases = this.scanPageForTestCases(function(name, source, queries, expected, element){
-        this.logTestCases.apply(this, arguments);
         
+        // Set up the Querypoints for this test
+
         QPController.initialize();
         QPController.setConsole(this.testConsole);
-        eval(queries);
+        eval(queries);  // The queries section operates on QPController to define the QPs
         
-        var qpCompiler = new QPCompiler(reporter, QPController.model);
+        // visit the parse tree before the first transformation and record the traceLocations
 
+        var qpCompiler = new QPCompiler(reporter, QPController.model);
         var project = new traceur.semantics.symbols.Project(document.location.href);
         var file = new traceur.syntax.SourceFile(name, source);
         project.addFile(file);
         var trees = qpCompiler.compile(project);
 
+        // Insert tracepoint generation code at the traceLocations
+
+        var qpTreeWriter = new QPTreeWriter(QPController.model);
+        var tracedSources = trees.values().map(qpTreeWriter.generateSource.bind(qpTreeWriter));
+
+        // run the tracedSource, the queries are written into the testConsole
+        
+        var tracedSource = tracedSources[0].generatedSource;
+        console.log("tracedSource: "+tracedSource);
+        eval(tracedSource);
+
         var results = this.testConsole._results;
         var resultElement = document.createElement('pre');
-        resultElement.textContent = results.join("\n");        
+        var actual = resultElement.textContent = results.join("\n");        
         element.appendChild(resultElement);
+        
+        this.logTestCases(name, source, queries, expected, actual);
     }.bind(this));
   },
 
@@ -59,10 +74,11 @@ var QPTestController = {
     });
   },
 
-  logTestCases: function(name, source, queries, expected) {  
+  logTestCases: function(name, source, queries, expected, actual) {  
     console.log(name + " Source" + source);
     console.log(name + " QP commands " + queries);
     console.log(name + " Expected output " + expected);
+    console.log(name + " Actual output " + actual);
   }
 
 };
