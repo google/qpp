@@ -1,12 +1,12 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-traceur.outputgeneration.QPTransformer = (function() {
+var QPIdentifierVisitor = (function() {
   'use strict';
 
   var debug = true;
 
-  var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
+  var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;
   
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
@@ -38,37 +38,37 @@ traceur.outputgeneration.QPTransformer = (function() {
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
 
   /**
-   * @extends {ParseTreeTransformer}
+   * @extends {ParseTreeVisitor}
    * @constructor
    */
-  function QPTransformer(identifierQueries) {
+  function QPIdentifierVisitor(identifierQueries) {
     this.identifierQueries = identifierQueries || {};
     this.traceStack = []; 
     this.identifierGenerator_ = new traceur.codegeneration.UniqueIdentifierGenerator();
   }
 
-  QPTransformer.transformTree = function(tree, transformer) {
+  QPIdentifierVisitor.visitTree = function(tree, visiter) {
     if (debug) { 
-      console.log('QPTransformer input:\n' + 
+      console.log('QPIdentifierVisitor input:\n' + 
         traceur.outputgeneration.TreeWriter.write(tree));
     }
-    var output_tree = transformer.transformAny(tree);
+    var output_tree = visiter.visitAny(tree);
     if (debug) {
-      console.log('QPTransformer output:\n' + 
+      console.log('QPIdentifierVisitor output:\n' + 
         traceur.outputgeneration.TreeWriter.write(output_tree));
     }
     return output_tree;
   };
 
-  // This transform assumes LinearizeTransform already applied.
+  // This visit assumes Linearizevisit already applied.
 
-  QPTransformer.prototype = traceur.createObject(
-    ParseTreeTransformer.prototype, {
+  QPIdentifierVisitor.prototype = traceur.createObject(
+    ParseTreeVisitor.prototype, {
 
-      transformAny: function(tree) {
+      visitAny: function(tree) {
         var output_tree = 
-          ParseTreeTransformer.prototype.transformAny.call(this, tree);
-        if (tree) console.log('QPTransformer ' + tree.type);
+          ParseTreeVisitor.prototype.visitAny.call(this, tree);
+        if (tree) console.log('QPIdentifierVisitor ' + tree.type);
         if (output_tree) {
           ParseTreeValidator.validate(output_tree);
         }
@@ -79,7 +79,7 @@ traceur.outputgeneration.QPTransformer = (function() {
        * @param {Array.<ParseTree>} list
        * @return {Array.<ParseTree>}
        */
-      transformList: function(list) {
+      visitList: function(list) {
         if (list == null || list.length == 0) {
           return list;
         }
@@ -88,15 +88,15 @@ traceur.outputgeneration.QPTransformer = (function() {
 
         for (var index = 0; index < list.length; index++) {
           var element = list[index];
-          var transformed = this.transformAny(element);
+          var visited = this.visitAny(element);
 
-          if (builder != null || element != transformed || this.traceStack.length) {
+          if (builder != null || element != visited || this.traceStack.length) {
             if (builder == null) {
               builder = list.slice(0, index);
             }
-            builder.push(transformed);
+            builder.push(visited);
             if (this.traceStack.length) {
-              transformed.traceInfo = this.traceStack.slice(0);
+              visited.traceInfo = this.traceStack.slice(0);
               this.traceStack = [];
             }
           }
@@ -109,7 +109,7 @@ traceur.outputgeneration.QPTransformer = (function() {
        * @param {BindingIdentifier} tree
        * @return {ParseTree}
        */
-      transformBindingIdentifier: function(tree) {
+      visitBindingIdentifier: function(tree) {
         var id = tree.identifierToken.value;
         console.log(tree.type + ' id ' + id);
         if (this.identifierQueries.hasOwnProperty(id)) {
@@ -123,50 +123,41 @@ traceur.outputgeneration.QPTransformer = (function() {
        * @param {VariableDeclaration} tree
        * @return {ParseTree}
        */
-      transformVariableDeclaration: function(tree) {
-        var lvalue = this.transformAny(tree.lvalue);
+      visitVariableDeclaration: function(tree) {
+        var lvalue = this.visitAny(tree.lvalue);
         
         if (this.identifierHit) { // The lvalue is traced
             this.identifierQueries[this.identifierHit].push({type: tree.type, location: tree.location});
         }
         
-        var initializer = this.transformAny(tree.initializer);
-        if (lvalue == tree.lvalue && initializer == tree.initializer) {
-          return tree;
-        }
-        return new VariableDeclaration(tree.location, lvalue, initializer);
+        var initializer = this.visitAny(tree.initializer);
+        return tree;
       },
       
       /**
        * @param {ObjectLiteralExpression} tree
        * @return {ParseTree}
        */
-      transformObjectLiteralExpression: function(tree) {
+      visitObjectLiteralExpression: function(tree) {
         if (this.identifierHit) {  // we are ref-ed by a traced identifier.
           this.identifierQueries[this.identifierHit].push({type: tree.type, location: tree.location});
         }
-        var propertyNameAndValues = this.transformList(tree.propertyNameAndValues);
-        if (propertyNameAndValues == tree.propertyNameAndValues) {
-          return tree;
-        }
-        return new ObjectLiteralExpression(tree.location, propertyNameAndValues);
+        var propertyNameAndValues = this.visitList(tree.propertyNameAndValues);
+        return tree;
       },
 
       /**
        * @param {VariableStatement} tree
        * @return {ParseTree}
        */
-      transformVariableStatement: function(tree) {
-        var declarations = this.transformAny(tree.declarations);
+      visitVariableStatement: function(tree) {
+        var declarations = this.visitAny(tree.declarations);
         if (this.identifierHit) {
             // Prepare the static info for dynamic us
             this.traceStack.push(this.identifierQueries[this.identifierHit]);
             delete this.identifierHit;
         }
-        if (declarations == tree.declarations) {
-          return tree;
-        }
-        return new VariableStatement(tree.location, declarations);
+        return tree;
       },
 
       operatorType: function(operator) {
@@ -191,6 +182,6 @@ traceur.outputgeneration.QPTransformer = (function() {
       
   });
 
-  return QPTransformer;
+  return QPIdentifierVisitor;
 
 }());

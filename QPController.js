@@ -2,11 +2,13 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 var QPController = {
-    
+    // Query Model Plain old data
+    model: {},
+
     // Query Definitions
 
     traceObjectCreation: function(identifier) {
-        this._objectCreationIdentifiers[identifier] = [];
+        model.objectCreationIdentifiers[identifier] = [];
     },
 
     setConsole: function(qpConsole) {
@@ -15,10 +17,6 @@ var QPController = {
 
     // Query Actions
     
-    transformer: function() {
-        return new traceur.outputgeneration.QPTransformer(this._objectCreationIdentifiers);
-    },
-    
     tracingSource: function() {
        
         
@@ -26,6 +24,8 @@ var QPController = {
     },
     
     initialize: function() {
-        this._objectCreationIdentifiers = {};
+      model = {
+        objectCreationIdentifiers: {},
+      };
     },
 };

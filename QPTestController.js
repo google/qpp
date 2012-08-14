@@ -12,12 +12,21 @@ var QPTestController = {
   },
 
   runTest: function() {
-       var cases = this.scanPageForTestCases(function(name, source, queries, expected, element){
+      var reporter = new QPErrorReporter();
+      var cases = this.scanPageForTestCases(function(name, source, queries, expected, element){
         this.logTestCases.apply(this, arguments);
+        
         QPController.initialize();
         QPController.setConsole(this.testConsole);
         eval(queries);
-        QPCompiler.compileScripts([{name: name, contents: source}]);
+        
+        var qpCompiler = new QPCompiler(reporter, QPController.model);
+
+        var project = new traceur.semantics.symbols.Project(document.location.href);
+        var file = new traceur.syntax.SourceFile(name, source);
+        project.addFile(file);
+        var trees = qpCompiler.compile(project);
+
         var results = this.testConsole._results;
         var resultElement = document.createElement('pre');
         resultElement.textContent = results.join("\n");        
