@@ -1,22 +1,49 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
+
+
 var QPController = {
-    // Query Model Plain old data
-    model: {},
+
+    _querypoints: {
+        _qps: [],
+
+        byIdentifier: function() {
+            var arr = [];
+            this._qps.forEach(function(qp){
+                if (qp.identifier)
+                  arr.push(qp);
+            });
+            return arr;
+        },
+
+        add: function(qp) {
+            _qps.push(qp);
+        },
+
+        clear: function() {
+            _qps = [];
+        }
+    },
 
     // Query Definitions
 
     traceObjectCreation: function(identifier) {
-        model.objectCreationIdentifiers[identifier] = [];
+        this._querypoints.add({identifier: identifier});
     },
 
-    setConsole: function(qpConsole) {
-        this.qpConsole = qpConsole;
+    // Query Acccess
+
+    querypoints: function() {
+        return this._querypoints;
     },
 
     // Query Actions
     
+    setConsole: function(qpConsole) {
+        this.qpConsole = qpConsole;
+    },
+
     tracingSource: function() {
        
         
@@ -24,8 +51,6 @@ var QPController = {
     },
     
     initialize: function() {
-      model = {
-        objectCreationIdentifiers: {},
-      };
+      this._querypoints.clear();
     },
 };

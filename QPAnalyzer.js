@@ -23,11 +23,11 @@ var QPAnalyzer = (function() {
    * @param {Project} project
    * @constructor
    */
-  function QPAnalyzer(project, model) {
+  function QPAnalyzer(project, querypoints) {
     Analyzer.call(this, project);
 
     this.visitors_ = [ 
-      new QPIdentifierVisitor(model.identifiers),
+      new QPIdentifierVisitor(querypoints.byIdentifier()),
     ];
   }
   

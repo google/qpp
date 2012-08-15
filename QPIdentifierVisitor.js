@@ -44,7 +44,6 @@ var QPIdentifierVisitor = (function() {
   function QPIdentifierVisitor(identifierQueries) {
     this.identifierQueries = identifierQueries || {};
     this.traceStack = []; 
-    this.identifierGenerator_ = new traceur.codegeneration.UniqueIdentifierGenerator();
   }
 
   QPIdentifierVisitor.visitTree = function(tree, visiter) {

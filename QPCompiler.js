@@ -10,9 +10,9 @@ var QPCompiler = (function() {
   var ModuleAnalyzer = traceur.semantics.ModuleAnalyzer;
   var Project = traceur.semantics.symbols.Project;
   
-  function QPCompiler(reporter, model) {
+  function QPCompiler(reporter, querypoints) {
     this.reporter_ = reporter;
-    this.model_ = model;
+    this.querypoints_ = querypoints;
   }
 
   QPCompiler.prototype = {
@@ -37,7 +37,7 @@ var QPCompiler = (function() {
       var analyzer = new ModuleAnalyzer(this.reporter_, project);
       analyzer.analyze();
 
-      analyzer = new QPAnalyzer(project, this.model_);
+      analyzer = new QPAnalyzer(project, this.querypoints_);
       analyzer.analyze();
     },
 

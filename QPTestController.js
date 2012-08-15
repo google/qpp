@@ -23,7 +23,8 @@ var QPTestController = {
         
         // visit the parse tree before the first transformation and record the traceLocations
 
-        var qpCompiler = new QPCompiler(reporter, QPController.model);
+        var querypoints = QPController.querypoints();
+        var qpCompiler = new QPCompiler(reporter, querypoints);
         var project = new traceur.semantics.symbols.Project(document.location.href);
         var file = new traceur.syntax.SourceFile(name, source);
         project.addFile(file);
@@ -31,7 +32,7 @@ var QPTestController = {
 
         // Insert tracepoint generation code at the traceLocations
 
-        var qpTreeWriter = new QPTreeWriter(QPController.model);
+        var qpTreeWriter = new QPTreeWriter(querypoints);
         var tracedSources = trees.values().map(qpTreeWriter.generateSource.bind(qpTreeWriter));
 
         // run the tracedSource, the queries are written into the testConsole
