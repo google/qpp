@@ -9,15 +9,24 @@ var QPController = {
         _qps: [],
 
         byIdentifier: function() {
-            var arr = [];
+            var qpById = {};
             this._qps.forEach(function(qp){
                 if (qp.identifier)
-                  arr.push(qp);
+                  qpById[qp.identifier] = qp;
             });
-            return arr;
+            return qpById;
+        },
+        
+        match: function(location) {
+          return this._qps.some(function(qp) {
+            var i = qp.traceLocations.indexOf(location);
+            if (i !== -1) return qp
+          });
         },
 
         add: function(qp) {
+            qp.traceLocations = [];
+            qp.tracepoints = [];
             this._qps.push(qp);
         },
 

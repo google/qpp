@@ -25,10 +25,12 @@ var QPTreeWriter = (function() {
    * @param { {SourceMapGenerator} sourceMapGenerator
    * @constructor
    */
-  function QPTreeWriter(generatedSourceName) {
+  function QPTreeWriter(generatedSourceName, querypoints) {
     var config = {file: generatedSourceName};
     this.sourceMapGenerator = new SourceMapGenerator(config);
     ParseTreeMapWriter.call(this, false, false, this.sourceMapGenerator);
+    
+    this._querypoints = querypoints;
   }
 
 
@@ -47,10 +49,11 @@ var QPTreeWriter = (function() {
           };
         },
 
-        visitAny: function(tree) {
-          ParseTreeMapWriter.prototype.visitAny.call(this, tree);
-          if (tree.traceInfo) {
-              console.log("need to write traceInfo");
+        writeln_: function() {
+          ParseTreeMapWriter.prototype.writeln_.call(this);
+          var qp = this._querypoints.match(this.currentLocation);
+          if (qp) {
+            console.log("found matching qp, write tracing code");
           }
         }
 

@@ -32,7 +32,7 @@ var QPTestController = {
 
         // Insert tracepoint generation code at the traceLocations
 
-        var qpTreeWriter = new QPTreeWriter(querypoints);
+        var qpTreeWriter = new QPTreeWriter(name+".js", querypoints);
         var tracedSources = trees.values().map(qpTreeWriter.generateSource.bind(qpTreeWriter));
 
         // run the tracedSource, the queries are written into the testConsole
