@@ -73,36 +73,6 @@ var QPIdentifierVisitor = (function() {
         }
         return output_tree;
       },
-      
-      /**
-       * @param {Array.<ParseTree>} list
-       * @return {Array.<ParseTree>}
-       */
-      visitList: function(list) {
-        if (list == null || list.length == 0) {
-          return list;
-        }
-
-        var builder = null;
-
-        for (var index = 0; index < list.length; index++) {
-          var element = list[index];
-          var visited = this.visitAny(element);
-
-          if (builder != null || element != visited || this.traceStack.length) {
-            if (builder == null) {
-              builder = list.slice(0, index);
-            }
-            builder.push(visited);
-            if (this.traceStack.length) {
-              visited.traceInfo = this.traceStack.slice(0);
-              this.traceStack = [];
-            }
-          }
-        }
-
-        return builder || list;
-      },
 
       /**
        * @param {BindingIdentifier} tree
@@ -118,6 +88,13 @@ var QPIdentifierVisitor = (function() {
         return tree;
       },
       
+      maybeTraceLocation: function(tree) {
+        if (this.identifierHit) { 
+          var qp = this.identifierQueries[this.identifierHit];
+          qp.traceLocations.push({type: tree.type, location: tree.location});
+        }
+      },
+      
       /**
        * @param {VariableDeclaration} tree
        * @return {ParseTree}
@@ -125,10 +102,8 @@ var QPIdentifierVisitor = (function() {
       visitVariableDeclaration: function(tree) {
         var lvalue = this.visitAny(tree.lvalue);
         
-        if (this.identifierHit) { // The lvalue is traced
-            this.identifierQueries[this.identifierHit].push({type: tree.type, location: tree.location});
-        }
-        
+        this.maybeTraceLocation(tree);  // if the lvalue is traced
+                
         var initializer = this.visitAny(tree.initializer);
         return tree;
       },
@@ -138,24 +113,8 @@ var QPIdentifierVisitor = (function() {
        * @return {ParseTree}
        */
       visitObjectLiteralExpression: function(tree) {
-        if (this.identifierHit) {  // we are ref-ed by a traced identifier.
-          this.identifierQueries[this.identifierHit].push({type: tree.type, location: tree.location});
-        }
+        this.maybeTraceLocation(tree)  // if we are ref-ed by a traced identifier.
         var propertyNameAndValues = this.visitList(tree.propertyNameAndValues);
-        return tree;
-      },
-
-      /**
-       * @param {VariableStatement} tree
-       * @return {ParseTree}
-       */
-      visitVariableStatement: function(tree) {
-        var declarations = this.visitAny(tree.declarations);
-        if (this.identifierHit) {
-            // Prepare the static info for dynamic us
-            this.traceStack.push(this.identifierQueries[this.identifierHit]);
-            delete this.identifierHit;
-        }
         return tree;
       },
 
