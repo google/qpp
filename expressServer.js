@@ -1,7 +1,7 @@
 var express = require('express');
-var app = express();
 
 function servePathAtPort(path, port) {
+  var app = express();
   app.use(express.static(path));   // before directory to allow index.html to work
   app.use(express.directory(path));
   app.listen(port);
