@@ -102,7 +102,7 @@ var QPIdentifierVisitor = (function() {
       visitVariableDeclaration: function(tree) {
         var lvalue = this.visitAny(tree.lvalue);
         
-        this.maybeTraceLocation(tree);  // if the lvalue is traced
+        //this.maybeTraceLocation(tree);  // if the lvalue is traced
                 
         var initializer = this.visitAny(tree.initializer);
         return tree;

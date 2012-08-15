@@ -9,13 +9,29 @@ function unprotect(str) {
     return str.replace(/:\"eval\(([^\)]*)\)\"/,":$1");
 }
 
-function tracepointMessage(tq, traceLocationIndex) {
+function IdentifierQuery(identifier) {
+    this.identifier = identifier;
+}
+
+IdentifierQuery.prototype = {
+
+  // A jsonable object inserted to create the tracepoint output
+  tracepointMessage: function(traceLocationIndex) {
     return {
-        tq: tq.id,
-        value: protect(tq.identifier),  
+        tq: this.id,
+        value: protect(this.identifier),  
         locationIndex: traceLocationIndex
     };
-}
+  },
+  
+  // augment the tracepoint output with additional (static) data
+  tracepoint: function(tracepointData) {
+      tracepointData.syntaxTreeType = this.traceLocations[traceLocationIndex].type;
+      tracepointData.tracequeryType = "Identifier";
+      return tracepointData;
+  },
+    
+};
 
 var QPController = {
 
@@ -36,12 +52,12 @@ var QPController = {
           var previous = previousLocation ? previousLocation.start.offset : 0;
           var current = currentLocation.start.offset;
           var message;
-          this._tqs.some(function(tq, tqIndex) {
-            return tq.traceLocations.some(function(traceLocation, locationIndex) {
+          this._tqs.forEach(function(tq, tqIndex) {
+            return tq.traceLocations.forEach(function(traceLocation, locationIndex) {
               var offset = traceLocation.location.start.offset;
-                console.log(previous + "<= " + offset + " < " + current);
+              console.log(previous + " <= " + offset + " < " + current);
               if ( (previous <= offset) &&  (offset < current) ) {
-                message = QPController.formatTraceMessage(tracepointMessage(tq, locationIndex));
+                message = QPController.formatTraceMessage(tq.tracepointMessage(locationIndex));
                 return true;
               } 
             });
@@ -64,7 +80,7 @@ var QPController = {
     // Query Definitions
 
     traceObjectCreation: function(identifier) {
-        this._tracequeries.add({identifier: identifier});
+        this._tracequeries.add(new IdentifierQuery(identifier));
     },
 
     // Query Acccess
