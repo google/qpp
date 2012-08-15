@@ -54,13 +54,13 @@ var QPTreeWriter = (function() {
          */
         visitAny: function(tree) {
             ParseTreeMapWriter.prototype.visitAny.call(this, tree);
-            console.log("visitAny tree location " + (tree.location ? tree.location.start.offset : "null location"));
+            console.log("visitAny tree location " + (tree.location ? tree.location.start.offset + '-' + tree.location.end.offset : "null location"));
         },
 
         writeln_: function() {
             console.log("current line "+this.currentLine_);
           ParseTreeMapWriter.prototype.writeln_.call(this);
-          var trace = this._querypoints.between(this.previousLocation, this.currentLocation);
+          var trace = this._querypoints.getTraceSource(this.previousLocation, this.currentLocation);
           if (trace) {
             console.log("found matching qp, write tracing code "+trace);
             this.currentLine_ = trace;

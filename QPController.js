@@ -1,16 +1,20 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-function tracepointCallback(qp, traceLocationIndex) {
-    var src = "";
-    src += 'console.log({"qp": ';
-    src += qp.id
-    src += ', "value": ';
-    src += qp.identifier;
-    src += ', "locationIndex": ';
-    src += traceLocationIndex;
-    src += '});';
-    return src;
+function protect(expr) {
+    return "eval(" + expr + ")"; // unwrapped by QPController
+}
+
+function unprotect(str) {
+    return str.replace(/:\"eval\(([^\)]*)\)\"/,":$1");
+}
+
+function tracepointMessage(qp, traceLocationIndex) {
+    return {
+        qp: qp.id,
+        value: protect(qp.identifier),  
+        locationIndex: traceLocationIndex
+    };
 }
 
 var QPController = {
@@ -27,22 +31,22 @@ var QPController = {
             return qpById;
         },
         
-        between: function(previousLocation, currentLocation) {
+        getTraceSource: function(previousLocation, currentLocation) {
           // todo sort qps
           var previous = previousLocation ? previousLocation.start.offset : 0;
           var current = currentLocation.start.offset;
-          var aQPBetween;
+          var message;
           this._qps.some(function(qp, qpIndex) {
             return qp.traceLocations.some(function(traceLocation, locationIndex) {
               var offset = traceLocation.location.start.offset;
                 console.log(previous + "<= " + offset + " < " + current);
               if ( (previous <= offset) &&  (offset < current) ) {
-                aQPBetween = tracepointCallback(qp, locationIndex);
+                message = QPController.formatTraceMessage(tracepointMessage(qp, locationIndex));
                 return true;
               } 
             });
           });
-          return aQPBetween;
+          return message;
         },
 
         add: function(qp) {
@@ -75,10 +79,13 @@ var QPController = {
         this.qpConsole = qpConsole;
     },
 
-    tracingSource: function() {
-       
-        
-        __qp__("IdentifierTrace", "b", "ObjectLiteral", "foo.js:4:1");
+    // Different deployments may need different ways to transport the tracepoint
+    // result back to the querypoint storage. 
+    formatTraceMessage: function(traceJSONable) {
+      var json = JSON.stringify(traceJSONable);
+      // expressions we want to evaluate at the tracepoint are escaped by wrapping 'eval()' around them.
+      // convert these back. 
+      return "console.log(" + unprotect(json) + ");";
     },
     
     initialize: function() {
