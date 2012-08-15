@@ -9,39 +9,39 @@ function unprotect(str) {
     return str.replace(/:\"eval\(([^\)]*)\)\"/,":$1");
 }
 
-function tracepointMessage(qp, traceLocationIndex) {
+function tracepointMessage(tq, traceLocationIndex) {
     return {
-        qp: qp.id,
-        value: protect(qp.identifier),  
+        tq: tq.id,
+        value: protect(tq.identifier),  
         locationIndex: traceLocationIndex
     };
 }
 
 var QPController = {
 
-    _querypoints: {
-        _qps: [],
+    _tracequeries: {
+        _tqs: [],
 
         byIdentifier: function() {
-            var qpById = {};
-            this._qps.forEach(function(qp){
-                if (qp.identifier)
-                  qpById[qp.identifier] = qp;
+            var tqById = {};
+            this._tqs.forEach(function(tq){
+                if (tq.identifier)
+                  tqById[tq.identifier] = tq;
             });
-            return qpById;
+            return tqById;
         },
         
         getTraceSource: function(previousLocation, currentLocation) {
-          // todo sort qps
+          // todo sort tqs
           var previous = previousLocation ? previousLocation.start.offset : 0;
           var current = currentLocation.start.offset;
           var message;
-          this._qps.some(function(qp, qpIndex) {
-            return qp.traceLocations.some(function(traceLocation, locationIndex) {
+          this._tqs.some(function(tq, tqIndex) {
+            return tq.traceLocations.some(function(traceLocation, locationIndex) {
               var offset = traceLocation.location.start.offset;
                 console.log(previous + "<= " + offset + " < " + current);
               if ( (previous <= offset) &&  (offset < current) ) {
-                message = QPController.formatTraceMessage(tracepointMessage(qp, locationIndex));
+                message = QPController.formatTraceMessage(tracepointMessage(tq, locationIndex));
                 return true;
               } 
             });
@@ -49,28 +49,28 @@ var QPController = {
           return message;
         },
 
-        add: function(qp) {
-            qp.traceLocations = [];
-            qp.tracepoints = [];
-            qp.id = this._qps.length;
-            this._qps.push(qp);
+        add: function(tq) {
+            tq.traceLocations = [];
+            tq.tracepoints = [];
+            tq.id = this._tqs.length;
+            this._tqs.push(tq);
         },
 
         clear: function() {
-            this._qps = [];
+            this._tqs = [];
         }
     },
 
     // Query Definitions
 
     traceObjectCreation: function(identifier) {
-        this._querypoints.add({identifier: identifier});
+        this._tracequeries.add({identifier: identifier});
     },
 
     // Query Acccess
 
-    querypoints: function() {
-        return this._querypoints;
+    tracequeries: function() {
+        return this._tracequeries;
     },
 
     // Query Actions
@@ -89,6 +89,6 @@ var QPController = {
     },
     
     initialize: function() {
-      this._querypoints.clear();
+      this._tracequeries.clear();
     },
 };

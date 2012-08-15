@@ -25,12 +25,12 @@ var QPTreeWriter = (function() {
    * @param { {SourceMapGenerator} sourceMapGenerator
    * @constructor
    */
-  function QPTreeWriter(generatedSourceName, querypoints) {
+  function QPTreeWriter(generatedSourceName, tracequeries) {
     var config = {file: generatedSourceName};
     this.sourceMapGenerator = new SourceMapGenerator(config);
     ParseTreeMapWriter.call(this, false, false, this.sourceMapGenerator);
     
-    this._querypoints = querypoints;
+    this._tracequeries = tracequeries;
   }
 
 
@@ -60,7 +60,7 @@ var QPTreeWriter = (function() {
         writeln_: function() {
             console.log("current line "+this.currentLine_);
           ParseTreeMapWriter.prototype.writeln_.call(this);
-          var trace = this._querypoints.getTraceSource(this.previousLocation, this.currentLocation);
+          var trace = this._tracequeries.getTraceSource(this.previousLocation, this.currentLocation);
           if (trace) {
             console.log("found matching qp, write tracing code "+trace);
             this.currentLine_ = trace;
