@@ -18,11 +18,11 @@ var QPController = {
         },
 
         add: function(qp) {
-            _qps.push(qp);
+            this._qps.push(qp);
         },
 
         clear: function() {
-            _qps = [];
+            this._qps = [];
         }
     },
 
