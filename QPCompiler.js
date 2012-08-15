@@ -13,6 +13,10 @@ var QPCompiler = (function() {
   function QPCompiler(reporter, querypoints) {
     this.reporter_ = reporter;
     this.querypoints_ = querypoints;
+    traceur.options.setFromObject({
+      linearize: true,
+      sourceMaps: true
+    });
   }
 
   QPCompiler.prototype = {

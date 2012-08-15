@@ -11,10 +11,7 @@ var QPPageManager = (function() {
       @param scriptEntries array of {name: string, contents: string}
        */
     compileScripts: function(qpModel, scriptEntries) {
-      traceur.options.setFromObject({
-          linearize: true,
-          sourceMaps: true
-      });
+
       var reporter = new QPErrorReporter();
       var project = new traceur.semantics.symbols.Project(document.location.href);
 

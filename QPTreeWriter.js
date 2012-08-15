@@ -48,13 +48,25 @@ var QPTreeWriter = (function() {
               generatedSource: this.result_.toString()
           };
         },
+        
+        /**
+         * @param {ParseTree} tree
+         */
+        visitAny: function(tree) {
+            ParseTreeMapWriter.prototype.visitAny.call(this, tree);
+            console.log("visitAny tree location " + (tree.location ? tree.location.start.offset : "null location"));
+        },
 
         writeln_: function() {
+            console.log("current line "+this.currentLine_);
           ParseTreeMapWriter.prototype.writeln_.call(this);
-          var qp = this._querypoints.match(this.currentLocation);
-          if (qp) {
-            console.log("found matching qp, write tracing code");
+          var trace = this._querypoints.between(this.previousLocation, this.currentLocation);
+          if (trace) {
+            console.log("found matching qp, write tracing code "+trace);
+            this.currentLine_ = trace;
+            ParseTreeMapWriter.prototype.writeln_.call(this);
           }
+          this.previousLocation = this.currentLocation;
         }
 
   });
