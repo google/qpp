@@ -117,25 +117,14 @@ var QPIdentifierVisitor = (function() {
         var propertyNameAndValues = this.visitList(tree.propertyNameAndValues);
         return tree;
       },
-
-      operatorType: function(operator) {
-        switch(operator.type) {
-          case TokenType.EQUAL:
-          case TokenType.STAR_EQUAL:
-          case TokenType.SLASH_EQUAL:
-          case TokenType.PERCENT_EQUAL:
-          case TokenType.PLUS_EQUAL:
-          case TokenType.MINUS_EQUAL:
-          case TokenType.LEFT_SHIFT_EQUAL:
-          case TokenType.RIGHT_SHIFT_EQUAL:
-          case TokenType.UNSIGNED_RIGHT_SHIFT_EQUAL:
-          case TokenType.AMPERSAND_EQUAL:
-          case TokenType.CARET_EQUAL:
-          case TokenType.BAR_EQUAL:
-            return 'assignment';
-          default:
-            return undefined;
-        }
+      
+      /**
+       * @param {traceur.syntax.trees.NewExpression} tree
+       */
+      visitNewExpression: function(tree) {
+        this.maybeTraceLocation(tree);  // if we are ref-ed by a trace identifier
+        this.visitAny(tree.operand);    // TODO tracing operand identifiers
+        this.visitAny(tree.args);       // TODO arguments
       },
       
   });

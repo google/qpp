@@ -26,7 +26,13 @@ IdentifierQuery.prototype = {
   
   // augment the tracepoint output with additional (static) data
   tracepoint: function(tracepointData) {
-      tracepointData.syntaxTreeType = this.traceLocations[tracepointData.locationIndex].type;
+      // probably want to do this in a formatter object
+      var traceLocation = this.traceLocations[tracepointData.locationIndex];
+      tracepointData.syntaxTreeType = traceLocation.type;
+      tracepointData.line = traceLocation.location.start.line;
+      tracepointData.column = traceLocation.location.start.column;
+      tracepointData.name = traceLocation.location.start.source.name;
+      
       tracepointData.tracequeryType = "Identifier";
       tracepointData.tracequery = this;
       return tracepointData;
@@ -88,7 +94,7 @@ var QPController = {
 
     // Query Definitions
 
-    traceObjectCreation: function(identifier) {
+    traceIdentifier: function(identifier) {
         this._tracequeries.add(new IdentifierQuery(identifier));
     },
 

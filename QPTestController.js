@@ -46,6 +46,7 @@ var QPTestController = {
           delete result.tracequery;  // to simplify testing            
         });
         var resultElement = document.createElement('pre');
+        resultElement.classList.add('actual');
         var actual = resultElement.textContent = JSON.stringify(results);        
         element.appendChild(resultElement);
         
