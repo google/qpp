@@ -84,6 +84,8 @@ var QPIdentifierVisitor = (function() {
         if (this.identifierQueries.hasOwnProperty(id)) {
             console.log('Matched ' + tree.type + ' id ' + id);
             this.identifierHit = id;
+        } else {
+            delete this.identifierHit;
         }
         return tree;
       },
@@ -102,30 +104,13 @@ var QPIdentifierVisitor = (function() {
       visitVariableDeclaration: function(tree) {
         var lvalue = this.visitAny(tree.lvalue);
         
-        //this.maybeTraceLocation(tree);  // if the lvalue is traced
+        console.log("variable declaration rhs type: ", tree.initializer ? tree.initializer.type : "none");
+        this.maybeTraceLocation(tree.initializer || tree);
                 
         var initializer = this.visitAny(tree.initializer);
         return tree;
       },
-      
-      /**
-       * @param {ObjectLiteralExpression} tree
-       * @return {ParseTree}
-       */
-      visitObjectLiteralExpression: function(tree) {
-        this.maybeTraceLocation(tree)  // if we are ref-ed by a traced identifier.
-        var propertyNameAndValues = this.visitList(tree.propertyNameAndValues);
-        return tree;
-      },
-      
-      /**
-       * @param {traceur.syntax.trees.NewExpression} tree
-       */
-      visitNewExpression: function(tree) {
-        this.maybeTraceLocation(tree);  // if we are ref-ed by a trace identifier
-        this.visitAny(tree.operand);    // TODO tracing operand identifiers
-        this.visitAny(tree.args);       // TODO arguments
-      },
+
       
   });
 

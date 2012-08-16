@@ -21,14 +21,18 @@ var QPTestController = {
         QPController.setConsole(this.testConsole);
         eval(queries);  // The queries section operates on QPController to define the QPs
         
-        // visit the parse tree before the first transformation and record the traceLocations
-
-        var tracequeries = QPController.tracequeries();
-        var qpCompiler = new QPCompiler(reporter, tracequeries);
+        // Looks like this will be stock compilation, yay
+        var qpCompiler = new QPCompiler(reporter);
         var project = new traceur.semantics.symbols.Project(document.location.href);
         var file = new traceur.syntax.SourceFile(name, source);
         project.addFile(file);
         var trees = qpCompiler.compile(project);
+
+        // visit the parse tree after the linearization transformation and record the traceLocations
+
+        var tracequeries = QPController.tracequeries();
+        analyzer = new QPAnalyzer(project, tracequeries);
+        analyzer.analyze();
 
         // Insert tracepoint generation code at the traceLocations
 

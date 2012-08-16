@@ -10,9 +10,8 @@ var QPCompiler = (function() {
   var ModuleAnalyzer = traceur.semantics.ModuleAnalyzer;
   var Project = traceur.semantics.symbols.Project;
   
-  function QPCompiler(reporter, querypoints) {
+  function QPCompiler(reporter) {
     this.reporter_ = reporter;
-    this.querypoints_ = querypoints;
     traceur.options.setFromObject({
       linearize: true,
       sourceMaps: true
@@ -39,9 +38,6 @@ var QPCompiler = (function() {
 
     analyze: function(project) {
       var analyzer = new ModuleAnalyzer(this.reporter_, project);
-      analyzer.analyze();
-
-      analyzer = new QPAnalyzer(project, this.querypoints_);
       analyzer.analyze();
     },
 
