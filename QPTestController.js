@@ -41,9 +41,12 @@ var QPTestController = {
         console.log("tracedSource: "+tracedSource);
         eval(tracedSource);
 
-        var results = this.testConsole._results;
+        var results = QPController.tracepoints();
+        results.forEach(function(result) {
+          delete result.tracequery;  // to simplify testing            
+        });
         var resultElement = document.createElement('pre');
-        var actual = resultElement.textContent = results.join("\n");        
+        var actual = resultElement.textContent = JSON.stringify(results);        
         element.appendChild(resultElement);
         
         this.logTestCases(name, source, queries, expected, actual);

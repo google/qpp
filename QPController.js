@@ -26,8 +26,9 @@ IdentifierQuery.prototype = {
   
   // augment the tracepoint output with additional (static) data
   tracepoint: function(tracepointData) {
-      tracepointData.syntaxTreeType = this.traceLocations[traceLocationIndex].type;
+      tracepointData.syntaxTreeType = this.traceLocations[tracepointData.locationIndex].type;
       tracepointData.tracequeryType = "Identifier";
+      tracepointData.tracequery = this;
       return tracepointData;
   },
     
@@ -37,16 +38,24 @@ var QPController = {
 
     _tracequeries: {
         _tqs: [],
-
-        byIdentifier: function() {
-            var tqById = {};
+        
+        by: function(field) {
+            var tqByField = {};
             this._tqs.forEach(function(tq){
-                if (tq.identifier)
-                  tqById[tq.identifier] = tq;
+                if (field in tq)
+                  tqByField[tq[field]] = tq;
             });
-            return tqById;
+            return tqByField;
         },
         
+        byIdentifier: function() {
+            return this.by('identifier');
+        },
+        
+        byId: function() {
+            return this.by('id');
+        },
+
         getTraceSource: function(previousLocation, currentLocation) {
           // todo sort tqs
           var previous = previousLocation ? previousLocation.start.offset : 0;
@@ -97,14 +106,30 @@ var QPController = {
 
     // Different deployments may need different ways to transport the tracepoint
     // result back to the querypoint storage. 
+    
+    // Each trace is passed
+    // through this function before injecting in the syntax tree. 
+    
     formatTraceMessage: function(traceJSONable) {
       var json = JSON.stringify(traceJSONable);
       // expressions we want to evaluate at the tracepoint are escaped by wrapping 'eval()' around them.
       // convert these back. 
-      return "console.log(" + unprotect(json) + ");";
+      return "__qp_tps.push(" + unprotect(json) + ");";
+    },
+    
+    // The stream of tracepoint results 
+    
+    tracepoints: function() {
+        var tqById = this._tracequeries.byId();
+        return __qp_tps.map(function (tp) {
+            tq = tqById[tp.tq];
+            console.log(tp);
+            return tq.tracepoint(tp);
+        });
     },
     
     initialize: function() {
       this._tracequeries.clear();
+      __qp_tps = [];
     },
 };
