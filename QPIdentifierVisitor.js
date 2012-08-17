@@ -43,7 +43,6 @@ var QPIdentifierVisitor = (function() {
    */
   function QPIdentifierVisitor(identifierQueries) {
     this.identifierQueries = identifierQueries || {};
-    this.traceStack = []; 
   }
 
   QPIdentifierVisitor.visitTree = function(tree, visiter) {
@@ -59,7 +58,7 @@ var QPIdentifierVisitor = (function() {
     return output_tree;
   };
 
-  // This visit assumes Linearizevisit already applied.
+  // This visit assumes LinearizeTransform already applied.
 
   QPIdentifierVisitor.prototype = traceur.createObject(
     ParseTreeVisitor.prototype, {
@@ -73,6 +72,19 @@ var QPIdentifierVisitor = (function() {
         }
         return output_tree;
       },
+
+      visitArgumentList: function(tree) {
+        this.visitList(tree.args);
+        this.maybeTraceLocation(tree);
+      },
+
+      visitArrayComprehension: function(tree) {
+          console.error("Tree should have been transformed away");
+        this.visitAny(tree.expression);
+        this.visitList(tree.comprehensionForList);
+        this.visitAny(tree.ifExpression);
+      },
+
 
       /**
        * @param {BindingIdentifier} tree

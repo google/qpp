@@ -12,17 +12,28 @@
   <script src="QPModel.js"></script>
   <script src="QPTestController.js"></script>
   <style>
+  pre {
+    margin-left: 10ex;
+  }
   .source:before {
     content: "Source:   ";
+    position: absolute;
+    margin-left: -10ex;
   }
   .queries:before {
     content: "Query:    ";
+    position: absolute;
+    margin-left: -10ex;
   }
   .expected:before {
     content: "Expected: "
+    position: absolute;
+    margin-left: -10ex;
   }
   .actual:before {
     content: "Actual:   ";
+    position: absolute;
+    margin-left: -10ex;
   }
   </style>
 </head>
@@ -59,6 +70,33 @@
     </pre>
     <pre class="queries">
       QPController.traceIdentifier('d');
+    </pre>
+    <pre class="expected">
+      TBD
+    </pre>
+  </div>
+  <div class="test-case">
+    <h2 class="name">IdentifierInArgumentList</h2>
+    <pre class="source">
+      function foo() {}
+      var f = 2;
+      foo(1,f,3);
+    </pre>
+    <pre class="queries">
+      QPController.traceIdentifier('f');
+    </pre>
+    <pre class="expected">
+      TBD
+    </pre>
+  </div>
+  <div class="test-case">
+    <h2 class="name">IdentifierInArrayComprehension</h2>
+    <pre class="source">
+      var numbers = [1, 2, 3, 4];
+      var doubled = [i * 2 for i of numbers];    
+    </pre>
+    <pre class="queries">
+      QPController.traceIdentifier('numbers');
     </pre>
     <pre class="expected">
       TBD
