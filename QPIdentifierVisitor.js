@@ -63,14 +63,29 @@ var QPIdentifierVisitor = (function() {
   QPIdentifierVisitor.prototype = traceur.createObject(
     ParseTreeVisitor.prototype, {
 
-      visitAny: function(tree) {
-        var output_tree = 
-          ParseTreeVisitor.prototype.visitAny.call(this, tree);
-        if (tree) console.log('QPIdentifierVisitor ' + tree.type);
-        if (output_tree) {
-          ParseTreeValidator.validate(output_tree);
+      walkHome: function(tree, fncOfTree) {
+        while(tree) {
+          fncOfTree(tree);
+          tree = tree.parent;
         }
-        return output_tree;
+      },
+
+      talkHome: function(tree, field) {
+        var str = [];
+        this.walkHome(tree, function(tree) {
+          str.push(field ? tree[field] : tree);
+        });
+        return str;
+      },
+
+      visitAny: function(tree) {
+        if (tree) {
+          tree.parent = this.parent;
+          this.parent = tree;
+          ParseTreeVisitor.prototype.visitAny.call(this, tree);
+          if (tree) console.log('QPIdentifierVisitor ', this.talkHome(tree, 'type'));
+          this.parent = tree.parent;
+        }
       },
 
       visitArgumentList: function(tree) {
@@ -85,27 +100,38 @@ var QPIdentifierVisitor = (function() {
         this.visitAny(tree.ifExpression);
       },
 
+      checkIdentifier: function(id) {
+        if (id) {
+          console.log('checking id ' + id);
+          if (this.identifierQueries.hasOwnProperty(id)) {
+            console.log('Matched id ' + id);
+            this.identifierHit = id;
+          } else {
+            delete this.identifierHit;
+          }
+        }
+      },
 
       /**
        * @param {BindingIdentifier} tree
        * @return {ParseTree}
        */
       visitBindingIdentifier: function(tree) {
-        var id = tree.identifierToken.value;
-        console.log(tree.type + ' id ' + id);
-        if (this.identifierQueries.hasOwnProperty(id)) {
-            console.log('Matched ' + tree.type + ' id ' + id);
-            this.identifierHit = id;
-        } else {
-            delete this.identifierHit;
-        }
-        return tree;
+        this.checkIdentifier(tree.identifierToken.value);
+      },
+      
+      visitIdentifierExpression: function(tree) {
+        this.checkIdentifier(tree.identifierToken.value);
       },
       
       maybeTraceLocation: function(tree) {
         if (this.identifierHit) { 
-          var qp = this.identifierQueries[this.identifierHit];
-          qp.traceLocations.push({type: tree.type, location: tree.location});
+          var tq = this.identifierQueries[this.identifierHit];
+          if (tree.location && tree.location.start) { 
+            tq.traceLocations.push(tree.location);
+          } else {
+            console.log("maybeTraceLocation: no location for ", this.talkHome(tree));
+          }
         }
       },
       
@@ -117,7 +143,7 @@ var QPIdentifierVisitor = (function() {
         var lvalue = this.visitAny(tree.lvalue);
         
         console.log("variable declaration rhs type: ", tree.initializer ? tree.initializer.type : "none");
-        this.maybeTraceLocation(tree.initializer || tree);
+        this.maybeTraceLocation(tree);
                 
         var initializer = this.visitAny(tree.initializer);
         return tree;

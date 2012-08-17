@@ -14,6 +14,8 @@
 
 var QPTreeWriter = (function() {
   'use strict';
+  
+  var debug = false;
 
   var ParseTreeMapWriter = traceur.outputgeneration.ParseTreeMapWriter;
   var SourceMapGenerator = traceur.outputgeneration.SourceMapGenerator;
@@ -55,12 +57,12 @@ var QPTreeWriter = (function() {
         visitAny: function(tree) {
             if (tree) {
               ParseTreeMapWriter.prototype.visitAny.call(this, tree);
-              console.log("visitAny tree location " + (tree.location ? tree.location.start.offset + '-' + tree.location.end.offset : "null location"));
+              if (debug) console.log("visitAny tree location " + (tree.location ? tree.location.start.offset + '-' + tree.location.end.offset : "null location"));
             }
         },
 
         writeln_: function() {
-            console.log("current line "+this.currentLine_);
+          if (debug) console.log("current line "+this.currentLine_);
           ParseTreeMapWriter.prototype.writeln_.call(this);
           if (this.currentLocation) {
             var trace = this._tracequeries.getTraceSource(this.previousLocation, this.currentLocation);

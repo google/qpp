@@ -28,10 +28,9 @@ IdentifierQuery.prototype = {
   tracepoint: function(tracepointData) {
       // probably want to do this in a formatter object
       var traceLocation = this.traceLocations[tracepointData.locationIndex];
-      tracepointData.syntaxTreeType = traceLocation.type;
-      tracepointData.line = traceLocation.location.start.line;
-      tracepointData.column = traceLocation.location.start.column;
-      tracepointData.name = traceLocation.location.start.source.name;
+      tracepointData.line = traceLocation.start.line;
+      tracepointData.column = traceLocation.start.column;
+      tracepointData.name = traceLocation.start.source.name;
       
       tracepointData.tracequeryType = "Identifier";
       tracepointData.tracequery = this;
@@ -69,7 +68,7 @@ var QPController = {
           var message;
           this._tqs.forEach(function(tq, tqIndex) {
             return tq.traceLocations.forEach(function(traceLocation, locationIndex) {
-              var offset = traceLocation.location.start.offset;
+              var offset = traceLocation.start.offset;
               console.log(previous + " <= " + offset + " < " + current);
               if ( (previous <= offset) &&  (offset < current) ) {
                 message = QPController.formatTraceMessage(tq.tracepointMessage(locationIndex));
