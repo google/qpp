@@ -11,9 +11,9 @@ var QPTestController = {
       
   },
 
-  runTest: function() {
-      var reporter = new QPErrorReporter();
-      var cases = this.scanPageForTestCases(function(name, source, queries, expected, element){
+   reporter: new QPErrorReporter(),
+
+  runTest: function(name, source, queries, expected, element){
         
         // Set up the tracequeries for this test
 
@@ -22,7 +22,7 @@ var QPTestController = {
         eval(queries);  // The queries section operates on QPController to define the QPs
         
         // Looks like this will be stock compilation, yay
-        var qpCompiler = new QPCompiler(reporter);
+        var qpCompiler = new QPCompiler(this.reporter);
         var project = new traceur.semantics.symbols.Project(document.location.href);
         var file = new traceur.syntax.SourceFile(name, source);
         project.addFile(file);
@@ -30,9 +30,8 @@ var QPTestController = {
 
         // visit the parse tree after the linearization transformation and record the traceLocations
 
-        var tracequeries = QPController.tracequeries();
-        analyzer = new QPAnalyzer(project, tracequeries);
-        analyzer.analyze();
+       var tracequeries = QPController.tracequeries();
+       QPTracer.trace(trees, tracequeries)
 
         // Insert tracepoint generation code at the traceLocations
 
@@ -55,7 +54,17 @@ var QPTestController = {
         element.appendChild(resultElement);
         
         this.logTestCases(name, source, queries, expected, actual);
-    }.bind(this));
+    },
+
+    getAllTestCaseElements: function() {
+      return this.toArray(document.querySelectorAll(".test-case"));
+    },
+
+  runAllTests: function() {
+      var allTestCaseElements = this.getAllTestCaseElements();
+      var cases = allTestCaseElements.forEach(
+          this.getTestCase.bind(this,  this.runTest.bind(this))
+       );
   },
 
   toArray: function(nodeList) {
@@ -66,21 +75,19 @@ var QPTestController = {
     return arr;
   },
 
-  scanPageForTestCases: function(fncOfTestCase) {
-    this.toArray(document.querySelectorAll(".test-case")).forEach(function (testCaseElt) {
-      function grabText(selector) {
-          var elt = testCaseElt.querySelector(selector);
-          if (elt)
-            return elt.textContent;
-      }
-      fncOfTestCase(
-        grabText('.name'),
-        grabText('.source'),
-        grabText('.queries'),
-        grabText('.expected'),
-        testCaseElt
-      );
-    });
+  getTestCase: function(fncOfTestCase, testCaseElt) {
+    function grabText(selector) {
+        var elt = testCaseElt.querySelector(selector);
+        if (elt)
+          return elt.textContent;
+    }
+    fncOfTestCase(
+      grabText('.name'),
+      grabText('.source'),
+      grabText('.queries'),
+      grabText('.expected'),
+      testCaseElt
+    );
   },
 
   logTestCases: function(name, source, queries, expected, actual) {  
@@ -93,7 +100,16 @@ var QPTestController = {
 };
 
 function onLoad() {
-    QPTestController.runTest();
+    QPTestController.runAllTests();
+    document.addEventListener('click', function(event) {
+      var testCaseElt = event.target;
+      while(testCaseElt && !testCaseElt.classList.contains('test-case')) 
+        testCaseElt = testCaseElt.parentElement;
+
+      if (testCaseElt) {
+        this.getTestCase(this.runTest.bind(this), testCaseElt);
+      }
+    }.bind(QPTestController));
 }
 
 window.addEventListener('load', onLoad);

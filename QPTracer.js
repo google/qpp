@@ -12,33 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var QPAnalyzer = (function() {
-  'use strict';
+var QPTracer = {
 
-  var Analyzer = traceur.semantics.Analyzer;
-  
-  /**
-   *
-   * @param {ErrorReporter} reporter
-   * @param {Project} project
-   * @constructor
-   */
-  function QPAnalyzer(project, tracequeries) {
-    Analyzer.call(this, project);
-
-    this.visitors_ = [ 
+  trace: function(trees, tracequeries) {
+    var visitors =  [ 
       new QPIdentifierVisitor(tracequeries.byIdentifier()),
     ];
+    visitors.forEach(function (visitor){
+      trees.values().forEach(function(tree) {
+        visitor.visitAny(tree);
+      });
+    });
+    
   }
-  
-  QPAnalyzer.prototype = traceur.createObject(
-    Analyzer.prototype, {
-      getVisitors: function() {
-        return this.visitors_;
-      }
-    }
-  );
 
-  return QPAnalyzer;
-
-}());
+};
