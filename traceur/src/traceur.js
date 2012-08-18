@@ -227,7 +227,6 @@ var traceur = (function() {
       'codegeneration/module/ValidationVisitor.js',
       'codegeneration/module/ModuleRequireVisitor.js',
       'codegeneration/module/ImportStarVisitor.js',
-      'semantics/Analyzer.js',
       'semantics/ModuleAnalyzer.js',
       'codegeneration/Compiler.js',
       'runtime/runtime.js',
