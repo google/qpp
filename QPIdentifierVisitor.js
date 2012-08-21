@@ -130,7 +130,7 @@ var QPIdentifierVisitor = (function() {
           if (tree.location && tree.location.start) { 
             tq.traceLocations.push(tree.location);
           } else {
-            console.log("maybeTraceLocation: no location for ", this.talkHome(tree));
+            console.error("maybeTraceLocation: no location for ", this.talkHome(tree, 'type'));
           }
         }
       },

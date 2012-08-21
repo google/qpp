@@ -24,14 +24,14 @@ var QPTestController = {
         // Looks like this will be stock compilation, yay
         var qpCompiler = new QPCompiler(this.reporter);
         var project = new traceur.semantics.symbols.Project(document.location.href);
-        var file = new traceur.syntax.SourceFile(name, source);
+        var file = new traceur.syntax.SourceFile(name + '.js', source);
         project.addFile(file);
         var trees = qpCompiler.compile(project);
 
         // visit the parse tree after the linearization transformation and record the traceLocations
 
-       var tracequeries = QPController.tracequeries();
-       QPTracer.trace(trees, tracequeries)
+        var tracequeries = QPController.tracequeries();
+        QPTracer.trace(trees, tracequeries);
 
         // Insert tracepoint generation code at the traceLocations
 

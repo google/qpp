@@ -67,7 +67,7 @@ var QPTreeWriter = (function() {
           if (this.currentLocation) {
             var trace = this._tracequeries.getTraceSource(this.previousLocation, this.currentLocation);
             if (trace) {
-              console.log("found matching qp, write tracing code "+trace);
+              console.log("found matching tracequery, write tracing code "+trace);
               this.currentLine_ = trace;
               ParseTreeMapWriter.prototype.writeln_.call(this);
             }
