@@ -14,3 +14,5 @@ servePathAtPort(__dirname, 8686);
 servePathAtPort('../sirius/extension/atopwi', 9696);
 
 servePathAtPort('../webdev-examples', 7676);
+
+servePathAtPort('../traceur-compiler', 7677);
