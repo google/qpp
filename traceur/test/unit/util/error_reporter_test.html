@@ -103,10 +103,11 @@ function testFormat() {
 function testDevtoolsLink() {
   var file = new traceur.syntax.SourceFile('error_reporter_test.html', '');
   var location = new traceur.util.SourcePosition(file, 1, 108, 3);
-  var base = window.location.href.split('/');
-  base.pop();
-  base.push(location.toString());
-  console.log('manually click on this link in devtools console: ' + base.join('/')+ '  ');
+  var segments = window.location.href.split('/');
+  segments.pop();
+  segments.push(location.toString());
+  var linkable = segments.join('/');
+  console.log('click on this link in devtools console: ' + linkable + '  ');
 }
 
 </script>

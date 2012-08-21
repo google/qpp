@@ -221,10 +221,11 @@ traceur.define('outputgeneration', function() {
         }
         
         var identifier =  this.generateIdentifier(tree);
-        var addedLine = new VariableStatement(tree.location, 
-          new VariableDeclarationList(null, TokenType.VAR, 
-            [new VariableDeclaration(null, 
-              new BindingIdentifier(null, identifier), 
+        var loc = tree.location;
+        var addedLine = new VariableStatement(loc, 
+          new VariableDeclarationList(loc, TokenType.VAR, 
+            [new VariableDeclaration(loc, 
+              new BindingIdentifier(loc, identifier), 
               tree)]
           )
         );
@@ -582,7 +583,7 @@ traceur.define('outputgeneration', function() {
         tree.declarations.forEach(function(declaration) {
             declaration = this.transformAny(declaration); 
             this.insertions.push( new VariableStatement(
-              null, 
+              declaration.location, 
               new VariableDeclarationList(declaration.location, 
                 TokenType.VAR, [declaration])
             ));
