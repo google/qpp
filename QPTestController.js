@@ -44,9 +44,20 @@ var QPTestController = {
         console.log("tracedSource: "+tracedSource);
         eval(tracedSource);
 
-        var results = QPController.tracepoints();
-        results.forEach(function(result) {
-          delete result.tracequery;  // to simplify testing            
+        QPTestController.logTracepoints(name, source, queries, expected, element);
+        console.log("Querypoints: ", QPController.querypoints());
+
+    },
+    
+    logTracepoints: function(name, source, queries, expected, element) {
+        var fullTracepoints = QPController.tracepoints();
+        var results = fullTracepoints.map(function(tp) {
+            var result = {};
+            Object.keys(tp).forEach(function shallowCopy(key) {
+                result[key] = tp[key];
+            });
+          delete result.tracequery;  // only return JSONable values
+          return result;            
         });
         var resultElement = document.createElement('pre');
         resultElement.classList.add('actual');

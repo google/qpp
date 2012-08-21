@@ -10,6 +10,7 @@
   <script src="QPPageManager.js"></script>
   <script src="QPController.js"></script>
   <script src="QPModel.js"></script>
+  
   <script src="QPTestController.js"></script>
   <style>
   pre {
@@ -84,6 +85,19 @@
     </pre>
     <pre class="queries">
       QPController.traceIdentifier('f');
+    </pre>
+    <pre class="expected">
+      TBD
+    </pre>
+  </div>
+   <div class="test-case">
+    <h2 class="name">IdentifierInAssignment</h2>
+    <pre class="source">
+      var g = 3;
+      g = 4;
+    </pre>
+    <pre class="queries">
+      QPController.traceIdentifier('g');
     </pre>
     <pre class="expected">
       TBD

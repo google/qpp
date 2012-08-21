@@ -36,6 +36,10 @@ var QPIdentifierVisitor = (function() {
   
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
+  
+  function transformed(tree) {
+    console.error("Tree should have been transformed away");
+  }
 
   /**
    * @extends {ParseTreeVisitor}
@@ -93,12 +97,15 @@ var QPIdentifierVisitor = (function() {
         this.maybeTraceLocation(tree);
       },
 
-      visitArrayComprehension: function(tree) {
-          console.error("Tree should have been transformed away");
-        this.visitAny(tree.expression);
-        this.visitList(tree.comprehensionForList);
-        this.visitAny(tree.ifExpression);
-      },
+      visitArrayComprehension: transformed,
+      visitArrowFunctionExpression: transformed,
+      visitAwaitStatement: transformed, 
+      // visitBinaryOperator no identifier
+      visitBindThisParameter: transformed,
+      visitBindingElement: transformed,
+      // visitBlock no identifier
+            
+
 
       checkIdentifier: function(id) {
         if (id) {

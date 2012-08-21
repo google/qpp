@@ -133,6 +133,11 @@ var QPController = {
         });
     },
     
+    // The querypoint results
+    querypoints: function() {
+        console.log("TODO: analyze the tracepoints");
+    },
+    
     initialize: function() {
       this._tracequeries.clear();
       __qp_tps = [];
