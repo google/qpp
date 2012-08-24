@@ -18,7 +18,7 @@ traceur.define('outputgeneration', function() {
   var sourceMap = {};
   
   // Use comma expression to use global eval.
-  var global = ('global', eval)('this');
+  var global = window || ('global', eval)('this');
   
   function regUp(str, p1) {
     return p1.toUpperCase();

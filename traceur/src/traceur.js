@@ -90,7 +90,7 @@ var traceur = (function() {
   var path;
 
   // Use comma expression to use global eval.
-  var global = ('global', eval)('this');
+   var global = window || ('global', eval)('this');
 
   // Allow script before this one to define a global importScript function.
   var importScript =
