@@ -1,0 +1,16 @@
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+
+// A traceur RemoteWebPageProject that adds tracing to every compile
+
+function QPProject(url, remoteScripts) {
+  RemoteWebPageProject.call(this, url, remoteScripts);
+  this.reporter_ = new QPErrorReporter();
+   traceur.options.setFromObject({
+      linearize: true,
+      sourceMaps: true
+    });
+}
+
+QPProject.prototype = Object.create(RemoteWebPageProject.prototype);
+

@@ -42,4 +42,4 @@ function onLoad() {
     document.body.appendChild(button);	
 }
 
-onLoad();
+window.addEventListener('load',onLoad);
