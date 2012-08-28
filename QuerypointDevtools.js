@@ -4,19 +4,6 @@ console.log("QuerypointDevtools begins %o", chrome);
 
 function onLoad() {
 
-  /*
-  var sandbox = document.querySelector('.sandbox');
-
-  function onMessageFromSandbox(message) {
-    console.log("onMessageFromSandbox", message.data);
-    putPageScripts(message.data);
-  }
-
-  var toSandbox = new ChannelPlate.Parent(sandbox, "QuerypointSandbox.html", onMessageFromSandbox);
-  
-  console.log("parent listening for sandbox");
-  */
-
   function tracePage(url) {
     var remoteScripts = getPageScripts(function (remoteScripts) {
       console.log("remoteScripts ", remoteScripts);
@@ -38,9 +25,14 @@ window.addEventListener('load', onLoad);
 //--------------------------------------------------------------------------
 // User interface
 
+var qpPanel; // lazy created view
+
 chrome.devtools.panels.create("Querypoint", "QuerypointIcon.png", "QuerypointPanel.html", function(panel) {
   panel.onShown.addListener(function (panel_window) {
-    console.log("QuerypointPanel onShown");
+    if (!qpPanel) {
+      qpPanel = new QuerypointPanel(panel_window);
+    }
+    qpPanel.refresh();
   });
 });
 
