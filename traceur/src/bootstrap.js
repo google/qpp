@@ -12,10 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-(function() {
-  'use strict';
-
-  var project = new WebPageProject(document.location.href);
-  project.runWebPage();
-
-})();
+new WebPageProject(document.location.href).run();
