@@ -6,7 +6,7 @@ var QPPageManager = (function() {
 
   var TreeWriter = traceur.outputgeneration.TreeWriter;
   
-  var QPageManager = {
+  var QPPageManager = {
       /**
       @param scriptEntries array of {name: string, contents: string}
        */
@@ -15,7 +15,7 @@ var QPPageManager = (function() {
       var reporter = new QPErrorReporter();
       var project = new traceur.semantics.symbols.Project(document.location.href);
 
-      var compiler = new QPCompiler(report, project, model)
+      var compiler = new QPCompiler(reporter, project, model)
 
       var fileToEntry = new traceur.util.ObjectMap();
 

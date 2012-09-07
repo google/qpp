@@ -3,8 +3,9 @@
 
 // A traceur RemoteWebPageProject that adds tracing to every compile
 
-function QPProject(url, remoteScripts) {
-  RemoteWebPageProject.call(this, url, remoteScripts);
+function QPProject(url) {
+  RemoteWebPageProject.call(this, url);
+  // FIXME override parent property,
   this.reporter_ = new QPErrorReporter();
    traceur.options.setFromObject({
       linearize: true,
