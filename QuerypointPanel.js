@@ -12,6 +12,7 @@
 
 function QuerypointPanel(panel, panel_window, page) {
   this.panel = panel;
+  this.panel_window = panel_window;
   this.document = panel_window.document;
   this.page = page;
   this.keybindings = new KeyBindings(panel_window);
@@ -39,7 +40,19 @@ QuerypointPanel.prototype = {
   },
 
   onSelectedFile: function(item) {
-    console.log("onSelectedFile %o", item);
+    if (item) {   
+      console.log("onSelectedFile %o resource.url:%s", item, this.page.resources[item.index].url);
+      var resource = this.page.resources[item.index];
+      resource.getContent(function(content, encoding) {
+        var myCodeMirror = this.panel_window.CodeMirror(this.document.body, {
+          value: content,
+          mode:  "javascript",
+          lineNumbers: true,
+          theme: "monokai"
+        });  
+      }.bind(this));
+    }
+    return false; 
   },
 
   // These methods are bound to |this| panel
@@ -48,16 +61,18 @@ QuerypointPanel.prototype = {
       console.log("selectFile");
       var itemSelector = this.panel.createItemSelector("SelectFile");
       itemSelector.onSelectedItem.addListener(this.onSelectedFile.bind(this));
-      var items = this.page.resources.map(function(resource) {
+      var items = this.page.resources.map(function(resource, index) {
         var parsedURI = parseUri(resource.url);
         return {
           key: parsedURI.file,  // The field searched
           title: parsedURI.file,  // the field shown. Why are these not the same?
           suffix: "",
-          subtitle: parsedURI.directory
+          subtitle: parsedURI.directory,
+          index: index // extra, JSONable property
         };
       });
       itemSelector.addItems(items);
+      return false;
     }
   },
 
