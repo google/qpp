@@ -55,7 +55,7 @@ RemoteWebPageProject.prototype.onBackgroundMessage = function(message) {
       console.error("callback missing for message", message);
     }
   } else if (method="xhr_failed") {
-    console.warn("Failed to load " + url);
+    console.error("XHR Failed ", message);
   }
   this.numPending--;
   this.runScriptsIfNonePending_();
