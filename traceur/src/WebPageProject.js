@@ -142,7 +142,9 @@ var WebPageProject = (function() {
           return;
         }
         var trees = this.compile();
-        this.runInWebPage(trees);
+        if (trees) {
+          this.runInWebPage(trees);
+        }
       },
 
       run: function() {
