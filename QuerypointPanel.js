@@ -22,6 +22,8 @@ function QuerypointPanel(panel, panel_window, page) {
     this.commands[key] = this.commands[key].bind(this);
   }.bind(this));
   this.keybindings.apply(this.commands);
+
+  this.userDirectedEditor = this.document.querySelector('.userDirectedEditor')
 }
 
 QuerypointPanel.prototype = {
@@ -44,13 +46,15 @@ QuerypointPanel.prototype = {
       console.log("onSelectedFile %o resource.url:%s", item, this.page.resources[item.index].url);
       var resource = this.page.resources[item.index];
       resource.getContent(function(content, encoding) {
-        var myCodeMirror = this.panel_window.CodeMirror(this.document.body, {
+        var myCodeMirror = this.panel_window.CodeMirror(this.userDirectedEditor, {
           value: content,
           mode:  "javascript",
           lineNumbers: true,
-          theme: "monokai"
+          theme: "monokai"  // TODO UI to change themes
         });  
       }.bind(this));
+      var splash = this.userDirectedEditor.querySelector('.splash');
+      splash.parentElement.removeChild(splash);
     }
     return false; 
   },

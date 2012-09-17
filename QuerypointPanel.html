@@ -5,10 +5,16 @@
 <script src="mirror/CodeMirror/lib/codemirror.js"></script>
 <link rel="stylesheet" href="mirror/CodeMirror/lib/codemirror.css">
 <link rel="stylesheet" href="mirror/CodeMirror/theme/monokai.css">
+<link rel="stylesheet" href="log.css">
 <script src="mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
-<body>
+<body class="cm-s-monokai">
 	<div class="log">console.log and tracing status output</div>
-	<div class="userDirectedEditor">Editors opened with ItemSelector (control+o)</div>
+	<div class="splitter"></div>
+	<div class="userDirectedEditor">
+		<ul class="splash">
+			<li>Editors opened with ItemSelector (control+o)</li>
+		</ul>
+	</div>
 </body>
 </html>

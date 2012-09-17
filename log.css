@@ -1,0 +1,11 @@
+.log {
+  line-height: 1em;
+  font-family: monospace;
+
+  height: 5em;
+}
+
+.splitter {
+	background-color: #d0d0d0;
+	height: 3px;
+}
