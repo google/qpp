@@ -61,15 +61,18 @@ QuerypointPanel.prototype = {
       console.log("selectFile");
       var itemSelector = this.panel.createItemSelector("SelectFile");
       itemSelector.onSelectedItem.addListener(this.onSelectedFile.bind(this));
-      var items = this.page.resources.map(function(resource, index) {
+      var items = [];
+      this.page.resources.forEach(function(resource, index) {
         var parsedURI = parseUri(resource.url);
-        return {
-          key: parsedURI.file,  // The field searched
-          title: parsedURI.file,  // the field shown. Why are these not the same?
-          suffix: "",
-          subtitle: parsedURI.directory,
-          index: index // extra, JSONable property
-        };
+        if (parsedURI.file) {
+          items.push({
+            key: parsedURI.file,  // The field searched
+            title: parsedURI.file,  // the field shown. Why are these not the same?
+            suffix: "",
+            subtitle: parsedURI.directory,
+            index: index // extra, JSONable property
+          });          
+        }  // else internal like 'event-bindings'
       });
       itemSelector.addItems(items);
       return false;
