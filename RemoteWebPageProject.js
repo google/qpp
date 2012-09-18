@@ -63,7 +63,7 @@ RemoteWebPageProject.prototype.onBackgroundMessage = function(message) {
 
 RemoteWebPageProject.prototype.putFiles = function(files) {
   var scripts = files.map(function(file){
-    var source = file.generatedSource + "\n//@ sourceURL=" + file.name;
+    var source = file.generatedSource + "\n//@ sourceURL=" + file.name + '.js';  // .js.js for transcoded files
     return {content: source};
   });
   this.putPageScripts(scripts, function(result) {
