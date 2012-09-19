@@ -10,9 +10,9 @@ function RemoteWebPageProject(remoteURL) {
   console.log("project created for "+remoteURL);
 }
 
-RemoteWebPageProject.onBackgroundMessage = function(message) {
+RemoteWebPageProject.onBackgroundMessage_ = function(message) {
   if (this.currentProject) {
-    this.currentProject.onBackgroundMessage(message);
+    this.currentProject.onBackgroundMessage_(message);
   } else {
     console.log("background message but no current project ", this);  
   }
@@ -20,15 +20,19 @@ RemoteWebPageProject.onBackgroundMessage = function(message) {
 
 RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
-RemoteWebPageProject.backgroundPort = new ChannelPlate.DevtoolsTalker(RemoteWebPageProject.onBackgroundMessage);
+RemoteWebPageProject.backgroundPort = new ChannelPlate.DevtoolsTalker(RemoteWebPageProject.onBackgroundMessage_);
 
 RemoteWebPageProject.prototype = Object.create(WebPageProject.prototype);
 
+// Our page is remote and already loaded.
+//
 RemoteWebPageProject.prototype.run = function() {
   this.addFilesFromScriptElements(this.remoteScripts);
   this.runScriptsIfNonePending_();
 }
 
+// XSS since we are remote to the web page
+//
 RemoteWebPageProject.prototype.asyncLoad_ = function(url, fncOfContent) {
   this.numPending++;
   // mihaip@chromium.org on https://groups.google.com/a/chromium.org/d/msg/chromium-extensions/-/U33r217_Px8J
@@ -41,7 +45,7 @@ RemoteWebPageProject.prototype.asyncLoad_ = function(url, fncOfContent) {
   RemoteWebPageProject.backgroundPort.postMessage([postId, "xhr", url]);
 }
 
-RemoteWebPageProject.prototype.onBackgroundMessage = function(message) {
+RemoteWebPageProject.prototype.onBackgroundMessage_ = function(message) {
   var payloadArray = message;
   var postId = payloadArray.shift();
   var method = payloadArray.shift();
@@ -60,6 +64,7 @@ RemoteWebPageProject.prototype.onBackgroundMessage = function(message) {
   this.numPending--;
   this.runScriptsIfNonePending_();
 }
+
 
 RemoteWebPageProject.prototype.putFiles = function(files) {
   var scripts = files.map(function(file){
@@ -93,11 +98,13 @@ RemoteWebPageProject.prototype.getPageScripts = function(callback) {
         textContent: elt.textContent
       });
     }
+
     return scripts;
   }
 
   function onScripts(remoteScripts) { // runs here
     this.remoteScripts = remoteScripts;
+    console.log("RemoteWebPageProject found "+this.remoteScripts.length+" scripts");
     callback();
   }
 

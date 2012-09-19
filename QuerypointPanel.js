@@ -17,6 +17,8 @@ function QuerypointPanel(panel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
+  this._editors = {};
+
   this.keybindings = new KeyBindings(panel_window);
 
   // rebind this.commands to create a subset of methods callable via user keys
@@ -45,37 +47,41 @@ QuerypointPanel.prototype = {
      console.log("QuerypointPanel refresh "+this._isShowing, qpPanel);
   },
 
-  onSelectedFile: function(item) {
-    if (item) {   
-      console.log("onSelectedFile %o resource.url:%s", item, this.page.resources[item.index].url);
-      var resource = this.page.resources[item.index];
-      resource.getContent(function(content, encoding) {
-        var myCodeMirror = this.panel_window.CodeMirror(this.userDirectedEditor, {
-          value: content,
-          mode:  "javascript",
-          lineNumbers: true,
-          theme: "monokai"  // TODO UI to change themes
-        });  
-      }.bind(this));
+  _openEditor: function(name, getContent) {
+      var editor = this._editors[name];
+      if (this._currentEditor && this._currentEditor == editor) {
+        return;
+      }
+      //this._currentEditor.hide();
+      if (editor) {
+        this._currentEditor = editor;
+        //this._currentEditor.show();
+      } else {
+        getContent(function (content, encoding) {
+          this._currentEditor = this._editors[name] = this.panel_window.CodeMirror(this.userDirectedEditor, {
+            value: content,
+            mode:  "javascript",
+            lineNumbers: true,
+            theme: "monokai"  // TODO UI to change themes
+          });  
+        }.bind(this));
+     }
       var splash = this.userDirectedEditor.querySelector('.splash');
       if (splash) {
         splash.parentElement.removeChild(splash);
       }
-    }
+  },
+
+  _openResource: function(resource, item) {
+    console.log("onSelectedFile %o ", item);
+    this._openEditor(resource.url, resource.getContent);
     return false; 
   },
   
-  _createItem: function(url, index) {
-    var parsedURI = parseUri(resource.url);
-    if (parsedURI.file) {
-      return {
-        key: parsedURI.file,  // The field searched
-        title: parsedURI.file,  // the field shown. Why are these not the same?
-        suffix: "",
-        subtitle: parsedURI.directory,
-        index: index // extra, JSONable property
-      };
-    }  // else internal like 'event-bindings'         
+  _openSourceFile: function(sourceFile, item) {
+    this._openEditor(sourceFile.name, function(contentHandler) {
+      contentHandler(sourceFile.contents);
+    });
   },
 
   // These methods are bound to |this| panel
@@ -85,22 +91,14 @@ QuerypointPanel.prototype = {
     //
     selectFile: function() {
       console.log("selectFile");
-      // TODO bundle this in FileSelector
-      var itemSelector = this.panel.createItemSelector("SelectFile");
-
-      itemSelector.onSelectedItem.addListener(this.onSelectedFile.bind(this));
-      var items = [];
+      var uriItems = new URISelector(this.panel);
       this.project.getSourceFiles().forEach(function(sourceFile){
-        var item = this._createItem(sourceFile.name, items.length);
-        if (item)
-          items.push(item);
+        uriItems.appendItem(sourceFile.name, this._openSourceFile.bind(this, sourceFile));
       }.bind(this));
       this.page.resources.forEach(function(resource, index) {
-        var item = this._createItem(resource.url, items.length);    
-        if (item)
-          items.push(item);
-      });
-      itemSelector.addItems(items);
+        uriItems.appendItem(resource.url, this._openResource.bind(this, resource));
+      }.bind(this));
+      uriItems.selectItem();
       return false;
     }
   },

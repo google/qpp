@@ -11,7 +11,16 @@ function QPProject(url) {
       linearize: true,
       sourceMaps: true
     });
+  
 }
 
 QPProject.prototype = Object.create(RemoteWebPageProject.prototype);
 
+QPProject.prototype.generateSourceFromTrees = function(trees) {
+  return trees.keys().map(function(file) {
+    var tree = trees.get(file);
+    var writer = new QPTreeWriter(file.name + '.js', QPController.tracequeries());
+    file = writer.generateSource(file, tree);
+    return file;
+  }.bind(this));
+}

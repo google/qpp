@@ -10,12 +10,16 @@ QuerypointBackground.prototype = Object.create(ChannelPlate.ChromeBackground.pro
 // Cross site XHR, xhr(url) -> content 
 //
 QuerypointBackground.prototype.xhr = function(url, callback, errback) {
+  console.log("start xhr "+url);
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
   xhr.addEventListener('load', function(e) {
     if (xhr.status == 200 || xhr.status == 0) {
+      console.log("end xhr "+url);
       callback(xhr.responseText);
     } else {
+      console.error("err xhr "+url);
+
       errback(xhr.status);
     }
   }.bind(this), false);

@@ -39,16 +39,15 @@ var QPTreeWriter = (function() {
   QPTreeWriter.prototype = traceur.createObject(
       ParseTreeMapWriter.prototype, {
 
-        generateSource: function(tree) {
+        generateSource: function(file, tree) {
           this.visitAny(tree);
           if (this.currentLine_.length > 0) {
             this.writeln_();
           }
-
-          return { 
-              sourceMap: this.sourceMapGenerator.toString(),
-              generatedSource: this.result_.toString()
-          };
+          // TODO looks like this is a method of sourceFile
+          file.sourceMap = this.sourceMapGenerator.toString();
+          file.generatedSource = this.result_.toString();
+          return file;
         },
         
         /**

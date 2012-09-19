@@ -18,7 +18,8 @@ chrome.devtools.panels.create("Querypoint", "QuerypointIcon.png", "QuerypointPan
     qpPanel.onShown();
   });
   panel.onHidden.addListener(function() {
-    qpPanel.onHidden();
+    if (qpPanel)
+      qpPanel.onHidden();
   });
 });
 
