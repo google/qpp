@@ -3,13 +3,34 @@
 console.log("QuerypointDevtools begins %o", chrome);
 
 var page = new InspectedPage();
+var project; 
 
+//--------------------------------------------------------------------------
+// User interface
+
+var qpPanel; // lazy created view
+
+chrome.devtools.panels.create("Querypoint", "QuerypointIcon.png", "QuerypointPanel.html", function(panel) {
+  panel.onShown.addListener(function (panel_window) {
+    if (!qpPanel) {
+      qpPanel = new QuerypointPanel(panel, panel_window, page, project);
+    }
+    qpPanel.onShown();
+  });
+  panel.onHidden.addListener(function() {
+    qpPanel.onHidden();
+  });
+});
+
+//-----------------------------------------------------------------------------
 function onLoad() {
 
   function tracePage(url) {
-    var project = new QPProject(url);
+    project = new QPProject(url);
     project.getPageScripts(function () {
       project.run();
+      if (qpPanel)
+        qpPanel.refresh();
     });
   }
   
@@ -26,21 +47,4 @@ function onLoad() {
 }
 
 window.addEventListener('load', onLoad);
-
-//--------------------------------------------------------------------------
-// User interface
-
-var qpPanel; // lazy created view
-
-chrome.devtools.panels.create("Querypoint", "QuerypointIcon.png", "QuerypointPanel.html", function(panel) {
-  panel.onShown.addListener(function (panel_window) {
-    if (!qpPanel) {
-      qpPanel = new QuerypointPanel(panel, panel_window, page);
-    }
-    qpPanel.onShown();
-  });
-  panel.onHidden.addListener(function() {
-    qpPanel.onHidden();
-  });
-});
 
