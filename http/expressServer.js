@@ -9,10 +9,10 @@ function servePathAtPort(path, port) {
 }
 
 
-servePathAtPort(__dirname, 8686);
+servePathAtPort(__dirname + '/..', 8686);
 
-servePathAtPort('../devtoolsExtended/extension/WebInspectorKit', 9696);
+servePathAtPort('../../devtoolsExtended/extension/WebInspectorKit', 9696);
 
-servePathAtPort('../webdev-examples', 7676);
+servePathAtPort('../../webdev-examples', 7676);
 
-servePathAtPort('../traceur-compiler', 7677);
+servePathAtPort('../../traceur-compiler', 7677);
