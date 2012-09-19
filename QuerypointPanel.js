@@ -54,7 +54,9 @@ QuerypointPanel.prototype = {
         });  
       }.bind(this));
       var splash = this.userDirectedEditor.querySelector('.splash');
-      splash.parentElement.removeChild(splash);
+      if (splash) {
+        splash.parentElement.removeChild(splash);
+      }
     }
     return false; 
   },
