@@ -18,16 +18,10 @@ function QuerypointPanel(panel, panel_window, page, project) {
   this.project = project;
 
   this._editors = {};
+  this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
 
-  this.keybindings = new KeyBindings(panel_window);
-
-  // rebind this.commands to create a subset of methods callable via user keys
-  Object.keys(this.commands).forEach(function(key){
-    this.commands[key] = this.commands[key].bind(this);
-  }.bind(this));
-  this.keybindings.apply(this.commands);
-
-  this.userDirectedEditor = this.document.querySelector('.userDirectedEditor')
+  this._initKeys();
+  this._initMouse();
 }
 
 QuerypointPanel.prototype = {
@@ -103,6 +97,28 @@ QuerypointPanel.prototype = {
     }
   },
 
+  _initKeys: function() {
+    this.keybindings = new KeyBindings(this.panel_window);
 
+    // rebind this.commands to create a subset of methods callable via user keys
+    Object.keys(this.commands).forEach(function(key){
+      this.commands[key] = this.commands[key].bind(this);
+    }.bind(this));
+    this.keybindings.apply(this.commands);
+  },
+
+  _openContextMenu: function(event) {
+    console.log("_openContextMenu", event);
+  },
+
+  _takeContextMenu: function(event) {
+    if (event.buttons === 2) {
+      this._openContextMenu(event);
+    }
+  },
+
+  _initMouse: function() {
+    this.document.addEventListener('mousedown', this._takeContextMenu.bind(this));
+  }
 
 };

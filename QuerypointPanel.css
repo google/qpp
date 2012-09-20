@@ -10,10 +10,20 @@ body table {
 }
 
 .log {
-  height: 5em;
+  height: 10em;
 }
 
 .splitter {
-	background-color: #d0d0d0;
-	height: 3px;
+  background-color: #d0d0d0;
+  height: 3px;
+  /* cursor: move; */
+}
+
+.userDirectedEditor {
+  vertical-align: text-top;
+}
+
+.CodeMirror-scroll {
+  overflow: visible;
+  height: auto;
 }

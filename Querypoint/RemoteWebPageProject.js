@@ -7,7 +7,7 @@
 function RemoteWebPageProject(remoteURL) {
   WebPageProject.call(this, remoteURL);
   RemoteWebPageProject.currentProject = this;
-  console.log("project created for "+remoteURL);
+  console.log("RemoteWebPageProject created for "+remoteURL);
 }
 
 RemoteWebPageProject.onBackgroundMessage_ = function(message) {
