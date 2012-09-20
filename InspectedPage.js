@@ -15,7 +15,9 @@ InspectedPage.prototype = {
   onNavigated: function(url) {
     this.resources = []; // API, Array<chrome.devtools.inspectedWindow.Resource>
     this.url = url;
-    console.log("onNavigated "+url);
+    if (url) {
+      console.log("onNavigated " + url + '----------------------------');
+    }
   },
 
   monitorResources: function() {

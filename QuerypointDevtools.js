@@ -42,9 +42,12 @@ function onLoad() {
   chrome.devtools.network.onNavigated.addListener(onNavigated);
 
   // Force a reload when devtools opens
-  chrome.devtools.inspectedWindow.eval("window.location.href", function(url) {
+  chrome.devtools.inspectedWindow.reload();
+
+  /*chrome.devtools.inspectedWindow.eval("window.location.href", function(url) {
     onNavigated(url);
   });
+*/
 }
 
 window.addEventListener('load', onLoad);
