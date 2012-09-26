@@ -23,6 +23,8 @@ KeyBindings.prototype = {
   }, 
 
   setDefaults: function() {
+    // Allow keymaster on TEXTAREA for CodeMirror (and INPUT SELECT because)
+    this.win.key.filter = function() { return true; }
     // name of QP command -> keymaster string
     return {
       selectFile: 'ctrl+o',
