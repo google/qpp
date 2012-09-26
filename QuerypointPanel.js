@@ -40,24 +40,23 @@ QuerypointPanel.prototype = {
   refresh: function() {
      console.log("QuerypointPanel refresh "+this._isShowing, qpPanel);
   },
-
+  
   _openEditor: function(name, getContent) {
       var editor = this._editors[name];
-      if (this._currentEditor && this._currentEditor == editor) {
-        return;
+      if (this._currentEditor) {
+        if (this._currentEditor == editor) {
+          return;
+        } else {
+          this._currentEditor.hide();
+        }
       }
-      //this._currentEditor.hide();
+
       if (editor) {
         this._currentEditor = editor;
-        //this._currentEditor.show();
+        this._currentEditor.show();
       } else {
         getContent(function (content, encoding) {
-          this._currentEditor = this._editors[name] = this.panel_window.CodeMirror(this.userDirectedEditor, {
-            value: content,
-            mode:  "javascript",
-            lineNumbers: true,
-            theme: "monokai"  // TODO UI to change themes
-          });  
+          this._currentEditor = this._editors[name] = new EditorByCodeMirror(this.panel_window, this.userDirectedEditor, name, content);
         }.bind(this));
      }
       var splash = this.userDirectedEditor.querySelector('.splash');
