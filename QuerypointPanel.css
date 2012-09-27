@@ -1,5 +1,14 @@
+html {
+  height: 100%;
+}
+
 body {
   margin: 0px;
+  padding: 0;
+  overflow: hidden; /* no scroll bar so we must set heights */
+  -webkit-box-sizing: border-box; /* measure width & height w/o padding & border */
+  box-sizing: border-box;
+  height: 100%;
 }
 
 body table {
@@ -21,11 +30,12 @@ body table {
 
 .userDirectedEditor {
   vertical-align: text-top;
+  height: 100%;
 }
 
 .CodeMirror-scroll {
-  overflow: visible;
-  height: auto;
+  overflow: auto;
+  height: 100%;
 }
 
 .hide {
