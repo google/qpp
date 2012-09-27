@@ -28,6 +28,7 @@ KeyBindings.prototype = {
     // name of QP command -> keymaster string
     return {
       selectFile: 'ctrl+o',
+      saveFile: 'ctrl+s',
     }
   },
 

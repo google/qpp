@@ -93,6 +93,23 @@ QuerypointPanel.prototype = {
       }.bind(this));
       uriItems.selectItem();
       return false;
+    },
+
+    saveFile: function() {
+      // hack for now, 
+      // Our sourceFile-s don't have Resources so we can't use Resource.setContent
+      if (!this._currentEditor) {
+        alert("Can't save, there is no current editor"); // alerts are bad.
+      }
+      var request = { 
+        url: this._currentEditor.getName(), 
+        content: this._currentEditor.getContent() 
+      };
+      // send directly to devtools-save
+      chrome.extension.sendMessage('jmacddndcaceecmiinjnmkfmccipdphp', request, function maybeSaved(response){
+        console.log("saveFile response ", response);
+      });
+      return false;
     }
   },
 

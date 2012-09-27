@@ -4,6 +4,7 @@
 // Implement Editor functions using CodeMirror
 
 function EditorByCodeMirror(win,  containerElement, name, initialContent) {
+  this.name = name;
   this.editorImpl = win.CodeMirror(containerElement, {
     value: initialContent,
     mode:  "javascript",
@@ -22,5 +23,11 @@ EditorByCodeMirror.prototype = {
   },
   hide: function() {
     this.editorImpl.getWrapperElement().classList.add('hide');
+  },
+  getContent: function() {
+    return this.editorImpl.getValue();
+  },
+  getName: function() {
+    return this.name;
   }
 }
