@@ -22,6 +22,7 @@ function QuerypointPanel(panel, panel_window, page, project) {
 
   this._initKeys();
   this._initMouse();
+  this._initSyncToWebInspector();
 }
 
 QuerypointPanel.prototype = {
@@ -41,28 +42,40 @@ QuerypointPanel.prototype = {
      console.log("QuerypointPanel refresh "+this._isShowing, qpPanel);
   },
   
+  _showEditor: function(name) {
+    var editor = this._editors[name];
+    if (this._currentEditor) {
+      if (this._currentEditor == editor) {
+        return;
+      } else {
+        this._currentEditor.hide();
+      }
+    }
+
+    if (editor) {
+      this._currentEditor = editor;
+      this._currentEditor.show();
+    }
+
+    return editor;
+  },
+  
   _openEditor: function(name, getContent) {
       var editor = this._editors[name];
-      if (this._currentEditor) {
-        if (this._currentEditor == editor) {
-          return;
-        } else {
-          this._currentEditor.hide();
-        }
-      }
 
-      if (editor) {
-        this._currentEditor = editor;
-        this._currentEditor.show();
-      } else {
+      if (!editor) {
         getContent(function (content, encoding) {
-          this._currentEditor = this._editors[name] = new EditorByCodeMirror(this.panel_window, this.userDirectedEditor, name, content);
+          this._editors[name] = new EditorByCodeMirror(this.panel_window, this.userDirectedEditor, name, content);
+          this._showEditor(name);    
+          var splash = this.userDirectedEditor.querySelector('.splash');
+          if (splash) {
+            splash.parentElement.removeChild(splash);
+          }
+          
         }.bind(this));
-     }
-      var splash = this.userDirectedEditor.querySelector('.splash');
-      if (splash) {
-        splash.parentElement.removeChild(splash);
-      }
+      } else {
+        this._showEditor(name);
+      }   
   },
 
   _openResource: function(resource, item) {
@@ -135,6 +148,22 @@ QuerypointPanel.prototype = {
 
   _initMouse: function() {
     this.document.addEventListener('mousedown', this._takeContextMenu.bind(this));
-  }
+  },
+  
+  _onResourceUpdate: function(resource, content) {
+    var editor = this._editors[resource.url];
+    if (editor) {
+      if (editor.hasChanges()) {
+        this._showEditor(resource.url);
+        alert("This editor has changes and the file has changes");
+      } else {
+        editor.resetContent(content);
+      }
+    }
+  },
+  
+  _initSyncToWebInspector: function() {
+    chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
+  },
 
 };

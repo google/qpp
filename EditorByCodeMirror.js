@@ -9,15 +9,16 @@ function EditorByCodeMirror(win,  containerElement, name, initialContent) {
     value: initialContent,
     mode:  "javascript",
     lineNumbers: true,
-    theme: "monokai"  // TODO UI to change themes
+    theme: "monokai",  // TODO UI to change themes
+    onChange: this._syncToCodeMirror.bind(this),
   });
-  var validCSSClassNameRegExp = /-?[_a-zA-Z]+[_a-zA-Z0-9-]*/;
-  var m = validCSSClassNameRegExp.exec(name);
-  var uid = m[0];
-  this.editorImpl.getWrapperElement().classList.add(uid);
+  this._addUniqueClassName();
+  this._changes = [];
 }
 
 EditorByCodeMirror.prototype = {
+  //-- Editor API
+  
   show: function() {
     this.editorImpl.getWrapperElement().classList.remove('hide');
   },
@@ -29,5 +30,25 @@ EditorByCodeMirror.prototype = {
   },
   getName: function() {
     return this.name;
-  }
+  },
+  hasChanges: function() {
+    return this._changes.length;
+  },
+  resetContent: function(content) {
+    this.editorImpl.setValue(content);
+    this._changes = [];
+  },
+  //-------------------------
+  _addUniqueClassName: function() {
+    var validCSSClassNameRegExp = /-?[_a-zA-Z]+[_a-zA-Z0-9-]*/;
+    var m = validCSSClassNameRegExp.exec(this.name);
+    var uid = "noValidClassNameFromURL";
+    if (m) {
+      uid = m[0];
+    }
+    this.editorImpl.getWrapperElement().classList.add(uid);
+  },
+  _syncToCodeMirror: function(editor, changes) {
+    this._changes.push(changes);
+  },
 }
