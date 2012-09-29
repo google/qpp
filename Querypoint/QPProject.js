@@ -24,3 +24,12 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
     return file;
   }.bind(this));
 }
+
+QPProject.prototype.startRuntime = function() {
+  function startRuntime() {  // runs in web page
+  }
+  function onRuntimeStarted() {
+    console.log("QP runtime started");
+  }
+  chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
+}
