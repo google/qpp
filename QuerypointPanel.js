@@ -23,6 +23,8 @@ function QuerypointPanel(panel, panel_window, page, project) {
   this._initKeys();
   this._initMouse();
   this._initSyncToWebInspector();
+
+  panel_window.onbeforeunload = this._beforeUnload.bind(this);
 }
 
 QuerypointPanel.prototype = {
@@ -165,5 +167,27 @@ QuerypointPanel.prototype = {
   _initSyncToWebInspector: function() {
     chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
   },
+
+  _beforeUnload: function(event) {
+    var remember = {
+      openEditors: []
+    };
+    var editorWithChanges = [];
+    Object.keys(this._editors).forEach(function(name){
+      remember.openEditors.push(name);
+      if (this._editors[name].hasChanges()) {
+        editorWithChanges.push(name);
+      }
+    }.bind(this));
+    var sure = '';
+    if (editorWithChanges.length) {
+      sure = "You have unsaved changes in " + editorWithChanges.length + " files: " + editorWithChanges.join(',');
+      this._showEditor(editorWithChanges.pop());
+    } else {
+      localStorage.setItem('Querypoint.setup', JSON.stringify(remember));
+    }
+    event.returnValue = sure;
+    return sure;  
+  }
 
 };
