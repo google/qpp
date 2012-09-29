@@ -15,6 +15,7 @@ body table {
   height: 100%;
   line-height: 1em;
   font-family: monospace;
+  border-spacing: 0px;
 }
 
 .log {

@@ -148,8 +148,16 @@ QuerypointPanel.prototype = {
     }
   },
 
+  _onResize: function() {
+    var splitter = this.document.querySelector('.splitter');
+    var splitterBottom = splitter.clientHeight + splitter.offsetHeight;
+    var cmContainerHeight = this.document.body.clientHeight - splitterBottom;
+    this.userDirectedEditor.style.height = cmContainerHeight;
+  },
+  
   _initMouse: function() {
     this.document.addEventListener('mousedown', this._takeContextMenu.bind(this));
+    this.panel_window.addEventListener('resize', this._onResize.bind(this));
   },
   
   _onResourceUpdate: function(resource, content) {
@@ -179,7 +187,7 @@ QuerypointPanel.prototype = {
         editorWithChanges.push(name);
       }
     }.bind(this));
-    var sure = '';
+    var sure = null;
     if (editorWithChanges.length) {
       sure = "You have unsaved changes in " + editorWithChanges.length + " files: " + editorWithChanges.join(',');
       this._showEditor(editorWithChanges.pop());
