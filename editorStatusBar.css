@@ -1,0 +1,17 @@
+/*
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+*/
+.editorStatusBar {
+	height: 1em;
+    color: #272822; /* reverse from cm-s */
+	background-color: #f8f8f2;
+}
+
+.cm-s-monokai .unsavedChangedFiles {
+	color: #f92672;
+}
+
+.cm-s-monokai .savedChangedFiles {
+	color: #a6e22e;
+}

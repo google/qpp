@@ -1,4 +1,4 @@
-<html>
+<!DOCTYPE html>
 <head>
 <!-- This page is to be written on by QuerypointDevtools.js -->
 <script src="keymaster/keymaster.js"></script>
@@ -6,24 +6,38 @@
 <link rel="stylesheet" href="mirror/CodeMirror/lib/codemirror.css">
 <link rel="stylesheet" href="mirror/CodeMirror/theme/monokai.css">
 <link rel="stylesheet" href="QuerypointPanel.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="logScrubber.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="editorStatusBar.css"><!-- after codemirror.css -->
 <script src="mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
 <body>
   <table class="cm-s-monokai">
     <tbody>
       <tr class='log'>
-      <td>console.log and tracing status output</td>
-    </tr>
-    <tr class="splitter">
-      <td ></td>
-    </tr>
-    <tr >
-      <td class="userDirectedEditor">
-      <ul class="splash">
-        <li>Editors opened with ItemSelector (control+o)</li>
-      </ul>
-    </td>
-    </tr>
-  </div>
+        <td>console.log and tracing status output</td>
+      </tr>
+      <tr class="logScrubber">
+        <td>
+          <div class="scrubberBox">
+            <span class="runNumber">1</span>
+            <span class="CodeMirro-gutter-text scrubberIndicator"></span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="editorStatusBar">
+          <span class="unsavedChangedFiles">*1</span>
+          <span class="savedChangedFiles"> &#x0394;2</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="userDirectedEditor">
+          <ul class="splash">
+            <li>Editors opened with ItemSelector (control+o)</li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table> 
 </body>
 </html>

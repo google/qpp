@@ -1,3 +1,7 @@
+/*
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+*/
 html {
   height: 100%;
 }
@@ -22,10 +26,8 @@ body table {
   height: 10em;
 }
 
-.splitter {
-  background-color: #d0d0d0;
-  height: 3px;
-  /* cursor: move; */
+.splash {
+  margin: 3em;
 }
 
 .userDirectedEditor {

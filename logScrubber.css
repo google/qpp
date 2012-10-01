@@ -1,0 +1,19 @@
+/*
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+*/
+.logScrubber {
+	height: 1em;
+}
+
+.scrubberBox {
+	color: #272822; /* reverse from cm-s */
+	background-color: #f8f8f2;
+}
+
+.logScrubber .scrubberIndicator {
+	position: absolute;
+	width: 1em;
+	background-color: red;
+	right: 1em;
+}
