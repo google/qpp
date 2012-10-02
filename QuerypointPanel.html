@@ -14,28 +14,37 @@
 <body>
   <table class="cm-s-monokai">
     <tbody>
-      <tr class='log'>
-        <td>console.log and tracing status output</td>
-      </tr>
       <tr class="logScrubber">
-        <td>
+        <td colspan="2">
           <div class="scrubberBox">
             <span class="runNumber">1</span>
             <span class="CodeMirro-gutter-text scrubberIndicator"></span>
           </div>
         </td>
       </tr>
-      <tr>
-        <td class="editorStatusBar">
-          <span class="unsavedChangedFiles">*1</span>
-          <span class="savedChangedFiles"> &#x0394;2</span>
-        </td>
+      <tr class='log'>
+        <td colspan="2">console.log and tracing status output</td>
       </tr>
       <tr>
+        <td class="QPOutput">
+          <pre>
+            A table of 
+            expression (rows) 
+            x 
+            changes (columns)
+          </pre>
+        </td>
         <td class="userDirectedEditor">
           <ul class="splash">
             <li>Editors opened with ItemSelector (control+o)</li>
           </ul>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" class="editorStatusBar">
+          <input type="text" value=">">
+          <span class="unsavedChangedFiles">*1</span>
+          <span class="savedChangedFiles"> &#x0394;2</span>
         </td>
       </tr>
     </tbody>
