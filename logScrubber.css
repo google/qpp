@@ -9,6 +9,7 @@
 .scrubberBox {
 	color: #272822; /* reverse from cm-s */
 	background-color: #f8f8f2;
+	border-radius: 5px;
 }
 
 .logScrubber .scrubberIndicator {

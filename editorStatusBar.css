@@ -6,12 +6,28 @@
 	height: 1em;
     color: #272822; /* reverse from cm-s */
 	background-color: #f8f8f2;
+	position: relative;
+	font-size: 15px;
+
 }
 
-.cm-s-monokai .unsavedChangedFiles {
+.editorStatusBar .commandLine {
+  height: 17px; 
+  border-radius: 7px;
+}
+
+
+.editorStatusBar .unsavedChangedFiles {
 	color: #f92672;
+	float: right;
 }
 
-.cm-s-monokai .savedChangedFiles {
+.editorStatusBar .savedChangedFiles {
 	color: #a6e22e;
+	float: right;
+
+}
+
+.editorStatusBar .centeringHack {
+   	padding-top: 2px; 
 }
