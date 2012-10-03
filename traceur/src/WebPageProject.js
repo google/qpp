@@ -73,6 +73,9 @@ var WebPageProject = (function() {
       },
 
       addFilesFromScriptElements: function(scriptElements) {
+        if (!scriptElements.length) 
+          return;
+        
         for (var i = 0, length = scriptElements.length; i < length; i++) {
           var scriptElement = scriptElements[i];
           if (!scriptElement.src) {
