@@ -22,6 +22,7 @@ window.Querypoint = window.Querypoint || {};
 
   Storage.recall = function(onSuccess, onError) {
     var model = localStorage.getItem(this.key);
+    console.log("Storage.recall "+this.key,model); 
     model ? onSuccess(model) : onError();
   } 
 
