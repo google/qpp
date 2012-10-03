@@ -44,7 +44,10 @@ function onLoad() {
   chrome.devtools.network.onNavigated.addListener(onNavigated);
 
   // Force a reload when devtools opens
-  chrome.devtools.inspectedWindow.reload();
+  function transcode(str) {
+    return + "//@ sourceURL=fake_url";
+  }
+  chrome.devtools.inspectedWindow.reload(true, undefined, transcode);
 
   /*chrome.devtools.inspectedWindow.eval("window.location.href", function(url) {
     onNavigated(url);

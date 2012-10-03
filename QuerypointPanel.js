@@ -23,6 +23,7 @@ function QuerypointPanel(panel, panel_window, page, project) {
   this._initKeys();
   this._initMouse();
   this._initSyncToWebInspector();
+  this._initModel();
 
   panel_window.onbeforeunload = this._beforeUnload.bind(this);
 }
@@ -174,6 +175,22 @@ QuerypointPanel.prototype = {
   
   _initSyncToWebInspector: function() {
     chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
+  },
+
+  _restore: function(panelModel) {
+    
+  },
+
+  _initModel: function() {
+    var panel = this;
+    Querypoint.Storage.recall(
+      function(model) {
+        panel._restore(model);
+      },
+      function() {
+        panel._restore(new Querypoint.PanelModel());
+      }
+    );
   },
 
   _beforeUnload: function(event) {
