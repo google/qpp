@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <head>
+    <!-- These files are equivalent to devtools_extension_api.js -->
+<script src='chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebCore/inspector/front-end/ExtensionAPI.js'></script>
+<script src='chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebKit/chromium/src/js/DevToolsExtensionAPI.js'></script>
+<script src='chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/atopwi/buildExtensionAPI.js'></script>
+<!-- RPC Wrapper for chrome.debugger.sendCommand -->
+<script src="chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebCore/inspector/front-end/DebuggerProtocol.js" ></script>
+
 <!-- This page is to be written on by QuerypointDevtools.js -->
+<script src="KeyBindings.js"></script>
+<script src="parseuri.js"></script>
+<script src="URISelector.js"></script>
+<script src="EditorByCodeMirror.js"></script>
+<script src="Panel/PanelModel.js"></script>
+<script src="Panel/Storage.js"></script>
+<script src="Panel/Editors.js"></script>
+<script src="QuerypointPanel.js"></script>
+
 <script src="keymaster/keymaster.js"></script>
 <script src="knockout/knockout-2.2.0rc.debug.js"></script>
 <script src="mirror/CodeMirror/lib/codemirror.js"></script>
@@ -12,7 +28,8 @@
 <script src="mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
 <body>
-  <table class="cm-s-monokai">
+  <div data-bind="disable: hasPanelModel">Recalling previous state...<span data-bind="text: _panelModel"></span></div>
+  <table data-bind="enable: hasPanelModel" class="cm-s-monokai">
     <tbody>
       <tr class="logScrubber">
         <td colspan="2">

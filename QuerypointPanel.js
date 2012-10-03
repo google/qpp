@@ -10,8 +10,8 @@
  * @param panel_window {Window} the content window of the extension panel
  */
 
-function QuerypointPanel(panel, panel_window, page, project) {
-  this.panel = panel;
+function QuerypointPanel(extensionPanel, panel_window, page, project) {
+  this.extensionPanel = extensionPanel;
   this.panel_window = panel_window;
   this.document = panel_window.document;
   this.page = page;
@@ -23,13 +23,25 @@ function QuerypointPanel(panel, panel_window, page, project) {
   this._initMouse();
   this._initModel();
 
+  // ViewModel
+  var panel = this;
+  panel._panelModel = ko.observable();
+  panel.hasPanelModel = ko.computed(function() {
+    return panel._panelModel(); 
+  });
+
+  ko.applyBindings(panel);
+}
+
+QuerypointPanel.create = function(extensionPanel, panel_window, page, project) {
+  return new QuerypointPanel(extensionPanel, panel_window, page, project);
 }
 
 QuerypointPanel.prototype = {
   onShown: function() {
     this._isShowing = true;
     this.keybindings.enter();
-    qpPanel.refresh();
+    this.refresh();
   },
 
   onHidden: function() {
@@ -39,7 +51,7 @@ QuerypointPanel.prototype = {
 
   // Apply any changes since the last onShown call
   refresh: function() {
-     console.log("QuerypointPanel refresh "+this._isShowing, qpPanel);
+     console.log("QuerypointPanel refresh "+this._isShowing, this);
   },
   
 
@@ -62,7 +74,7 @@ QuerypointPanel.prototype = {
     //
     selectFile: function() {
       console.log("selectFile");
-      var uriItems = new URISelector(this.panel);
+      var uriItems = new URISelector(this.extensionPanel);
       this.project.getSourceFiles().forEach(function(sourceFile){
         uriItems.appendItem(sourceFile.name, this._openSourceFile.bind(this, sourceFile));
       }.bind(this));
@@ -127,7 +139,7 @@ QuerypointPanel.prototype = {
     console.log("restore", panelModel);
     this._panelModel = panelModel;
     this._editors = Querypoint.Editors.initialize(panelModel);
-    this.panel_window.onbeforeunload = this._editors._beforeUnload.bind(this);  // TODO 
+    this.panel_window.onbeforeunload = this._editors._beforeUnload.bind(this._editors);  // TODO 
   },
 
   _initModel: function() {
@@ -141,6 +153,5 @@ QuerypointPanel.prototype = {
       }
     );
   },
-
 
 };

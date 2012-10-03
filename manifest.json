@@ -3,9 +3,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "minimum_chrome_version": "22",
-    // Assigns the name 'mpbflbdfncldfbjicfcfbaikknnbfmae',
-    // see http://code.google.com/chrome/extensions/manifest.html#key
-   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+PlTzpkouddIZp1vXHbl9k0oC0WWRmXHmlL6oLZnwxSI7YxmNKAMw01Tbv1B59EzKt4lJXzIWjLknclGar13z6m6N5k4wjONF5bq1YEezipOEVghi3n8m0OyCln5GNvTD7c4Z21UzuR8L7b1k3A17WEZiqB1ErQQcdy2p2FxxdQIDAQAB",
+   // Assigns the name 'mpbflbdfncldfbjicfcfbaikknnbfmae',
+   // see http://code.google.com/chrome/extensions/manifest.html#key
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+PlTzpkouddIZp1vXHbl9k0oC0WWRmXHmlL6oLZnwxSI7YxmNKAMw01Tbv1B59EzKt4lJXzIWjLknclGar13z6m6N5k4wjONF5bq1YEezipOEVghi3n8m0OyCln5GNvTD7c4Z21UzuR8L7b1k3A17WEZiqB1ErQQcdy2p2FxxdQIDAQAB",
   "description": "Extends Chrome Devtools with Querypoint Debugging",
   "devtools_page": "QuerypointDevtoolsPage.html",
   "background": {
@@ -23,5 +23,5 @@
     [
       "*"
     ],
-     "content_security_policy": "script-src 'self' chrome-extension://fkhgelnmojgnpahkeemhnbjndeeocehc chrome-extension-resource: ; object-src 'self' "
+    "content_security_policy": "default-src 'self' chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae chrome-extension-resource: 'unsafe-eval'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *"
 }
