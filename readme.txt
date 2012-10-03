@@ -12,13 +12,10 @@ Requires a patched version of Chrome devtools.
 See the devtoolsExtended project
 
 ToDo:
-Integrate CodeMirror
-Instrument editor mouse-over to give transcoded output lines
-Right click on editor to select identifier to trace
-UI for result trace.
+See https://github.com/google/qpp/wiki/_pages
 
 Install -- use as devtoolsExtended extension:
-
+prereq: use Chrome Canary or trunk build
 0. install devtoolsExtended
 1. clone this repo
 2. Open chrome://extensions, developer mode, load unpacked extn, select #1
