@@ -27,9 +27,9 @@
 <link rel="stylesheet" href="editorStatusBar.css"><!-- after codemirror.css -->
 <script src="mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
-<body>
-  <div data-bind="disable: hasPanelModel">Recalling previous state...<span data-bind="text: _panelModel"></span></div>
-  <table data-bind="enable: hasPanelModel" class="cm-s-monokai">
+<body class="cm-s-monokai">
+  <div class="panelInitialization" data-bind="visible: !hasPanelModel">Recalling previous state...<span data-bind="text: _panelModel"></span></div>
+  <table class="panel">
     <tbody>
       <tr class="logScrubber">
         <td colspan="2">

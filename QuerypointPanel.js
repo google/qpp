@@ -19,10 +19,6 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
 
   this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
 
-  this._initKeys();
-  this._initMouse();
-  this._initModel();
-
   // ViewModel
   var panel = this;
   panel._panelModel = ko.observable();
@@ -30,7 +26,12 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
     return panel._panelModel(); 
   });
 
-  ko.applyBindings(panel);
+  ko.applyBindings(panel, this.document.querySelector('.panelInitialization'));
+    
+  this._initKeys();
+  this._initMouse();
+  this._initModel();
+
 }
 
 QuerypointPanel.create = function(extensionPanel, panel_window, page, project) {
@@ -137,7 +138,7 @@ QuerypointPanel.prototype = {
   
   _restore: function(panelModel) {
     console.log("restore", panelModel);
-    this._panelModel = panelModel;
+    this._panelModel(panelModel);
     this._editors = Querypoint.Editors.initialize(panelModel);
     this.panel_window.onbeforeunload = this._editors._beforeUnload.bind(this._editors);  // TODO 
   },
