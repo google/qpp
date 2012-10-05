@@ -26,9 +26,25 @@ body table {
   height: 10em;
 }
 
-.splash {
-  margin: 3em;
+.panelInitialization {
+  margin: 0;
+  background: gray; 
+  width:      100%;
+  height:     100%; 
+  z-index:    100;
+  top:        0; 
+  left:       0; 
+  position: fixed;
+  display: table-cell;
+  vertical-align: middle; 
+  text-align: center;
+  padding: 3em;
 }
+
+.largeMessage {
+  padding: 3em;
+  font-size: xx-large;
+  font-family: arial,san-serif;}
 
 .userDirectedEditor {
   vertical-align: text-top;

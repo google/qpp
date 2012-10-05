@@ -20,7 +20,7 @@ RemoteWebPageProject.onBackgroundMessage_ = function(message) {
 
 RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
-RemoteWebPageProject.backgroundPort = new ChannelPlate.DevtoolsTalker(RemoteWebPageProject.onBackgroundMessage_);
+RemoteWebPageProject.requestCreator = new ChannelPlate.RequestCreator(ChannelPlate.DevtoolsTalker);
 
 RemoteWebPageProject.prototype = Object.create(WebPageProject.prototype);
 
@@ -34,37 +34,24 @@ RemoteWebPageProject.prototype.run = function() {
 // XSS since we are remote to the web page
 //
 RemoteWebPageProject.prototype.asyncLoad_ = function(url, fncOfContent) {
-  this.numPending++;
+  var project = this;
+  project.numPending++;
   // mihaip@chromium.org on https://groups.google.com/a/chromium.org/d/msg/chromium-extensions/-/U33r217_Px8J
   // The whitelisting for cross-origin XHRs only happens when running in an extension process. 
   // Your iframe is running inside the devtools process, so it doesn't get that privilege. 
   //You'll need to use the messaging API to ask the extension's background page to fetch the URL 
   // and send the response back to the iframe.
-  var postId = RemoteWebPageProject.postId++;
-  RemoteWebPageProject.postCallbacks[postId] = fncOfContent;
-  RemoteWebPageProject.backgroundPort.postMessage([postId, "xhr", url]);
-}
-
-RemoteWebPageProject.prototype.onBackgroundMessage_ = function(message) {
-  var payloadArray = message;
-  var postId = payloadArray.shift();
-  var method = payloadArray.shift();
-  if (method === "xhr") {
-    var args = payloadArray;
-    var callback = RemoteWebPageProject.postCallbacks[postId];
-    if (callback) {
-      callback.apply(this, args);
-      delete RemoteWebPageProject.postCallbacks[postId];
+  RemoteWebPageProject.requestCreator.request('xhr', [url], function() {
+    if (arguments[0] === "Error") {
+      var message = arguments[1];
+      console.error("XHR Failed ", message);
     } else {
-      console.error("callback missing for message", message);
+      fncOfContent(arguments[0]);
+      project.numPending--;
+      project.runScriptsIfNonePending_();
     }
-  } else if (method="xhr_failed") {
-    console.error("XHR Failed ", message);
-  }
-  this.numPending--;
-  this.runScriptsIfNonePending_();
+  });
 }
-
 
 RemoteWebPageProject.prototype.putFiles = function(files) {
   var scripts = files.map(function(file){

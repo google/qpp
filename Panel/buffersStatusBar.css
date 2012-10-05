@@ -2,7 +2,7 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2011 Google Inc. johnjbarton@google.com
 */
-.editorStatusBar {
+.buffersStatusBar {
 	height: 1em;
     color: #272822; /* reverse from cm-s */
 	background-color: #f8f8f2;
@@ -11,23 +11,23 @@
 
 }
 
-.editorStatusBar .commandLine {
+.buffersStatusBar .commandLine {
   height: 17px; 
   border-radius: 7px;
 }
 
 
-.editorStatusBar .unsavedChangedFiles {
+.buffersStatusBar .unsavedChangedFiles {
 	color: #f92672;
 	float: right;
 }
 
-.editorStatusBar .savedChangedFiles {
+.buffersStatusBar .savedChangedFiles {
 	color: #a6e22e;
 	float: right;
 
 }
 
-.editorStatusBar .centeringHack {
+.buffersStatusBar .centeringHack {
    	padding-top: 2px; 
 }

@@ -14,7 +14,7 @@ function onClick() {
 	foo();
 	obj.prop++;
 	bar();
-	// lots more code...
+	// lots more code....
 	updateButton();
 }
 

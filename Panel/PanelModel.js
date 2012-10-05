@@ -6,9 +6,22 @@
 window.Querypoint = window.Querypoint || {};
 
 ( function() {
-  var PanelModel = Querypoint.PanelModel = function (){
+  /**
+   @param string url, no search or hash part
+   */
+  var PanelModel = Querypoint.PanelModel = function (url){
     this.record = new PanelModel.Record();
-    this.openEditors = [];
+    this.record.sites[0] = PanelModel.Site(url);
+    this.scrubber = {
+      selectedSite: 0,        // index into record.sites
+      selectedReload: 0,    // index into record.sites[selectedSite]
+      selectedMessage: 0, // index into record.sites[selectedSite].reloads[selectedReload]
+    }
+    this.buffers = {
+      openURLs: [url],       // By default we open the html 
+      unsavedBuffers: [],
+      userOpenedBuffer: 0 
+    }
   }; 
 
   PanelModel.Record = function() {
@@ -18,6 +31,10 @@ window.Querypoint = window.Querypoint || {};
   PanelModel.Site = function(url) {
     this.url = url;
     this.reloads = [];
+  }
+
+  PanelModel.Reload = function() {
+    messages: []
   }
 
 }());

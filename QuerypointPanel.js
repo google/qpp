@@ -1,9 +1,8 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// The Querypoint UI controller. 
-// The controller is live as soon as devtools loads. The UI is created 
-// and updated when we get panel.onShown, see QuerypointDevtools.js
+// Interface between Querypoint Panel and chrome.devtools extension system
+//  
 
 /**
  * @param panel {ExtensionPanel} devtools panel
@@ -19,23 +18,7 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
 
   this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
 
-  // ViewModel
-  var panel = this;
-  panel._panelModel = ko.observable();
-  panel.hasPanelModel = ko.computed(function() {
-    return panel._panelModel(); 
-  });
-
-  ko.applyBindings(panel, this.document.querySelector('.panelInitialization'));
-    
-  this._initKeys();
-  this._initMouse();
   this._initModel();
-
-}
-
-QuerypointPanel.create = function(extensionPanel, panel_window, page, project) {
-  return new QuerypointPanel(extensionPanel, panel_window, page, project);
 }
 
 QuerypointPanel.prototype = {
@@ -87,20 +70,7 @@ QuerypointPanel.prototype = {
     },
 
     saveFile: function() {
-      // hack for now, 
-      // Our sourceFile-s don't have Resources so we can't use Resource.setContent
-      if (!this._currentEditor) {
-        alert("Can't save, there is no current editor"); // alerts are bad.
-      }
-      var request = { 
-        url: this._currentEditor.getName(), 
-        content: this._currentEditor.getContent() 
-      };
-      // send directly to devtools-save
-      chrome.extension.sendMessage('jmacddndcaceecmiinjnmkfmccipdphp', request, function maybeSaved(response){
-        console.log("saveFile response ", response);
-      });
-      return false;
+      return this._editors.saveFile();
     }
   },
 
@@ -136,11 +106,20 @@ QuerypointPanel.prototype = {
     this.panel_window.addEventListener('resize', this._onResize.bind(this));
   },
   
+  _initViewModels: function(panelModel) {
+    this._log = Querypoint.Log.initialize();
+    this._scrubber = Querypoint.LogScrubber.initialize(this._log, panelModel.scrubber);
+    this._editors = Querypoint.Editors.initialize(panelModel.buffers);
+
+  },
+
   _restore: function(panelModel) {
     console.log("restore", panelModel);
-    this._panelModel(panelModel);
-    this._editors = Querypoint.Editors.initialize(panelModel);
-    this.panel_window.onbeforeunload = this._editors._beforeUnload.bind(this._editors);  // TODO 
+    this._initViewModels(panelModel);
+
+    this._initKeys();
+    this._initMouse();
+    this.document.querySelector('.panelInitialization').style.display = 'none';
   },
 
   _initModel: function() {
@@ -150,7 +129,7 @@ QuerypointPanel.prototype = {
         panel._restore(model);
       },
       function() {
-        panel._restore(new Querypoint.PanelModel());
+        panel._restore(new Querypoint.PanelModel(panel.project.url));
       }
     );
   },

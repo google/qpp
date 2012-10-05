@@ -11,9 +11,13 @@
 <script src="KeyBindings.js"></script>
 <script src="parseuri.js"></script>
 <script src="URISelector.js"></script>
+<script src="ChannelPlate/ChannelPlate.js"></script>
 <script src="EditorByCodeMirror.js"></script>
 <script src="Panel/PanelModel.js"></script>
 <script src="Panel/Storage.js"></script>
+<script src="Panel/Log.js"></script>
+<script src="Panel/LogScrubber.js"></script>
+<script src="Panel/BuffersStatusBar.js"></script>
 <script src="Panel/Editors.js"></script>
 <script src="QuerypointPanel.js"></script>
 
@@ -23,12 +27,12 @@
 <link rel="stylesheet" href="mirror/CodeMirror/lib/codemirror.css">
 <link rel="stylesheet" href="mirror/CodeMirror/theme/monokai.css">
 <link rel="stylesheet" href="QuerypointPanel.css"><!-- after codemirror.css -->
-<link rel="stylesheet" href="logScrubber.css"><!-- after codemirror.css -->
-<link rel="stylesheet" href="editorStatusBar.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="Panel/logScrubber.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="Panel/buffersStatusBar.css"><!-- after codemirror.css -->
 <script src="mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
 <body class="cm-s-monokai">
-  <div class="panelInitialization" data-bind="visible: !hasPanelModel">Recalling previous state...<span data-bind="text: _panelModel"></span></div>
+  <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
   <table class="panel">
     <tbody>
       <tr class="logScrubber">
@@ -58,10 +62,11 @@
         </td>
       </tr>
       <tr>
-        <td colspan="2" class="editorStatusBar">
-          <span>&#x1433;</span><input class="commandLine" type="search" size="100">
-          <span class="unsavedChangedFiles centeringHack">*1</span>
-          <span class="savedChangedFiles centeringHack"> &#x0394;2</span>
+        <td colspan="2" class="buffersStatusBar">
+          <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
+          <span class="userOpenedURL" data-bind="text: _userOpenedURL()"></span>
+          <span class="unsavedChangedFiles centeringHack" data-bind="text: '*' + _unsavedBuffers().length">*1</span>
+          <span class="savedChangedFiles centeringHack" data-bind="text: '*' + _savedBuffers().length"> &#x0394;2</span>
         </td>
       </tr>
     </tbody>

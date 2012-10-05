@@ -3,9 +3,9 @@
 
 // Implement Editor functions using CodeMirror
 
-function EditorByCodeMirror(win,  containerElement, name, initialContent) {
+function EditorByCodeMirror(containerElement, name, initialContent) {
   this.name = name;
-  this.editorImpl = win.CodeMirror(containerElement, {
+  this.editorImpl = CodeMirror(containerElement, {
     value: initialContent,
     mode:  "javascript",
     lineNumbers: true,
@@ -38,6 +38,19 @@ EditorByCodeMirror.prototype = {
     this.editorImpl.setValue(content);
     this._changes = [];
   },
+  // These functions allow us to clear the changes 
+  // when we start async save,
+  popChanges: function() {
+    var changes = this._changes;
+    this._changes = [];
+    return changes;
+  },
+  // and put them back if the save fails.
+  unpopChanges: function(opaqueChanges) {
+    this_changes = opaqueChanges.concat(this._changes);
+  },
+
+  
   //-------------------------
   _addUniqueClassName: function() {
     var validCSSClassNameRegExp = /-?[_a-zA-Z]+[_a-zA-Z0-9-]*/;
