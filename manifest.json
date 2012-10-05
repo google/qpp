@@ -13,7 +13,7 @@
     },
   "permissions" :
     [
-      "debugger",
+      //"debugger",
       "<all_urls>"
     ],
     "sandbox": {
