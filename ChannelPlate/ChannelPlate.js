@@ -113,7 +113,45 @@ RequestResponder.prototype.onReply =function(postId, method, args) {
 };
 
 RequestResponder.prototype.onError = function(postId, method, args) {
-  this.postMessage([postId, method + "_err"].concat(args));
+  this.postMessage([postId, method, "Error"].concat(args));
+};
+
+
+function RequestCreator(ChannelPlateCtor) {
+  this.postId = 0;
+  this.responseHandlers = [];
+  this.port = new ChannelPlateCtor(this._onMessage.bind(this));
+}
+
+RequestCreator.prototype = {
+
+  request: function(method, args, onResponse) {
+    this.responseHandlers[++this.postId] = {method: method, onResponse: onResponse};
+    this.port.postMessage([this.postId, method].concat(args));
+  },
+
+  _onMessage: function(message) {
+    var payloadArray = message;
+    var postId = payloadArray.shift();
+    var method = payloadArray.shift();
+    var responseHandler = this.responseHandlers[postId];
+    if (method === responseHandler.method) {
+      var args = payloadArray;
+      var callback = responseHandler.onResponse;
+      try {
+        if (callback) {
+          callback.apply(this, args);
+        }  
+      } catch(exc) {
+        console.error("RequestCreator callback failed "+exc, exc);
+      } finally {
+        delete this.responseHandlers[postId];
+      }
+    } else {
+      console.error("RequestCreator protocol error, remote method does not match local method");
+    }
+  }
+  
 };
 
 //-----------------------------------------------------------------------------
@@ -258,7 +296,7 @@ ContentScriptTalker.prototype = Object.create(Base.prototype);
 
 
 function DevtoolsTalker(onMessage) {
-  var name = "devtools-" + chrome.devtools.inspectedWindow.tabId;
+  var name = encodeURIComponent(window.location.href).replace(/[!'()*]/g, '_');
   ContentScriptTalker.call(this, name, onMessage);
 }
 
@@ -389,6 +427,8 @@ return {
   ContentScriptProxy: ContentScriptProxy,
   // Waits for devtools and background then forward between
   ChromeDevtoolsProxy: ChromeDevtoolsProxy,
+  // Accepts a port constructor and sends requests thru it
+  RequestCreator: RequestCreator
 };
 
 }());
