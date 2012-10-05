@@ -65,8 +65,16 @@
         <td colspan="2" class="buffersStatusBar">
           <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
           <span class="userOpenedURL" data-bind="text: _userOpenedURL()"></span>
-          <span class="unsavedChangedFiles centeringHack" data-bind="text: '*' + _unsavedBuffers().length">*1</span>
-          <span class="savedChangedFiles centeringHack" data-bind="text: '*' + _savedBuffers().length"> &#x0394;2</span>
+          <span 
+            title="Files changed and not saved" 
+            class="unsavedChangedFiles centeringHack" 
+            data-bind="text: '*' + _unsavedBuffers().length"
+            >*1</span>
+          <span 
+            title="Files saved since the last reload" 
+            class="savedChangedFiles centeringHack" 
+            data-bind="text: '&#x2206;' + _savedBuffers().length"
+            > 2</span>
         </td>
       </tr>
     </tbody>

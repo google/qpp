@@ -20,12 +20,16 @@
 .buffersStatusBar .unsavedChangedFiles {
 	color: #f92672;
 	float: right;
+	margin-right: 2px;
+	cursor: pointer;
 }
 
 .buffersStatusBar .savedChangedFiles {
 	color: #a6e22e;
 	float: right;
 
+	margin-right: 2px;
+	cursor: pointer;
 }
 
 .buffersStatusBar .centeringHack {

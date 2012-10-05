@@ -79,7 +79,7 @@ RemoteWebPageProject.prototype.getPageScripts = function(callback) {
     var scripts = [];
     for(var i = 0; i < scriptElements.length; i++) {
       var elt = scriptElements[i];
-      console.log("scripts["+i+"/"+scriptElements.length+"] "+elt.src);
+      //console.log("scripts["+i+"/"+scriptElements.length+"] "+elt.src);
       scripts.push({
         src: elt.src,
         textContent: elt.textContent
