@@ -13,12 +13,11 @@ function EditorByCodeMirror(containerElement, name, initialContent) {
     onChange: this._syncToCodeMirror.bind(this),
   });
   this._addUniqueClassName();
-  this._changes = [];
 }
 
 EditorByCodeMirror.prototype = {
   //-- Editor API
-  
+
   show: function() {
     this.editorImpl.getWrapperElement().classList.remove('hide');
   },
@@ -31,25 +30,9 @@ EditorByCodeMirror.prototype = {
   getName: function() {
     return this.name;
   },
-  hasChanges: function() {
-    return this._changes.length;
-  },
   resetContent: function(content) {
     this.editorImpl.setValue(content);
-    this._changes = [];
   },
-  // These functions allow us to clear the changes 
-  // when we start async save,
-  popChanges: function() {
-    var changes = this._changes;
-    this._changes = [];
-    return changes;
-  },
-  // and put them back if the save fails.
-  unpopChanges: function(opaqueChanges) {
-    this_changes = opaqueChanges.concat(this._changes);
-  },
-
   
   //-------------------------
   _addUniqueClassName: function() {
@@ -62,6 +45,9 @@ EditorByCodeMirror.prototype = {
     this.editorImpl.getWrapperElement().classList.add(uid);
   },
   _syncToCodeMirror: function(editor, changes) {
-    this._changes.push(changes);
+    this.dispatch('onChange', changes);
   },
 }
+
+Querypoint.addEventFunctions(EditorByCodeMirror.prototype, 'onChange');
+

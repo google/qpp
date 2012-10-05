@@ -7,9 +7,15 @@
 <!-- RPC Wrapper for chrome.debugger.sendCommand -->
 <script src="chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebCore/inspector/front-end/DebuggerProtocol.js" ></script>
 
-<!-- This page is to be written on by QuerypointDevtools.js -->
-<script src="KeyBindings.js"></script>
+<!-- External Libraries -->
+<script src="keymaster/keymaster.js"></script>
+<script src="jquery/jquery-1.8.2.js"></script>
+<script src="knockout/knockout-2.2.0rc.debug.js"></script>
+<script src="mirror/CodeMirror/lib/codemirror.js"></script>
 <script src="parseuri.js"></script>
+
+<script src="addEventFunctions.js"></script>
+<script src="KeyBindings.js"></script>
 <script src="URISelector.js"></script>
 <script src="ChannelPlate/ChannelPlate.js"></script>
 <script src="EditorByCodeMirror.js"></script>
@@ -21,9 +27,6 @@
 <script src="Panel/Editors.js"></script>
 <script src="QuerypointPanel.js"></script>
 
-<script src="keymaster/keymaster.js"></script>
-<script src="knockout/knockout-2.2.0rc.debug.js"></script>
-<script src="mirror/CodeMirror/lib/codemirror.js"></script>
 <link rel="stylesheet" href="mirror/CodeMirror/lib/codemirror.css">
 <link rel="stylesheet" href="mirror/CodeMirror/theme/monokai.css">
 <link rel="stylesheet" href="QuerypointPanel.css"><!-- after codemirror.css -->
@@ -68,7 +71,7 @@
           <span 
             title="Files changed and not saved" 
             class="unsavedChangedFiles centeringHack" 
-            data-bind="text: '*' + _unsavedBuffers().length"
+            data-bind="text: '*' + unsavedBufferNames().length"
             >*1</span>
           <span 
             title="Files saved since the last reload" 

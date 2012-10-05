@@ -16,7 +16,7 @@
 
       this._userOpenedURL = ko.observable(buffers.userOpenedURL);
 
-      this._unsavedBuffers = ko.observableArray();
+      this.unsavedBufferNames = ko.observableArray();
       this._savedBuffers = ko.observableArray();
       
       ko.applyBindings(this, document.querySelector('buffersStatusBar'));
@@ -52,9 +52,17 @@
       return editor;
     },
     
+    _onChange: function(editor, changes) {
+      if (this.unsavedBufferNames.indexOf(editor.getName()) === -1) {
+        this.unsavedBufferNames.push(editor);
+      }
+    },
+
     createEditor: function(name, content, encoding, callback) {
       this._openURLs.push(name);
-      this._editors.push(new EditorByCodeMirror(this.userDirectedEditor, name, content));
+      var editor = new EditorByCodeMirror(this.userDirectedEditor, name, content);
+      editor.addListener('onChange', this._onChange.bind(this, editor));
+      this._editors.push(editor);
       callback();
     },
     
@@ -88,16 +96,18 @@
         url: currentEditor.getName(), 
         content: currentEditor.getContent() 
       };
-      var changes = currentEditor.popChanges(); 
       // send directly to devtools-save
       chrome.extension.sendMessage('jmacddndcaceecmiinjnmkfmccipdphp', request, function maybeSaved(response){
         console.log("saveFile response ", response);
         if (response.saved) {
-          editors._savedBuffers.push(currentEditor.getName());
-          var index = editors._unsavedBuffers.indexOf(currentEditor.getName());
-          editors._unsavedBuffers.splice(index, 1);
+          var name = currentEditor.getName();
+          var index = editors._savedBuffers.indexOf(name);
+          if (index === -1) {
+            editors._savedBuffers.push(name);
+          }
+          index = editors.unsavedBufferNames.indexOf(name);
+          editors.unsavedBufferNames.splice(index, 1);
         } else {
-          currentEditor.unpopChanges(changes);
           alert("Saved failed: "+response.error);
         }
       });
@@ -105,35 +115,20 @@
     },
 
     _onResourceUpdate: function(resource, content) {
-      var editor = this._getEditorByName[resource.url];
-      if (editor) {
-        if (editor.hasChanges()) {
+        if (this.unsavedBufferNames.indexOf(resource.url) !== -1) {
           this._showEditor(resource.url);
           alert("This editor has changes and the file has changes");
         } else {
           editor.resetContent(content);
         }
-      }
     },
   
     _beforeUnload: function(event) {
-      var remember = {
-        openEditors: []
-      };
-      var editorWithChanges = [];
-      Object.keys(this._editors).forEach(function(name){
-        remember.openEditors.push(name);
-        if (this._editors[name].hasChanges()) {
-          editorWithChanges.push(name);
-        }
-      }.bind(this));
       var sure = null;
-      if (editorWithChanges.length) {
-        sure = "You have unsaved changes in " + editorWithChanges.length + " files: " + editorWithChanges.join(',');
-        this._showEditor(editorWithChanges.pop());
-      } else {
-        localStorage.setItem('Querypoint.setup', JSON.stringify(remember));
-      }
+      if (this.unsavedBufferNames.length) {
+        sure = "You have unsaved changes in " + unsavedBufferNames.length + "\nfiles: " + unsavedBufferNames.join(',');
+        this._showEditor(unsavedBufferNames[0]);
+      } 
       event.returnValue = sure;
       return sure;  
     },
