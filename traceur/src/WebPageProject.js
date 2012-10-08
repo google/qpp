@@ -73,9 +73,6 @@ var WebPageProject = (function() {
       },
 
       addFilesFromScriptElements: function(scriptElements) {
-        if (!scriptElements.length) 
-          return;
-        
         for (var i = 0, length = scriptElements.length; i < length; i++) {
           var scriptElement = scriptElements[i];
           if (!scriptElement.src) {
@@ -126,24 +123,9 @@ var WebPageProject = (function() {
         files.forEach(this.putFile, this);
       },
 
-      addRuntime: function() {  
-        /* TODO: add traceur runtime library here
-           scriptsToRun.push(
-             { scriptElement: null,
-               parentNode: scripts[0].parentNode,
-               name: 'Runtime Library',
-               contents: runtime });
-        */
-      },
- 
-      startRuntime: function() {
-      },
-
       runInWebPage: function(trees) {
         var files = this.generateSourceFromTrees(trees);
-        this.addRuntime();
         this.putFiles(files);
-        this.startRuntime();
       },
 
       generateSourceFromTrees: function(trees) {
@@ -160,9 +142,7 @@ var WebPageProject = (function() {
           return;
         }
         var trees = this.compile();
-        if (trees) {
-          this.runInWebPage(trees);
-        }
+        this.runInWebPage(trees);
       },
 
       run: function() {
@@ -174,6 +154,13 @@ var WebPageProject = (function() {
               return; // nothing to do
             }
 
+            /* TODO: add traceur runtime library here
+            scriptsToRun.push(
+              { scriptElement: null,
+                parentNode: scripts[0].parentNode,
+                name: 'Runtime Library',
+                contents: runtime });
+            */
 
             this.addFilesFromScriptElements(scripts);
             this.runScriptsIfNonePending_();
