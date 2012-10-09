@@ -51,7 +51,13 @@ function onLoad() {
   function transcode(str) {
     return + "//@ sourceURL=fake_url";
   }
-  chrome.devtools.inspectedWindow.reload(true, undefined, transcode);
+
+  var reloadOptions = {
+    ignoreCache: true, 
+    injectedScript:  '(' + Querypoint.runtime + '());', 
+    scriptPreprocessor: transcode.toString()
+  };
+  chrome.devtools.inspectedWindow.reload(reloadOptions);
 
   /*chrome.devtools.inspectedWindow.eval("window.location.href", function(url) {
     onNavigated(url);
