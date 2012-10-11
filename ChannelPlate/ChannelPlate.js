@@ -143,7 +143,7 @@ RequestCreator.prototype = {
           callback.apply(this, args);
         }  
       } catch(exc) {
-        console.error("RequestCreator callback failed "+exc, exc);
+        console.error("RequestCreator callback failed: "+(exc.stack ?"\n %o":exc), exc.stack);
       } finally {
         delete this.responseHandlers[postId];
       }
