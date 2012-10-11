@@ -82,12 +82,12 @@ function oneTest(name, src, expectedVars) {
   var actual = eval(dst);
   assertEquals('The transform preserves value', expected, actual);
   
-  var reVar = /var v_(\d*)_(\d*)_(\d*)_(\d*)/gm;
+  var reVar = /__qp_activation\._(\d*)/gm;
   var actualVars = [];
   while(true) {
     var m = reVar.exec(dst); 
     if (m) {
-      actualVars.push(m[1] + '_' + m[2] + '_' + m[3] + '_' + m[4]);
+      actualVars.push(m[0]);
     } else {
       break;
     }

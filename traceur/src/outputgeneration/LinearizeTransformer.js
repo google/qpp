@@ -32,6 +32,18 @@ traceur.define('outputgeneration', function() {
   
   var createTrueLiteral = ParseTreeFactory.createTrueLiteral;
   var createFalseLiteral = ParseTreeFactory.createFalseLiteral;
+  var createMemberExpression = ParseTreeFactory.createMemberExpression;
+  var createMemberLookupExpression = ParseTreeFactory.createMemberLookupExpression;
+  var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
+  var createCallExpression = ParseTreeFactory.createCallExpression;
+  var createPropertyNameAssignment = ParseTreeFactory.createPropertyNameAssignment;
+  var createArgumentList = ParseTreeFactory.createArgumentList;
+  var createExpressionStatement = ParseTreeFactory.createExpressionStatement;
+  var createStringLiteral = ParseTreeFactory.createStringLiteral;
+  var createAssignmentStatement = ParseTreeFactory.createAssignmentStatement;
+  var createArrayLiteralExpression = ParseTreeFactory.createArrayLiteralExpression;
+  var createUndefinedExpression = ParseTreeFactory.createUndefinedExpression;
+  var createAssignmentExpression = ParseTreeFactory.createAssignmentExpression;
   
   var VariableStatement = Trees.VariableStatement;
   var IdentifierExpression = Trees.IdentifierExpression;
@@ -50,9 +62,16 @@ traceur.define('outputgeneration', function() {
   var ContinueStatement = Trees.ContinueStatement;
   var VariableDeclaration = Trees.VariableDeclaration;
   var VariableDeclarationList = Trees.VariableDeclarationList;
+  var ObjectLiteralExpression = Trees.ObjectLiteralExpression;
+  var MemberExpression = Trees.MemberExpression;
+  var ExpressionStatement = Trees.ExpressionStatement;
+  var CommaExpression = Trees.CommaExpression;
   
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
+  
+  // Constant
+  var activationId = '__qp_activation';
 
   /**
    * @extends {ParseTreeTransformer}
@@ -65,7 +84,8 @@ traceur.define('outputgeneration', function() {
     this.blockStack = [];      // tracks nest blocks
     this.labelsInScope = [];        // emca 262 12.12
     this.unlabelledBreakLabels = []; // tracks nested loops and switches 
-    this.unlabelledContinueLabels = []; // tracks nested loops 
+    this.unlabelledContinueLabels = []; // tracks nested loops
+    this.functionLocations = [];       // tree.location for all functions parsed 
     
     this.identifierGenerator_ = identifierGenerator;
     this.insertAbove = this.insertAbove.bind(this);
@@ -199,11 +219,8 @@ traceur.define('outputgeneration', function() {
         if (!tree.location) {
           return 'v'+this.identifierGenerator_.generateUniqueIdentifier();
         }
-        var start = tree.location.start;
-        var end = tree.location.end;
-        var id = 'v_' + start.line + '_' + start.column;
-        id += '_' + end.line + '_' + end.column;
-        return id;
+
+        return '_' + tree.location.start.offset;
       },
       
       /* Convert an expression tree into 
@@ -222,18 +239,22 @@ traceur.define('outputgeneration', function() {
         
         var identifier =  this.generateIdentifier(tree);
         var loc = tree.location;
-        var addedLine = new VariableStatement(loc, 
-          new VariableDeclarationList(loc, TokenType.VAR, 
-            [new VariableDeclaration(loc, 
-              new BindingIdentifier(loc, identifier), 
-              tree)]
+        // eg __qp_activation.offset = ! condition.value, undefined;
+        var addedLine = this._postPendComma(
+          tree.location,
+          createAssignmentExpression(
+            createMemberExpression(
+              createIdentifierExpression(activationId),
+              identifier
+            ),
+            tree
           )
         );
         this.insertions.push(addedLine);
         if (debug) {
           console.log('inserting ' + identifier + ' for '+tree.type, tree);
         }
-        return new IdentifierExpression(tree.location, identifier);
+        return new MemberExpression(tree.location, createIdentifierExpression(activationId), identifier);
       },
 
       transformBlock: function(tree) {
@@ -246,7 +267,7 @@ traceur.define('outputgeneration', function() {
         if (elements === tree.statements) {
           return tree;
         }
-        return new Block(tree.location, elements);
+        return new Block(tree.location, elements);f
       },
 
       // used in transformListInsertEach, the default behavior results
@@ -487,6 +508,79 @@ traceur.define('outputgeneration', function() {
         }
         return this.transformWhileStatement(tree);
       },
+
+      _varDecl: function(loc, id, tree) {
+        return new VariableStatement(loc, 
+          new VariableDeclarationList(loc, TokenType.VAR, 
+            [new VariableDeclaration(loc, 
+                 new BindingIdentifier(loc, id), 
+                 tree
+            )]
+          )
+        );
+      },
+      
+      _postPendComma: function(loc, tree) {
+          return new ExpressionStatement(loc, 
+            new CommaExpression(loc, [tree, createUndefinedExpression()])
+          );
+      },
+      
+      _generateFunctionId: function(location) {
+        if (location) {
+          return location.start.source.name + '_' + location.start.offset;
+        } else {
+          return "internalFunction";
+        }
+      }, 
+      
+      _createActivationStatements: function(tree) {
+        // var activation = {turn: window.__qp.turn};   // used to store traces by offset
+
+        var activationStatement =
+          this._varDecl(
+            tree.location, 
+            activationId, 
+            new ObjectLiteralExpression(
+              tree.location, 
+              [
+                createPropertyNameAssignment('turn',
+                  createMemberExpression('window', '__qp', 'turn')
+                )
+              ]
+            )
+          );
+ParseTreeValidator.validate(activationStatement);
+
+        // window.__qp.activations[__qp_functionId].push(activation),; 
+        var pushExpression = 
+          createCallExpression(
+            createMemberExpression(
+              createMemberLookupExpression(
+                createMemberExpression('window', '__qp', 'activations'),
+                createStringLiteral(this._generateFunctionId(tree.location))
+              ),
+              'push'
+            ),
+            createArgumentList(
+              createIdentifierExpression(activationId)
+            )
+          );
+        
+        // We need to suppress the return value of the push() 
+        var pushStatement = this._postPendComma(tree.location, pushExpression);
+ParseTreeValidator.validate(pushStatement);
+        return [activationStatement, pushStatement];
+      },
+
+      transformFunctionBody: function(tree) {
+        // We'll use these to build __qp.activations objects in _createInitializationStatements
+        this.functionLocations.push(tree.location)
+        // prefix the body with the definition of the new activation record
+
+        var statements = this._createActivationStatements(tree).concat(this.transformAny(tree).statements);
+        return new Block(tree.location, statements);
+      },
       
       transformBreakStatement: function(tree) {
         if (tree.name) {  // labeled break ok as is
@@ -554,12 +648,31 @@ traceur.define('outputgeneration', function() {
         return new LabelledStatement(tree.location, tree.name, statement);
       },
       
+      _createInitializationStatements: function(tree) {
+        var statements = [];
+        this.functionLocations.forEach(function(location) {
+          // window.__qp.activations[<file_name>_<offset>] = [];
+          statements.push(
+
+              createAssignmentStatement(
+                createMemberLookupExpression(
+                  createMemberExpression('window', '__qp', 'activations'),
+                  createStringLiteral(this._generateFunctionId(location))
+                ),
+                createArrayLiteralExpression([])
+              )
+            );
+        }.bind(this));
+        return statements;
+      }, 
+      
       transformProgram: function(tree) {
+        this.functionLocations.push(tree.location);  // top-level function
+        var activationStatements = this._createActivationStatements(tree);
         var elements = this.transformListInsertEach(tree.programElements, 
           this.insertAbove);
-        if (elements === tree.programElements) {
-          return tree;
-        }
+        var initializationStatements = this._createInitializationStatements(tree);
+        elements = initializationStatements.concat(activationStatements).concat(elements);
         return new Program(tree.location, elements);
       },
 

@@ -253,8 +253,13 @@ traceur.define('codegeneration', function() {
         // rewrite into catch construct
         tree = toBlock(
             this.rewriteAsCatch_(scope.blockVariables, createBlock(statements)));
-      } else if (statements != tree.statements) {
-        tree = createBlock(statements);
+      } else {
+        var changed = tree.statements.some(function(statement, index) {
+           return (statements[index] !== statement); 
+        });
+        if (changed) {
+          tree = createBlock(statements);
+        }
       }
 
       this.pop_(scope);
