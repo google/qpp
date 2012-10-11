@@ -27,9 +27,15 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
 
 QPProject.prototype.startRuntime = function() {
   function startRuntime() {  // runs in web page
+    window.__qp.fireLoad();
   }
   function onRuntimeStarted() {
     console.log("QP runtime started");
   }
   chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
+}
+
+QPProject.prototype.runInWebPage = function(trees) {
+  RemoteWebPageProject.prototype.runInWebPage.call(this, trees);
+  this.startRuntime();
 }

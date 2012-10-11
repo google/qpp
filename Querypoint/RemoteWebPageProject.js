@@ -59,7 +59,7 @@ RemoteWebPageProject.prototype.putFiles = function(files) {
     return {content: source};
   });
   this.putPageScripts(scripts, function(result) {
-    console.log(" and the result is... ", result);
+    console.log("Put " + scripts.length + " transcoded scripts", scripts);
   });
 };
 

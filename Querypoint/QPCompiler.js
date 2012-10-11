@@ -16,6 +16,11 @@ var QPCompiler = (function() {
       linearize: true,
       sourceMaps: true
     });
+    if (noES) {
+      traceur.options.es6 = false;
+      traceur.options.harmony = false;
+      traceur.options.experimental = false;
+    }
   }
 
   QPCompiler.prototype = {

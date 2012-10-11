@@ -37,7 +37,7 @@ function onLoad() {
       project.run();
       if (qpPanel)
         qpPanel.refresh();
-    });
+    }); 
   }
   
   function onNavigated(url) {
@@ -49,13 +49,13 @@ function onLoad() {
 
   // Force a reload when devtools opens
   function transcode(str) {
-    return + "//@ sourceURL=fake_url";
+    return  str + "\nconsole.log('transcoded by preprocessingScript');\n//@ sourceURL=fake_url"+Math.random();
   }
 
   var reloadOptions = {
     ignoreCache: true, 
     injectedScript:  '(' + Querypoint.runtime + '());', 
-    scriptPreprocessor: transcode.toString()
+    //preprocessingScript: '(' + transcode + ')'
   };
   chrome.devtools.inspectedWindow.reload(reloadOptions);
 
