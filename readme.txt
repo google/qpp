@@ -3,6 +3,10 @@
 
 Chrome Devtools extension for Querypoint debugging prototype 
 
+This is not even alpha, it's just my work in progress.
+
+Plan: 
+
 Re-compiles the JavaScript in a web page using the Traceur compiler. 
 The result JS is 'lowered', breaking all expressions down into simple
 statements. Then the JS syntax tree is analyzed for identifiers selected
@@ -19,10 +23,9 @@ prereq: use Chrome Canary or trunk build
 0. install devtoolsExtended
 1. clone this repo
 2. Open chrome://extensions, developer mode, load unpacked extn, select #1
-3. Still in chrome://extensions, open devtoolsExtended -> options, 
-4. Edit the qpp extension choice, chenge enabled to 'yes', save.
-5. open qpd.html from this project in a web page
-6. right click, debug with Devtools Extended. 
+3. open qpd.html from this project in a web page 
+    (I use node on expressServer.js in directory qpp/http)
+4. right click, debug with Devtools Extended. 
 The Querypoint panel should be available.
 
 Install -- as devtools extension (not tested at this time)
@@ -33,9 +36,11 @@ Install -- as devtools extension (not tested at this time)
 4. Open devtools (F12) on #3.
 
 
-Today you should see a bunch of console message if you open devtools on devtools.
-Control+o does not work unless you use devtoolsExtended.
-
 See also:
- Traceur: http://code.google.com/p/traceur-compiler/
- devtoolsExtended: https://github.com/google/devtoolsExtended Coming Soon ;-)
+ Traceur: https://github.com/johnjbarton/traceur
+    (fork of http://code.google.com/p/traceur-compiler/)
+ devtoolsExtended: https://github.com/johnjbarton/devtoolsExtended
+    (https://github.com/google/devtoolsExtended Coming Soon ;-)
+ ChannelPlate: https://github.com/google/ChannelPlate
+ crx2app: https://github.com/johnjbarton/crx2app
+ 
