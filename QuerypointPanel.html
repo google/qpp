@@ -36,51 +36,50 @@
 </head>
 <body class="cm-s-monokai">
   <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
-  <table class="panel">
-    <tbody>
-      <tr class="logScrubber">
-        <td colspan="2">
-          <div class="scrubberBox">
-            <span class="runNumber">1</span>
-            <span class="CodeMirro-gutter-text scrubberIndicator"></span>
-          </div>
-        </td>
-      </tr>
-      <tr class='log'>
-        <td colspan="2">console.log and tracing status output</td>
-      </tr>
-      <tr>
-        <td class="QPOutput">
-          <pre>
-            A table of 
-            expression (rows) 
-            x 
-            changes (columns)
-          </pre>
-        </td>
-        <td class="userDirectedEditor">
-          <ul class="splash">
-            <li>Editors opened with ItemSelector (control+o)</li>
-          </ul>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2" class="buffersStatusBar">
-          <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
-          <span class="userOpenedURL" data-bind="text: _userOpenedURL()"></span>
-          <span 
-            title="Files changed and not saved" 
-            class="unsavedChangedFiles centeringHack" 
-            data-bind="text: '*' + unsavedBufferNames().length"
-            >*1</span>
-          <span 
-            title="Files saved since the last reload" 
-            class="savedChangedFiles centeringHack" 
-            data-bind="text: '&#x2206;' + _savedBuffers().length"
-            > 2</span>
-        </td>
-      </tr>
+  <div class="panel">
+    <div class="logScrubber">
+      <div class="scrubberBox">
+        <span class="runNumber">1</span>
+        <span class="CodeMirro-gutter-text scrubberIndicator"></span>
+      </div>
+    </div>
+    <div class="splitter"></div>
+    <div class='log'>
+      <div colspan="2">console.log and tracing status output</div>
+    </div>
+    <div class="splitter"></div>
+    <div class="sourceViewport">
+      <div class="QPOutput">
+        <pre>
+          A div of 
+          expression (rows) 
+          x 
+          changes (columns)
+        </pre>
+      </div>
+      <div class="userDirectedEditor">
+        <ul class="splash">
+          <li>Editors opened with ItemSelector (control+o)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="splitter"></div>
+    <div class="buffersStatusBar">
+      <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
+      <span class="userOpenedURL" data-bind="text: _userOpenedURL()"></span>
+      <span 
+        title="Files changed and not saved" 
+        class="unsavedChangedFiles centeringHack" 
+        data-bind="text: '*' + unsavedBufferNames().length"
+        >*1</span>
+      <span 
+        title="Files saved since the last reload" 
+        class="savedChangedFiles centeringHack" 
+        data-bind="text: '&#x2206;' + _savedBuffers().length"
+        > 2</span>
+    </div>
+    <div class="splitter"></div>
     </tbody>
-  </table> 
+  </div> 
 </body>
 </html>

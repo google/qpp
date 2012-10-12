@@ -33,7 +33,11 @@ EditorByCodeMirror.prototype = {
   resetContent: function(content) {
     this.editorImpl.setValue(content);
   },
-  
+  resize: function(width, height) {
+    this.editorImpl.setSize(width, height);
+  },
+
+
   //-------------------------
   _addUniqueClassName: function() {
     var validCSSClassNameRegExp = /-?[_a-zA-Z]+[_a-zA-Z0-9-]*/;

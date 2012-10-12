@@ -19,6 +19,7 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
   this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
 
   this._initModel();
+  this._onResize();
 }
 
 QuerypointPanel.prototype = {
@@ -60,10 +61,10 @@ QuerypointPanel.prototype = {
       console.log("selectFile");
       var uriItems = new URISelector(this.extensionPanel);
       this.project.getSourceFiles().forEach(function(sourceFile){
-        uriItems.appendItem(sourceFile.name, this._openSourceFile.bind(this, sourceFile));
+        uriItems.appendItem('open: '+sourceFile.name, this._openSourceFile.bind(this, sourceFile));
       }.bind(this));
       this.page.resources.forEach(function(resource, index) {
-        uriItems.appendItem(resource.url, this._openResource.bind(this, resource));
+        uriItems.appendItem('open: '+resource.url, this._openResource.bind(this, resource));
       }.bind(this));
       uriItems.selectItem();
       return false;
@@ -95,10 +96,35 @@ QuerypointPanel.prototype = {
   },
 
   _onResize: function() {
-    var splitter = this.document.querySelector('.splitter');
-    var splitterBottom = splitter.clientHeight + splitter.offsetHeight;
-    var cmContainerHeight = this.document.body.clientHeight - splitterBottom;
-    this.userDirectedEditor.style.height = cmContainerHeight;
+    this._setHeight(this._setWidth());
+  },
+  
+  _setWidth: function() {
+    var sourceViewport = this.document.querySelector('.sourceViewport'); 
+    var availableWidth = document.body.offsetWidth;
+    var cols = sourceViewport.children;
+    var width = availableWidth - (availableWidth / 1.618);
+    for (var i = 0; i < cols.length - 1; i++) {
+      cols[i].style.width = width  + 'px';
+      availableWidth = availableWidth - width;
+    }
+    cols[cols.length - 1].style.width = availableWidth + 'px';
+    return availableWidth;
+  },
+  
+  _setHeight: function(width) {
+    var sourceViewport = this.document.querySelector('.sourceViewport'); 
+    var availableHeight = sourceViewport.parentElement.offsetHeight;
+    var rows = sourceViewport.parentElement.children;
+    for(var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.classList.contains('sourceViewport'))
+        continue;
+      console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
+      availableHeight = availableHeight - row.offsetHeight;
+    }
+    sourceViewport.style.height = availableHeight + 'px';
+    this._editors.resize(width, availableHeight);
   },
   
   _initMouse: function() {

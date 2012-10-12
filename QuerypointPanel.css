@@ -14,7 +14,7 @@ body {
   height: 100%;
 }
 
-body table {
+.panel {
   width: 100%;
   height: 100%;
   line-height: 1em;
@@ -47,13 +47,16 @@ body table {
   font-family: arial,san-serif;}
 
 .userDirectedEditor {
-  vertical-align: text-top;
+  float: right;
   height: 100%;
+}
+.QPOutput {
+  float: left;
 }
 
 .CodeMirror-scroll {
   overflow: auto;
-  height: 100%;
+
 }
 
 .CodeMirror-lines {

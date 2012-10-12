@@ -27,6 +27,12 @@
       return this;
     },
 
+    resize: function(width, height) {
+      this._editors.forEach(function(editor) {
+        editor.resize(width, height);
+      });
+    },
+
     _getEditorByName: function(name) {
       var index = this._openURLs.indexOf(name);
       if (index !== -1)
