@@ -47,15 +47,15 @@ function onLoad() {
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);
 
-  // Force a reload when devtools opens
   function transcode(str) {
-    return  str + "\nconsole.log('transcoded by preprocessingScript');\n//@ sourceURL=fake_url"+Math.random();
+    console.log("transcode saw ", str);
+    return  "// ignored some JavaScript, Hah!";
   }
 
   var reloadOptions = {
     ignoreCache: true, 
     injectedScript:  '(' + Querypoint.runtime + '());', 
-    //preprocessingScript: '(' + transcode + ')'
+    preprocessingScript: '(' + transcode + ')'
   };
   chrome.devtools.inspectedWindow.reload(reloadOptions);
 

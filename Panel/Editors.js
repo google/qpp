@@ -23,11 +23,17 @@
       
       this.userDirectedEditor = document.querySelector('.userDirectedEditor');
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
-      window.onbeforeunload = this._beforeUnload.bind(this);  
+      window.onbeforeunload = this._beforeUnload.bind(this);
+      
+      this._editorWidth = "100%";
+      this._editorHeight = "100%";
+        
       return this;
     },
 
     resize: function(width, height) {
+      this._editorWidth = width;  // save to new editors
+      this._editorHeight = height;
       this._editors.forEach(function(editor) {
         editor.resize(width, height);
       });
@@ -67,6 +73,7 @@
     createEditor: function(name, content, encoding, callback) {
       this._openURLs.push(name);
       var editor = new EditorByCodeMirror(this.userDirectedEditor, name, content);
+      editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
       this._editors.push(editor);
       callback();
