@@ -14,7 +14,9 @@
 
 .logScrubber .scrubberIndicator {
 	position: absolute;
-	width: 1em;
-	background-color: red;
-	right: 1em;
+	width: 3ex;
+	height: 1em;
+	border: red solid 1px;
+	right: 1ex;
+	padding: 0px;
 }

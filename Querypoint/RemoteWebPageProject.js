@@ -60,6 +60,7 @@ RemoteWebPageProject.prototype.putFiles = function(files) {
   });
   this.putPageScripts(scripts, function(result) {
     console.log("Put " + scripts.length + " transcoded scripts", scripts);
+    console.log("result : %o", result);
   });
 };
 
@@ -100,10 +101,25 @@ RemoteWebPageProject.prototype.getPageScripts = function(callback) {
 
 RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
   function putScripts(scripts) { // runs in web page
+    var result = {compiled: [], errors: []};
     scripts.forEach(function(script) {
       var content = script.content;
-      eval(content);
+      try {
+        eval(content);
+        result.compiled.push(script.src);
+      } catch (exc) {
+        var reContent = /at content \(<anonymous>:(\d*):(\d*)\)/;
+        var m = reContent.exec(exc.stack);
+        if (m) {
+          var errant = content.split('\n')[m[1] - 1];
+          console.error(exc + ' at ' + m[2] + ': '+ errant);
+        } else {    
+          console.error("Error " + exc, exc.stack);
+        }
+        result.errors.push(exc.stack);
+      }
     });
+    return result;
   }
   return chrome.devtools.inspectedWindow.eval(this.evalStringify(putScripts, scripts), callback);
 }

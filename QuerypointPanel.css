@@ -50,6 +50,12 @@ body {
   float: right;
   height: 100%;
 }
+
+.sourceViewport {
+  width: 100%;
+  height: 100%;
+}
+
 .QPOutput {
   float: left;
 }

@@ -25,6 +25,7 @@
 <script src="Panel/LogScrubber.js"></script>
 <script src="Panel/BuffersStatusBar.js"></script>
 <script src="Panel/Editors.js"></script>
+<script src="Querypoint/QPOutput.js"></script>
 <script src="QuerypointPanel.js"></script>
 
 <link rel="stylesheet" href="mirror/CodeMirror/lib/codemirror.css">
@@ -40,7 +41,7 @@
     <div class="logScrubber">
       <div class="scrubberBox">
         <span class="runNumber">1</span>
-        <span class="CodeMirro-gutter-text scrubberIndicator"></span>
+        <span class="CodeMirror-gutter-text scrubberIndicator"></span>
       </div>
     </div>
     <div class="splitter"></div>
@@ -51,10 +52,13 @@
     <div class="sourceViewport">
       <div class="QPOutput">
         <pre>
-          A div of 
-          expression (rows) 
-          x 
-          changes (columns)
+          Click on this panel to refresh trace 
+        </pre>
+        <pre>
+          (hack for now)
+        </pre>
+        <pre>
+          Control+o to change file viewed
         </pre>
       </div>
       <div class="userDirectedEditor">

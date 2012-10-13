@@ -39,6 +39,10 @@
       });
     },
 
+    currentEditorName: function() {
+      return this._userOpenedURL();
+    },
+
     _getEditorByName: function(name) {
       var index = this._openURLs.indexOf(name);
       if (index !== -1)

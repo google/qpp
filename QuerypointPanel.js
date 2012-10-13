@@ -37,6 +37,8 @@ QuerypointPanel.prototype = {
   // Apply any changes since the last onShown call
   refresh: function() {
      console.log("QuerypointPanel refresh "+this._isShowing, this);
+     var qpOutput = document.querySelector('.QPOutput');
+     var output = new Querypoint.QPOutput(qpOutput, this._editors.currentEditorName());
   },
   
 
@@ -89,9 +91,13 @@ QuerypointPanel.prototype = {
     console.log("_openContextMenu", event);
   },
 
-  _takeContextMenu: function(event) {
-    if (event.buttons === 2) {
+  _onClickPanel: function(event) {
+    if (event.button === 2) {
       this._openContextMenu(event);
+    } else {
+      if (event.target.classList.contains('QPOutput')) {
+        this.refresh();
+      }
     }
   },
 
@@ -116,7 +122,7 @@ QuerypointPanel.prototype = {
     var sourceViewport = this.document.querySelector('.sourceViewport'); 
     var availableHeight = sourceViewport.parentElement.offsetHeight;
     var rows = sourceViewport.parentElement.children;
-    for(var i = 0; i < rows.length; i++) {
+    for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
       if (row.classList.contains('sourceViewport'))
         continue;
@@ -124,11 +130,16 @@ QuerypointPanel.prototype = {
       availableHeight = availableHeight - row.offsetHeight;
     }
     sourceViewport.style.height = availableHeight + 'px';
+    var cols = sourceViewport.children;
+    for (var i = 0; i < cols.length; i++) {
+      var col = cols[i];
+      col.style.height = availableHeight + 'px';
+    }
     this._editors.resize(width, availableHeight);
   },
   
   _initMouse: function() {
-    this.document.addEventListener('mousedown', this._takeContextMenu.bind(this));
+    this.document.addEventListener('mousedown', this._onClickPanel.bind(this));
     this.panel_window.addEventListener('resize', this._onResize.bind(this));
   },
   
