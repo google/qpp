@@ -10,16 +10,23 @@ var QPCompiler = (function() {
   var ModuleAnalyzer = traceur.semantics.ModuleAnalyzer;
   var Project = traceur.semantics.symbols.Project;
   
-  function QPCompiler(reporter) {
+  function QPCompiler(reporter, opt_options) {
     this.reporter_ = reporter;
+    
     traceur.options.setFromObject({
       linearize: true,
       sourceMaps: true
     });
-    if (noES) {
-      traceur.options.es6 = false;
-      traceur.options.harmony = false;
-      traceur.options.experimental = false;
+    
+    traceur.options.es6 = false;
+    traceur.options.harmony = false;
+    traceur.options.experimental = false;
+    
+    if (opt_options) {
+      traceur.options.es6 = !!opt_options.es6;
+      traceur.options.harmony = !!opt_options.harmony;
+      traceur.options.experimental = !!opt_options.experimental;
+
     }
   }
 

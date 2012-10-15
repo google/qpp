@@ -44,7 +44,8 @@ traceur.define('outputgeneration', function() {
   var createArrayLiteralExpression = ParseTreeFactory.createArrayLiteralExpression;
   var createUndefinedExpression = ParseTreeFactory.createUndefinedExpression;
   var createAssignmentExpression = ParseTreeFactory.createAssignmentExpression;
-  
+  var createObjectLiteralExpression = ParseTreeFactory.createObjectLiteralExpression;
+
   var VariableStatement = Trees.VariableStatement;
   var IdentifierExpression = Trees.IdentifierExpression;
   var BindingIdentifier = Trees.BindingIdentifier;
@@ -77,7 +78,7 @@ traceur.define('outputgeneration', function() {
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function LinearizeTransformer(identifierGenerator) {
+  function LinearizeTransformer(identifierGenerator, generateFileName) {
     this.insertions = [];      // statements to be added to this block
     this.expressionStack = []; // tracks compound expressions
     this.insertionStack = [];  // insertions waiting for inner blocks to exit
@@ -85,18 +86,19 @@ traceur.define('outputgeneration', function() {
     this.labelsInScope = [];        // emca 262 12.12
     this.unlabelledBreakLabels = []; // tracks nested loops and switches 
     this.unlabelledContinueLabels = []; // tracks nested loops
-    this.functionLocations = [];       // tree.location for all functions parsed 
     
     this.identifierGenerator_ = identifierGenerator;
+    this._generateFileName = generateFileName;
+    
     this.insertAbove = this.insertAbove.bind(this);
   }
 
-  LinearizeTransformer.transformTree = function(identifierGenerator, tree) {
+  LinearizeTransformer.transformTree = function(identifierGenerator, generateFileName, tree) {
     if (debug) { 
       console.log('LinearizeTransformer input:\n' + 
         traceur.outputgeneration.TreeWriter.write(tree));
     }
-    var transformer = new LinearizeTransformer(identifierGenerator);
+    var transformer = new LinearizeTransformer(identifierGenerator, generateFileName);
     var output_tree = transformer.transformAny(tree);
     if (debug) {
       console.log('LinearizeTransformer output:\n' + 
@@ -525,12 +527,13 @@ traceur.define('outputgeneration', function() {
             new CommaExpression(loc, [tree, createUndefinedExpression()])
           );
       },
-      
-      _generateFunctionId: function(location) {
+
+
+      _generateFunctionOffset: function(location) {
         if (location) {
-          return location.start.source.name + '_' + location.start.offset;
+          return '' + location.start.offset;
         } else {
-          return "internalFunction";
+          return "_internal";
         }
       }, 
       
@@ -552,13 +555,17 @@ traceur.define('outputgeneration', function() {
           );
 ParseTreeValidator.validate(activationStatement);
 
-        // window.__qp.activations[__qp_functionId].push(activation),; 
+        // window.__qp.functions[<fileName>][<functionId>].push(activation),; 
         var pushExpression = 
           createCallExpression(
             createMemberExpression(
               createMemberLookupExpression(
-                createMemberExpression('window', '__qp', 'activations'),
-                createStringLiteral(this._generateFunctionId(tree.location))
+                createMemberLookupExpression(
+                  createMemberExpression('window', '__qp', 'functions'),
+                  createStringLiteral(this._generateFileName(tree.location))
+                ),
+                // TODO prefix revision number
+                createStringLiteral(this._generateFunctionOffset(tree.location))
               ),
               'push'
             ),
@@ -574,10 +581,7 @@ ParseTreeValidator.validate(pushStatement);
       },
 
       transformFunctionBody: function(tree) {
-        // We'll use these to build __qp.activations objects in _createInitializationStatements
-        this.functionLocations.push(tree.location)
         // prefix the body with the definition of the new activation record
-
         var statements = this._createActivationStatements(tree).concat(this.transformAny(tree).statements);
         return new Block(tree.location, statements);
       },
@@ -648,31 +652,11 @@ ParseTreeValidator.validate(pushStatement);
         return new LabelledStatement(tree.location, tree.name, statement);
       },
       
-      _createInitializationStatements: function(tree) {
-        var statements = [];
-        this.functionLocations.forEach(function(location) {
-          // window.__qp.activations[<file_name>_<offset>] = [];
-          statements.push(
-
-              createAssignmentStatement(
-                createMemberLookupExpression(
-                  createMemberExpression('window', '__qp', 'activations'),
-                  createStringLiteral(this._generateFunctionId(location))
-                ),
-                createArrayLiteralExpression([])
-              )
-            );
-        }.bind(this));
-        return statements;
-      }, 
-      
       transformProgram: function(tree) {
-        this.functionLocations.push(tree.location);  // top-level function
         var activationStatements = this._createActivationStatements(tree);
         var elements = this.transformListInsertEach(tree.programElements, 
           this.insertAbove);
-        var initializationStatements = this._createInitializationStatements(tree);
-        elements = initializationStatements.concat(activationStatements).concat(elements);
+        elements = activationStatements.concat(elements);
         return new Program(tree.location, elements);
       },
 

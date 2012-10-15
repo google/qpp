@@ -26,8 +26,7 @@
         intercepts: {}, // keys are intercepted function names, values functions
         earlyEventHandlers: {}, // keys are event types, values are arrays of handlers
         turns: [],      // stack of {fnc: <function>, args: []}
-        functions: [],  // {filename:<string>, offset: <integer}
-        activations: {}, // keys filename_offset values {turn: <index into turns>, _<offset>: trace
+        functions: {},  // keys filename, values {<function_ids>: [<activations>]}
         fireLoad: fireLoad,
       };      
     }
