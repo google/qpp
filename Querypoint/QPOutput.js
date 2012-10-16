@@ -15,7 +15,7 @@
 
     getTraceData: function(fileName, callback) {
       chrome.devtools.inspectedWindow.eval('Object.keys(window.__qp.functions)', callback);
-      chrome.devtools.inspectedWindow.eval('Object.keys(window.__qp.functions[\"'+fileName+'\")', callback);
+      chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"'+fileName+'\"]', callback);
     },
 
     renderTraceData: function(destinationElement, fileName, traceData) {

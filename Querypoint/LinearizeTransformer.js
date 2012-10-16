@@ -45,6 +45,9 @@
   var createUndefinedExpression = ParseTreeFactory.createUndefinedExpression;
   var createAssignmentExpression = ParseTreeFactory.createAssignmentExpression;
   var createObjectLiteralExpression = ParseTreeFactory.createObjectLiteralExpression;
+  var createVariableDeclarationList = ParseTreeFactory.createVariableDeclarationList;
+  var createVariableStatement = ParseTreeFactory.createVariableStatement;
+  var createParenExpression = ParseTreeFactory.createParenExpression;
 
   var VariableStatement = Trees.VariableStatement;
   var IdentifierExpression = Trees.IdentifierExpression;
@@ -226,8 +229,8 @@
       },
       
       /* Convert an expression tree into 
-      **    a reference to a VariableStatement and its value
-      ** expr -> var vXX = expr; vXX;
+      **    a reference to a VariableStatement and its value 
+      ** expr -> var __qp_XX = expr; __qp_activation._offset = __qp.trace(__qp_XX), __qp_XX;
       ** @param {ParseTree} tree
       ** @return {ParseTree}
       ** side-effect: this.insertions.length++
@@ -239,24 +242,54 @@
           throw new Error(msg);
         }
         
-        var identifier =  this.generateIdentifier(tree);
+        var identifier =  this.generateIdentifier(tree);  // XX in __qp_XX
+        var varId = '__qp' + identifier;
+        
         var loc = tree.location;
-        // eg __qp_activation.offset = ! condition.value, undefined;
-        var addedLine = this._postPendComma(
-          tree.location,
+        // var __qp_XX = expr;
+        var tempVariableStatement = createVariableStatement(
+          createVariableDeclarationList(
+            TokenType.VAR, 
+            varId,
+            tree
+          )
+        );
+        this.insertions.push(tempVariableStatement);
+ParseTreeValidator.validate(tempVariableStatement);
+        // (__qp_activation._offset = window.__qp.trace(__qp_XX))
+        
+        var traceExpression = createParenExpression(
           createAssignmentExpression(
             createMemberExpression(
               createIdentifierExpression(activationId),
               identifier
             ),
-            tree
+            createCallExpression(
+              createMemberExpression('window', '__qp','trace'),
+              createArgumentList(
+                createIdentifierExpression(varId)
+              )                    
+            )
           )
         );
-        this.insertions.push(addedLine);
+        
+        // (__qp_activation._offset = window.__qp.trace(__qp_XX)), __qp_XX;
+        
+        var linearExpression = createParenExpression(
+          new CommaExpression(
+            tree.location,
+            [
+              traceExpression,
+              createIdentifierExpression(varId)
+            ]  
+          )
+        );
+       
+ParseTreeValidator.validate(linearExpression); 
         if (debug) {
-          console.log('inserting ' + identifier + ' for '+tree.type, tree);
+          console.log('inserting ' + varId + ' for '+tree.type, tree);
         }
-        return new MemberExpression(tree.location, createIdentifierExpression(activationId), identifier);
+        return linearExpression;
       },
 
       transformBlock: function(tree) {
@@ -269,7 +302,7 @@
         if (elements === tree.statements) {
           return tree;
         }
-        return new Block(tree.location, elements);f
+        return new Block(tree.location, elements);
       },
 
       // used in transformListInsertEach, the default behavior results
@@ -522,9 +555,9 @@
         );
       },
       
-      _postPendComma: function(loc, tree) {
+      _postPendComma: function(loc, tree, value) {
           return new ExpressionStatement(loc, 
-            new CommaExpression(loc, [tree, createUndefinedExpression()])
+            new CommaExpression(loc, [tree, value || createUndefinedExpression()])
           );
       },
 

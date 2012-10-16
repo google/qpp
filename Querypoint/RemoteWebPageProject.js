@@ -60,7 +60,10 @@ RemoteWebPageProject.prototype.putFiles = function(files) {
   });
   this.putPageScripts(scripts, function(result) {
     console.log("Put " + scripts.length + " transcoded scripts", scripts);
-    console.log("result : %o", result);
+    result.errors.forEach(function(error) {
+      // As far as I can tell the eval does not provide meaningful line numbers for errors.
+      console.error(error.message, error.content);
+    });
   });
 };
 
@@ -107,16 +110,8 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
       try {
         eval(content);
         result.compiled.push(script.src);
-      } catch (exc) {
-        var reContent = /at content \(<anonymous>:(\d*):(\d*)\)/;
-        var m = reContent.exec(exc.stack);
-        if (m) {
-          var errant = content.split('\n')[m[1] - 1];
-          console.error(exc + ' at ' + m[2] + ': '+ errant);
-        } else {    
-          console.error("Error " + exc, exc.stack);
-        }
-        result.errors.push(exc.stack);
+      } catch (exc) {          
+        result.errors.push({message: exc.toString(), content: content});
       }
     });
     return result;

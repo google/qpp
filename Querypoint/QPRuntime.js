@@ -20,6 +20,10 @@
       });
       console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
     }
+    
+    function trace(expr) {
+      return new String(expr);
+    }
 
     function initiailizeHiddenGlobalState() {
       window.__qp = {
@@ -28,6 +32,7 @@
         turns: [],      // stack of {fnc: <function>, args: []}
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
         fireLoad: fireLoad,
+        trace: trace,
       };      
     }
 
