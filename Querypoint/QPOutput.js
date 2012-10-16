@@ -10,15 +10,16 @@
 
   Querypoint.QPOutput.prototype = {
     initialize: function(elt, fileName) {
-      this.getTraceData(fileName, this.renderTraceData.bind(this, elt));
+      this.getTraceData(fileName, this.renderTraceData.bind(this, elt, fileName));
     },
 
     getTraceData: function(fileName, callback) {
-      chrome.devtools.inspectedWindow.eval('Object.keys(window.__qp.activations)', callback);
+      chrome.devtools.inspectedWindow.eval('Object.keys(window.__qp.functions)', callback);
+      chrome.devtools.inspectedWindow.eval('Object.keys(window.__qp.functions[\"'+fileName+'\")', callback);
     },
 
-    renderTraceData: function(destinationElement, traceData) {
-      console.log("renderTraceData traceData: ", traceData);
+    renderTraceData: function(destinationElement, fileName, traceData) {
+      console.log("renderTraceData "+fileName+" traceData: ", traceData);
     }
   };
 }());
