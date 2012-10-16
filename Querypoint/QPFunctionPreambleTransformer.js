@@ -106,22 +106,27 @@
     );
   }
 
+  QPFunctionPreambleTransformer.prototype._createPreambleStatements = function(tree) {
+    var var__qp_functionStatement = this._createVarFunctionStatement(tree.location);
+    var if__qp_functionCallStatement = this._createIfFunctionCallStatement(tree.location);
+    return [var__qp_functionStatement, if__qp_functionCallStatement];
+  }
+
   QPFunctionPreambleTransformer.prototype.transformFunctionBody = function(tree) {
     // We'll use these to build __qp.functions objects in _createInitializationStatements
     this.functionLocations.push(tree.location);
 
-    var var__qp_functionStatement = this._createVarFunctionStatement(tree.location);
-    var if__qp_functionCallStatement = this._createIfFunctionCallStatement(tree.location);
-    tree.statements = [var__qp_functionStatement, if__qp_functionCallStatement].concat(tree.statements);
+
+    tree.statements = this._createPreambleStatements(tree).concat(tree.statements);
     return tree;
   }
 
   QPFunctionPreambleTransformer.prototype.transformProgram = function(tree) {
     this.functionLocations.push(tree.location);  // the top-level function for this compilation unit
     var elements = this.transformList(tree.programElements);
-    var filenameInitializer = this._createFileNameStatement(tree);
-    var initializationStatements = this._createInitializationStatements(tree);
-    elements = [filenameInitializer].concat(initializationStatements).concat(elements);
+    var prefix = [this._createFileNameStatement(tree)].concat(this._createInitializationStatements(tree));
+    prefix.push(this._createVarFunctionStatement(tree.location));
+    elements = prefix.concat(elements);
     return new Program(tree.location, elements);
   }
 
