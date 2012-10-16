@@ -225,7 +225,7 @@
           return 'v'+this.identifierGenerator_.generateUniqueIdentifier();
         }
 
-        return '_' + tree.location.start.offset;
+        return '_' + tree.location.end.offset;
       },
       
       /* Convert an expression tree into 
@@ -287,7 +287,7 @@ ParseTreeValidator.validate(tempVariableStatement);
        
 ParseTreeValidator.validate(linearExpression); 
         if (debug) {
-          console.log('inserting ' + varId + ' for '+tree.type, tree);
+          console.log('inserting ' + varId + ' for '+tree.type + ' : ' + traceur.outputgeneration.TreeWriter.write(tree));
         }
         return linearExpression;
       },
