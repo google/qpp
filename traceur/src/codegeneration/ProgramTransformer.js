@@ -39,7 +39,6 @@ traceur.define('codegeneration', function() {
   var RestParameterTransformer = traceur.codegeneration.RestParameterTransformer;
   var SpreadTransformer = traceur.codegeneration.SpreadTransformer;
   var UniqueIdentifierGenerator = traceur.codegeneration.UniqueIdentifierGenerator;
-  var LinearizeTransformer = traceur.outputgeneration.LinearizeTransformer;
 
   var options = traceur.options.transform;
 
@@ -230,9 +229,6 @@ traceur.define('codegeneration', function() {
       chain(options.collections || options.privateNames,
             CollectionTransformer.transformTree,
             identifierGenerator);
-
-      chain(options.linearize, 
-            LinearizeTransformer.transformTree, identifierGenerator);
 
       // Issue errors for any unbound variables
       chain(traceur.options.freeVariableChecker,
