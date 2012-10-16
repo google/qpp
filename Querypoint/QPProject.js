@@ -29,7 +29,7 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
         // QPFunctionPreamble must precede Linearize
     // TODO Only trees subject to tracing need linearize 
     var identifierGenerator = new traceur.codegeneration.UniqueIdentifierGenerator();
-    var transformer = new traceur.outputgeneration.LinearizeTransformer(identifierGenerator, generateFileName);
+    var transformer = new Querypoint.LinearizeTransformer(identifierGenerator, generateFileName);
     tree = transformer.transformAny(tree);
     
     // TODO only trees that the developer *might* debug needs dynamic hooks

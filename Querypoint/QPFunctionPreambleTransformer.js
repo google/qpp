@@ -13,7 +13,16 @@
   var createAssignmentStatement = ParseTreeFactory.createAssignmentStatement;
   var createArrayLiteralExpression = ParseTreeFactory.createArrayLiteralExpression;
   var createObjectLiteralExpression = ParseTreeFactory.createObjectLiteralExpression;
-
+  var createVariableStatement = ParseTreeFactory.createVariableStatement;
+  var createVariableDeclarationList = ParseTreeFactory.createVariableDeclarationList;
+  var createIfStatement = ParseTreeFactory.createIfStatement;
+  var createCallExpression = ParseTreeFactory.createCallExpression;
+  var createArgumentList = ParseTreeFactory.createArgumentList;
+  var createReturnStatement = ParseTreeFactory.createReturnStatement;
+  var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
+ 
+  var PredefinedName = traceur.syntax.PredefinedName;
+  var TokenType = traceur.syntax.TokenType;
   var Program = traceur.syntax.trees.Program;
 
   var QPFunctionPreambleTransformer = Querypoint.QPFunctionPreambleTransformer = function(generateFileName) {
@@ -23,11 +32,22 @@
 
   QPFunctionPreambleTransformer.prototype = Object.create(traceur.codegeneration.ParseTreeTransformer.prototype);
 
-  QPFunctionPreambleTransformer.prototype.transformFunctionBody = function(tree) {
-        // We'll use these to build __qp.functions objects in _createInitializationStatements
-        this.functionLocations.push(tree.location);
-        // TODO preamble transform
-        return tree;
+  var QP_FUNCTION = '__qp_function';
+
+  QPFunctionPreambleTransformer.prototype._createFileAccessExpression = function(location) {
+    // window.__qp.functions["<file_name>"]
+    return createMemberLookupExpression(
+      createMemberExpression('window', '__qp', 'functions'),
+      createStringLiteral(this.generateFileName(location))
+    );
+  }
+
+  QPFunctionPreambleTransformer.prototype._createFunctionAccessExpression = function(location) {
+    // window.__qp.functions["<file_name>"]["<functionId>"] 
+    return createMemberLookupExpression(
+      this._createFileAccessExpression(location),
+      createStringLiteral(this.generateFunctionId(location))
+    );
   }
 
   QPFunctionPreambleTransformer.prototype.generateFunctionId = function(location) {
@@ -38,10 +58,7 @@
     // window.__qp.functions["<filename>"] = {};
     var statement = 
       createAssignmentStatement(
-        createMemberLookupExpression(
-          createMemberExpression('window', '__qp', 'functions'),
-          createStringLiteral(this.generateFileName(tree.location))
-        ),
+        this._createFileAccessExpression(tree.location),
         createObjectLiteralExpression([])     
       )
     return statement;
@@ -53,19 +70,50 @@
       // window.__qp.functions["<file_name>"]["<functionId>"] = [];
       statements.push(
           createAssignmentStatement(
-            createMemberLookupExpression(
-              createMemberLookupExpression(
-                createMemberExpression('window', '__qp', 'functions'),
-                createStringLiteral(this.generateFileName(location))
-              ),
-              createStringLiteral(this.generateFunctionId(location))
-            ),
+            this._createFunctionAccessExpression(location),
             createArrayLiteralExpression([])
-
           )
         );
     }.bind(this));
     return statements;
+  }
+
+
+  QPFunctionPreambleTransformer.prototype._createVarFunctionStatement = function(location) {
+    // var __qp_function = window.__qp.functions["<file_name>"]["<functionId>"];
+    return createVariableStatement(
+      createVariableDeclarationList(
+        TokenType.VAR, 
+        QP_FUNCTION, 
+        this._createFunctionAccessExpression(location)
+      )
+    );
+  }
+
+  QPFunctionPreambleTransformer.prototype._createIfFunctionCallStatement = function() {
+    // if (__qp_function.redirect) return __qp_function.redirect.apply(this, arguments);
+    return   createIfStatement(
+      createMemberExpression(QP_FUNCTION, 'redirect'),
+      createReturnStatement(
+        createCallExpression(
+          createMemberExpression(QP_FUNCTION, 'redirect', 'apply'),
+          createArgumentList(
+            createIdentifierExpression(PredefinedName.THIS), 
+            createIdentifierExpression(PredefinedName.ARGUMENTS)
+          )
+        )
+      )
+    );
+  }
+
+  QPFunctionPreambleTransformer.prototype.transformFunctionBody = function(tree) {
+    // We'll use these to build __qp.functions objects in _createInitializationStatements
+    this.functionLocations.push(tree.location);
+
+    var var__qp_functionStatement = this._createVarFunctionStatement(tree.location);
+    var if__qp_functionCallStatement = this._createIfFunctionCallStatement(tree.location);
+    tree.statements = [var__qp_functionStatement, if__qp_functionCallStatement].concat(tree.statements);
+    return tree;
   }
 
   QPFunctionPreambleTransformer.prototype.transformProgram = function(tree) {

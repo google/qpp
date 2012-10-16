@@ -13,11 +13,6 @@ var QPCompiler = (function() {
   function QPCompiler(reporter, opt_options) {
     this.reporter_ = reporter;
     
-    traceur.options.setFromObject({
-      linearize: true,
-      sourceMaps: true
-    });
-    
     traceur.options.es6 = false;
     traceur.options.harmony = false;
     traceur.options.experimental = false;
@@ -26,7 +21,6 @@ var QPCompiler = (function() {
       traceur.options.es6 = !!opt_options.es6;
       traceur.options.harmony = !!opt_options.harmony;
       traceur.options.experimental = !!opt_options.experimental;
-
     }
   }
 

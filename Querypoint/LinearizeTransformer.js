@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*globals traceur console*/
-
 // Lower an ES3 tree to line-oriented statements.
 //   Control flow constructs -> blocks.
 //   Compound expressions -> statements in blocks.
 
-traceur.define('outputgeneration', function() {
+(function() {
+  window.Querypoint = window.Querypoint || {};
+
   'use strict';
 
   var debug = true;
@@ -555,18 +555,11 @@ traceur.define('outputgeneration', function() {
           );
 ParseTreeValidator.validate(activationStatement);
 
-        // window.__qp.functions[<fileName>][<functionId>].push(activation),; 
+        // __qp_function.push(activation),; 
         var pushExpression = 
           createCallExpression(
             createMemberExpression(
-              createMemberLookupExpression(
-                createMemberLookupExpression(
-                  createMemberExpression('window', '__qp', 'functions'),
-                  createStringLiteral(this._generateFileName(tree.location))
-                ),
-                // TODO prefix revision number
-                createStringLiteral(this._generateFunctionOffset(tree.location))
-              ),
+              createIdentifierExpression('__qp_function'),
               'push'
             ),
             createArgumentList(
@@ -693,7 +686,7 @@ ParseTreeValidator.validate(pushStatement);
       
   });
 
-  return {
-    LinearizeTransformer: LinearizeTransformer
-  };
-});
+  Querypoint.LinearizeTransformer = LinearizeTransformer;
+
+}());
+
