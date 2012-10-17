@@ -8,32 +8,34 @@
 <script src="chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebCore/inspector/front-end/DebuggerProtocol.js" ></script>
 
 <!-- External Libraries -->
-<script src="keymaster/keymaster.js"></script>
-<script src="jquery/jquery-1.8.2.js"></script>
-<script src="knockout/knockout-2.2.0rc.debug.js"></script>
-<script src="mirror/CodeMirror/lib/codemirror.js"></script>
-<script src="parseuri.js"></script>
+<script src="../keymaster/keymaster.js"></script>
+<script src="../jquery/jquery-1.8.2.js"></script>
+<script src="../knockout/knockout-2.2.0rc.debug.js"></script>
+<script src="../mirror/CodeMirror/lib/codemirror.js"></script>
+<script src="../parseuri.js"></script>
+<script src="../ChannelPlate/ChannelPlate.js"></script>
 
-<script src="addEventFunctions.js"></script>
+<script src="../addEventFunctions.js"></script>
+<script src="../Model/PanelModel.js"></script>
+<script src="../Model/Storage.js"></script>
+
 <script src="KeyBindings.js"></script>
 <script src="URISelector.js"></script>
-<script src="ChannelPlate/ChannelPlate.js"></script>
-<script src="EditorByCodeMirror.js"></script>
-<script src="Panel/PanelModel.js"></script>
-<script src="Panel/Storage.js"></script>
-<script src="Panel/Log.js"></script>
-<script src="Panel/LogScrubber.js"></script>
-<script src="Panel/BuffersStatusBar.js"></script>
-<script src="Panel/Editors.js"></script>
-<script src="Querypoint/QPOutput.js"></script>
+<script src="Log/Log.js"></script>
+<script src="Log/LogScrubber.js"></script>
+<script src="Editors/EditorByCodeMirror.js"></script>
+<script src="Editors/BuffersStatusBar.js"></script>
+<script src="Editors/Editors.js"></script>
+
+<script src="../Querypoint/QPOutput.js"></script>
 <script src="QuerypointPanel.js"></script>
 
-<link rel="stylesheet" href="mirror/CodeMirror/lib/codemirror.css">
-<link rel="stylesheet" href="mirror/CodeMirror/theme/monokai.css">
+<link rel="stylesheet" href="../mirror/CodeMirror/lib/codemirror.css">
+<link rel="stylesheet" href="../mirror/CodeMirror/theme/monokai.css">
 <link rel="stylesheet" href="QuerypointPanel.css"><!-- after codemirror.css -->
-<link rel="stylesheet" href="Panel/logScrubber.css"><!-- after codemirror.css -->
-<link rel="stylesheet" href="Panel/buffersStatusBar.css"><!-- after codemirror.css -->
-<script src="mirror/CodeMirror/mode/javascript/javascript.js"></script>
+<link rel="stylesheet" href="Log/logScrubber.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="Editors/buffersStatusBar.css"><!-- after codemirror.css -->
+<script src="../mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
 <body class="cm-s-monokai">
   <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
