@@ -16,10 +16,13 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
-  this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
+  this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
+  this._traceViewModels = {}; // one per editor
 
+  this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
+  this._onEditorCreated = this._onEditorCreated.bind(this);
   this._initModel();
-  this._onResize();
+  this._onResize();  // set initial sizes
 }
 
 QuerypointPanel.prototype = {
@@ -41,17 +44,41 @@ QuerypointPanel.prototype = {
      var output = new Querypoint.QPOutput(qpOutput, this._editors.currentEditorName());
   },
   
+  _onEditorCreated: function(editor) {
+    this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor);
+    editor.addListener('onViewportChange', function(event) {
+      console.log('onViewportChange', event)
+    });
+  },
+
+  _openURL: function(url) {
+    var foundResource = this.page.resources.some(function(resource){
+        if (resource.url) this._openResource(resource);
+    }.bind(this));
+    if (!foundResource) {
+      var sourceFile = this.project.getFile(url);
+      if (sourceFile) {
+        this._openSourceFile(sourceFile);
+      } else {
+        this._openWhenAvailable.push(url);
+      }
+    }
+  },
 
   _openResource: function(resource, item) {
     console.log("onSelectedFile %o ", item);
-    this._editors.openEditor(resource.url, resource.getContent);
+    this._editors.openEditor(resource.url, resource.getContent, this._onEditorCreated);
     return false; 
   },
   
   _openSourceFile: function(sourceFile, item) {
-    this._editors.openEditor(sourceFile.name, function(contentHandler) {
-      contentHandler(sourceFile.contents);
-    });
+    this._editors.openEditor(
+      sourceFile.name, 
+      function(contentHandler) {
+        contentHandler(sourceFile.contents);
+      },
+      this._onEditorCreated
+    );
   },
 
   // These methods are bound to |this| panel
@@ -147,7 +174,9 @@ QuerypointPanel.prototype = {
     this._log = Querypoint.Log.initialize();
     this._scrubber = Querypoint.LogScrubber.initialize(this._log, panelModel.scrubber);
     this._editors = Querypoint.Editors.initialize(panelModel.buffers);
-
+    var openURLs = panelModel.buffers.openURLs.slice(0);
+    panelModel.buffers.openURLs = [];  // create an list next time we save
+    openURLs.forEach(this._openURL.bind(this));
   },
 
   _restore: function(panelModel) {

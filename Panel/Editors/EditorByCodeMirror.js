@@ -10,7 +10,8 @@ function EditorByCodeMirror(containerElement, name, initialContent) {
     mode:  "javascript",
     lineNumbers: true,
     theme: "monokai",  // TODO UI to change themes
-    onChange: this._syncToCodeMirror.bind(this),
+    onChange: this._onChange.bind(this),
+    onViewportChange: this._onViewportChange.bind(this),
   });
   this._addUniqueClassName();
 }
@@ -48,10 +49,15 @@ EditorByCodeMirror.prototype = {
     }
     this.editorImpl.getWrapperElement().classList.add(uid);
   },
-  _syncToCodeMirror: function(editor, changes) {
-    this.dispatch('onChange', changes);
+
+  // These handlers should redispatch in editorImpl-independent data.
+  _onChange: function(editor, changes) {
+    this.dispatch('onChange', {name: this.name, changes: changes});
   },
+  _onViewportChange: function(editor, start, end) {
+    this.dispatch('onViewportChange', {name: this.name, start: start, end: end});
+  }
 }
 
-Querypoint.addEventFunctions(EditorByCodeMirror.prototype, 'onChange');
+Querypoint.addEventFunctions(EditorByCodeMirror.prototype);
 

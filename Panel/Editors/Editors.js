@@ -9,16 +9,13 @@
       this._openURLs = ko.observableArray();
       this._editors = [];  // co-indexed in _openURLs
 
-      buffers.openURLs.forEach(function(url) {
-          var getContentFnc = Querypoint.Editors._asyncLoad.bind(Querypoint.Editors, url);
-          Querypoint.Editors.openEditor(url, getContentFnc);
-      });
 
       this._userOpenedURL = ko.observable(buffers.userOpenedURL);
 
       this.unsavedBufferNames = ko.observableArray();
       this._savedBuffers = ko.observableArray();
       
+
       ko.applyBindings(this, document.querySelector('buffersStatusBar'));
       
       this.userDirectedEditor = document.querySelector('.userDirectedEditor');
@@ -80,20 +77,23 @@
       editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
       this._editors.push(editor);
-      callback();
+      callback(editor);
     },
     
-    openEditor: function(name, asyncGetContent) {
+    openEditor: function(name, asyncGetContent, onCreated) {
       var editors = this;
       var editor = editors._getEditorByName(name);
 
       if (!editor) {
         asyncGetContent(function(content, encoding) {
-          editors.createEditor(name, content, encoding, function() {
+          editors.createEditor(name, content, encoding, function(editor) {
             editors._showEditor(name);    
             var splash = editors.userDirectedEditor.querySelector('.splash');
             if (splash) {
               splash.parentElement.removeChild(splash);
+            }
+            if (onCreated) {
+              onCreated(editor);
             }
           });
         });
