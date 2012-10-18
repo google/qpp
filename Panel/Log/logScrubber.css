@@ -20,3 +20,11 @@
 	right: 1ex;
 	padding: 0px;
 }
+
+.runNumber {
+    background: #272822; 
+    color: #f8f8f2;
+    border-radius: 999px; /* any value larger than the radius of the object gives a circle */
+    padding-left: .3em;
+    padding-right: .3em;
+}
