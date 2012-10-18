@@ -5277,7 +5277,7 @@ if ( document.querySelectorAll ) {
     };
 
     if ( matches ) {
-      assert(function( div ) {
+      /* avoid break on error, jjb....assert(function( div ) {
         // Check to see if it's possible to do matchesSelector
         // on a disconnected node (IE 9)
         disconnectedMatch = matches.call( div, "div" );
@@ -5289,7 +5289,7 @@ if ( document.querySelectorAll ) {
           rbuggyMatches.push( "!=", pseudos );
         } catch ( e ) {}
       });
-
+*/
       // rbuggyMatches always contains :active and :focus, so no need for a length check
       rbuggyMatches = /* rbuggyMatches.length && */ new RegExp( rbuggyMatches.join("|") );
 
