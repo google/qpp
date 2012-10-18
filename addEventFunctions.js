@@ -4,7 +4,7 @@
 (function() {
   window.Querypoint = window.Querypoint || {};
 
-  Querypoint.addEventFunctions = function(prototype, eventName) {
+  Querypoint.addEventFunctions = function(prototype) {
     
     prototype._getEventHandlers = function(eventName) {
       this.eventHandlers = this.eventHandlers || {};
@@ -36,7 +36,7 @@
     function TestType() {}
     TestType.prototype = {};
 
-    Querypoint.addEventFunctions(TestType.prototype, 'onTest');
+    Querypoint.addEventFunctions(TestType.prototype);
 
     var aTest = new TestType();
     var testString = "been tested";
