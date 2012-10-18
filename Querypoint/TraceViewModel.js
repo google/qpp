@@ -8,6 +8,14 @@
   window.Querypoint = window.Querypoint || {};
 
   Querypoint.TraceViewModel = function(editor) {
-
+    editor.addListener('onViewportChange', function(event) {
+      console.log('onViewportChange', event)
+    });
+    
   }
+
+  Querypoint.prototype = {
+  	
+  };
+
 }());

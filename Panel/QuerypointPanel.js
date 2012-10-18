@@ -46,9 +46,6 @@ QuerypointPanel.prototype = {
   
   _onEditorCreated: function(editor) {
     this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor);
-    editor.addListener('onViewportChange', function(event) {
-      console.log('onViewportChange', event)
-    });
   },
 
   _openURL: function(url) {
