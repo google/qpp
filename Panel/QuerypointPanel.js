@@ -40,12 +40,15 @@ QuerypointPanel.prototype = {
   // Apply any changes since the last onShown call
   refresh: function() {
      console.log("QuerypointPanel refresh "+this._isShowing, this);
-     var qpOutput = document.querySelector('.QPOutput');
-     var output = new Querypoint.QPOutput(qpOutput, this._editors.currentEditorName());
+     var name = this._editors.currentEditorName();
+     if (name) {
+       this._traceViewModels[name].update();
+     }
   },
   
   _onEditorCreated: function(editor) {
-    this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor);
+    var sourceFile = this.project.getFile(editor.name);
+    this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor, sourceFile);
   },
 
   _openURL: function(url) {

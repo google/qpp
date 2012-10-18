@@ -9,12 +9,10 @@
       this._openURLs = ko.observableArray();
       this._editors = [];  // co-indexed in _openURLs
 
-
       this._userOpenedURL = ko.observable(buffers.userOpenedURL);
 
       this.unsavedBufferNames = ko.observableArray();
       this._savedBuffers = ko.observableArray();
-      
 
       ko.applyBindings(this, document.querySelector('buffersStatusBar'));
       

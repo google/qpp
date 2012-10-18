@@ -37,7 +37,12 @@ EditorByCodeMirror.prototype = {
   resize: function(width, height) {
     this.editorImpl.setSize(width, height);
   },
-
+  setMarker: function(lineNumber, text, className) {
+    this.editorImpl.setMarker(lineNumber, text, className);
+  },
+  clearMarker: function(lineNumber) {
+    this.editorImpl.clearMarker(lineNumber);
+  },
 
   //-------------------------
   _addUniqueClassName: function() {

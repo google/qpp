@@ -66,12 +66,16 @@ body {
 }
 
 .CodeMirror-lines {
-  padding: 0; /* bring the code close up the the splitter and egdes */
+  padding: 0; /* bring the code close up the the splitter and edges */
 }
 
 .CodeMirror-gutter-text {
   padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
 }
+
+.cm-s-monokai .CodeMirror-gutter-text pre.qp-no-tracing {color: #75715e;}
+.cm-s-monokai .CodeMirror-gutter-text pre.qp-not-exe {color: #75715e;}
+.cm-s-monokai .CodeMirror-gutter-text pre.qp-activations {color: #035096;}
 
 .hide {
   display: none;
