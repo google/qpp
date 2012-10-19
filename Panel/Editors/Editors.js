@@ -44,7 +44,7 @@
         return this._editors[index];
     },
 
-    _showEditor: function(name) {
+    _showEditor: function(name, onShown) {
       var editor = this._getEditorByName(name);
       var currentEditor = this._getEditorByName(this._userOpenedURL());
       if (currentEditor) {
@@ -58,6 +58,9 @@
       if (editor) {
         this._userOpenedURL(name);
         editor.show();
+        if (onShown) {
+          onShown(editor)
+        }
       }
 
       return editor;
@@ -78,25 +81,25 @@
       callback(editor);
     },
     
-    openEditor: function(name, asyncGetContent, onCreated) {
+    openEditor: function(name, asyncGetContent, onCreated, onShown) {
       var editors = this;
       var editor = editors._getEditorByName(name);
 
       if (!editor) {
         asyncGetContent(function(content, encoding) {
           editors.createEditor(name, content, encoding, function(editor) {
-            editors._showEditor(name);    
+            if (onCreated) {
+              onCreated(editor);
+            }
+            editors._showEditor(name, onShown);    
             var splash = editors.userDirectedEditor.querySelector('.splash');
             if (splash) {
               splash.parentElement.removeChild(splash);
             }
-            if (onCreated) {
-              onCreated(editor);
-            }
           });
         });
       } else {
-        editors._showEditor(name);
+        editors._showEditor(name, onShown);
       }   
     },
     

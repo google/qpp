@@ -20,8 +20,7 @@
   }
 
   Querypoint.TraceViewModel.prototype = {
-    update: function() {
-
+    update: function() { 
       this.updateTraceData(this.fileName, this.updateModel.bind(this, this.fileName));
     },
     getCurrentViewport: function() {
@@ -69,17 +68,19 @@
         tracedOffsetsByLine[line].functionOffsets.push(functionDefinitionOffset);
 
         var activations = traceData[functionDefinitionOffset];
-        var latestActivation = activations[activations.length - 1];
-        var tracedExpressionIds = Object.keys(latestActivation);
-        tracedExpressionIds.forEach(function(id) {
-          if (id === 'turn') return; // TODO
-          var offset = id.split('_')[1]; // [0] is the revision number TODO
-          var line = this._sourceFile.lineNumberTable.getLine(offset);
-          tracedOffsetsByLine[line] = tracedOffsetsByLine[line] || {};
-          tracedOffsetsByLine[line].expressionOffsets = tracedOffsetsByLine[line].expressionOffsets || [];
-          tracedOffsetsByLine[line].expressionOffsets.push(offset);
-          latestTraceByOffset[offset] = latestActivation[id];
-        }.bind(this));
+        if (activations.length) {
+          var latestActivation = activations[activations.length - 1];
+          var tracedExpressionIds = Object.keys(latestActivation);
+          tracedExpressionIds.forEach(function(id) {
+            if (id === 'turn') return; // TODO
+            var offset = id.split('_')[1]; // [0] is the revision number TODO
+            var line = this._sourceFile.lineNumberTable.getLine(offset);
+            tracedOffsetsByLine[line] = tracedOffsetsByLine[line] || {};
+            tracedOffsetsByLine[line].expressionOffsets = tracedOffsetsByLine[line].expressionOffsets || [];
+            tracedOffsetsByLine[line].expressionOffsets.push(offset);
+            latestTraceByOffset[offset] = latestActivation[id];
+          }.bind(this));
+        }
 
       }.bind(this));
       return {tracedOffsetsByLine: tracedOffsetsByLine, latestTraceByOffset: latestTraceByOffset};

@@ -41,14 +41,16 @@ QuerypointPanel.prototype = {
   refresh: function() {
      console.log("QuerypointPanel refresh "+this._isShowing, this);
      var name = this._editors.currentEditorName();
-     if (name) {
+     if (name && this._traceViewModels[name]) {
        this._traceViewModels[name].update();
      }
   },
   
   _onEditorCreated: function(editor) {
     var sourceFile = this.project.getFile(editor.name);
-    this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor, sourceFile);
+    if (sourceFile) {
+      this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor, sourceFile);
+    }
   },
 
   _openURL: function(url) {
@@ -67,7 +69,12 @@ QuerypointPanel.prototype = {
 
   _openResource: function(resource, item) {
     console.log("onSelectedFile %o ", item);
-    this._editors.openEditor(resource.url, resource.getContent, this._onEditorCreated);
+    this._editors.openEditor(
+      resource.url, 
+      resource.getContent, 
+      this._onEditorCreated.bind(this), 
+      this.refresh.bind(this)
+    );
     return false; 
   },
   
@@ -77,7 +84,8 @@ QuerypointPanel.prototype = {
       function(contentHandler) {
         contentHandler(sourceFile.contents);
       },
-      this._onEditorCreated
+      this._onEditorCreated,
+      this.refresh.bind(this)
     );
   },
 
