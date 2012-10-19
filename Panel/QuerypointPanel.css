@@ -73,9 +73,27 @@ body {
   padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
 }
 
-.cm-s-monokai .CodeMirror-gutter-text pre.qp-no-tracing {color: #75715e;}
-.cm-s-monokai .CodeMirror-gutter-text pre.qp-not-exe {color: #75715e;}
-.cm-s-monokai .CodeMirror-gutter-text pre.qp-activations {color: #035096;}
+.cm-s-monokai .CodeMirror-gutter-text pre.qp-no-activations {color: #75715e;}
+.cm-s-monokai .CodeMirror-gutter-text pre.qp-traces {color: ##d0d0d0;}
+.cm-s-monokai .CodeMirror-gutter-text pre.qp-activations {color: rgb(6, 137, 255);}
+
+.traceData {
+  position: absolute;
+  color:  #272822;
+  background-color: #d0d0d0;
+
+  border-right: solid 2px red;
+}
+
+.traceBackground * {
+  visibility: hidden;
+
+}
+
+pre.traceBackground {
+  text-indent: -9999px;  /* sends the text off-screen */
+  background-color: #75715e;
+}
 
 .hide {
   display: none;

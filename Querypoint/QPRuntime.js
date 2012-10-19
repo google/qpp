@@ -22,7 +22,7 @@
     }
     
     function trace(expr) {
-      return new String(expr);
+      return expr + '';
     }
 
     function initiailizeHiddenGlobalState() {

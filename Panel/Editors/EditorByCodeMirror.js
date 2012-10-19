@@ -12,6 +12,7 @@ function EditorByCodeMirror(containerElement, name, initialContent) {
     theme: "monokai",  // TODO UI to change themes
     onChange: this._onChange.bind(this),
     onViewportChange: this._onViewportChange.bind(this),
+    onGutterClick: this._onGutterClick.bind(this),
   });
   this._addUniqueClassName();
 }
@@ -43,6 +44,12 @@ EditorByCodeMirror.prototype = {
   clearMarker: function(lineNumber) {
     this.editorImpl.clearMarker(lineNumber);
   },
+  insertElement: function(pos, element, scrollIntoView) {
+    this.editorImpl.addWidget(pos, element, scrollIntoView);
+  },
+  setLineClass: function(line, textClassName, backgroundClassName) {
+    this.editorImpl.setLineClass(line, textClassName, backgroundClassName);
+  },
 
   //-------------------------
   _addUniqueClassName: function() {
@@ -61,6 +68,9 @@ EditorByCodeMirror.prototype = {
   },
   _onViewportChange: function(editor, start, end) {
     this.dispatch('onViewportChange', {name: this.name, start: start, end: end});
+  },
+  _onGutterClick: function(editor, line) {
+    this.dispatch('onClickLineNumber', {name: this.name, line: line});
   }
 }
 
