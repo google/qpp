@@ -97,6 +97,7 @@
       <li><a href="demo/complete.html">Autocompletion</a> (<a href="demo/xmlcomplete.html">XML</a>)</li>
       <li><a href="demo/search.html">Search/replace</a></li>
       <li><a href="demo/folding.html">Code folding</a></li>
+      <li><a href="demo/widget.html">Line widgets</a> (via JSHint)</li>
       <li><a href="demo/mustache.html">Mode overlays</a></li>
       <li><a href="demo/multiplex.html">Mode multiplexer</a></li>
       <li><a href="demo/preview.html">HTML editor with preview</a></li>
@@ -105,6 +106,7 @@
       <li><a href="demo/activeline.html">Highlighting the current line</a></li>
       <li><a href="demo/matchhighlighter.html">Highlighting selection matches</a></li>
       <li><a href="demo/theme.html">Theming</a></li>
+      <li><a href="demo/variableheight.html">Mixed font sizes</a></li>
       <li><a href="demo/runmode.html">Stand-alone highlighting</a></li>
       <li><a href="demo/fullscreen.html">Full-screen editing</a></li>
       <li><a href="demo/changemode.html">Mode auto-changing</a></li>
@@ -114,6 +116,7 @@
       <li><a href="demo/vim.html">Vim keybindings</a></li>
       <li><a href="demo/closetag.html">Automatic xml tag closing</a></li>
       <li><a href="demo/loadmode.html">Lazy mode loading</a></li>
+      <li><a href="demo/btree.html">Document tree visualization</a></li>
     </ul>
 
     <h2>Real-world uses:</h2>
@@ -137,15 +140,14 @@
       <li><a href="http://ql.io/">ql.io</a> (http API query helper)</li>
       <li><a href="http://elm-lang.org/Examples.elm">Elm language examples</a></li>
       <li><a href="https://thefiletree.com">The File Tree</a> (collab editor)</li>
-      <li><a href="http://bluegriffon.org/">BlueGriffon</a> (HTML editor)</li>
       <li><a href="http://www.jshint.com/">JSHint</a> (JS linter)</li>
       <li><a href="http://kl1p.com/cmtest/1">kl1p</a> (paste service)</li>
       <li><a href="http://sqlfiddle.com">SQLFiddle</a> (SQL playground)</li>
       <li><a href="http://try.haxe.org">Try Haxe</a> (Haxe Playground) </li>
       <li><a href="http://cssdeck.com/">CSSDeck</a> (CSS showcase)</li>
-      <li><a href="http://www.ckwnc.com/">CKWNC</a> (UML editor)</li>
       <li><a href="http://www.sketchpatch.net/labs/livecodelabIntro.html">sketchPatch Livecodelab</a></li>
       <li><a href="https://notex.ch">NoTex</a> (rST authoring)</li>
+      <li><a href="doc/realworld.html">More...</a></li>
     </ul>
 
   </div></div>
@@ -177,9 +179,12 @@
   of how to use the editor, and then describes the API in detail.</p>
 
   <p>For those who want to learn more about the code, there is
-  an <a href="doc/internals.html">overview of the internals</a> available.
+  a <a href="http://marijnhaverbeke.nl/blog/#cm-internals">series of
+  posts</a> on CodeMirror on my blog, and the
+  old <a href="doc/internals.html">overview of the editor
+  internals</a>.
   The <a href="http://github.com/marijnh/CodeMirror">source code</a>
-  itself is, for the most part, also well commented.</p>
+  itself is, for the most part, also very readable.</p>
 
   <h2 id="support">Support and bug reports</h2>
 
@@ -210,12 +215,15 @@
   <ul>
     <li>Firefox 2 or higher</li>
     <li>Chrome, any version</li>
-    <li>Safari 3 or higher</li>
+    <li>Safari 5.2 or higher</li>
     <li>Opera 9 or higher (with some key-handling problems on OS X)</li>
-    <li>Internet Explorer 7 or higher in standards mode<br>
-      <em>(So not quirks mode. But quasi-standards mode with a
+    <li>Internet Explorer 8 or higher in standards mode<br>
+      <em>(<strong>Not</strong> quirks mode. But quasi-standards mode with a
       transitional doctype is also flaky. <code>&lt;!doctype
       html></code> is recommended.)</em></li>
+    <li>Internet Explorer 7 (standards mode) is usable, but buggy. It
+    has a <a href="http://therealcrisp.xs4all.nl/meuk/IE-zindexbug.html">z-index
+    bug</a> that prevents CodeMirror from working properly.</li>
   </ul>
 
   <p>I am not actively testing against every new browser release, and
@@ -257,9 +265,10 @@
   <ul>
     <li>Donate
     (<span onclick="document.getElementById('paypal').submit();"
-    class="quasilink">Paypal</span>
-    or <span onclick="document.getElementById('bankinfo').style.display = 'block';"
-             class="quasilink">bank</span>)</li>
+    class="quasilink">Paypal</span>,
+    <span onclick="document.getElementById('bankinfo').style.display = 'block';"
+           class="quasilink">bank</span>, or
+    <a href="https://www.gittip.com/marijnh">Gittip</a>)</li>
     <li>Purchase <a href="#commercial">commercial support</a></li>
   </ul>
 
@@ -281,6 +290,38 @@
 
   <h2 id=releases>Releases</h2>
 
+  <p class="rel">22-10-2012: <a href="http://codemirror.net/codemirror-2.35.zip">Version 2.35</a>:</p>
+
+  <ul class="rel-note">
+    <li>New (sub) mode: <a href="mode/javascript/typescript.html">TypeScript</a>.</li>
+    <li>Don't overwrite (insert key) when pasing.</li>
+    <li>Fix several bugs in <a href="doc/manual.html#markText"><code>markText</code></a>/undo interaction.</li>
+    <li>Better indentation of JavaScript code without semicolons.</li>
+    <li>Add <a href="doc/manual.html#defineInitHook"><code>defineInitHook</code></a> function.</li>
+    <li>Full <a href="https://github.com/marijnh/CodeMirror/compare/v2.34...v2.35">list of patches</a>.</li>
+  </ul>
+
+  <p class="rel">22-10-2012: <a href="http://codemirror.net/codemirror-3.0beta2.zip">Version 3.0, beta 2</a>:</p>
+
+  <p class="rel-note"><strong>BETA release, new major version</strong>. Only partially
+  backwards-compatible. See
+  the <a href="doc/upgrade_v3.html">upgrading
+  guide</a> for more information. Changes since beta1:</p>
+
+  <ul class="rel-note">
+    <li>Fix page-based coordinate computation.</li>
+    <li>Fix firing of <a href="doc/manual.html#event_gutterClick"><code>gutterClick</code></a> event.</li>
+    <li>Add <a href="doc/manual.html#option_cursorHeight"><code>cursorHeight</code></a> option.</li>
+    <li>Fix bi-directional text regression.</li>
+    <li>Add <a href="doc/manual.html#option_viewportMargin"><code>viewportMargin</code></a> option.</li>
+    <li>Directly handle mousewheel events (again, hopefully better).</li>
+    <li>Make vertical cursor movement more robust (through widgets, big line gaps).</li>
+    <li>Add <a href="doc/manual.html#option_flattenSpans"><code>flattenSpans</code></a> option.</li>
+    <li>Many optimizations. Poor responsiveness should be fixed.</li>
+    <li>Initialization in hidden state works again.</li>
+    <li>Full <a href="https://github.com/marijnh/CodeMirror/compare/v3.0beta1...v3.0beta2">list of patches</a>.</li>
+  </ul>
+
   <p class="rel">19-09-2012: <a href="http://codemirror.net/codemirror-2.34.zip">Version 2.34</a>:</p>
 
   <ul class="rel-note">
@@ -298,7 +339,7 @@
 
   <p class="rel-note"><strong>BETA release, new major version</strong>. Only partially
   backwards-compatible. See
-  the <a href="http://codemirror.net/3/doc/upgrade_v3.html">upgrading
+  the <a href="doc/upgrade_v3.html">upgrading
   guide</a> for more information. Major new features are:</p>
 
   <ul class="rel-note">
@@ -404,57 +445,6 @@
     and <a href="doc/manual.html#cursorCoords"><code>cursorCoords</code></a> with a <code>mode</code> argument.</li>
     <li>Add <a href="doc/manual.html#option_autofocus"><code>autofocus</code></a> option.</li>
     <li>Add <a href="doc/manual.html#findMarksAt"><code>findMarksAt</code></a> method.</li>
-  </ul>
-
-  <p class="rel">27-02-2012: <a href="http://codemirror.net/codemirror-2.22.zip">Version 2.22</a>:</p>
-
-  <ul class="rel-note">
-    <li>Allow <a href="doc/manual.html#keymaps">key handlers</a> to pass up events, allow binding characters.</li>
-    <li>Add <a href="doc/manual.html#option_autoClearEmptyLines"><code>autoClearEmptyLines</code></a> option.</li>
-    <li>Properly use tab stops when rendering tabs.</li>
-    <li>Make PHP mode more robust.</li>
-    <li>Support indentation blocks in <a href="doc/manual.html#util_foldcode">code folder</a>.</li>
-    <li>Add a script for <a href="doc/manual.html#util_match-highlighter">highlighting instances of the selection</a>.</li>
-    <li>New <a href="mode/properties/index.html">.properties</a> mode.</li>
-    <li>Fix many bugs.</li>
-  </ul>
-
-  <p class="rel">27-01-2012: <a href="http://codemirror.net/codemirror-2.21.zip">Version 2.21</a>:</p>
-
-  <ul class="rel-note">
-    <li>Added <a href="mode/less/index.html">LESS</a>, <a href="mode/mysql/index.html">MySQL</a>,
-    <a href="mode/go/index.html">Go</a>, and <a href="mode/verilog/index.html">Verilog</a> modes.</li>
-    <li>Add <a href="doc/manual.html#option_smartIndent"><code>smartIndent</code></a>
-    option.</li>
-    <li>Support a cursor in <a href="doc/manual.html#option_readOnly"><code>readOnly</code></a>-mode.</li>
-    <li>Support assigning multiple styles to a token.</li>
-    <li>Use a new approach to drawing the selection.</li>
-    <li>Add <a href="doc/manual.html#scrollTo"><code>scrollTo</code></a> method.</li>
-    <li>Allow undo/redo events to span non-adjacent lines.</li>
-    <li>Lots and lots of bugfixes.</li>
-  </ul>
-
-  <p class="rel">20-12-2011: <a href="http://codemirror.net/codemirror-2.2.zip">Version 2.2</a>:</p>
-
-  <ul class="rel-note">
-    <li>Slightly incompatible API changes. Read <a href="doc/upgrade_v2.2.html">this</a>.</li>
-    <li>New approach
-    to <a href="doc/manual.html#option_extraKeys">binding</a> keys,
-    support for <a href="doc/manual.html#option_keyMap">custom
-    bindings</a>.</li>
-    <li>Support for overwrite (insert).</li>
-    <li><a href="doc/manual.html#option_tabSize">Custom-width</a>
-    and <a href="demo/visibletabs.html">stylable</a> tabs.</li>
-    <li>Moved more code into <a href="doc/manual.html#addons">add-on scripts</a>.</li>
-    <li>Support for sane vertical cursor movement in wrapped lines.</li>
-    <li>More reliable handling of
-    editing <a href="doc/manual.html#markText">marked text</a>.</li>
-    <li>Add minimal <a href="demo/emacs.html">emacs</a>
-    and <a href="demo/vim.html">vim</a> bindings.</li>
-    <li>Rename <code>coordsFromIndex</code>
-    to <a href="doc/manual.html#posFromIndex"><code>posFromIndex</code></a>,
-    add <a href="doc/manual.html#indexFromPos"><code>indexFromPos</code></a>
-    method.</li>
   </ul>
 
   <p><a href="doc/oldrelease.html">Older releases...</a></p>
