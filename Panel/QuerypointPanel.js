@@ -47,9 +47,10 @@ QuerypointPanel.prototype = {
   },
   
   _onEditorCreated: function(editor) {
-    var sourceFile = this.project.getFile(editor.name);
+    var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
-      this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor, sourceFile);
+     var tree = this.project.getParseTree(sourceFile);
+      this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor, sourceFile, tree);
     }
   },
 

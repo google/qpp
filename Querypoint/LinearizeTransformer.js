@@ -560,15 +560,6 @@ ParseTreeValidator.validate(linearExpression);
             new CommaExpression(loc, [tree, value || createUndefinedExpression()])
           );
       },
-
-
-      _generateFunctionOffset: function(location) {
-        if (location) {
-          return '' + location.start.offset;
-        } else {
-          return "_internal";
-        }
-      }, 
       
       _createActivationStatements: function(tree) {
         // var activation = {turn: window.__qp.turn};   // used to store traces by offset

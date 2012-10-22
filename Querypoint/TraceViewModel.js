@@ -7,9 +7,97 @@
 (function(){
   window.Querypoint = window.Querypoint || {};
 
-  Querypoint.TraceViewModel = function(editor, sourceFile) {
+  Querypoint.TraceVisitor = function() {
+  }
+  
+  Querypoint.TraceVisitor.prototype = {
+    visitTrace: function(tree, traceData){
+      var functionDefinitionOffsetKeys = Object.keys(traceData);
+      functionDefinitionOffsetKeys.forEach(function(functionDefinitionOffsetKey) {
+        var functionDefinitionTree;
+        if (functionDefinitionOffsetKey === 'file') {
+          functionDefinitionTree = tree;
+        } else {
+          var functionDefinitionOffset = parseInt(functionDefinitionOffsetKey, 10);
+          functionDefinitionTree = Querypoint.FindInTree.byOffset(tree, functionDefinitionOffset);
+        }
+        if (functionDefinitionTree) {
+          var activations = traceData[functionDefinitionOffsetKey];
+          if (activations.length) {
+            this.visitFunctionTraced(functionDefinitionTree, activations);  
+          }
+        }
+        // else no call comes to visit* functions.
+      }.bind(this));
+    },
+    visitFunctionTraced: function(functionTree, activations) {
+      activations.forEach(function(activation){
+        this.visitActivationTraced(functionTree, activation);
+      }.bind(this));
+    },
+    visitActivationTraced: function(functionTree, activation) {
+      var tracedExpressionIds = Object.keys(activation);
+      tracedExpressionIds.forEach(function(id){
+        if (id === 'turn') return;
+        var offsetKey = id.split('_')[1]; // [0] is the revision number TODO
+        var offset = parseInt(offsetKey, 10);
+        var trace = activation[id];
+        var expressionTree = Querypoint.FindInTree.byOffset(functionTree, offset); 
+        this.visitExpressionsTraced(expressionTree, trace);
+      }.bind(this));
+    },
+    visitExpressionsTraced: function(expressionTree, trace) {
+      console.log("Visiting "+traceur.outputgeneration.TreeWriter.write(tree) + ' with trace ' + trace);
+    }
+  };
+
+  //--------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Attach traceData to the appropriate subtree
+  Querypoint.TreeHangerTraceVisitor = function() {
+
+  }
+  Querypoint.TreeHangerTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
+  Querypoint.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, trace) {
+    if (expressionTree.location) {
+      expressionTree.location.trace = trace;
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  // Create line-table info for UI showing where trace data may be hiding
+
+  Querypoint.LineModelTraceVisitor = function(sourceFile) {
+    this._sourceFile = sourceFile;
+    this.tracedOffsetsByLine = {};
+    this.latestTraceByOffset = {};
+  }
+  Querypoint.LineModelTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
+  Querypoint.LineModelTraceVisitor.prototype.visitFunctionTraced = function(functionTree, activations) {
+    // latest only
+    this.visitActivationTraced(functionTree, activations[activations.length - 1]);
+  }
+  Querypoint.LineModelTraceVisitor.prototype.visitActivationTraced = function(functionTree, activation) {
+    var functionDefinitionOffset = functionTree.location.start.offset;
+    var line = this._sourceFile.lineNumberTable.getLine(functionDefinitionOffset);
+    this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
+      
+    this.tracedOffsetsByLine[line].functionOffsets = this.tracedOffsetsByLine[line].functionOffsets || [];
+    this.tracedOffsetsByLine[line].functionOffsets.push(functionDefinitionOffset);
+    Querypoint.TraceVisitor.prototype.visitActivationTraced.call(this, functionTree, activation);
+  }
+  Querypoint.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, trace) {
+    var offset = expressionTree.location.start.offset;
+    var line = this._sourceFile.lineNumberTable.getLine(offset);
+    this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
+    this.tracedOffsetsByLine[line].expressionOffsets = this.tracedOffsetsByLine[line].expressionOffsets || [];
+    this.tracedOffsetsByLine[line].expressionOffsets.push(offset);
+    this.latestTraceByOffset[offset] = trace; 
+  }
+
+  Querypoint.TraceViewModel = function(editor, sourceFile, tree) {
     this._editor = editor;
     this._sourceFile = sourceFile;
+    this._tree = tree;
 
     this.fileName = editor.name;
 
@@ -17,7 +105,10 @@
   
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
+
   }
+  
+  Querypoint.TraceViewModel.treeHanger = new Querypoint.TreeHangerTraceVisitor();
 
   Querypoint.TraceViewModel.prototype = {
     update: function() { 
@@ -56,40 +147,15 @@
     updateTraceData: function(fileName, callback) {
       chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"'+fileName+'\"]', callback);
     },
-    latestTraceModel: function(traceData) {
-      var functionDefinitionOffsets = Object.keys(traceData);
-      var tracedOffsetsByLine = {};
-      var latestTraceByOffset = {};
-      functionDefinitionOffsets.forEach(function(functionDefinitionOffset) {
-        var line = this._sourceFile.lineNumberTable.getLine(functionDefinitionOffset);
-        tracedOffsetsByLine[line] = tracedOffsetsByLine[line] || {};
-        
-        tracedOffsetsByLine[line].functionOffsets = tracedOffsetsByLine[line].functionOffsets || [];
-        tracedOffsetsByLine[line].functionOffsets.push(functionDefinitionOffset);
 
-        var activations = traceData[functionDefinitionOffset];
-        if (activations.length) {
-          var latestActivation = activations[activations.length - 1];
-          var tracedExpressionIds = Object.keys(latestActivation);
-          tracedExpressionIds.forEach(function(id) {
-            if (id === 'turn') return; // TODO
-            var offset = id.split('_')[1]; // [0] is the revision number TODO
-            var line = this._sourceFile.lineNumberTable.getLine(offset);
-            tracedOffsetsByLine[line] = tracedOffsetsByLine[line] || {};
-            tracedOffsetsByLine[line].expressionOffsets = tracedOffsetsByLine[line].expressionOffsets || [];
-            tracedOffsetsByLine[line].expressionOffsets.push(offset);
-            latestTraceByOffset[offset] = latestActivation[id];
-          }.bind(this));
-        }
-
-      }.bind(this));
-      return {tracedOffsetsByLine: tracedOffsetsByLine, latestTraceByOffset: latestTraceByOffset};
-    },
     updateModel: function(fileName, traceData) {
       console.log("updateModel "+fileName+" traceData: ", traceData);
-      this.traceData = traceData;
-      this.traceModel = this.latestTraceModel(traceData);
-      this.updateViewModel();
+      if (traceData) {
+        Querypoint.TraceViewModel.treeHanger.visitTrace(this._tree, traceData);
+        this.traceModel = new Querypoint.LineModelTraceVisitor(this._sourceFile);
+        this.traceModel.visitTrace(this._tree, traceData);
+        this.updateViewModel();
+      }
     },
     getTracedOffsetByLine: function(line) {
       return this.traceModel.tracedOffsetsByLine[line];

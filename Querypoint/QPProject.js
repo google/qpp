@@ -15,13 +15,9 @@ function QPProject(url) {
 
 QPProject.prototype = Object.create(RemoteWebPageProject.prototype);
       
-      function generateFileName(location) {
-        if (location) {
-          return location.start.source.name;
-        } else {
-          return "internal";
-        }
-      };
+function generateFileName(location) {
+    return location ? location.start.source.name : "internal";
+};
 
 QPProject.prototype.generateSourceFromTrees = function(trees) {
   return trees.keys().map(function(file) {

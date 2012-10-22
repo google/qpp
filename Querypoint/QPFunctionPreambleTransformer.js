@@ -51,7 +51,7 @@
   }
 
   QPFunctionPreambleTransformer.prototype.generateFunctionId = function(location) {
-    return location.start.offset + '';
+    return location.start.offset;
   }
 
   QPFunctionPreambleTransformer.prototype._createFileNameStatement = function(tree) {
@@ -116,16 +116,19 @@
     // We'll use these to build __qp.functions objects in _createInitializationStatements
     this.functionLocations.push(tree.location);
 
-
     tree.statements = this._createPreambleStatements(tree).concat(tree.statements);
     return tree;
   }
 
   QPFunctionPreambleTransformer.prototype.transformProgram = function(tree) {
-    this.functionLocations.push(tree.location);  // the top-level function for this compilation unit
+    var fileFunctionLocation = {
+        start: {source: tree.location.start.source, offset: 'file'}, 
+        end: {source: tree.location.start.source, offset: 'file'}
+    };
+    this.functionLocations.push(fileFunctionLocation);  // the top-level function for this compilation unit
     var elements = this.transformList(tree.programElements);
     var prefix = [this._createFileNameStatement(tree)].concat(this._createInitializationStatements(tree));
-    prefix.push(this._createVarFunctionStatement(tree.location));
+    prefix.push(this._createVarFunctionStatement(fileFunctionLocation));
     elements = prefix.concat(elements);
     return new Program(tree.location, elements);
   }
