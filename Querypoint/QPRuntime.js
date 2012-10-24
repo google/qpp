@@ -30,6 +30,7 @@
         intercepts: {}, // keys are intercepted function names, values functions
         earlyEventHandlers: {}, // keys are event types, values are arrays of handlers
         turns: [],      // stack of {fnc: <function>, args: []}
+        turn: 0,        // turns.length set by wrapEntryPoint
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
         fireLoad: fireLoad,
         trace: trace,

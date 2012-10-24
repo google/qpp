@@ -31,11 +31,19 @@
       }.bind(this));
     },
     visitFunctionTraced: function(functionTree, activations) {
-      activations.forEach(function(activation){
-        this.visitActivationTraced(functionTree, activation);
+      var turn = 0;
+      var activationInThisTurn = 0;
+      activations.forEach(function(activation, index){
+        activationInThisTurn += 1;
+        if (activation.turn !== turn) {
+          // The activations are all in one array, ordered by turn. 
+          // Reset the counter for activation in this turn when the turn number changes.
+          activationInThisTurn = 1;
+        }
+        this.visitActivationTraced(functionTree, activation, activationInThisTurn);
       }.bind(this));
     },
-    visitActivationTraced: function(functionTree, activation) {
+    visitActivationTraced: function(functionTree, activation, activationCount) {
       var tracedExpressionIds = Object.keys(activation);
       tracedExpressionIds.forEach(function(id){
         if (id === 'turn') return;
@@ -43,10 +51,10 @@
         var offset = parseInt(offsetKey, 10);
         var trace = activation[id];
         var expressionTree = Querypoint.FindInTree.byOffset(functionTree, offset); 
-        this.visitExpressionsTraced(expressionTree, trace);
+        this.visitExpressionsTraced(expressionTree, activation.turn, activationCount, trace);
       }.bind(this));
     },
-    visitExpressionsTraced: function(expressionTree, trace) {
+    visitExpressionsTraced: function(expressionTree, turn, activationCount, trace) {
       console.log("Visiting "+traceur.outputgeneration.TreeWriter.write(tree) + ' with trace ' + trace);
     }
   };
@@ -57,9 +65,16 @@
 
   }
   Querypoint.TreeHangerTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
-  Querypoint.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, trace) {
+  Querypoint.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, activationCount, trace) {
     if (expressionTree.location) {
-      expressionTree.location.trace = trace;
+      expressionTree.location.trace = expressionTree.location.trace || [];
+      expressionTree.location.trace.push({
+          turn: turn,
+          activation: activationCount, 
+          value: trace
+      });
+    } else {
+      console.error("Trace with no location", expressionTree);
     }
   }
 
@@ -205,15 +220,22 @@
         return element;
     },
     showToken: function(tokenEvent) {
-      console.log("showToken " + tokenEvent.token + '@' + tokenEvent.start.line + '.' + tokenEvent.start.column + '-' + tokenEvent.end.column);
+      var tokenLog = tokenEvent.token + '@' + tokenEvent.start.line + '.' + tokenEvent.start.column + '-' + tokenEvent.end.column;
+      console.log("showToken " + tokenLog);
       var line = tokenEvent.start.line;
       var offsetOfLine = this._sourceFile.lineNumberTable.offsetOfLine(line);
       var tokenOffset = offsetOfLine + tokenEvent.start.column;
       var tokenTree = Querypoint.FindInTree.byOffset(this._tree, tokenOffset);
-      this._showTokenTree(tokenTree);
+      if (tokenTree) {
+        this._showTokenTree(tokenTree);
+      } else {
+        console.warn("No tree at offset "+tokenOffset+' for token '+tokenLog);
+      }
     },
     _showTokenTree: function(tree) {
-      console.log(traceur.outputgeneration.TreeWriter.write(tree));
+      if (tree.location.trace) {
+          console.log("Traced "+tree.location.trace);
+      }
     }
   };
 
