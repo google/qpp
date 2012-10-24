@@ -43,6 +43,9 @@
   <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
   <div class="panel">
     <div class="logScrubber">
+      <span class="helpInfo">
+        Log Scrubber: click or drag to change log viewport 
+      </span>
       <div class="scrubberBox">
         <span class="runNumber">1</span>
         <span class="error"></span>
@@ -59,29 +62,20 @@
     </div>
     <div class="splitter"></div>
     <div class='log'>
-      <div colspan="2">console.log and tracing status output</div>
+      <span class="helpInfo">console.log and tracing status output</span>
     </div>
     <div class="splitter"></div>
     <div class="sourceViewport">
       <div class="QPOutput">
-        <pre>
-          Click on this panel to refresh trace 
-        </pre>
-        <pre>
-          (hack for now)
-        </pre>
-        <pre>
-          Control+o to change file viewed
-        </pre>
+        <span class="helpInfo">Tracing output</span>
       </div>
       <div class="userDirectedEditor">
-        <ul class="splash">
-          <li>Editors opened with ItemSelector (control+o)</li>
-        </ul>
+        <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
       </div>
     </div>
     <div class="splitter"></div>
     <div class="buffersStatusBar">
+      <span class="helpInfo">Current Editor URL</span>
       <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
       <span class="userOpenedURL" data-bind="text: _userOpenedURL()"></span>
       <span 

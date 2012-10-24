@@ -205,7 +205,15 @@
         return element;
     },
     showToken: function(tokenEvent) {
-      console.log("showToken " + tokenEvent.token + '@' + tokenEvent.line + '.' + tokenEvent.column);
+      console.log("showToken " + tokenEvent.token + '@' + tokenEvent.start.line + '.' + tokenEvent.start.column + '-' + tokenEvent.end.column);
+      var line = tokenEvent.start.line;
+      var offsetOfLine = this._sourceFile.lineNumberTable.offsetOfLine(line);
+      var tokenOffset = offsetOfLine + tokenEvent.start.column;
+      var tokenTree = Querypoint.FindInTree.byOffset(this._tree, tokenOffset);
+      this._showTokenTree(tokenTree);
+    },
+    _showTokenTree: function(tree) {
+      console.log(traceur.outputgeneration.TreeWriter.write(tree));
     }
   };
 

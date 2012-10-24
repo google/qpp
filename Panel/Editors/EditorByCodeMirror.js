@@ -108,7 +108,11 @@ EditorByCodeMirror.prototype = {
       return;
     }
     this.previousToken = token;
-    this.dispatch('onTokenOver', {line: pos.line, column: token.start, token: token.string});   
+    this.dispatch('onTokenOver', {
+      start: {line: pos.line, column: token.start}, 
+      end: {line: pos.line, column: token.end}, 
+      token: token.string
+    });   
   },
   _drawTokenBox: function(pos, token) {
 

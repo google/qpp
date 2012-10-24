@@ -46,6 +46,23 @@ QuerypointPanel.prototype = {
      }
   },
   
+  toggleHelp: function() {
+    if (this._helping) {
+      this._helping = false;
+      this._hideHelp();
+    } else {
+      this._helping = true;
+      this._showHelp();
+    }
+  },
+  
+  _showHelp: function() {
+      document.body.classList.add('showHelp');
+  },
+  _hideHelp: function() {
+      document.body.classList.remove('showHelp');
+  },
+  
   _onEditorCreated: function(editor) {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {

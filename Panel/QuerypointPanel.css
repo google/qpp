@@ -49,6 +49,7 @@ body {
 .userDirectedEditor {
   float: right;
   height: 100%;
+  position: relative;
 }
 
 .sourceViewport {
@@ -75,8 +76,25 @@ body {
   padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
 }
 
+.helpInfo {
+    display: none;
+}
+
+.showHelp .helpInfo {
+    z-index: 200;
+    position: absolute;
+
+    display: inline;
+    color: #d0d0d0;
+    background-color: #75715e;
+    left: 4em;
+    padding-left: 1ex;
+    padding-right: 1ex;
+    border-radius: 999px; /* any value larger than the radius of the object gives a circle */
+}  
+
 .cm-s-monokai .qp-no-activations .CodeMirror-linenumber  {color: #75715e;}
-.cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: ##d0d0d0;}
+.cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
 .cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
 
 .traceData {

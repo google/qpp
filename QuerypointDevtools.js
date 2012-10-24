@@ -11,6 +11,15 @@ var project;
 var qpPanel; // lazy created view
 
 chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/QuerypointPanel.html", function(panel) {
+  var helpButton = panel.createStatusBarButton("Panel/QuerypointHelpIcon.png", "Querypoint Panel Help", false);
+  helpButton.onClicked.addListener(function() {
+    if (!qpPanel) {
+       console.error("No qpPanel?");
+    } else {
+       qpPanel.toggleHelp();
+    }
+  });
+  
   panel.onShown.addListener(function (panel_window) {
     if (!qpPanel) {
       if (!project) console.error("Trying to create QPPanel with no project");
