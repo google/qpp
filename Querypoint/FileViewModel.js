@@ -1,8 +1,9 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// Update the trace view output on the LHS of the editor when
-// either the editor viewport or trace data changes
+// Binds the tracuer SourceFile, Tree, and Editor to interactively
+// update the Tree with trace data as the user explores the source
+// in the editor
 
 (function(){
   window.Querypoint = window.Querypoint || {};
@@ -109,7 +110,7 @@
     this.latestTraceByOffset[offset] = trace; 
   }
 
-  Querypoint.TraceViewModel = function(editor, sourceFile, tree) {
+  Querypoint.FileViewModel = function(editor, sourceFile, tree) {
     this._editor = editor;
     this._sourceFile = sourceFile;
     this._tree = tree;
@@ -127,9 +128,9 @@
     this.updateViewport(editor.getViewport());
   }
   
-  Querypoint.TraceViewModel.treeHanger = new Querypoint.TreeHangerTraceVisitor();
+  Querypoint.FileViewModel.treeHanger = new Querypoint.TreeHangerTraceVisitor();
 
-  Querypoint.TraceViewModel.prototype = {
+  Querypoint.FileViewModel.prototype = {
     update: function() { 
       this.updateTraceData(this.fileName, this.updateModel.bind(this, this.fileName));
     },
@@ -170,7 +171,7 @@
     updateModel: function(fileName, traceData) {
       console.log("updateModel "+fileName+" traceData: ", traceData);
       if (traceData) {
-        Querypoint.TraceViewModel.treeHanger.visitTrace(this._tree, traceData);
+        Querypoint.FileViewModel.treeHanger.visitTrace(this._tree, traceData);
         this.traceModel = new Querypoint.LineModelTraceVisitor(this._sourceFile);
         this.traceModel.visitTrace(this._tree, traceData);
         this.updateViewModel();

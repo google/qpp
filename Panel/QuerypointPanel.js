@@ -17,7 +17,7 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
   this.project = project;
 
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
-  this._traceViewModels = {}; // one per editor
+  this._fileViewModels = {}; // one per editor
 
   this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
   this._onEditorCreated = this._onEditorCreated.bind(this);
@@ -41,8 +41,8 @@ QuerypointPanel.prototype = {
   refresh: function() {
      console.log("QuerypointPanel refresh "+this._isShowing, this);
      var name = this._editors.currentEditorName();
-     if (name && this._traceViewModels[name]) {
-       this._traceViewModels[name].update();
+     if (name && this._fileViewModels[name]) {
+       this._fileViewModels[name].update();
      }
   },
   
@@ -67,7 +67,7 @@ QuerypointPanel.prototype = {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
      var tree = this.project.getParseTree(sourceFile);
-      this._traceViewModels[editor.name] = new Querypoint.TraceViewModel(editor, sourceFile, tree);
+      this._fileViewModels[editor.name] = new Querypoint.FileViewModel(editor, sourceFile, tree);
     }
   },
 
