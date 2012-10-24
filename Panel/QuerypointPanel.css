@@ -67,29 +67,38 @@ body {
 
 .CodeMirror-lines {
   padding: 0; /* bring the code close up the the splitter and edges */
+  cursor: pointer;
+  outline: 1px green solid;
 }
 
 .CodeMirror-gutter-text {
   padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
 }
 
-.cm-s-monokai .CodeMirror-gutter-text pre.qp-no-activations {color: #75715e;}
-.cm-s-monokai .CodeMirror-gutter-text pre.qp-traces {color: ##d0d0d0;}
-.cm-s-monokai .CodeMirror-gutter-text pre.qp-activations {color: rgb(6, 137, 255);}
+.cm-s-monokai .qp-no-activations .CodeMirror-linenumber  {color: #75715e;}
+.cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: ##d0d0d0;}
+.cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
 
 .traceData {
-  position: absolute;
+  padding-left: 4px;
+  position: relative;
+}
+.traceData span {
+
   color:  #272822;
   background-color: #d0d0d0;
 
   border-right: solid 2px red;
+  
+
+  position: relative;
+
 }
-
-.traceBackground * {
-  visibility: hidden;
+.box {
+  outline: 1px solid red;
+  position: absolute;
 
 }
-
 pre.traceBackground {
   text-indent: -9999px;  /* sends the text off-screen */
   background-color: #75715e;

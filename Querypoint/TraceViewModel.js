@@ -104,8 +104,12 @@
     this._visibleTraceData = ko.observableArray(); // 0 -> viewport start, max -> (viewport end - 1)
   
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
-    editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
 
+    editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
+    editor.addListener('onTokenOver', this.showToken.bind(this));
+
+
+    this.updateViewport(editor.getViewport());
   }
   
   Querypoint.TraceViewModel.treeHanger = new Querypoint.TreeHangerTraceVisitor();
@@ -130,15 +134,15 @@
       for(var line = this._viewportData.start; line < this._viewportData.end; line++, i_viewport++) {
         var offsets = this.getTracedOffsetByLine(line);
 
-        this._editor.clearMarker(line);
+        this._editor.clearLineNumberClass(line);
         if (!offsets) {
-          this._editor.setMarker(line, undefined, 'qp-no-activations');
+          this._editor.setLineNumberClass(line,'qp-no-activations');
         } else {
           if (offsets.functionOffsets) {
-            this._editor.setMarker(line, undefined, 'qp-activations');  
+            this._editor.setLineNumberClass(line, 'qp-activations');  
           }
           if (offsets.expressionOffsets) { // overwrite function marker
-             this._editor.setMarker(line, undefined, 'qp-traces'); 
+             this._editor.setLineNumberClass(line, 'qp-traces'); 
           }
         }
       }
@@ -174,26 +178,34 @@
           expressionOffsets.forEach(function(offset, index){
             var trace = this.getTraceByOffset(offset);
             console.log("showTraceDataForLine "+line+" offset "+offset+" = "+trace);
-            var element = this.getTraceDataElement(offset, index, trace);
-            var column = parseInt(offset) - offsetOfLine - trace.length;
-            this._editor.insertElement({line: line+index, ch: column}, element, true);
-            this._editor.setLineClass(line+index+1, 'traceBackground', 'traceBackground');
+            var column = parseInt(offset) - offsetOfLine;
+            var element = this.getTraceDataElement(line, column, index, trace);
+            
+            this._editor.insertElement(line, column, element, true);
+            //this._editor.setLineClass(line+index+1, 'traceBackground', 'traceBackground');
           }.bind(this));
         }
       }
     },
-    getTraceDataElement: function(offset, index, trace) {
-        var element = document.createElement('div');
-        element.classList.add('traceData');
-        element.style.zIndex = 10 + index;
-        element.innerHTML = trace;
-        return element;
+    getTraceDataElement: function(line, column, index, trace) {
+        var traceDataElement = document.createElement('span');
+        traceDataElement.classList.add('traceData');
+        traceDataElement.innerHTML = trace;  // TODO chop 50
+        if (column < 50) { // then position text to the right
+          traceDataElement.classList.add('indicatorLeft');
+        } else {   // to the left
+          traceDataElement.classList.add('indicatorRight');
+        }
+        return traceDataElement;
     },
     getTraceBackground: function(heightInLines) {
         var element = document.createElement('div');
         element.style.height = heightInLines + 'em';
         element.classList.add('traceBackground');
         return element;
+    },
+    showToken: function(tokenEvent) {
+      console.log("showToken " + tokenEvent.token + '@' + tokenEvent.line + '.' + tokenEvent.column);
     }
   };
 
