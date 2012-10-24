@@ -26,7 +26,7 @@ window.CodeMirror = (function() {
   // CONSTRUCTOR
 
   function CodeMirror(place, options) {
-    if (!(this instanceof CodeMirror)) return new CodeMirror(place, options, true);
+    if (!(this instanceof CodeMirror)) return new CodeMirror(place, options);
     
     this.options = options = options || {};
     // Determine effective options based on given values and defaults.
@@ -37,11 +37,7 @@ window.CodeMirror = (function() {
     var display = this.display = makeDisplay(place);
     display.wrapper.CodeMirror = this;
     updateGutters(this);
-    themeChanged(this);
-    keyMapChanged(this);
-    if (options.tabindex != null) display.input.tabIndex = options.tabindex;
     if (options.autofocus) focusInput(this);
-    if (options.lineWrapping) display.wrapper.className += " CodeMirror-wrap";
 
     var doc = new BranchChunk([new LeafChunk([makeLine("", null, textHeight(display))])]);
     // The selection. These are always maintained to point at valid
@@ -78,10 +74,12 @@ window.CodeMirror = (function() {
     if (hasFocus || options.autofocus) setTimeout(bind(onFocus, this), 20);
     else onBlur(this);
 
-    for (var opt in optionHandlers)
-      if (optionHandlers.propertyIsEnumerable(opt))
-        optionHandlers[opt](this, options[opt]);
-    for (var i = 0; i < initHooks.length; ++i) initHooks[i](this);
+    operation(this, function() {
+      for (var opt in optionHandlers)
+        if (optionHandlers.propertyIsEnumerable(opt))
+          optionHandlers[opt](this, options[opt], Init);
+      for (var i = 0; i < initHooks.length; ++i) initHooks[i](this);
+    })();
   }
 
   // DISPLAY CONSTRUCTOR
@@ -534,14 +532,14 @@ window.CodeMirror = (function() {
     var lineElement = line.hidden ? elt("div") : lineContent(cm, line);
     var markers = line.gutterMarkers, display = cm.display;
 
-    if (!cm.options.lineNumbers && !markers && !line.bgClassName &&
+    if (!cm.options.lineNumbers && !markers && !line.bgClass && !line.wrapClass &&
         (!line.widgets || !line.widgets.length)) return lineElement;
 
     // Lines with gutter elements or a background class need
     // to be wrapped again, and have the extra elements added
     // to the wrapper div
 
-    var wrap = elt("div", null, null, "position: relative");
+    var wrap = elt("div", null, line.wrapClass, "position: relative");
     if (cm.options.lineNumbers || markers) {
       var gutterWrap = wrap.appendChild(elt("div", null, null, "position: absolute; left: " +
                                             dims.fixedPos + "px"));
@@ -561,8 +559,8 @@ window.CodeMirror = (function() {
         }
     }
     // Kludge to make sure the styled element lies behind the selection (by z-index)
-    if (line.bgClassName)
-      wrap.appendChild(elt("div", "\u00a0", line.bgClassName + " CodeMirror-linebackground"));
+    if (line.bgClass)
+      wrap.appendChild(elt("div", "\u00a0", line.bgClass + " CodeMirror-linebackground"));
     wrap.appendChild(lineElement);
     if (line.widgets)
       for (var i = 0, ws = line.widgets; i < ws.length; ++i) {
@@ -2096,24 +2094,11 @@ window.CodeMirror = (function() {
     focus: function(){window.focus(); focusInput(this); onFocus(this); fastPoll(this);},
 
     setOption: function(option, value) {
-      var options = this.options;
+      var options = this.options, old = options[option];
       if (options[option] == value && option != "mode") return;
       options[option] = value;
-      if (option == "mode" || option == "indentUnit") loadMode(this);
-      else if (option == "readOnly" && value == "nocursor") {onBlur(this); this.display.input.blur();}
-      else if (option == "readOnly" && !value) {resetInput(this, true);}
-      else if (option == "theme") themeChanged(this);
-      else if (option == "lineWrapping") operation(this, wrappingChanged)(this);
-      else if (option == "tabSize") updateDisplay(this, true);
-      else if (option == "keyMap") keyMapChanged(this);
-      else if (option == "gutters" || option == "lineNumbers") setGuttersForLineNumbers(this.options);
-      else if (option == "tabindex") this.display.input.tabIndex = value;
-      else if (option == "viewportMargin") this.refresh();
-      if (option == "lineNumbers" || option == "gutters" || option == "firstLineNumber" ||
-          option == "theme" || option == "lineNumberFormatter")
-        guttersChanged(this);
       if (optionHandlers.hasOwnProperty(option))
-        optionHandlers[option](this, value);
+        operation(this, optionHandlers[option])(this, value, old);
     },
 
     getOption: function(option) {return this.options[option];},
@@ -2265,13 +2250,28 @@ window.CodeMirror = (function() {
       });
     }),
 
-    setLineClass: operation(null, function(handle, className, bgClassName) {
+    addLineClass: operation(null, function(handle, where, cls) {
       return changeLine(this, handle, function(line) {
-        if (line.className != className || line.bgClassName != bgClassName) {
-          line.className = className;
-          line.bgClassName = bgClassName;
-          return true;
+        var prop = where == "text" ? "textClass" : where == "background" ? "bgClass" : "wrapClass";
+        if (!line[prop]) line[prop] = cls;
+        else if (new RegExp("\\b" + cls + "\\b").test(line[prop])) return false;
+        else line[prop] += " " + cls;
+        return true;
+      });
+    }),
+
+    removeLineClass: operation(null, function(handle, where, cls) {
+      return changeLine(this, handle, function(line) {
+        var prop = where == "text" ? "textClass" : where == "background" ? "bgClass" : "wrapClass";
+        var cur = line[prop];
+        if (!cur) return false;
+        else if (cls == null) line[prop] = null;
+        else {
+          var upd = cur.replace(new RegExp("^" + cls + "\\b\\s*|\\s*\\b" + cls + "\\b"), "");
+          if (upd == cur) return false;
+          line[prop] = upd || null;
         }
+        return true;
       });
     }),
 
@@ -2351,7 +2351,8 @@ window.CodeMirror = (function() {
         if (n == null) return null;
       }
       return {line: n, handle: line, text: line.text, gutterMarkers: line.gutterMarkers,
-              lineClass: line.className, bgClass: line.bgClassName, widgets: line.widgets};
+              textClass: line.textClass, bgClass: line.bgClass, wrapClass: line.wrapClass,
+              widgets: line.widgets};
     },
 
     getViewport: function() { return {from: this.display.showingFrom, to: this.display.showingTo};},
@@ -2551,40 +2552,72 @@ window.CodeMirror = (function() {
 
   // OPTION DEFAULTS
 
+  var optionHandlers = CodeMirror.optionHandlers = {};
+
   // The default configuration options.
-  var defaults = CodeMirror.defaults = {
-    value: "",
-    mode: null,
-    theme: "default",
-    indentUnit: 2,
-    indentWithTabs: false,
-    smartIndent: true,
-    tabSize: 4,
-    keyMap: "default",
-    extraKeys: null,
-    electricChars: true,
-    autoClearEmptyLines: false,
-    onKeyEvent: null,
-    onDragEvent: null,
-    lineWrapping: false,
-    lineNumbers: false,
-    gutters: [],
-    fixedGutter: false,
-    firstLineNumber: 1,
-    readOnly: false,
-    dragDrop: true,
-    cursorBlinkRate: 530,
-    cursorHeight: 1,
-    workTime: 100,
-    workDelay: 200,
-    flattenSpans: true,
-    pollInterval: 100,
-    undoDepth: 40,
-    viewportMargin: 10,
-    tabindex: null,
-    autofocus: null,
-    lineNumberFormatter: function(integer) { return integer; }
-  };
+  var defaults = CodeMirror.defaults = {};
+
+  function option(name, deflt, handle, notOnInit) {
+    CodeMirror.defaults[name] = deflt;
+    if (handle) optionHandlers[name] =
+      notOnInit ? function(cm, val, old) {if (old != Init) handle(cm, val, old);} : handle;
+  }
+
+  var Init = CodeMirror.Init = {toString: function(){return "CodeMirror.Init";}};
+
+  // These two are, on init, called from the constructor because they
+  // have to be initialized before the editor can start at all.
+  option("value", "", function(cm, val) {cm.setValue(val);}, true);
+  option("mode", null, loadMode, true);
+
+  option("indentUnit", 2, loadMode, true);
+  option("indentWithTabs", false);
+  option("smartIndent", true);
+  option("tabSize", 4, function(cm) {loadMode(cm); updateDisplay(cm, true);}, true);
+  option("electricChars", true);
+  option("autoClearEmptyLines", false);
+
+  option("theme", "default", function(cm, val, old) {
+    themeChanged(cm);
+    if (old != Init) guttersChanged(cm);
+  });
+  option("keyMap", "default", keyMapChanged);
+  option("extraKeys", null);
+
+  option("onKeyEvent", null);
+  option("onDragEvent", null);
+
+  option("lineWrapping", false, wrappingChanged);
+  option("gutters", [], function(cm) {
+    setGuttersForLineNumbers(cm.options);
+    guttersChanged(cm);
+  }, true);
+  option("lineNumbers", false, function(cm) {
+    setGuttersForLineNumbers(cm.options);
+    guttersChanged(cm);
+  }, true);
+  option("firstLineNumber", 1, guttersChanged, false);
+  option("lineNumberFormatter", function(integer) {return integer;}, guttersChanged, false);
+  
+  option("readOnly", false, function(cm, val) {
+    if (val == "nocursor") {onBlur(cm); cm.display.input.blur();}
+    else if (!val) resetInput(cm, true);
+  });
+  option("dragDrop", true);
+
+  option("cursorBlinkRate", 530);
+  option("cursorHeight", 1);
+  option("workTime", 100);
+  option("workDelay", 100);
+  option("flattenSpans", true);
+  option("pollInterval", 100);
+  option("undoDepth", 40);
+  option("viewportMargin", 10, function(cm){cm.refresh();}, true);
+
+  option("tabindex", null, function(cm, val) {
+    cm.display.input.tabIndex = val || "";
+  });
+  option("autofocus", null);
 
   // MODE DEFINITION AND QUERYING
 
@@ -2643,11 +2676,8 @@ window.CodeMirror = (function() {
   CodeMirror.defineExtension = function(name, func) {
     CodeMirror.prototype[name] = func;
   };
-  var optionHandlers = CodeMirror.optionHandlers = {};
-  CodeMirror.defineOption = function(name, deflt, handler) {
-    CodeMirror.defaults[name] = deflt;
-    optionHandlers[name] = handler;
-  };
+
+  CodeMirror.defineOption = option;
 
   var initHooks = [];
   CodeMirror.defineInitHook = function(f) {initHooks.push(f);};
@@ -3196,7 +3226,7 @@ window.CodeMirror = (function() {
   function buildLineContent(line, tabSize, wrapAt, compensateForWrapping) {
     var first = true, col = 0, specials = /[\t\u0000-\u0019\u200b\u2028\u2029\uFEFF]/g;
     var pre = elt("pre");
-    if (line.className) pre.className = line.className;
+    if (line.textClass) pre.className = line.textClass;
     function span_(text, style) {
       if (!text) return;
       // Work around a bug where, in some compat modes, IE ignores leading spaces
