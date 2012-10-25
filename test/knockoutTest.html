@@ -1,0 +1,35 @@
+<html>
+<head>
+  <script src="../knockout/knockout-2.2.0rc.debug.js"></script>
+<script type='text/javascript'>
+/*<![CDATA[*/
+function onLoad() {
+    var Person = function(name, children) {
+        this.children = ko.observableArray(children);
+    }
+
+  ko.applyBindings(new Person("Annabelle", [{value: "Arnie"}, {value:"Anders"}, {value:"Apple"}]));
+}
+window.addEventListener('load', onLoad);
+/*]]>*/
+</script>
+</head>
+<body>
+<h2>People</h2>
+  <table>
+      <tbody data-bind='foreach: children'>
+        <!-- If the thead element is commented out, ko works -->
+        <thead>
+          <tr>
+            <td>Turn</td>
+            <td>Activation</td>
+            <td>Value</td>
+          </tr>
+        </thead>
+        <tr >
+            <td data-bind='text: value'> </td>
+        </tr>
+      </tbody>
+  </table>
+</body>
+</html>
