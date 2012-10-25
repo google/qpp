@@ -115,7 +115,7 @@ body {
 .box {
   outline: 1px solid red;
   position: absolute;
-
+  margin-left: 4px; /* needed to match the padding of <pre> lines */
 }
 pre.traceBackground {
   text-indent: -9999px;  /* sends the text off-screen */

@@ -39,25 +39,6 @@
 <link rel="stylesheet" href="Log/logScrubber.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="Editors/buffersStatusBar.css"><!-- after codemirror.css -->
 <script src="../mirror/CodeMirror/mode/javascript/javascript.js"></script>
-<script type="text/html" id="token-trace-template">
-  <table>
-  <caption>Trace Data</caption>
-  <tbody>
-    <thead>
-      <tr>
-        <td>Turn</td>
-        <td>Activation</td>
-        <td>Value</td>
-      </tr>
-    </thead>
-    <tr data-bind="foreach: traces" >
-      <td data-bind="text: turn"></td>
-      <td data-bind="text: activation"></td>
-      <td data-bind="text: value"></td>
-    </tr>  
-    </tbody>
-  </table>
-</script>
 </head>
 <body class="cm-s-monokai">
   <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
@@ -88,20 +69,22 @@
     <div class="sourceViewport">
       <div class="QPOutput">
         <span class="helpInfo">Tracing output</span>
+  <div>Offset: <span data-bind="text: _currentOffsets"></span></div>
   <table>
   <caption>Trace Data</caption>
-  <tbody  data-bind="foreach: traces">
-    <thead>
+      <thead>
       <tr>
         <td>Turn</td>
         <td>Activation</td>
         <td>Value</td>
       </tr>
-    </thead>
+    </thead> 
+  <tbody  data-bind="foreach: _currentTraces">
+    <!-- https://github.com/google/qpp/blob/master/test/knockoutTest.html -->
     <tr >
-      <td data-bind="text: $data.turn"></td>
-      <td data-bind="text: $data.activation"></td>
-      <td data-bind="text: $data.value"></td>
+      <td data-bind="text: turn"></td>
+      <td data-bind="text: activation"></td>
+      <td data-bind="text: value"></td>
     </tr>  
     </tbody>
   </table>
