@@ -14,7 +14,7 @@
       this.unsavedBufferNames = ko.observableArray();
       this._savedBuffers = ko.observableArray();
 
-      ko.applyBindings(this, document.querySelector('buffersStatusBar'));
+      ko.applyBindings(this, document.querySelector('.buffersStatusBar'));
       
       this.userDirectedEditor = document.querySelector('.userDirectedEditor');
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));

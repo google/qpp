@@ -117,7 +117,7 @@
 
     this.fileName = editor.name;
 
-    this._visibleTraceData = ko.observableArray(); // 0 -> viewport start, max -> (viewport end - 1)
+    this._tokenViewModel = new Querypoint.TraceViewModel(this._tree);
   
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
 
@@ -162,7 +162,6 @@
           }
         }
       }
-      console.log("You've got data ", this._visibleTraceData());
     },
     updateTraceData: function(fileName, callback) {
       chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"'+fileName+'\"]', callback);
@@ -235,7 +234,8 @@
     },
     _showTokenTree: function(tree) {
       if (tree.location.trace) {
-          console.log("Traced "+tree.location.trace);
+        console.log("Traced "+tree.location.trace);
+        this._tokenViewModel.setModel(tree);  
       }
     }
   };
