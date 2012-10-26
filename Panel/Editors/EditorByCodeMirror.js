@@ -114,7 +114,8 @@ EditorByCodeMirror.prototype = {
       }
     }
   },
-  drawTokenBox: function(tokenEvent) {
+
+  createTokenBox: function(tokenEvent) {
     var pos = {line: tokenEvent.start.line,ch: tokenEvent.start.column};
     var startCharBox = this.editorImpl.charCoords(pos);
     pos.ch = tokenEvent.end.column - 1;
@@ -122,16 +123,22 @@ EditorByCodeMirror.prototype = {
     var box = startCharBox;
     box.right = endCharBox.right;
     var originBox = this.editorImpl.charCoords({line: 0,ch: 0});
-    var cm = this.editorImpl.getWrapperElement();
-    var lines = cm.querySelector('.CodeMirror-lines');
+    var boxElement = document.createElement('div');
+    boxElement.classList.add('box');
+    boxElement.style.left = (box.left - originBox.left) + 'px';
+    boxElement.style.top = (box.top - originBox.top) + 'px';
+    boxElement.style.width = (box.right - box.left) + 'px';
+    boxElement.style.height = (box.bottom - box.top) + 'px';
+    return boxElement;
+  },
+
+  drawTokenBox: function(tokenEvent) {
     if (this._boxElement)
       this._boxElement.parentElement.removeChild(this._boxElement);
-    this._boxElement = document.createElement('div');
-    this._boxElement.classList.add('box');
-    this._boxElement.style.left = (box.left - originBox.left) + 'px';
-    this._boxElement.style.top = (box.top - originBox.top) + 'px';
-    this._boxElement.style.width = (box.right - box.left) + 'px';
-    this._boxElement.style.height = (box.bottom - box.top) + 'px';
+    this._boxElement = this.createTokenBox(tokenEvent);
+
+    var cm = this.editorImpl.getWrapperElement();
+    var lines = cm.querySelector('.CodeMirror-lines');
     lines.appendChild(this._boxElement);
   }
 

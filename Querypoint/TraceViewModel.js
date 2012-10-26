@@ -30,17 +30,24 @@
       if (!tree) return;
       return tree.location;
     }.bind(this));
+    
     this._currentSource = ko.computed(function() {
       var location = this._currentLocation();
       if (!location) return "";
+      
       var line = location.start.line;
       editor.setLineNumberClass(line, 'traceViewedLine');
       var traceViewedLine = document.querySelector('.traceViewedLine');
       editor.removeLineNumberClass(line, 'traceViewedLine');
+      
       var clone = traceViewedLine.cloneNode(true);
-      clone.classList.remove('traceViewedLine'); 
+      clone.classList.remove('traceViewedLine');
+      var box = editor.createTokenBox(location);
+      box.style.top = "0px";
+      clone.appendChild(box);
       return clone.outerHTML;
     }.bind(this));
+    
     this._currentOffsets = ko.computed({
       read: function() {
         var location = this._currentLocation()

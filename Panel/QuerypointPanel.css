@@ -68,8 +68,7 @@ body {
 
 .CodeMirror-lines {
   padding: 0; /* bring the code close up the the splitter and edges */
-  cursor: pointer;
-  outline: 1px green solid;
+  cursor: pointer; /* the text pointer has no hot spot */
 }
 
 .CodeMirror-gutter-text {
@@ -115,8 +114,16 @@ body {
 .box {
   outline: 1px solid red;
   position: absolute;
+}
+
+.CodeMirror .box {
   margin-left: 4px; /* needed to match the padding of <pre> lines */
 }
+
+.currentSource {
+  margin-left: 4px; 
+}
+
 pre.traceBackground {
   text-indent: -9999px;  /* sends the text off-screen */
   background-color: #75715e;
