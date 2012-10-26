@@ -8,23 +8,29 @@
 
   window.Querypoint = window.Querypoint || {};
 
+  // @param distanceFunction the smallest return value will be the result
   Querypoint.FindInTree = function(distanceFunction) {
     this._distanceFunction = distanceFunction;
     this._closest = Number.MAX_VALUE;
   }
   
+  Querypoint.FindInTree.findByDistanceFunction = function(tree, fncOfTree) {
+    var visitor = new Querypoint.FindInTree(fncOfTree);
+    visitor.visit(tree);
+    return visitor.getMatchedTree();
+  }
+  
   Querypoint.FindInTree.byOffset = function(tree, offset) {
-    var visitor = new Querypoint.FindInTree(function(tree){
+    function byOffset(offset, tree){
       if (tree.location) {
         var startOffset = tree.location.start.offset;
-        var endOffset = tree.location.end.offset;
-        if (startOffset <= offset && offset <=endOffset) {
+        var endOffset = tree.location.end.offset - 1;
+        if (startOffset <= offset && offset <= endOffset) {
           return (endOffset - startOffset + 1);
         }
       }
-    });
-    visitor.visit(tree);
-    return visitor.getMatchedTree();
+    }
+    return Querypoint.FindInTree.findByDistanceFunction(tree, byOffset.bind(this, offset)) 
   }
 
   Querypoint.FindInTree.prototype = traceur.createObject(

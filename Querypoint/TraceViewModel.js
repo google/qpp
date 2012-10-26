@@ -5,7 +5,7 @@
 (function() {
   window.Querypoint = window.Querypoint || {};
   
-  Querypoint.TraceViewModel = function(root) {
+  Querypoint.TraceViewModel = function(root, editor) {
     // Model
     this._root = root;
     this._tracesByTree = [];
@@ -25,11 +25,25 @@
       }.bind(this),
       deferEvaluation: true
     });
+    this._currentLocation = ko.computed(function() {
+      var tree = this._currentTree(); 
+      if (!tree) return;
+      return tree.location;
+    }.bind(this));
+    this._currentSource = ko.computed(function() {
+      var location = this._currentLocation();
+      if (!location) return "";
+      var line = location.start.line;
+      editor.setLineNumberClass(line, 'traceViewedLine');
+      var traceViewedLine = document.querySelector('.traceViewedLine');
+      editor.removeLineNumberClass(line, 'traceViewedLine');
+      var clone = traceViewedLine.cloneNode(true);
+      clone.classList.remove('traceViewedLine'); 
+      return clone.outerHTML;
+    }.bind(this));
     this._currentOffsets = ko.computed({
       read: function() {
-        var tree = this._currentTree();
-        if (!tree) return;
-        var location = tree.location;
+        var location = this._currentLocation()
         return location.start.offset + '-' + location.end.offset;
       }.bind(this),
       deferEvaluation: true

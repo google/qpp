@@ -224,8 +224,8 @@
         if (!tree.location) {
           return 'v'+this.identifierGenerator_.generateUniqueIdentifier();
         }
-
-        return '_' + tree.location.end.offset;
+        // The end.offset points just past the last character of the token
+        return '_' + (tree.location.end.offset - 1);
       },
       
       /* Convert an expression tree into 
@@ -242,10 +242,11 @@
           throw new Error(msg);
         }
         
-        var identifier =  this.generateIdentifier(tree);  // XX in __qp_XX
-        var varId = '__qp' + identifier;
+        var traceId =  this.generateIdentifier(tree);  // XX in __qp_XX
+        var varId = '__qp' + traceId;
         
         var loc = tree.location;
+        loc.traceId = traceId;
         // var __qp_XX = expr;
         var tempVariableStatement = createVariableStatement(
           createVariableDeclarationList(
@@ -262,7 +263,7 @@ ParseTreeValidator.validate(tempVariableStatement);
           createAssignmentExpression(
             createMemberExpression(
               createIdentifierExpression(activationId),
-              identifier
+              traceId
             ),
             createCallExpression(
               createMemberExpression('window', '__qp','trace'),

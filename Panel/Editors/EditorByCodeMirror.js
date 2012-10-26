@@ -49,9 +49,10 @@ EditorByCodeMirror.prototype = {
   setLineNumberClass: function(lineNumber, className) {
     this.editorImpl.addLineClass(lineNumber, 'wrap', className);
   },
-  clearLineNumberClass: function(lineNumber) {
-    this.editorImpl.removeLineClass(lineNumber, 'wrap');
+  removeLineNumberClass: function(lineNumber, className) {
+    this.editorImpl.removeLineClass(lineNumber, 'wrap', className);
   },
+
   insertElement: function(line, column, element, scrollIntoView) {
     var widgetCharCoord = this.editorImpl.charCoords({line: line,ch: column}, "page");
     var lineCharCoord = this.editorImpl.charCoords({line: line,ch: 0}, "page");

@@ -44,15 +44,30 @@
         this.visitActivationTraced(functionTree, activation, activationInThisTurn);
       }.bind(this));
     },
+    _findInTree: function(tree, id) {
+      var offsetKey = id.split('_')[1]; // [0] is the revision number TODO
+      var offset = parseInt(offsetKey, 10);
+      function byOffsetKey(offset, tree){
+        var loc = tree.location;
+        if (loc) {
+          var startOffset = loc.start.offset;
+          var endOffset = loc.end.offset - 1;
+          if (startOffset <= offset && offset <= endOffset) {
+            return (loc.traceId === id) ? 0 : (endOffset - startOffset + 1);
+          }
+        }
+      }
+      return Querypoint.FindInTree.findByDistanceFunction(tree, byOffsetKey.bind(this, offset));
+    },
     visitActivationTraced: function(functionTree, activation, activationCount) {
       var tracedExpressionIds = Object.keys(activation);
       tracedExpressionIds.forEach(function(id) {
         if (id === 'turn')
           return;
-        var offsetKey = id.split('_')[1]; // [0] is the revision number TODO
-        var offset = parseInt(offsetKey, 10);
+
         var trace = activation[id];
-        var expressionTree = Querypoint.FindInTree.byOffset(functionTree, offset);
+        // TODO need to match offsetKey in find() 
+        var expressionTree = this._findInTree(functionTree, id);
         this.visitExpressionsTraced(expressionTree, activation.turn, activationCount, trace);
       }.bind(this));
     },
@@ -118,7 +133,7 @@
     
     this.fileName = editor.name;
     
-    this._tokenViewModel = new Querypoint.TraceViewModel(this._tree);
+    this._tokenViewModel = new Querypoint.TraceViewModel(this._tree, this._editor);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     
@@ -151,7 +166,7 @@
       for (var line = this._viewportData.start; line < this._viewportData.end; line++, i_viewport++) {
         var offsets = this.getTracedOffsetByLine(line);
         
-        this._editor.clearLineNumberClass(line);
+        this._editor.removeLineNumberClass(line);
         if (!offsets) {
           this._editor.setLineNumberClass(line, 'qp-no-activations');
         } else {
@@ -221,7 +236,6 @@
       return element;
     },
     showToken: function(tokenEvent) {
-      var tokenLog = tokenEvent.token + '@' + tokenEvent.start.line + '.' + tokenEvent.start.column + '-' + tokenEvent.end.column;
       
       var line = tokenEvent.start.line;
       var offsetOfLine = this._sourceFile.lineNumberTable.offsetOfLine(line);
@@ -229,6 +243,7 @@
       var tokenTree = Querypoint.FindInTree.byOffset(this._tree, tokenOffset);
       if (tokenTree) {
         var traces = tokenTree.location.trace;
+        var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
         console.log("showToken " + tokenLog + ' ' + tokenTree.type + (traces ? " Trace " + traces : ""));
         if (traces) {
           this._tokenViewModel.setModel(tokenTree);
