@@ -100,15 +100,7 @@ body {
   padding-left: 4px;
   position: relative;
 }
-.traceData span {
-
-  color:  #272822;
-  background-color: #d0d0d0;
-
-  border-right: solid 2px red;
-  
-
-  position: relative;
+.traceData .fileName {
 
 }
 .box {
@@ -123,6 +115,18 @@ body {
 .currentSource {
   margin-left: 4px; 
 }
+
+.QPOutput caption {
+  border-bottom: 1px solid #75715e;
+  color: #75715e;
+}
+.QPOutput th {
+  font-weight: normal;
+  color: #75715e;
+  border-bottom: 1px solid #75715e;
+}
+
+
 
 pre.traceBackground {
   text-indent: -9999px;  /* sends the text off-screen */

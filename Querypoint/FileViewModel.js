@@ -117,8 +117,9 @@
     this.tracedOffsetsByLine[line].functionOffsets.push(functionDefinitionOffset);
     Querypoint.TraceVisitor.prototype.visitActivationTraced.call(this, functionTree, activation);
   }
-  Querypoint.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, trace) {
-    var offset = expressionTree.location.start.offset;
+  Querypoint.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, index, trace) {
+    var offset = expressionTree.location.end.offset - 1;  // last char of the expression
+    offset -= trace.length;  // backup to align with the end of the expression
     var line = this._sourceFile.lineNumberTable.getLine(offset);
     this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
     this.tracedOffsetsByLine[line].expressionOffsets = this.tracedOffsetsByLine[line].expressionOffsets || [];
@@ -140,6 +141,10 @@
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
     editor.addListener('onTokenOver', this.showToken.bind(this));
     
+    $(".QPOutput").live("click", function() {
+      console.log("Click ", ko.dataFor(this));
+    });
+
     
     this.updateViewport(editor.getViewport());
   }

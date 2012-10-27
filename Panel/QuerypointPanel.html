@@ -72,20 +72,21 @@
   <div class="currentSource">
     <span data-bind="html: _currentSource"></span>
   </div>
-  <table>
+  <table class="traceData">
   <caption>Trace Data</caption>
       <thead>
       <tr>
-        <td>Turn</td>
-        <td>Activation</td>
-        <td>Value</td>
+        <th>Activation</th>
+        <th>Value</th>
       </tr>
     </thead> 
   <tbody  data-bind="foreach: _currentTraces">
     <!-- https://github.com/google/qpp/blob/master/test/knockoutTest.html -->
     <tr >
-      <td data-bind="text: turn"></td>
-      <td data-bind="text: activation"></td>
+      <td class="activation">
+        <span data-bind="text: turn"></span>X<span data-bind="text: activation"></span>@<span class="fileName" data-bind="text: fileName"></span>
+        <span data-bind="text: fileRune"></span>
+      </td>
       <td data-bind="text: value"></td>
     </tr>  
     </tbody>

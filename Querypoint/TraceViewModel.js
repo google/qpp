@@ -21,7 +21,21 @@
     this._currentTraces = ko.computed({
       read: function() {
         var tree = this._currentTree();
-        return tree ? tree.location.trace : undefined;
+        if (tree) {
+          var traces = tree.location.trace;
+          return traces.map(function(trace) {
+            return {
+              turn: trace.turn,
+              activation: trace.activation,
+              fileName: tree.location.start.source.name,
+              start: tree.location.start.offset,
+              end: tree.location.end.offset,
+              value: trace.value,
+              fileRune: "&#x2190;"
+            };
+          });
+        }
+
       }.bind(this),
       deferEvaluation: true
     });
