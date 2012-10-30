@@ -97,14 +97,14 @@ QuerypointPanel.prototype = {
   },
   
   _openResource: function(resource, item, onShown) {
-    console.log("onSelectedFile %o ", item);
-    this._editors.openEditor(
-      resource.url, 
-      resource.getContent, 
-      this._onEditorCreated.bind(this), 
-      onShown
-    );
-    return false; 
+    resource.getContent(function(content, encoding) {
+      this._editors.openEditorForContent(
+        resource.url, 
+        content,
+        this._onEditorCreated.bind(this), 
+        onShown
+      );
+    }.bind(this));
   },
   
   _openSourceFileAndRefresh: function(sourceFile) {
@@ -112,11 +112,9 @@ QuerypointPanel.prototype = {
   },
   
   _openSourceFile: function(sourceFile, onShown) {
-    this._editors.openEditor(
+    this._editors.openEditorForContent(
       sourceFile.name, 
-      function(contentHandler) {
-        contentHandler(sourceFile.contents);
-      },
+      sourceFile.contents,
       this._onEditorCreated,
       onShown
     );

@@ -75,7 +75,7 @@
       }
     },
 
-    createEditor: function(name, content, encoding, callback) {
+    createEditor: function(name, content, callback) {
       this._openURLs.push(name);
       var editor = new EditorByCodeMirror(this.userDirectedEditor, name, content);
       editor.resize(this._editorWidth, this._editorHeight);
@@ -84,26 +84,18 @@
       callback(editor);
     },
     
-    openEditor: function(name, asyncGetContent, onCreated, onShown) {
-      var editors = this;
-      var editor = editors._getEditorByName(name);
-
+    openEditorForContent: function(name, content, onCreated, onShown) {
+      var editor = this._getEditorByName(name);
       if (!editor) {
-        asyncGetContent(function(content, encoding) {
-          editors.createEditor(name, content, encoding, function(editor) {
-            if (onCreated) {
-              onCreated(editor);
-            }
-            editors._showEditor(name, onShown);    
-            var splash = editors.userDirectedEditor.querySelector('.splash');
-            if (splash) {
-              splash.parentElement.removeChild(splash);
-            }
-          });
-        });
+        this.createEditor(name, content, function(editor) {
+          if (onCreated) {
+            onCreated(editor);
+          }
+          this._showEditor(name, onShown);
+        }.bind(this));
       } else {
-        editors._showEditor(name, onShown);
-      }   
+        this._showEditor(name, onShown);
+      }
     },
     
     saveFile: function() {
