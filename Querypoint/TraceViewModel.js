@@ -10,6 +10,8 @@
     this._root = root;
     this._tracesByTree = [];
     // ViewModel
+    this._hasTraceData = ko.observable('false');
+    this._exploringMode = ko.observable(false);
     this._currentTreeIndex = ko.observable();
     this._currentTree = ko.computed({
       read: function() {
@@ -23,20 +25,23 @@
         var tree = this._currentTree();
         if (tree) {
           var traces = tree.location.trace;
-          return traces.map(function(trace) {
-            var start = tree.location.start;
-            var end = tree.location.end;
-            return {
-              turn: trace.turn,
-              activation: trace.activation,
-              tooltip: start.source.name + ' Line: ' + start.line,
-              url: start.source.name + '?start=' + start.offset + '&end=' + end.offset,
-              startOffset: start.offset,
-              endOffset: end.offset,
-              value: trace.value,
-              commandName: '&#x2799;&#x2263;'
-            };
-          });
+          if (traces) {
+            this._hasTraceData('true');
+            return traces.map(function(trace) {
+              var start = tree.location.start;
+              var end = tree.location.end;
+              return {
+                turn: trace.turn,
+                activation: trace.activation,
+                tooltip: start.source.name + ' Line: ' + start.line,
+                url: start.source.name + '?start=' + start.offset + '&end=' + end.offset,
+                startOffset: start.offset,
+                endOffset: end.offset,
+                value: trace.value,
+                commandName: '&#x2799;&#x2263;'
+              };
+            });
+          }
         }
       }.bind(this),
       deferEvaluation: true
@@ -47,7 +52,7 @@
       return tree.location;
     }.bind(this));
     
-    this._currentSource = ko.computed(function() {
+    this._currentExpression = ko.computed(function() {
       var location = this._currentLocation();
       if (!location) return "";
       
@@ -77,12 +82,14 @@
    $(".QPOutput").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
       var url = jQueryEvent.target.getAttribute('data-url');
-      alert("Todo: navigate editor to "+url);
+      if (url) {
+        alert("TODO: navigate editor to "+url);
+      } // else the user did not click on something interesting.
     });
   }
   
   Querypoint.TraceViewModel.prototype = {
-    
+
     setModel: function(tree) {
       if (!tree.location || !tree.location.trace) {
         console.warn("Don't call setModel without a tree.location.trace!");
@@ -94,6 +101,10 @@
       } else {
         this._currentTreeIndex(this._tracesByTree.push(tree) - 1);
       }
+    },
+    
+    setExploring: function(active) {
+      this._exploringMode(active);
     }
   };
 }());

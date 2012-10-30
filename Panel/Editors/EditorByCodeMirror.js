@@ -156,9 +156,11 @@ EditorByCodeMirror.prototype = {
   _watchMouse: function() {
     // mouseover won't work because the text does not fire
     this._container.addEventListener('mousemove', this._onMouseOver);
+    this.dispatch('onExploreTraceMode', {active: true});
   },
   _unwatchMouse: function () {
     this._container.removeEventListener('mousemove', this._onMouseOver);    
+    this.dispatch('onExploreTraceMode', {active: false});
   }
 }
 

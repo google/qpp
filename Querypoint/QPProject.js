@@ -32,9 +32,10 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
     var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
     tree = preambleTransformer.transformAny(tree);
 
-
-    var writer = new QPTreeWriter(file.name + '.js', QPController.tracequeries());
+    file.generatedFileName = file.name + ".js";
+    var writer = new QPTreeWriter(file.generatedFileName, QPController.tracequeries());
     file = writer.generateSource(file, tree);
+
     return file;
   }.bind(this));
 }
@@ -54,3 +55,8 @@ QPProject.prototype.runInWebPage = function(trees) {
   this.startRuntime();
 }
 
+QPProject.prototype.isGeneratedFile = function(name){
+  return Object.keys(this.sourceFiles_).some(function(key) {
+    return (this.sourceFiles_[key].generatedFileName === name);
+  }.bind(this));
+}

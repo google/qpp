@@ -139,6 +139,8 @@
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
     editor.addListener('onTokenOver', this.showToken.bind(this));
+    editor.addListener('onExploreTraceMode', this.showExploreMode.bind(this));
+
     
     this.updateViewport(editor.getViewport());
   }
@@ -253,6 +255,10 @@
         console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
       }
     },
+    showExploreMode: function(modeEvent) {
+
+        this._tokenViewModel.setExploring(modeEvent.active);
+    }
   };
 
 }());

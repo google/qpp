@@ -69,31 +69,36 @@
     <div class="sourceViewport">
       <div class="QPOutput">
         <span class="helpInfo">Tracing output</span>
-  <div class="currentSource">
-    <span data-bind="html: _currentSource"></span>
-  </div>
-  <table class="traceData">
-  <caption>Trace Data</caption>
-      <thead>
-      <tr>
-        <th>Activation</th>
-        <th>Value</th>
-      </tr>
-    </thead> 
-  <tbody  data-bind="foreach: _currentTraces">
-    <!-- https://github.com/google/qpp/blob/master/test/knockoutTest.html -->
-    <tr >
-      <td class="activation">
-        <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
-        <span data-bind="text: turn"></span>.<span data-bind="text: activation"></span>
-      </td>
-      <td data-bind="text: value"></td>
-    </tr>  
-    </tbody>
-  </table>
+        <div class="traceOutput"  data-bind="attr: {hasTraceData: _hasTraceData}">
+          <div class="explainTraceMode">
+            <span data-bind="if: _exploringMode">Exploring ... focus editor to lock</span>
+            <span data-bind="if: !_exploringMode()">Locked ... blur editor to unlock</span>
+          </div>
+          <div class="currentExpression">
+            <span data-bind="html: _currentExpression"></span>
+          </div>
+          <table class="traceData">
+          <caption>Trace Data</caption>
+              <thead>
+              <tr>
+                <th>Activation</th>
+                <th>Value</th>
+              </tr>
+            </thead> 
+          <tbody  data-bind="foreach: _currentTraces">
+            <tr >
+              <td class="activation">
+                <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
+                <span data-bind="text: turn"></span>.<span data-bind="text: activation"></span>
+              </td>
+              <td data-bind="text: value"></td>
+            </tr>  
+            </tbody>
+          </table>
+        </div>
       </div>
       <div class="userDirectedEditor">
-        <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
+         <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
       </div>
     </div>
     <div class="splitter"></div>

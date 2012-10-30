@@ -66,8 +66,14 @@ QuerypointPanel.prototype = {
   _onEditorCreated: function(editor) {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
-     var tree = this.project.getParseTree(sourceFile);
+      var tree = this.project.getParseTree(sourceFile);
       this._fileViewModels[editor.name] = new Querypoint.FileViewModel(editor, sourceFile, tree);
+    } else {
+      if (this.project.isGeneratedFile(editor.name)) {
+        console.log("Created editor for generated file");
+      } else {
+        console.warn("No sourceFile for " + editor.name);
+      }
     }
   },
 

@@ -50,12 +50,21 @@ body {
 .largeMessage {
   padding: 3em;
   font-size: xx-large;
-  font-family: arial,san-serif;}
+  font-family: arial,san-serif;
+}
 
 .userDirectedEditor {
   float: right;
   height: 100%;
   position: relative;
+}
+
+.explainTraceMode {
+  display: -webkit-flex;
+  -webkit-justify-content: center;
+  -webkit-flex-direction: row;
+  font-family: Lucida Grande, sans-serif;
+  padding-top: 4px;
 }
 
 .sourceViewport {
@@ -118,7 +127,7 @@ body {
   margin-left: 4px; /* needed to match the padding of <pre> lines */
 }
 
-.currentSource {
+.currentExpression {
   margin-left: 4px; 
 }
 
@@ -141,6 +150,14 @@ pre.traceBackground {
 
 .hide {
   display: none;
+}
+
+.QPOutput .traceOutput {
+  display: none;
+}
+
+.QPOutput .traceOutput[hasTraceData="true"] {
+  display: block;
 }
 
 .QPOutput .command {
