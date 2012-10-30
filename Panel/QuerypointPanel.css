@@ -22,6 +22,12 @@ body {
   border-spacing: 0px;
 }
 
+.splitter {
+  border-color: #75715e;
+  border-style: solid;
+  border-width: 0 0 1px 0;
+}
+
 .log {
   height: 10em;
 }
