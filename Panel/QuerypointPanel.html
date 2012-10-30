@@ -84,8 +84,8 @@
     <!-- https://github.com/google/qpp/blob/master/test/knockoutTest.html -->
     <tr >
       <td class="activation">
-        <span data-bind="text: turn"></span>X<span data-bind="text: activation"></span>@<span class="fileName" data-bind="text: fileName"></span>
-        <span data-bind="text: fileRune"></span>
+        <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
+        <span data-bind="text: turn"></span>.<span data-bind="text: activation"></span>
       </td>
       <td data-bind="text: value"></td>
     </tr>  

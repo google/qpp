@@ -15,6 +15,8 @@ function EditorByCodeMirror(containerElement, name, initialContent) {
   this.editorImpl.on('change', this._onChange.bind(this));
   this.editorImpl.on('viewportChange', this._onViewportChange.bind(this));
   this.editorImpl.on('gutterClick', this._onGutterClick.bind(this));
+  this.editorImpl.on('focus', this._onFocus.bind(this));
+  this.editorImpl.on('blur', this._onBlur.bind(this));
   
   this._container = containerElement;
   this._onMouseOver = this._onMouseOver.bind(this);
@@ -27,12 +29,11 @@ EditorByCodeMirror.prototype = {
   
   show: function() {
     this.editorImpl.getWrapperElement().classList.remove('hide');
-    // mouseover won't work because the text does not fire
-    this._container.addEventListener('mousemove', this._onMouseOver);
+    this._watchMouse();
   },
   hide: function() {
     this.editorImpl.getWrapperElement().classList.add('hide');
-    this._container.removeEventListener('mousemove', this._onMouseOver);
+    this._unwatchMouse();
   },
   getContent: function() {
     return this.editorImpl.getValue();
@@ -140,8 +141,25 @@ EditorByCodeMirror.prototype = {
     var cm = this.editorImpl.getWrapperElement();
     var lines = cm.querySelector('.CodeMirror-lines');
     lines.appendChild(this._boxElement);
-  }
+  },
 
+  _onFocus: function() {
+    console.log("Editor focus");
+    this._unwatchMouse();
+  },
+
+  _onBlur: function() {
+    console.log("Editor blur");
+    this._watchMouse();
+  },
+
+  _watchMouse: function() {
+    // mouseover won't work because the text does not fire
+    this._container.addEventListener('mousemove', this._onMouseOver);
+  },
+  _unwatchMouse: function () {
+    this._container.removeEventListener('mousemove', this._onMouseOver);    
+  }
 }
 
 Querypoint.addEventFunctions(EditorByCodeMirror.prototype);

@@ -137,14 +137,8 @@
     this._tokenViewModel = new Querypoint.TraceViewModel(this._tree, this._editor);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
-    
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
     editor.addListener('onTokenOver', this.showToken.bind(this));
-    
-    $(".QPOutput").live("click", function() {
-      console.log("Click ", ko.dataFor(this));
-    });
-
     
     this.updateViewport(editor.getViewport());
   }
