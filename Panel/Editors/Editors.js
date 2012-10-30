@@ -38,6 +38,11 @@
       return this._userOpenedURL();
     },
 
+    openChainedEditor: function(location, baseEditor) {
+
+        console.error("openChainedEditor", location);
+    },
+
     _getEditorByName: function(name) {
       var index = this._openURLs.indexOf(name);
       if (index !== -1)
@@ -48,9 +53,7 @@
       var editor = this._getEditorByName(name);
       var currentEditor = this._getEditorByName(this._userOpenedURL());
       if (currentEditor) {
-        if (currentEditor == editor) {
-          return;
-        } else {
+        if (currentEditor !== editor) {
           currentEditor.hide();
         }
       }

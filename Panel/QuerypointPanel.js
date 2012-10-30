@@ -25,6 +25,7 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
   this._onResize();  // set initial sizes
 }
 
+
 QuerypointPanel.prototype = {
   onShown: function() {
     this._isShowing = true;
@@ -67,7 +68,7 @@ QuerypointPanel.prototype = {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
       var tree = this.project.getParseTree(sourceFile);
-      this._fileViewModels[editor.name] = new Querypoint.FileViewModel(editor, sourceFile, tree);
+      this._fileViewModels[editor.name] = new Querypoint.FileViewModel(editor, sourceFile, tree, this);
     } else {
       if (this.project.isGeneratedFile(editor.name)) {
         console.log("Created editor for generated file");
@@ -79,38 +80,64 @@ QuerypointPanel.prototype = {
 
   _openURL: function(url) {
     var foundResource = this.page.resources.some(function(resource){
-        if (resource.url) this._openResource(resource);
+        if (resource.url) this._openResourceAndRefresh(resource);
     }.bind(this));
     if (!foundResource) {
       var sourceFile = this.project.getFile(url);
       if (sourceFile) {
-        this._openSourceFile(sourceFile);
+        this._openSourceFileAndRefresh(sourceFile);
       } else {
         this._openWhenAvailable.push(url);
       }
     }
   },
 
-  _openResource: function(resource, item) {
+  _openResourceAndRefresh: function(resource, item) {
+    return this._openResource(resource, item, this.refresh.bind(this));
+  },
+  
+  _openResource: function(resource, item, onShown) {
     console.log("onSelectedFile %o ", item);
     this._editors.openEditor(
       resource.url, 
       resource.getContent, 
       this._onEditorCreated.bind(this), 
-      this.refresh.bind(this)
+      onShown
     );
     return false; 
   },
   
-  _openSourceFile: function(sourceFile, item) {
+  _openSourceFileAndRefresh: function(sourceFile) {
+    this._openSourceFile(sourceFile, this.refresh.bind(this));
+  },
+  
+  _openSourceFile: function(sourceFile, onShown) {
     this._editors.openEditor(
       sourceFile.name, 
       function(contentHandler) {
         contentHandler(sourceFile.contents);
       },
       this._onEditorCreated,
-      this.refresh.bind(this)
+      onShown
     );
+  },
+  
+  urlFromLocation: function(location) {
+    return location.start.source.name + '?start=' + location.start.offset + '&end=' + location.end.offset + '&';
+  },
+  
+  locationFromURL: function(url) {
+    var parsedURI = parseUri(url);
+    if (parsedURI) {
+      var name = url.split('?')[0];
+      return {
+        name: name, 
+        start: parseInt(parsedURI.queryKey.start, 10),
+        end: parseInt(parsedURI.queryKey.end, 10),
+      };
+    } else {
+      console.error("locationFromURL failed for "+url)
+    }
   },
 
   // These methods are bound to |this| panel
@@ -122,18 +149,32 @@ QuerypointPanel.prototype = {
       console.log("selectFile");
       var uriItems = new URISelector(this.extensionPanel);
       this.project.getSourceFiles().forEach(function(sourceFile){
-        uriItems.appendItem('open: '+sourceFile.name, this._openSourceFile.bind(this, sourceFile));
+        uriItems.appendItem('open: '+sourceFile.name, this._openSourceFileAndRefresh.bind(this, sourceFile));
       }.bind(this));
       this.page.resources.forEach(function(resource, index) {
-        uriItems.appendItem('open: '+resource.url, this._openResource.bind(this, resource));
+        uriItems.appendItem('open: '+resource.url, this._openResourceAndRefresh.bind(this, resource));
       }.bind(this));
       uriItems.selectItem();
       return false;
     },
 
+    // Open an editor to view information selected out of another editor
+    // e.g. trace with refs to other files or call stack with refs to older frames
+    openChainedEditor: function(url, editor) {
+      var location = this.locationFromURL(url);
+      var sourceFile = this.project.getFile(location.name);
+      if (sourceFile) {
+         this._openSourceFile(sourceFile, function() { 
+           console.log("onShowne"); 
+         });
+      } else {
+        console.error("openChainedEditor but no sourcefile!");
+      }
+    },
+
     saveFile: function() {
       return this._editors.saveFile();
-    }
+    },
   },
 
   _initKeys: function() {

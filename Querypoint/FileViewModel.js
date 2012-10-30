@@ -127,14 +127,14 @@
     this.latestTraceByOffset[offset] = trace;
   }
   
-  Querypoint.FileViewModel = function(editor, sourceFile, tree) {
+  Querypoint.FileViewModel = function(editor, sourceFile, tree, panel) {
     this._editor = editor;
     this._sourceFile = sourceFile;
     this._tree = tree;
     
     this.fileName = editor.name;
     
-    this._tokenViewModel = new Querypoint.TraceViewModel(this._tree, this._editor);
+    this._tokenViewModel = new Querypoint.TraceViewModel(this._tree, this._editor, panel);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));

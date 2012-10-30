@@ -5,9 +5,9 @@
 (function() {
   window.Querypoint = window.Querypoint || {};
   
-  Querypoint.TraceViewModel = function(root, editor) {
+  Querypoint.TraceViewModel = function(rootSyntaxTree, editor, panel) {
     // Model
-    this._root = root;
+    this._root = rootSyntaxTree;
     this._tracesByTree = [];
     // ViewModel
     this._hasTraceData = ko.observable('false');
@@ -34,7 +34,7 @@
                 turn: trace.turn,
                 activation: trace.activation,
                 tooltip: start.source.name + ' Line: ' + start.line,
-                url: start.source.name + '?start=' + start.offset + '&end=' + end.offset,
+                url: panel.urlFromLocation(tree.location),
                 startOffset: start.offset,
                 endOffset: end.offset,
                 value: trace.value,
@@ -83,7 +83,8 @@
       console.log("Click ", jQueryEvent.target);
       var url = jQueryEvent.target.getAttribute('data-url');
       if (url) {
-        alert("TODO: navigate editor to "+url);
+        panel.commands.openChainedEditor(url, editor);
+
       } // else the user did not click on something interesting.
     });
   }
