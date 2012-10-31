@@ -134,8 +134,7 @@ EditorByCodeMirror.prototype = {
   },
 
   drawTokenBox: function(tokenEvent) {
-    if (this._boxElement)
-      this._boxElement.parentElement.removeChild(this._boxElement);
+    this._removeTokenBox();
     this._boxElement = this.createTokenBox(tokenEvent);
 
     var cm = this.editorImpl.getWrapperElement();
@@ -143,9 +142,17 @@ EditorByCodeMirror.prototype = {
     lines.appendChild(this._boxElement);
   },
 
+  _removeTokenBox: function() {
+    if (this._boxElement) {
+      this._boxElement.parentElement.removeChild(this._boxElement);
+      delete this._boxElement;
+    }
+  },
+
   _onFocus: function() {
     console.log("Editor focus");
     this._unwatchMouse();
+    this._removeTokenBox();
   },
 
   _onBlur: function() {
