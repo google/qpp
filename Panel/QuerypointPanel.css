@@ -74,6 +74,7 @@ body {
 
 .QPOutput {
   float: left;
+  cursor: default;
 }
 
 .CodeMirror-scroll {

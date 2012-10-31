@@ -81,15 +81,15 @@
           <caption>Trace Data</caption>
               <thead>
               <tr>
-                <th>Activation</th>
-                <th>Value</th>
+                <th title="Function call within event turn, linked to source expression">Activation</th>
+                <th title="Expression value during specific activation">Value</th>
               </tr>
             </thead> 
           <tbody  data-bind="foreach: _currentTraces">
             <tr >
               <td class="activation">
                 <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
-                <span data-bind="text: turn"></span>.<span data-bind="text: activation"></span>
+                <span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>.<span title="Function call number within turn" data-bind="text: activation"></span>
               </td>
               <td data-bind="text: value"></td>
             </tr>  
