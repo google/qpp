@@ -68,14 +68,14 @@
     <div class="splitter"></div>
     <div class="sourceViewport">
       <div class="QPOutput">
-        <span class="helpInfo">Tracing output</span>
+        <span class="helpInfo">Tracing output, see tooltips for details</span>
         <div class="traceOutput"  data-bind="attr: {hasTraceData: _hasTraceData}">
           <div class="explainTraceMode">
-            <span data-bind="if: _exploringMode">Exploring ... focus editor to lock</span>
+            <span title="Hint on how the display works" data-bind="if: _exploringMode">Exploring ... focus editor to lock</span>
             <span data-bind="if: !_exploringMode()">Locked ... blur editor to unlock</span>
           </div>
           <div class="currentExpression">
-            <span data-bind="html: _currentExpression"></span>
+            <span title="Current expression trace values displayed below" data-bind="html: _currentExpression"></span>
           </div>
           <table class="traceData">
           <caption>Trace Data</caption>
