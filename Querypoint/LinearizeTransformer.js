@@ -70,6 +70,13 @@
   var MemberExpression = Trees.MemberExpression;
   var ExpressionStatement = Trees.ExpressionStatement;
   var CommaExpression = Trees.CommaExpression;
+  var UnaryExpression = Trees.UnaryExpression;
+  var BinaryOperator = Trees.BinaryOperator;
+  var ParenExpression = Trees.ParenExpression;
+  var AssignmentExpression = Trees.AssignmentExpression;
+  var CallExpression = Trees.CallExpression;
+  var ArgumentList = Trees.ArgumentList;
+  var PropertyNameAssignment = Trees.PropertyNameAssignment;
   
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
@@ -129,10 +136,7 @@
       transformAny: function(tree) {
         var output_tree = 
           ParseTreeTransformer.prototype.transformAny.call(this, tree);
-        if (output_tree && this.isNonLinear(output_tree)) {
-          output_tree = this.linearize(output_tree);
-        }
-        if (output_tree) {
+        if (debug && output_tree) {  
           ParseTreeValidator.validate(output_tree);
         }
         return output_tree;
@@ -229,8 +233,9 @@
       },
       
       /* Convert an expression tree into 
-      **    a reference to a VariableStatement and its value 
-      ** expr -> var __qp_XX = expr; __qp_activation._offset = __qp.trace(__qp_XX), __qp_XX;
+      **    a reference to a VariableStatement and its value.
+      ** Insert the VariableStatement and return a new expression with the same value as the incoming one. 
+      ** expr -> var __qp_XX = expr; (__qp_activation._offset = __qp.trace(__qp_XX), __qp_XX);
       ** @param {ParseTree} tree
       ** @return {ParseTree}
       ** side-effect: this.insertions.length++
@@ -246,7 +251,8 @@
         var varId = '__qp' + traceId;
         
         var loc = tree.location;
-        loc.traceId = traceId;
+        loc.traceId = traceId;  // used to match traces to the AST
+        loc.varId = varId;        // used to write new AST nodes
         // var __qp_XX = expr;
         var tempVariableStatement = createVariableStatement(
           createVariableDeclarationList(
@@ -604,12 +610,30 @@ ParseTreeValidator.validate(pushStatement);
         return new Block(tree.location, statements);
       },
       
+      transformBinaryOperator: function(tree) {
+        var left = this.transformAny(tree.left);
+        var right = this.transformAny(tree.right);
+        if (left !== tree.left || right !== tree.right) {
+          tree = new BinaryOperator(tree.location, left, tree.operator, right);
+        }
+        return this.linearize(tree);
+      },
+
       transformBreakStatement: function(tree) {
         if (tree.name) {  // labeled break ok as is
           return tree;
         } else {          // else unlabeled break 
           return new BreakStatement(tree.location, this.getBreakLabel());
         }
+      },
+  
+      transformCallExpression: function(tree) {
+        var operand = this.transformAny(tree.operand);
+        var args = this.transformAny(tree.args);
+        if (operand !== tree.operand || args !== tree.args) {
+          tree = new CallExpression(tree.location, operand, args); 
+        }
+        return this.linearize(tree);
       },
 
       transformCaseClause: function(tree) {
@@ -669,7 +693,26 @@ ParseTreeValidator.validate(pushStatement);
         }
         return new LabelledStatement(tree.location, tree.name, statement);
       },
-      
+
+      transformPostfixExpression: function(tree) {
+        var operand = this.transformAny(tree.operand);
+        // inserts eg var __qp_11 = expr; returns ParenExpression for value of expr
+        var operandValue = this.linearize(operand);  
+        var prefixExpresssion = new UnaryExpression(tree.location, tree.operator, operand);
+
+        // inserts eg __qp_13;
+        this.insertions.push( 
+          new ExpressionStatement(
+            tree.location, 
+            // inserts eg var __qp_13 = ++expr;
+            this.linearize(prefixExpresssion) 
+          )
+        );
+        return operandValue;  // eg __qp_11;
+      },
+
+
+
       transformProgram: function(tree) {
         var activationStatements = this._createActivationStatements(tree);
         var elements = this.transformListInsertEach(tree.programElements, 
