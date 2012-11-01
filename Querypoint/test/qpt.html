@@ -7,7 +7,7 @@
   <script src="../QPTracer.js"></script>
   <script src="../QPCompiler.js"></script>
   <script src="../QPTreeWriter.js"></script>
-  <script src="../QPController.js"></script>
+  <script src="../Querypoints.js"></script>
   <script src="../QPModel.js"></script>
   
   <script src="QPTestController.js"></script>
@@ -45,7 +45,7 @@
       var b = {foo:1}; 
     </pre>
     <pre class="queries">
-      QPController.traceIdentifier('b');
+      Querypoints.traceIdentifier('b');
       </pre>
     <pre class="expected">
       TBD
@@ -57,7 +57,7 @@
       var c = new Object(); 
     </pre>
     <pre class="queries">
-      QPController.traceIdentifier('c');
+      Querypoints.traceIdentifier('c');
     </pre>
     <pre class="expected">
       TBD
@@ -69,7 +69,7 @@
       var d, e = {foo: 1}; 
     </pre>
     <pre class="queries">
-      QPController.traceIdentifier('d');
+      Querypoints.traceIdentifier('d');
     </pre>
     <pre class="expected">
       TBD
@@ -83,7 +83,7 @@
       foo(1,f,3);
     </pre>
     <pre class="queries">
-      QPController.traceIdentifier('f');
+      Querypoints.traceIdentifier('f');
     </pre>
     <pre class="expected">
       TBD
@@ -96,7 +96,7 @@
       g = 4;
     </pre>
     <pre class="queries">
-      QPController.traceIdentifier('g');
+      Querypoints.traceIdentifier('g');
     </pre>
     <pre class="expected">
       TBD
@@ -109,7 +109,7 @@
       var doubled = [i * 2 for i of numbers];    
     </pre>
     <pre class="queries">
-      QPController.traceIdentifier('numbers');
+      Querypoints.traceIdentifier('numbers');
     </pre>
     <pre class="expected">
       TBD

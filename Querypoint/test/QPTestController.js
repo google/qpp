@@ -17,9 +17,9 @@ var QPTestController = {
         
         // Set up the tracequeries for this test
 
-        QPController.initialize();
-        QPController.setConsole(this.testConsole);
-        eval(queries);  // The queries section operates on QPController to define the QPs
+        Querypoints.initialize();
+        Querypoints.setConsole(this.testConsole);
+        eval(queries);  // The queries section operates on Querypoints to define the QPs
         
         // Looks like this will be stock compilation, yay
         var qpCompiler = new QPCompiler(this.reporter);
@@ -30,7 +30,7 @@ var QPTestController = {
 
         // visit the parse tree after the linearization transformation and record the traceLocations
 
-        var tracequeries = QPController.tracequeries();
+        var tracequeries = Querypoints.tracequeries();
         QPTracer.trace(trees, tracequeries);
 
         // Insert tracepoint generation code at the traceLocations
@@ -45,12 +45,12 @@ var QPTestController = {
         eval(tracedSource);
 
         QPTestController.logTracepoints(name, source, queries, expected, element);
-        console.log("Querypoints: ", QPController.querypoints());
+        console.log("Querypoints: ", Querypoints.querypoints());
 
     },
     
     logTracepoints: function(name, source, queries, expected, element) {
-        var fullTracepoints = QPController.tracepoints();
+        var fullTracepoints = Querypoints.tracepoints();
         var results = fullTracepoints.map(function(tp) {
             var result = {};
             Object.keys(tp).forEach(function shallowCopy(key) {

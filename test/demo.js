@@ -12,7 +12,8 @@ var oldValue;
 
 function onClick() {
   foo();
-  obj.prop++;
+  var p = 'prop';
+  window.obj[p]++;
   bar();
   // lots more code....
   updateButton();

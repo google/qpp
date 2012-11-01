@@ -5,7 +5,7 @@
 
 function onLoad() {
   function doDemo() {
-    QPController.traceIdentifier('prop'); 
+    Querypoints.traceIdentifier('prop'); 
   }
   document.querySelector('.demo').addEventListener('click', doDemo);
 }

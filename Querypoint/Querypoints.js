@@ -2,7 +2,7 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 function protect(expr) {
-    return "eval(" + expr + ")"; // unwrapped by QPController
+    return "eval(" + expr + ")"; // unwrapped by Querypoints
 }
 
 function unprotect(str) {
@@ -39,7 +39,24 @@ IdentifierQuery.prototype = {
     
 };
 
-var QPController = {
+function PropertyChangeQuery(querypoint, objectExpression, propertyIdentifier) {
+
+  this._transformer = new PropertyChangeQueryTransformer(propertyIdentifier);
+
+  // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<propertyIdentifier>
+  // 
+  this.transformParseTree = function(tree) {
+    return this._transformer.transformAny(tree);
+  };
+
+  // Pull trace results out of the page for this querypoint
+  this.extractTracepoints = function(callback) {
+    chrome.devtools.inspectedWindow.eval('window.__qp.propertyChanges.'+propertyIdentifier, callback);
+  };
+
+}
+
+var Querypoints = {
 
     _tracequeries: {
         _tqs: [],
@@ -71,7 +88,7 @@ var QPController = {
               var offset = traceLocation.start.offset;
               console.log(previous + " <= " + offset + " < " + current);
               if ( (previous <= offset) &&  (offset < current) ) {
-                message = QPController.formatTraceMessage(tq.tracepointMessage(locationIndex));
+                message = Querypoints.formatTraceMessage(tq.tracepointMessage(locationIndex));
                 return true;
               } 
             });
@@ -95,6 +112,16 @@ var QPController = {
 
     traceIdentifier: function(identifier) {
         this._tracequeries.add(new IdentifierQuery(identifier));
+    },
+
+    /*
+      trace obj.prop updates
+      @param querypoint location of the query request,
+      @param objectExpression expression, valid at the querypoint, yeilding |obj|
+      @param propertyIdentifier |prop| in obj.prop
+    */
+    traceObjectProperty: function(querypoint, objectExpression, propertyIdentifier) {
+      this._tracequeries.add(new PropertyChangeQuery(querypoint, objectExpression, propertyIdentifier));
     },
 
     // Query Acccess
