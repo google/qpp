@@ -1,7 +1,7 @@
 // Demo app for Querypoint debugging
 
 var obj = {
-  prop: 1
+  prop: 0
 };
 
 var condition = {
@@ -11,9 +11,9 @@ var condition = {
 var oldValue;
 
 function onClick() {
-  foo();
+  foo() + 1;
   var p = 'prop';
-  window.obj[p]++;
+  obj[p]++;
   bar();
   // lots more code....
   updateButton();

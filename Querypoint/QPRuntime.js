@@ -12,13 +12,20 @@
     var early = true;
 
     function fireLoad() {
-      // So far we cannot transcode synchronously so we miss the 'load' event
-      early = false;
-      var handlers = window.__qp.earlyEventHandlers['load'];
-      handlers.forEach(function(handler){
-        handler(window.__qp.loadEvent);
-      });
-      console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
+      try {
+        // So far we cannot transcode synchronously so we miss the 'load' event
+        early = false;
+        var handlers = window.__qp.earlyEventHandlers['load'];
+        handlers.forEach(function(handler){
+          handler(window.__qp.loadEvent);
+        });
+        console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
+        return handlers.length;
+      } catch(exc) {
+        console.error("Querypoint.runtime fireLoad fails "+exc, exc.stack);
+        return exc.toString();
+      }
+
     }
     
     function trace(expr) {

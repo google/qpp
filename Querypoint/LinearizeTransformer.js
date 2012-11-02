@@ -77,6 +77,7 @@
   var CallExpression = Trees.CallExpression;
   var ArgumentList = Trees.ArgumentList;
   var PropertyNameAssignment = Trees.PropertyNameAssignment;
+  var MemberLookupExpression = Trees.MemberLookupExpression;
   
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
@@ -130,80 +131,37 @@
     }
   }
 
+  function shouldLinearizeOutput(tree) {
+    return tree.isExpression() && 
+              (tree.type !== ParseTreeType.FUNCTION_DECLARATION) &&  // TODO function expression
+              (tree.type !== ParseTreeType.POSTFIX_EXPRESSION) && // already linearized below
+              (tree.type !== ParseTreeType.MEMBER_LOOKUP_EXPRESSION) && 
+              tree.location && 
+              !tree.location.varId;
+  }
+
   LinearizeTransformer.prototype = traceur.createObject(
     ParseTreeTransformer.prototype, {
 
       transformAny: function(tree) {
         var output_tree = 
           ParseTreeTransformer.prototype.transformAny.call(this, tree);
-        if (debug && output_tree) {  
-          ParseTreeValidator.validate(output_tree);
+        if (output_tree) {
+          if (shouldLinearizeOutput(tree)) {
+            output_tree = this.linearize(output_tree);
+          }
+          if (debug) {  
+            ParseTreeValidator.validate(output_tree);
+          }
         }
         return output_tree;
       },
-
-      operatorType: function(operator) {
-        switch(operator.type) {
-          case TokenType.EQUAL:
-          case TokenType.STAR_EQUAL:
-          case TokenType.SLASH_EQUAL:
-          case TokenType.PERCENT_EQUAL:
-          case TokenType.PLUS_EQUAL:
-          case TokenType.MINUS_EQUAL:
-          case TokenType.LEFT_SHIFT_EQUAL:
-          case TokenType.RIGHT_SHIFT_EQUAL:
-          case TokenType.UNSIGNED_RIGHT_SHIFT_EQUAL:
-          case TokenType.AMPERSAND_EQUAL:
-          case TokenType.CARET_EQUAL:
-          case TokenType.BAR_EQUAL:
-            return 'assignment';
-          default:
-            return undefined;
-        }
-      },
-
-      isNonLinear: function(tree) {
-        switch(tree.type) {
-          case ParseTreeType.UNARY_EXPRESSION:
-            if (
-              (tree.operator.type === TokenType.PLUS_PLUS) ||
-              (tree.operator.type === TokenType.MINUS_MINUS) 
-            ){
-               return false;
-            } 
-            return true;
-          case ParseTreeType.BINARY_OPERATOR: 
-          case ParseTreeType.POSTFIX_EXPRESSION:
-          case ParseTreeType.CALL_EXPRESSION:
-            return true;
-          default:
-            return false;
-        }
-      },
-      // Subexpression we do not want to create statement from
-      isLinear: function(tree) {
-        switch(tree.type) {
-          case ParseTreeType.VARIABLE_DECLARATION_LIST:
-            return (tree.declarations.length === 1);
-          case ParseTreeType.IDENTIFIER_EXPRESSION:
-          case ParseTreeType.FORMAL_PARAMETER_LIST:
-          case ParseTreeType.LITERAL_EXPRESSION:
-          case ParseTreeType.BINDING_IDENTIFIER:
-          case ParseTreeType.PROGRAM:
-          case ParseTreeType.ARGUMENT_LIST:
-          case ParseTreeType.MEMBER_EXPRESSION:
-          case ParseTreeType.PROPERTY_NAME_ASSIGNMENT:
-          case ParseTreeType.GET_ACCESSOR:
-          case ParseTreeType.SET_ACCESSOR:
-          case ParseTreeType.OBJECT_LITERAL_EXPRESSION:
-          case ParseTreeType.CASE_CLAUSE:
-          case ParseTreeType.DEFAULT_CLAUSE:
-            return true;
-          default: 
-            return false;
-        }
-      },
       
+      transformAnySkipLinearization: function(tree) {
+        // skip linearization of the tree but not its children
+        return ParseTreeTransformer.prototype.transformAny.call(this, tree);
+      },
+
       // When we enter a new block we create a new context for insertions
       pushInsertions: function() {
         this.blockStack.push(this.expressionStack);
@@ -229,7 +187,8 @@
           return 'v'+this.identifierGenerator_.generateUniqueIdentifier();
         }
         // The end.offset points just past the last character of the token
-        return '_' + (tree.location.end.offset - 1);
+        var end = tree.location.end.offset;
+        return '_' + (end - 1) + '_' + (end - tree.location.start.offset);
       },
       
       /* Convert an expression tree into 
@@ -343,6 +302,7 @@ ParseTreeValidator.validate(linearExpression);
 
           var transformed = element !== transformedElement;
           if (builder || transformed || this.insertions.length) {
+ParseTreeValidator.validate(transformedElement);
             if (!builder) {
               builder = list.slice(0, index);
             }
@@ -611,12 +571,18 @@ ParseTreeValidator.validate(pushStatement);
       },
       
       transformBinaryOperator: function(tree) {
-        var left = this.transformAny(tree.left);
+        var left;
+        if (tree.operator.isAssignmentOperator()) {
+                  // skip linearization of the left hand side of assignments
+          left = this.transformAnySkipLinearization(tree.left);
+        } else {
+          left = this.transformAny(tree.left);
+        }
         var right = this.transformAny(tree.right);
         if (left !== tree.left || right !== tree.right) {
           tree = new BinaryOperator(tree.location, left, tree.operator, right);
         }
-        return this.linearize(tree);
+        return tree;
       },
 
       transformBreakStatement: function(tree) {
@@ -627,13 +593,30 @@ ParseTreeValidator.validate(pushStatement);
         }
       },
   
-      transformCallExpression: function(tree) {
-        var operand = this.transformAny(tree.operand);
-        var args = this.transformAny(tree.args);
-        if (operand !== tree.operand || args !== tree.args) {
-          tree = new CallExpression(tree.location, operand, args); 
+      transformCallExpressionOperand: function(tree) {
+        if (
+          tree.type === ParseTreeType.MEMBER_EXPRESSION ||
+          tree.type === ParseTreeType.MEMBER_LOOKUP_EXPRESSION
+        ) {
+          // eg insert var __qp_11 = obj.foo.bind(obj) and return traced __qp_11
+          var boundMemberFunction = new CallExpression(
+            tree.location,
+            new MemberExpression(tree.location, tree, 'bind'),
+            new ArgumentList(tree.location, [tree.operand]) 
+            );
+          return this.linearize(boundMemberFunction);
+        } else {
+          return this.transformAny(tree);
         }
-        return this.linearize(tree);
+      },
+
+      transformCallExpression: function(tree) {
+        var operand = this.transformCallExpressionOperand(tree.operand);
+        var args = this.transformAny(tree.args);
+        if (operand == tree.operand && args == tree.args) {
+          return tree;
+        }
+        return new CallExpression(tree.location, operand, args); 
       },
 
       transformCaseClause: function(tree) {
@@ -688,17 +671,26 @@ ParseTreeValidator.validate(pushStatement);
         // will end up above the label.
         var statement = this.transformAny(tree.statement);
         this.labelsInScope.pop(tree);
-        if (statement === tree.statement) {
+        if (statement == tree.statement) {
           return tree;
         }
         return new LabelledStatement(tree.location, tree.name, statement);
       },
 
+      transformMemberLookupExpression: function(tree) {
+        // traceur cannot handle code like obj = {f:5}; ogg = obj; (16, ogg)['f'];
+        // 
+        var operand = this.transformAnySkipLinearization(tree.operand);
+        var memberExpression = this.transformAny(tree.memberExpression);
+
+        return new MemberLookupExpression(tree.location, operand,
+                                          memberExpression);
+      },
+
       transformPostfixExpression: function(tree) {
-        var operand = this.transformAny(tree.operand);
         // inserts eg var __qp_11 = expr; returns ParenExpression for value of expr
-        var operandValue = this.linearize(operand);  
-        var prefixExpresssion = new UnaryExpression(tree.location, tree.operator, operand);
+        var operandValue = this.transformAnySkipLinearization(tree.operand);  
+        var prefixExpresssion = new UnaryExpression(tree.location, tree.operator, tree.operand);
 
         // inserts eg __qp_13;
         this.insertions.push( 
@@ -736,7 +728,15 @@ ParseTreeValidator.validate(pushStatement);
         var labels = [this.popSwitchLabel()];
         return this.wrapInLabels(labels, tree);
       },
-      
+          
+  /*    transformUnaryExpression: function(tree) {
+        var operand = this.transformAny(tree.operand);
+        if (operand !== tree.operand) {
+          tree = new UnaryExpression(tree.location, tree.operator, operand);
+        }
+        return this.linearize(tree);
+      },
+*/
       transformVariableDeclarationList: function(tree) {
         tree.declarations.forEach(function(declaration) {
             declaration = this.transformAny(declaration); 

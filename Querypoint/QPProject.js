@@ -44,8 +44,8 @@ QPProject.prototype.startRuntime = function() {
   function startRuntime() {  // runs in web page
     window.__qp.fireLoad();
   }
-  function onRuntimeStarted() {
-    console.log("QP runtime started");
+  function onRuntimeStarted(results) {
+    console.log("QP runtime called fireLoad() got "+results);
   }
   chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
 }

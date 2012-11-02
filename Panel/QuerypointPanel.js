@@ -26,6 +26,8 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
 }
 
 
+QuerypointPanel.debug = false;
+
 QuerypointPanel.prototype = {
   onShown: function() {
     this._isShowing = true;
@@ -224,7 +226,8 @@ QuerypointPanel.prototype = {
       var row = rows[i];
       if (row.classList.contains('sourceViewport'))
         continue;
-      console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
+      if (QuerypointPanel.debug)
+        console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
       availableHeight = availableHeight - row.offsetHeight;
     }
     sourceViewport.style.height = availableHeight + 'px';
