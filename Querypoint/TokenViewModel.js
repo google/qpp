@@ -5,7 +5,7 @@
 (function() {
   window.Querypoint = window.Querypoint || {};
   
-  Querypoint.TraceViewModel = function(rootSyntaxTree, editor, panel) {
+  Querypoint.TokenViewModel = function(rootSyntaxTree, editor, panel) {
     // Model
     this._root = rootSyntaxTree;
     this._tracesByTree = [];
@@ -89,13 +89,10 @@
     });
   }
   
-  Querypoint.TraceViewModel.prototype = {
+  Querypoint.TokenViewModel.prototype = {
 
     setModel: function(tree) {
-      if (!tree.location || !tree.location.trace) {
-        console.warn("Don't call setModel without a tree.location.trace!");
-        return;
-      }
+
       var index = this._tracesByTree.indexOf(tree);
       if (index !== -1) {
         this._currentTreeIndex(index);
