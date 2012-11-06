@@ -252,7 +252,8 @@ QuerypointPanel.prototype = {
   _initViewModels: function(panelModel) {
     this._log = Querypoint.Log.initialize();
     this._scrubber = Querypoint.LogScrubber.initialize(this._log, panelModel.scrubber);
-    this._editors = Querypoint.Editors.initialize(panelModel.buffers);
+    this._buffersStatusBar = Querypoint.BuffersStatusBar.initialize();
+    this._editors = Querypoint.Editors.initialize(panelModel.buffers, this._buffersStatusBar);
     var openURLs = panelModel.buffers.openURLs.slice(0);
     panelModel.buffers.openURLs = [];  // create an list next time we save
     openURLs.forEach(this._openURL.bind(this));

@@ -8,7 +8,9 @@
 	background-color: #f8f8f2;
 	position: relative;
 	font-size: 15px;
+  display: -webkit-flex;
 
+  -webkit-flex-direction: row;
 }
 
 .buffersStatusBar .commandLine {

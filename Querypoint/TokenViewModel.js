@@ -10,7 +10,6 @@
     this._root = rootSyntaxTree;
     this._tracesByTree = [];
     // ViewModel
-    this._exploringMode = ko.observable(false);
     this.currentTreeIndex = ko.observable();
     this.currentTree = ko.computed({
       read: function() {
@@ -115,7 +114,7 @@
     },
     
     setExploring: function(active) {
-      this._exploringMode(active);
+      Querypoint.BuffersStatusBar.exploringMode(active);
     },
     
   };

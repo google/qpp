@@ -72,10 +72,6 @@
       <div class="QPOutput">
         <span class="helpInfo">Tracing output, see tooltips for details</span>
         <div class="tokenView" >
-          <div class="explainTokenPanel">
-            <span title="Hint on how the display works" data-bind="if: _exploringMode">Exploring ... focus editor to lock</span>
-            <span data-bind="if: !_exploringMode()">Locked ... blur editor to unlock</span>
-          </div>
           <div class="scopeChain" data-bind="foreach: scopes">
             <div data-bind="html: scopeDeclaration"></div>
           </div>
@@ -110,16 +106,20 @@
     <div class="buffersStatusBar">
       <span class="helpInfo">Current Editor URL</span>
       <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
-      <span class="userOpenedURL" data-bind="text: _userOpenedURL()"></span>
+      <div class="explainTokenPanel">
+            <span title="Hint on how the display works" data-bind="if: exploringMode()">Exploring ... focus editor to lock</span>
+            <span data-bind="if: !exploringMode()">Locked ... blur editor to unlock</span>
+      </div>
+
       <span 
         title="Files changed and not saved" 
         class="unsavedChangedFiles centeringHack" 
-        data-bind="text: '*' + unsavedBufferNames().length"
+        data-bind="text: '*' + unsavedEditors().length"
         >*1</span>
       <span 
         title="Files saved since the last reload" 
         class="savedChangedFiles centeringHack" 
-        data-bind="text: '&#x2206;' + _savedBuffers().length"
+        data-bind="text: '&#x2206;' + savedEditors().length"
         > 2</span>
     </div>
     <div class="splitter"></div>

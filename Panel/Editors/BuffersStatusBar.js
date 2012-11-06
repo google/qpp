@@ -6,14 +6,15 @@
   var buffersStatusBarSelector = ".buffersStatusBar";
   
   Querypoint.BuffersStatusBar = {
-    initialize: function(initialBuffers) {
-      var buffersStatusBar = this;
-      buffersStatusBar.openURLs = ko.observableArray(initialBuffers.openURLs);
-      buffersStatusBar.unsavedBuffers = ko.observableArray(initialBuffers.unsavedBuffers);
+    initialize: function() {
+      this.exploringMode = ko.observable(false);
+      this.openURLs = ko.observableArray();
+      this.unsavedEditors = ko.observableArray();
       // at start up we assume the web page has reloaded since our last edit....
-      buffersStatusBar.savedBuffers = ko.observableArray();
+      this.savedEditors = ko.observableArray();
 
-      ko.applyBindings(buffersStatusBar, document.querySelector(buffersStatusBarSelector));
+      ko.applyBindings(this, document.querySelector(buffersStatusBarSelector));
+      return this;
     }
   };
 }());

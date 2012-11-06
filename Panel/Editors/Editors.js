@@ -3,19 +3,17 @@
 
 (function(){
   Querypoint.Editors = {
-    initialize: function(buffers) {
+    initialize: function(buffers, editorsViewModel) {
       console.assert(buffers);
       
-      this._openURLs = ko.observableArray();
-      this._editors = [];  // co-indexed in _openURLs
-
-      this._userOpenedURL = ko.observable(buffers.userOpenedURL);
-
-      this.unsavedBufferNames = ko.observableArray();
-      this._savedBuffers = ko.observableArray();
-
-      ko.applyBindings(this, document.querySelector('.buffersStatusBar'));
+      this._viewModel = editorsViewModel;
       
+      this._editors = [];  // co-indexed with _viewMode.openURLs
+
+      this._userOpenedURL = buffers.userOpenedURL;
+
+      this._viewModel.savedEditors = ko.observableArray();
+
       this.userDirectedEditor = document.querySelector('.userDirectedEditor');
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
       window.onbeforeunload = this._beforeUnload.bind(this);
@@ -35,7 +33,7 @@
     },
 
     currentEditorName: function() {
-      return this._userOpenedURL();
+      return this._userOpenedURL;
     },
 
     openChainedEditor: function(location, baseEditor) {
@@ -44,14 +42,14 @@
     },
 
     _getEditorByName: function(name) {
-      var index = this._openURLs.indexOf(name);
+      var index = this._viewModel.openURLs.indexOf(name);
       if (index !== -1)
         return this._editors[index];
     },
 
     _showEditor: function(name, onShown) {
       var editor = this._getEditorByName(name);
-      var currentEditor = this._getEditorByName(this._userOpenedURL());
+      var currentEditor = this._getEditorByName(this._userOpenedURL);
       if (currentEditor) {
         if (currentEditor !== editor) {
           currentEditor.hide();
@@ -59,7 +57,7 @@
       }
 
       if (editor) {
-        this._userOpenedURL(name);
+        this._userOpenedURL = name;
         editor.show();
         if (onShown) {
           onShown(editor)
@@ -70,13 +68,13 @@
     },
     
     _onChange: function(editor, changes) {
-      if (this.unsavedBufferNames.indexOf(editor.getName()) === -1) {
-        this.unsavedBufferNames.push(editor);
+      if (this._viewModel.unsavedEditors.indexOf(editor.getName()) === -1) {
+        this._viewModel.unsavedEditors.push(editor);
       }
     },
 
     createEditor: function(name, content, callback) {
-      this._openURLs.push(name);
+      this._viewModel.openURLs.push(name);
       var editor = new EditorByCodeMirror(this.userDirectedEditor, name, content);
       editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
@@ -100,7 +98,7 @@
     
     saveFile: function() {
       var editors = this;
-      var currentEditor = editors._getEditorByName(editors._userOpenedURL());
+      var currentEditor = editors._getEditorByName(editors._userOpenedURL);
       if (!currentEditor) {
         alert("Can't save, there is no current editor"); // alerts are bad UX
         return;
@@ -114,9 +112,9 @@
         console.log("saveFile response ", response);
         if (response.saved) {
           var name = currentEditor.getName();
-          var index = editors._savedBuffers.indexOf(name);
+          var index = editorsthis._viewModel.savedEditors.indexOf(name);
           if (index === -1) {
-            editors._savedBuffers.push(name);
+            editorsthis._viewModel.savedEditors.push(name);
           }
           index = editors.unsavedBufferNames.indexOf(name);
           editors.unsavedBufferNames.splice(index, 1);
@@ -128,7 +126,7 @@
     },
 
     _onResourceUpdate: function(resource, content) {
-        if (this.unsavedBufferNames.indexOf(resource.url) !== -1) {
+        if (this._viewModel.unsavedEditors.indexOf(resource.url) !== -1) {
           this._showEditor(resource.url);
           alert("This editor has changes and the file has changes");
         } else {
@@ -138,7 +136,7 @@
   
     _beforeUnload: function(event) {
       var sure = null;
-      if (this.unsavedBufferNames.length) {
+      if (this._viewModel.unsavedEditors.length) {
         sure = "You have unsaved changes in " + unsavedBufferNames.length + "\nfiles: " + unsavedBufferNames.join(',');
         this._showEditor(unsavedBufferNames[0]);
       } 

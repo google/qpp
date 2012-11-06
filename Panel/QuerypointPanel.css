@@ -66,11 +66,12 @@ body {
 }
 
 .explainTokenPanel {
-  display: -webkit-flex;
-  -webkit-justify-content: center;
-  -webkit-flex-direction: row;
+
   font-family: Lucida Grande, sans-serif;
-  padding-top: 4px;
+  
+
+  -webkit-flex: 1 2 auto;
+
 }
 
 .sourceViewport {
