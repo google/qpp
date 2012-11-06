@@ -49,13 +49,14 @@
       while (scope) {
         var scopeTree = scope.tree;
         var location = scopeTree.location;
-        if (scopeTree.type === traceur.syntax.trees.ParseTreeType.PROGRAM) {
-          scopesView.push({scopeDeclaration: '<div class="fileScope">' + location.start.source.name + '</div>'});
-        } else {
+        if (scopeTree.type !== traceur.syntax.trees.ParseTreeType.PROGRAM) {
+
           appendView(location);
         }
         scope = scope.parent;
       }
+
+      scopesView.push({scopeDeclaration: '<div class="fileScope">' + tree.location.start.source.name + '</div>'});
         
       return scopesView.reverse();  
     }.bind(this));
