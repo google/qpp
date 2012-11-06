@@ -175,6 +175,9 @@ pre.traceBackground {
   color: #75715e;
 }
 
+.QPOutput .queryButtons {
+}
+
 .QPOutput .command {
   font-family: Lucida Grande, sans-serif;
   font-size: smaller;
@@ -184,6 +187,11 @@ pre.traceBackground {
   padding-left: 4px;
   font-weight: bold;
   padding-right: 4px;
-  border: 1px solid #d0d0d0;
+  border: 2px solid #d0d0d0;
   cursor: pointer;
+}
+
+.QPOutput .command:hover {
+  background-color: #272822;
+  color: #75715e;
 }

@@ -96,7 +96,7 @@ EditorByCodeMirror.prototype = {
     var posDidChange = 
       (!this._previousPosition) || 
       (this._previousPosition.line !== pos.line) || 
-      (this._previousPosition.ch !== this._previousPosition.ch);
+      (this._previousPosition.ch !== pos.ch);
     
     if (posDidChange) {
       this._previousPosition = pos;

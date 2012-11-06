@@ -28,10 +28,12 @@
 <script src="Editors/Editors.js"></script>
 
 <script src="../traceur/src/traceur.js"></script>
+<script src="../Querypoint/PropertyChangeQueryTransformer.js"></script>
 <script src="../Querypoint/FindInTree.js"></script>
 <script src="../Querypoint/TraceVisitor.js"></script>
 <script src="../Querypoint/TokenViewModel.js"></script>
 <script src="../Querypoint/TraceViewModel.js"></script>
+<script src="../Querypoint/QueryViewModel.js"></script>
 <script src="../Querypoint/FileViewModel.js"></script>
 <script src="QuerypointPanel.js"></script>
 
@@ -80,13 +82,13 @@
           </div>
         </div>
         <table class="traceView" data-bind="attr: {hasTraceData: _hasTraceData}">
-        <caption>Trace Data</caption>
-            <thead>
-            <tr>
-              <th title="Function call within event turn, linked to source expression">Activation</th>
-              <th title="Expression value during specific activation">Value</th>
-            </tr>
-          </thead> 
+          <caption>Trace Data</caption>
+          <thead>
+          <tr>
+            <th title="Function call within event turn, linked to source expression">Activation</th>
+            <th title="Expression value during specific activation">Value</th>
+          </tr>
+        </thead> 
         <tbody  data-bind="foreach: currentTraces">
           <tr >
             <td class="activation">
@@ -97,6 +99,9 @@
           </tr>  
           </tbody>
         </table>
+        <div class="queryView">
+          <button class="command" data-bind="click: lastChange" title="Trace the changes to the current expression and report the last one">lastChange</button>
+        </div>
       </div>
       <div class="userDirectedEditor">
          <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>

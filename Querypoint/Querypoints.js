@@ -1,6 +1,10 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
+(function(){
+
+window.Querypoint = window.Querypoint || {};
+
 function protect(expr) {
     return "eval(" + expr + ")"; // unwrapped by Querypoints
 }
@@ -9,11 +13,11 @@ function unprotect(str) {
     return str.replace(/:\"eval\(([^\)]*)\)\"/,":$1");
 }
 
-function IdentifierQuery(identifier) {
+Querypoint.IdentifierQuery = function(identifier) {
     this.identifier = identifier;
 }
 
-IdentifierQuery.prototype = {
+Querypoint.IdentifierQuery.prototype = {
 
   // A jsonable object inserted to create the tracepoint output
   tracepointMessage: function(traceLocationIndex) {
@@ -39,9 +43,12 @@ IdentifierQuery.prototype = {
     
 };
 
-function PropertyChangeQuery(querypoint, objectExpression, propertyIdentifier) {
+Querypoint.PropertyChangeQuery = function(tree) {
+  console.assert(tree.type === "MEMBER_EXPRESSION");
+  this._tree = tree;
+  var propertyIdentifier = tree.memberName;
 
-  this._transformer = new PropertyChangeQueryTransformer(propertyIdentifier);
+  this._transformer = new Querypoint.PropertyChangeQueryTransformer(propertyIdentifier);
 
   // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<propertyIdentifier>
   // 
@@ -56,7 +63,7 @@ function PropertyChangeQuery(querypoint, objectExpression, propertyIdentifier) {
 
 }
 
-var Querypoints = {
+Querypoint.Querypoints = {
 
     _tracequeries: {
         _tqs: [],
@@ -116,12 +123,9 @@ var Querypoints = {
 
     /*
       trace obj.prop updates
-      @param querypoint location of the query request,
-      @param objectExpression expression, valid at the querypoint, yeilding |obj|
-      @param propertyIdentifier |prop| in obj.prop
     */
-    traceObjectProperty: function(querypoint, objectExpression, propertyIdentifier) {
-      this._tracequeries.add(new PropertyChangeQuery(querypoint, objectExpression, propertyIdentifier));
+    traceObjectProperty: function(tree) {
+      this._tracequeries.add(new Querypoint.PropertyChangeQuery(tree));
     },
 
     // Query Acccess
@@ -168,5 +172,8 @@ var Querypoints = {
     initialize: function() {
       this._tracequeries.clear();
       __qp_tps = [];
+      return this;
     },
 };
+
+}());

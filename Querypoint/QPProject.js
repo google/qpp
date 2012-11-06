@@ -10,6 +10,7 @@ function QPProject(url) {
 
   this.compiler_ = new QPCompiler(this.reporter, {}); // TODO traceur options
       
+  this.querypoints = Querypoint.Querypoints.initialize();
 
 }
 
@@ -36,7 +37,7 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
     tree = preambleTransformer.transformAny(tree);
 
     file.generatedFileName = file.name + ".js";
-    var writer = new QPTreeWriter(file.generatedFileName, Querypoints.tracequeries());
+    var writer = new QPTreeWriter(file.generatedFileName, this.querypoints.tracequeries());
     file = writer.generateSource(file, tree);
 
     return file;

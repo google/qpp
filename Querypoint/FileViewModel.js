@@ -18,6 +18,7 @@
     
     this._tokenViewModel = new Querypoint.TokenViewModel(this._tree, this._editor, panel);
     this._traceViewModel = new Querypoint.TraceViewModel(this._tokenViewModel, panel);
+    this._queryViewModel = new Querypoint.QueryViewModel(this._tokenViewModel, panel.project);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));

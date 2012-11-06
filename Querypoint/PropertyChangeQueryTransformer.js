@@ -36,20 +36,11 @@
 
 
   var PropertyChangeQueryTransformer = Querypoint.PropertyChangeQueryTransformer = function(propertyIdentifier) {
+    traceur.codegeneration.ParseTreeTransformer.call(this);
     this.propertyIdentifier = propertyIdentifier;
   }
 
-  PropertyChangeQueryTransformer.prototype = Object.create(traceur.codegeneration.ParseTreeTransformer.prototype);
-
   var QP_FUNCTION = '__qp_function';
-
-  PropertyChangeQueryTransformer.prototype._createPropertyChangeAccessExpression = function(propertyIdentifier) {
-    // window.__qp.propertyChanges.<propertyIdentifier>
-    return createMemberLookupExpression(
-      createMemberExpression('window', '__qp', 'propertyChanges'),
-      createStringLiteral(propertyIdentifier)
-    );
-  }
 
   // Called once per load by QPRuntime
   PropertyChangeQueryTransformer.runtimeInitializationStatements = function(tree) {
@@ -73,27 +64,29 @@
      * @param {ObjectLiteralExpression} tree
      * @return {ParseTree}
      */
-  PropertyChangeQueryTransformer.prototype.transformObjectLiteralExpression = function(tree) {
+  PropertyChangeQueryTransformer.prototype = {
+    __proto__: traceur.codegeneration.ParseTreeTransformer.prototype,
+
+    transformObjectLiteralExpression: function(tree) {
       var propertyNameAndValues = this.transformList(tree.propertyNameAndValues);
       if (propertyNameAndValues == tree.propertyNameAndValues) {
         return tree;
       }
       return new ObjectLiteralExpression(tree.location, propertyNameAndValues);
-    };
-
+    },
 
     /**
      * name: value
      * @param {PropertyNameAssignment} tree
      * @return {ParseTree}
      */
-    PropertyChangeQueryTransformer.prototype.transformPropertyNameAssignment = function(tree) {
+    transformPropertyNameAssignment: function(tree) {
       var value = this.transformAny(tree.value);
       if (value == tree.value) {
         return tree;
       }
       return new PropertyNameAssignment(tree.location, tree.name, value);
-    };
+    },
 
     /**
      * obj.prop
@@ -153,6 +146,13 @@
     },
 
 
-
+    _createPropertyChangeAccessExpression: function(propertyIdentifier) {
+      // window.__qp.propertyChanges.<propertyIdentifier>
+      return createMemberLookupExpression(
+        createMemberExpression('window', '__qp', 'propertyChanges'),
+        createStringLiteral(propertyIdentifier)
+      );
+    }
+  };
 
 }());
