@@ -5,6 +5,7 @@
 .logScrubber {
 	height: 1em;
 	position: relative;
+	-webkit-flex: none;
 }
 
 .scrubberBox {

@@ -20,6 +20,8 @@ body {
   line-height: 1em;
   font-family: monospace;
   border-spacing: 0px;
+  -webkit-flex-flow: column;
+  display: -webkit-flex;
 }
 
 .splitter {
@@ -30,6 +32,7 @@ body {
 
 .log {
   height: 10em;
+  min-height: 4ex;
 }
 
 .panelInitialization {
@@ -54,9 +57,12 @@ body {
 }
 
 .userDirectedEditor {
-  float: right;
   height: 100%;
   position: relative;
+  -webkit-flex-grow: 2;
+  -webkit-flex-shrink: 1;
+  -webkit-flex-basis: 648px;
+  display: -webkit-flex;
 }
 
 .explainTokenPanel {
@@ -70,11 +76,14 @@ body {
 .sourceViewport {
   width: 100%;
   height: 100%;
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
 }
 
 .QPOutput {
-  float: left;
-  cursor: default;
+    -webkit-flex-grow: 1;
+    -webkit-flex-shrink: 1;
+    -webkit-flex-basis: 401px;
 }
 
 .CodeMirror-scroll {
