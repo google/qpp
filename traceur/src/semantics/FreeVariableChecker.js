@@ -54,8 +54,12 @@ traceur.define('semantics', function() {
    * @param {Scope} parent The parent scope, or null if top level scope.
    * @constructor
    */
-  function Scope(parent) {
+  function Scope(parent, tree) {
     this.parent = parent;
+    this.children = [];
+    if (parent) 
+      parent.children.push(this);
+    this.tree = tree;
     this.references = Object.create(null);
     this.declarations = Object.create(null);
   }
@@ -110,8 +114,8 @@ traceur.define('semantics', function() {
      * Pushes a scope.
      * @return {Scope}
      */
-    pushScope_: function() {
-      return this.scope_ = new Scope(this.scope_);
+    pushScope_: function(tree) {
+      return this.scope_ = new Scope(this.scope_, tree);
     },
 
     /**
@@ -134,7 +138,7 @@ traceur.define('semantics', function() {
     },
 
     visitProgram: function(tree, global) {
-      var scope = this.pushScope_();
+      var scope = this.pushScope_(tree);
 
       // Declare variables from the global scope.
       // TODO(jmesserly): this should be done through the module loaders, and by
@@ -173,8 +177,6 @@ traceur.define('semantics', function() {
      * @private
      */
     visitFunction_: function(name, formalParameterList, body) {
-      var scope = this.pushScope_();
-
       // Declare the function name, 'arguments' and formal parameters inside the
       // function
       if (name)
@@ -183,21 +185,23 @@ traceur.define('semantics', function() {
       this.visitAny(formalParameterList);
 
       this.visitAny(body);
-
-      this.pop_(scope);
     },
 
     visitFunctionDeclaration: function(tree) {
+      var scope = this.pushScope_(tree);
       this.visitFunction_(tree.name, tree.formalParameterList,
                           tree.functionBody);
+      this.pop_(scope);
     },
 
     visitArrowFunctionExpression: function(tree) {
+      var scope = this.pushScope_(tree);
       this.visitFunction_(null, tree.formalParameters, tree.functionBody);
+      this.pop_(scope);
     },
 
     visitGetAccessor: function(tree) {
-      var scope = this.pushScope_();
+      var scope = this.pushScope_(tree);
 
       this.visitAny(tree.body);
 
@@ -205,7 +209,7 @@ traceur.define('semantics', function() {
     },
 
     visitSetAccessor: function(tree) {
-      var scope = this.pushScope_();
+      var scope = this.pushScope_(tree);
 
       this.declareVariable_(tree.parameter.binding);
       this.visitAny(tree.body);
@@ -214,7 +218,7 @@ traceur.define('semantics', function() {
     },
 
     visitCatch: function(tree) {
-      var scope = this.pushScope_();
+      var scope = this.pushScope_(tree);
 
       this.visitAny(tree.binding);
       this.visitAny(tree.catchBody);

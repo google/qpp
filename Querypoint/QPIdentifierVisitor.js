@@ -70,7 +70,7 @@ var QPIdentifierVisitor = (function() {
       walkHome: function(tree, fncOfTree) {
         while(tree) {
           fncOfTree(tree);
-          tree = tree.parent;
+          tree = tree.parentTree;
         }
       },
 
@@ -84,11 +84,11 @@ var QPIdentifierVisitor = (function() {
 
       visitAny: function(tree) {
         if (tree) {
-          tree.parent = this.parent;
-          this.parent = tree;
+          tree.parentTree = this.parentTree;
+          this.parentTree = tree;
           ParseTreeVisitor.prototype.visitAny.call(this, tree);
           if (tree) console.log('QPIdentifierVisitor ', this.talkHome(tree, 'type'));
-          this.parent = tree.parent;
+          this.parentTree = tree.parentTree;
         }
       },
 

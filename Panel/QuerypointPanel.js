@@ -43,10 +43,15 @@ QuerypointPanel.prototype = {
   // Apply any changes since the last onShown call
   refresh: function() {
      console.log("QuerypointPanel refresh "+this._isShowing, this);
+     var QPOutput = document.querySelector('.QPOutput');
      var name = this._editors.currentEditorName();
      if (name && this._fileViewModels[name]) {
+       QPOutput.classList.remove('hide');
        this._fileViewModels[name].update();
+     } else {
+       QPOutput.classList.add('hide');
      }
+
   },
   
   toggleHelp: function() {

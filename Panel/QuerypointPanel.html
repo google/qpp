@@ -31,6 +31,7 @@
 <script src="../Querypoint/FindInTree.js"></script>
 <script src="../Querypoint/TraceVisitor.js"></script>
 <script src="../Querypoint/TokenViewModel.js"></script>
+<script src="../Querypoint/TraceViewModel.js"></script>
 <script src="../Querypoint/FileViewModel.js"></script>
 <script src="QuerypointPanel.js"></script>
 
@@ -70,33 +71,36 @@
     <div class="sourceViewport">
       <div class="QPOutput">
         <span class="helpInfo">Tracing output, see tooltips for details</span>
-        <div class="traceOutput"  data-bind="attr: {hasTraceData: _hasTraceData}">
-          <div class="explainTraceMode">
+        <div class="tokenView" >
+          <div class="explainTokenPanel">
             <span title="Hint on how the display works" data-bind="if: _exploringMode">Exploring ... focus editor to lock</span>
             <span data-bind="if: !_exploringMode()">Locked ... blur editor to unlock</span>
+          </div>
+          <div class="scopeChain" data-bind="foreach: scopes">
+            <div data-bind="html: scopeDeclaration"></div>
           </div>
           <div class="currentExpression">
             <span title="Current expression trace values displayed below" data-bind="html: _currentExpression"></span>
           </div>
-          <table class="traceData">
-          <caption>Trace Data</caption>
-              <thead>
-              <tr>
-                <th title="Function call within event turn, linked to source expression">Activation</th>
-                <th title="Expression value during specific activation">Value</th>
-              </tr>
-            </thead> 
-          <tbody  data-bind="foreach: _currentTraces">
-            <tr >
-              <td class="activation">
-                <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
-                <span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>.<span title="Function call number within turn" data-bind="text: activation"></span>
-              </td>
-              <td data-bind="text: value"></td>
-            </tr>  
-            </tbody>
-          </table>
         </div>
+        <table class="traceView" data-bind="attr: {hasTraceData: _hasTraceData}">
+        <caption>Trace Data</caption>
+            <thead>
+            <tr>
+              <th title="Function call within event turn, linked to source expression">Activation</th>
+              <th title="Expression value during specific activation">Value</th>
+            </tr>
+          </thead> 
+        <tbody  data-bind="foreach: currentTraces">
+          <tr >
+            <td class="activation">
+              <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
+              <span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>.<span title="Function call number within turn" data-bind="text: activation"></span>
+            </td>
+            <td data-bind="text: value"></td>
+          </tr>  
+          </tbody>
+        </table>
       </div>
       <div class="userDirectedEditor">
          <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>

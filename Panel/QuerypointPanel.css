@@ -59,7 +59,7 @@ body {
   position: relative;
 }
 
-.explainTraceMode {
+.explainTokenPanel {
   display: -webkit-flex;
   -webkit-justify-content: center;
   -webkit-flex-direction: row;
@@ -112,11 +112,11 @@ body {
 .cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
 .cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
 
-.traceData {
+.traceView {
   padding-left: 4px;
   position: relative;
 }
-.traceData .fileName {
+.traceView .fileName {
 
 }
 .box {
@@ -153,13 +153,14 @@ pre.traceBackground {
   display: none;
 }
 
-.QPOutput .traceOutput {
+.QPOutput .traceView {
   display: none;
 }
 
-.QPOutput .traceOutput[hasTraceData="true"] {
+.QPOutput .traceView[hasTraceData="true"] {
   display: block;
 }
+
 
 .QPOutput .command {
   font-family: Lucida Grande, sans-serif;

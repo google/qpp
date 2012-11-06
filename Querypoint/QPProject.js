@@ -20,11 +20,14 @@ function generateFileName(location) {
 };
 
 QPProject.prototype.generateSourceFromTrees = function(trees) {
-  return trees.keys().map(function(file) {
-    var tree = trees.get(file);
-        // QPFunctionPreamble must precede Linearize
-    // TODO Only trees subject to tracing need linearize 
     var identifierGenerator = new traceur.codegeneration.UniqueIdentifierGenerator();
+
+  return trees.keys().map(function(file) {
+    var tree = trees.get(file);  
+
+    Querypoint.ScopeAttacher.attachScopes(this.reporter_, tree, Querypoint.globalSymbols);
+
+    // TODO Only trees subject to tracing need linearize 
     var transformer = new Querypoint.LinearizeTransformer(identifierGenerator, generateFileName);
     tree = transformer.transformAny(tree);
     

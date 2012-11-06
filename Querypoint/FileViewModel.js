@@ -17,6 +17,7 @@
     this.fileName = editor.name;
     
     this._tokenViewModel = new Querypoint.TokenViewModel(this._tree, this._editor, panel);
+    this._traceViewModel = new Querypoint.TraceViewModel(this._tokenViewModel, panel);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
@@ -34,7 +35,7 @@
     update: function() {
       this.updateTraceData(this.fileName, this.updateModel.bind(this, this.fileName));
     },
-    
+
     getCurrentViewport: function() {
       return this._viewportData;
     },
