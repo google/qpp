@@ -170,6 +170,9 @@ pre.traceBackground {
   display: block;
 }
 
+.QPOutput .fileScope {
+  color: #75715e;
+}
 
 .QPOutput .command {
   font-family: Lucida Grande, sans-serif;

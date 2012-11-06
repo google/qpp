@@ -93,17 +93,24 @@ EditorByCodeMirror.prototype = {
   },
   _onMouseOver: function(event) { // emit tokenEvent iff things change
     var pos = this.editorImpl.coordsChar({top: event.clientY,left: event.clientX});
-    var posDidChange = !this._pos || 
-    (this._pos.line !== pos.line) || 
-    (this._pos.ch !== this._pos.ch);
+    var posDidChange = 
+      (!this._previousPosition) || 
+      (this._previousPosition.line !== pos.line) || 
+      (this._previousPosition.ch !== this._previousPosition.ch);
     
     if (posDidChange) {
+      this._previousPosition = pos;
+
       var token = this.editorImpl.getTokenAt(pos);
+      token.line = pos.line;
       
-      var tokenDidChange = !this.previousToken || 
-      (this.previousToken.string !== token.string) || 
-      (this.previousToken.start !== token.start) || 
-      (this.previousToken.end !== token.end);
+      var tokenDidChange = 
+        !(this.previousToken) ||
+        (this.previousToken.line !== token.line) || 
+        (this.previousToken.string !== token.string) || 
+        (this.previousToken.start !== token.start) || 
+        (this.previousToken.end !== token.end);
+
       
       if (tokenDidChange) {
         this.previousToken = token;

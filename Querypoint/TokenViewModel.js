@@ -37,20 +37,25 @@
         scopesView.push({scopeDeclaration: clone.outerHTML});
       }
 
-      var scopeTree;
+      var scope;
       if (tree.scope) {   // a declaration
-        scopeTree = tree.scope.tree;
+        scope = tree.scope;
       } else {
         if (tree.declaration) {  // a ref
           appendView(tree.declaration.location);
-          scopeTree = tree.declaration.scope.tree;
+          scope = tree.declaration.scope;
         }
       }
       
-      while (scopeTree) {
+      while (scope) {
+        var scopeTree = scope.tree;
         var location = scopeTree.location;
-        appendView(location);
-        scopeTree = scopeTree.parent;
+        if (scopeTree.type === traceur.syntax.trees.ParseTreeType.PROGRAM) {
+          scopesView.push({scopeDeclaration: '<div class="fileScope">' + location.start.source.name + '</div>'});
+        } else {
+          appendView(location);
+        }
+        scope = scope.parent;
       }
         
       return scopesView.reverse();  

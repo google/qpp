@@ -105,7 +105,7 @@
             var element = this.getTraceDataElement(line, column, index, trace);
             
             this._editor.insertElement(line, column, element, true);
-          //this._editor.setLineClass(line+index+1, 'traceBackground', 'traceBackground');
+
           }.bind(this));
         }
       }
