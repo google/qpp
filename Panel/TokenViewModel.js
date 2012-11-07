@@ -118,5 +118,10 @@
       QuerypointPanel.BuffersStatusBar.exploringMode(active);
     },
     
+    // Force ko 
+    update: function() {
+      this.currentTreeIndex.valueHasMutated();
+
+    }
   };
 }());

@@ -19,7 +19,7 @@
     
     this._tokenViewModel = new QuerypointPanel.TokenViewModel(this._tree, this._editor, panel);
     this._traceViewModel = new QuerypointPanel.TraceViewModel(this._tokenViewModel, panel);
-    this._queryViewModel = new QuerypointPanel.QueryViewModel(this._tokenViewModel, this._project);
+    this._queryViewModel = new QuerypointPanel.QueryViewModel(this._tokenViewModel, this._project, this);
     this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this._project);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
@@ -30,7 +30,7 @@
     this.updateViewport(editor.getViewport());
   }
   
-  QuerypointPanel.FileViewModel.debug = false;
+  QuerypointPanel.FileViewModel.debug = true;
   
 
   
@@ -70,6 +70,7 @@
           }
         }
       }
+
     },
 
     updateTraceData: function(fileName, callback) {
@@ -79,9 +80,11 @@
     updateModel: function(fileName, traceData) {
       console.log("updateModel " + fileName + " traceData: ", traceData);
       if (traceData) {
-        this.treeHanger.visitTrace(this._tree, traceData);
+        if (this.treeHanger.visitTrace(this._tree, traceData)) {
+          this._tokenViewModel.update();
+        }
         this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this._project, this._sourceFile);
-        this.traceModel.visitTrace(this._tree, traceData);
+        this.traceModel.visitTrace(this._tree, traceData);      
         this.updateViewModel();
       }
     },

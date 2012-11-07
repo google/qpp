@@ -15,6 +15,7 @@
   
   QuerypointPanel.TraceVisitor.prototype = {
     visitTrace: function(tree, traceData) {
+      delete this.isModified;
       var functionDefinitionOffsetKeys = Object.keys(traceData);
       functionDefinitionOffsetKeys.forEach(function(functionDefinitionOffsetKey) {
         var functionDefinitionTree;
@@ -32,6 +33,7 @@
         }
       // else no call comes to visit* functions.
       }.bind(this));
+      return this.isModified;
     },
     visitFunctionTraced: function(functionTree, activations) {
       var turn = 0;
@@ -92,12 +94,16 @@
   QuerypointPanel.TreeHangerTraceVisitor.prototype = Object.create(QuerypointPanel.TraceVisitor.prototype);
   QuerypointPanel.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, activationCount, trace) {
     if (expressionTree.location) {
-      expressionTree.location.trace = expressionTree.location.trace || [];
-      expressionTree.location.trace.push({
+      var traces = expressionTree.location.trace = expressionTree.location.trace || [];
+      var trace = {
         turn: turn,
         activation: activationCount,
         value: trace
-      });
+      };
+      if (traces.indexOf(trace) === -1) {
+        expressionTree.location.trace.push(trace);
+        this.isModified = true;
+      } 
     } else {
       console.error("Trace with no location", expressionTree);
     }

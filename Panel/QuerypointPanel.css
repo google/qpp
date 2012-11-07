@@ -195,3 +195,12 @@ pre.traceBackground {
   background-color: #272822;
   color: #75715e;
 }
+
+.QPOutput .reexecution {
+  display: none;
+}
+.QPOutput .reexecution[isReproducing] {
+  display: block;
+  padding: 1ex;
+  border:  1px solid #f8f8f2;
+}
