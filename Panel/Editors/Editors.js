@@ -112,9 +112,9 @@
         console.log("saveFile response ", response);
         if (response.saved) {
           var name = currentEditor.getName();
-          var index = editorsthis._viewModel.savedEditors.indexOf(name);
+          var index = editors._viewModel.savedEditors.indexOf(name);
           if (index === -1) {
-            editorsthis._viewModel.savedEditors.push(name);
+            editor._viewModel.savedEditors.push(name);
           }
           index = editors.unsavedBufferNames.indexOf(name);
           editors.unsavedBufferNames.splice(index, 1);
