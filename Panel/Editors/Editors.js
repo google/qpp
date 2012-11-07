@@ -2,7 +2,7 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function(){
-  Querypoint.Editors = {
+  QuerypointPanel.Editors = {
     initialize: function(buffers, editorsViewModel) {
       console.assert(buffers);
       

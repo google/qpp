@@ -3,9 +3,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
+  window.QuerypointPanel = window.QuerypointPanel || {};
   
-  Querypoint.TraceViewModel = function(tokenViewModel, panel) {
+  QuerypointPanel.TraceViewModel = function(tokenViewModel, panel) {
   
     // ViewModel
     this._hasTraceData = ko.observable('false');
@@ -52,7 +52,7 @@
     });
   }
   
-  Querypoint.TraceViewModel.prototype = {
+  QuerypointPanel.TraceViewModel.prototype = {
 
   };
 }());

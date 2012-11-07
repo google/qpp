@@ -1,15 +1,15 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// Backing data for Querypoint Panel, save/restore object
+// Backing data for QuerypointModel Panel, save/restore object
 
-window.Querypoint = window.Querypoint || {};
+window.QuerypointModel = window.QuerypointModel || {};
 
 ( function() {
   /**
    @param string url, no search or hash part
    */
-  var PanelModel = Querypoint.PanelModel = function (url){
+  var PanelModel = QuerypointModel.PanelModel = function (url){
     this.record = new PanelModel.Record();
     this.record.sites[0] = PanelModel.Site(url);
     this.scrubber = {

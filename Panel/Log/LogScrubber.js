@@ -2,7 +2,7 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  Querypoint.LogScrubber = {
+  QuerypointPanel.LogScrubber = {
     initialize: function(log, initialModel) {
       
     }

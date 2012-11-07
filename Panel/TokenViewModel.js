@@ -3,9 +3,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
+  window.QuerypointPanel = window.QuerypointPanel || {};
   
-  Querypoint.TokenViewModel = function(rootSyntaxTree, editor, panel) {
+  QuerypointPanel.TokenViewModel = function(rootSyntaxTree, editor, panel) {
     // Model
     this._root = rootSyntaxTree;
     this._tracesByTree = [];
@@ -32,7 +32,7 @@
 
       var scopesView = [];
       function appendView(location) {
-        var clone = Querypoint.TokenViewModel._cloneEditorLineByLocation(editor, location);
+        var clone = QuerypointPanel.TokenViewModel._cloneEditorLineByLocation(editor, location);
         scopesView.push({scopeDeclaration: clone.outerHTML});
       }
 
@@ -49,7 +49,7 @@
       while (scope) {
         var scopeTree = scope.tree;
         var location = scopeTree.location;
-        if (scopeTree.type !== traceur.syntax.trees.ParseTreeType.PROGRAM) {
+        if (scopeTree.type !== "PROGRAM") {
 
           appendView(location);
         }
@@ -65,7 +65,7 @@
       var location = this._currentLocation();
       if (!location) return "";
       
-      var clone = Querypoint.TokenViewModel._cloneEditorLineByLocation(editor, location)
+      var clone = QuerypointPanel.TokenViewModel._cloneEditorLineByLocation(editor, location)
       var box = editor.createTokenBox(location);
       box.style.top = "0px";
       clone.appendChild(box);
@@ -91,7 +91,7 @@
     });
   }
   
-  Querypoint.TokenViewModel._cloneEditorLineByLocation = function(editor, location) {
+  QuerypointPanel.TokenViewModel._cloneEditorLineByLocation = function(editor, location) {
     var line = location.start.line;
     editor.setLineNumberClass(line, 'traceViewedLine');
     var traceViewedLine = document.querySelector('.traceViewedLine');
@@ -102,7 +102,7 @@
     return clone;
   }
 
-  Querypoint.TokenViewModel.prototype = {
+  QuerypointPanel.TokenViewModel.prototype = {
 
     setModel: function(tree) {
 
@@ -115,7 +115,7 @@
     },
     
     setExploring: function(active) {
-      Querypoint.BuffersStatusBar.exploringMode(active);
+      QuerypointPanel.BuffersStatusBar.exploringMode(active);
     },
     
   };

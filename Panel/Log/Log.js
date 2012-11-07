@@ -2,7 +2,8 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  Querypoint.Log = {
+  window.QuerypointPanel = window.QuerypointPanel || {};
+  QuerypointPanel.Log = {
     initialize: function() {
       
     }

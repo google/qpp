@@ -23,7 +23,7 @@ chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/Q
   panel.onShown.addListener(function (panel_window) {
     if (!qpPanel) {
       if (!project) console.error("Trying to create QPPanel with no project");
-      qpPanel = new panel_window.QuerypointPanel(panel, panel_window, page, project);
+      qpPanel = new panel_window.QuerypointPanel.Panel(panel, panel_window, page, project);
     }
     qpPanel.onShown();
   });

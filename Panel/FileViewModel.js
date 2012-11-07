@@ -6,19 +6,21 @@
 // in the editor
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
+  window.QuerypointPanel = window.QuerypointPanel || {};
   
   
-  Querypoint.FileViewModel = function(editor, sourceFile, tree, panel) {
+  QuerypointPanel.FileViewModel = function(editor, sourceFile, tree, panel) {
     this._editor = editor;
     this._sourceFile = sourceFile;
     this._tree = tree;
+    this._project = panel.project;
     
     this.fileName = editor.name;
     
-    this._tokenViewModel = new Querypoint.TokenViewModel(this._tree, this._editor, panel);
-    this._traceViewModel = new Querypoint.TraceViewModel(this._tokenViewModel, panel);
-    this._queryViewModel = new Querypoint.QueryViewModel(this._tokenViewModel, panel.project);
+    this._tokenViewModel = new QuerypointPanel.TokenViewModel(this._tree, this._editor, panel);
+    this._traceViewModel = new QuerypointPanel.TraceViewModel(this._tokenViewModel, panel);
+    this._queryViewModel = new QuerypointPanel.QueryViewModel(this._tokenViewModel, this._project);
+    this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this._project);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
@@ -28,11 +30,11 @@
     this.updateViewport(editor.getViewport());
   }
   
-  Querypoint.FileViewModel.debug = false;
+  QuerypointPanel.FileViewModel.debug = false;
   
-  Querypoint.FileViewModel.treeHanger = new Querypoint.TreeHangerTraceVisitor();
+
   
-  Querypoint.FileViewModel.prototype = {
+  QuerypointPanel.FileViewModel.prototype = {
     update: function() {
       this.updateTraceData(this.fileName, this.updateModel.bind(this, this.fileName));
     },
@@ -76,8 +78,8 @@
     updateModel: function(fileName, traceData) {
       console.log("updateModel " + fileName + " traceData: ", traceData);
       if (traceData) {
-        Querypoint.FileViewModel.treeHanger.visitTrace(this._tree, traceData);
-        this.traceModel = new Querypoint.LineModelTraceVisitor(this._sourceFile);
+        this.treeHanger.visitTrace(this._tree, traceData);
+        this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this._project, this._sourceFile);
         this.traceModel.visitTrace(this._tree, traceData);
         this.updateViewModel();
       }
@@ -135,10 +137,10 @@
       var line = tokenEvent.start.line;
       var offsetOfLine = this._sourceFile.lineNumberTable.offsetOfLine(line);
       var tokenOffset = offsetOfLine + tokenEvent.start.column;
-      var tokenTree = Querypoint.FindInTree.byOffset(this._tree, tokenOffset);
+      var tokenTree = this._project.treeFinder().byOffset(this._tree, tokenOffset);
       if (tokenTree) {
         var traces = tokenTree.location.trace;
-        if (Querypoint.FileViewModel.debug) {
+        if (QuerypointPanel.FileViewModel.debug) {
           var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
           var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
           var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";

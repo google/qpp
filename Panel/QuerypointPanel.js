@@ -9,7 +9,9 @@
  * @param panel_window {Window} the content window of the extension panel
  */
 
-function QuerypointPanel(extensionPanel, panel_window, page, project) {
+(function(){
+
+QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.extensionPanel = extensionPanel;
   this.panel_window = panel_window;
   this.document = panel_window.document;
@@ -26,9 +28,9 @@ function QuerypointPanel(extensionPanel, panel_window, page, project) {
 }
 
 
-QuerypointPanel.debug = false;
+QuerypointPanel.Panel.debug = false;
 
-QuerypointPanel.prototype = {
+QuerypointPanel.Panel.prototype = {
   onShown: function() {
     this._isShowing = true;
     this.keybindings.enter();
@@ -42,7 +44,7 @@ QuerypointPanel.prototype = {
 
   // Apply any changes since the last onShown call
   refresh: function() {
-     console.log("QuerypointPanel refresh "+this._isShowing, this);
+     console.log("QuerypointPanel.Panel refresh "+this._isShowing, this);
      var QPOutput = document.querySelector('.QPOutput');
      var name = this._editors.currentEditorName();
      if (name && this._fileViewModels[name]) {
@@ -75,7 +77,7 @@ QuerypointPanel.prototype = {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
       var tree = this.project.getParseTree(sourceFile);
-      this._fileViewModels[editor.name] = new Querypoint.FileViewModel(editor, sourceFile, tree, this);
+      this._fileViewModels[editor.name] = new QuerypointPanel.FileViewModel(editor, sourceFile, tree, this);
     } else {
       if (this.project.isGeneratedFile(editor.name)) {
         console.log("Created editor for generated file");
@@ -231,7 +233,7 @@ QuerypointPanel.prototype = {
       var row = rows[i];
       if (row.classList.contains('sourceViewport'))
         continue;
-      if (QuerypointPanel.debug)
+      if (QuerypointPanel.Panel.debug)
         console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
       availableHeight = availableHeight - row.offsetHeight;
     }
@@ -250,10 +252,10 @@ QuerypointPanel.prototype = {
   },
   
   _initViewModels: function(panelModel) {
-    this._log = Querypoint.Log.initialize();
-    this._scrubber = Querypoint.LogScrubber.initialize(this._log, panelModel.scrubber);
-    this._buffersStatusBar = Querypoint.BuffersStatusBar.initialize();
-    this._editors = Querypoint.Editors.initialize(panelModel.buffers, this._buffersStatusBar);
+    this._log = QuerypointPanel.Log.initialize();
+    this._scrubber = QuerypointPanel.LogScrubber.initialize(this._log, panelModel.scrubber);
+    this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize();
+    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar);
     var openURLs = panelModel.buffers.openURLs.slice(0);
     panelModel.buffers.openURLs = [];  // create an list next time we save
     openURLs.forEach(this._openURL.bind(this));
@@ -270,14 +272,16 @@ QuerypointPanel.prototype = {
 
   _initModel: function() {
     var panel = this;
-    Querypoint.Storage.recall(
+    QuerypointModel.Storage.recall(
       function(model) {
         panel._restore(model);
       },
       function() {
-        panel._restore(new Querypoint.PanelModel(panel.project.url));
+        panel._restore(new QuerypointModel.PanelModel(panel.project.url));
       }
     );
   },
 
 };
+
+}());

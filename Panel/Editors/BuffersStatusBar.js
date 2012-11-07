@@ -5,7 +5,7 @@
 
   var buffersStatusBarSelector = ".buffersStatusBar";
   
-  Querypoint.BuffersStatusBar = {
+  QuerypointPanel.BuffersStatusBar = {
     initialize: function() {
       this.exploringMode = ko.observable(false);
       this.openURLs = ko.observableArray();

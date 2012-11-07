@@ -64,3 +64,7 @@ QPProject.prototype.isGeneratedFile = function(name){
     return (this.sourceFiles_[key].generatedFileName === name);
   }.bind(this));
 }
+
+QPProject.prototype.treeFinder = function() {
+  return Querypoint.FindInTree;
+}

@@ -6,12 +6,14 @@
 // in the editor
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
+  window.QuerypointPanel = window.QuerypointPanel || {};
   
-  Querypoint.TraceVisitor = function() {
+  QuerypointPanel.TraceVisitor = function(project) {
+    console.assert(project);
+    this._project = project;
   }
   
-  Querypoint.TraceVisitor.prototype = {
+  QuerypointPanel.TraceVisitor.prototype = {
     visitTrace: function(tree, traceData) {
       var functionDefinitionOffsetKeys = Object.keys(traceData);
       functionDefinitionOffsetKeys.forEach(function(functionDefinitionOffsetKey) {
@@ -20,7 +22,7 @@
           functionDefinitionTree = tree;
         } else {
           var functionDefinitionOffset = parseInt(functionDefinitionOffsetKey, 10);
-          functionDefinitionTree = Querypoint.FindInTree.byOffset(tree, functionDefinitionOffset);
+          functionDefinitionTree = this._project.treeFinder().byOffset(tree, functionDefinitionOffset);
         }
         if (functionDefinitionTree) {
           var activations = traceData[functionDefinitionOffsetKey];
@@ -62,7 +64,7 @@
           }
         }
       }
-      return Querypoint.FindInTree.findByDistanceFunction(tree, byOffsetKey.bind(this, offset));
+      return this._project.treeFinder().findByDistanceFunction(tree, byOffsetKey.bind(this, offset));
     },
     visitActivationTraced: function(functionTree, activation, activationCount) {
       var tracedExpressionIds = Object.keys(activation);
@@ -83,11 +85,12 @@
 
   //--------------------------------------------------------------------------------------------------------------------------------------------------------
   // Attach traceData to the appropriate subtree
-  Querypoint.TreeHangerTraceVisitor = function() {
-  
+  QuerypointPanel.TreeHangerTraceVisitor = function(project) {
+    QuerypointPanel.TraceVisitor.call(this, project);
   }
-  Querypoint.TreeHangerTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
-  Querypoint.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, activationCount, trace) {
+  
+  QuerypointPanel.TreeHangerTraceVisitor.prototype = Object.create(QuerypointPanel.TraceVisitor.prototype);
+  QuerypointPanel.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, activationCount, trace) {
     if (expressionTree.location) {
       expressionTree.location.trace = expressionTree.location.trace || [];
       expressionTree.location.trace.push({
@@ -102,26 +105,27 @@
    //---------------------------------------------------------------------------
   // Create line-table info for UI showing where trace data may be hiding
   
-  Querypoint.LineModelTraceVisitor = function(sourceFile) {
+  QuerypointPanel.LineModelTraceVisitor = function(project, sourceFile) {
+    QuerypointPanel.TraceVisitor.call(this, project);
     this._sourceFile = sourceFile;
     this.tracedOffsetsByLine = {};
     this.latestTraceByOffset = {};
   }
-  Querypoint.LineModelTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
-  Querypoint.LineModelTraceVisitor.prototype.visitFunctionTraced = function(functionTree, activations) {
+  QuerypointPanel.LineModelTraceVisitor.prototype = Object.create(QuerypointPanel.TraceVisitor.prototype);
+  QuerypointPanel.LineModelTraceVisitor.prototype.visitFunctionTraced = function(functionTree, activations) {
     // latest only
     this.visitActivationTraced(functionTree, activations[activations.length - 1]);
   }
-  Querypoint.LineModelTraceVisitor.prototype.visitActivationTraced = function(functionTree, activation) {
+  QuerypointPanel.LineModelTraceVisitor.prototype.visitActivationTraced = function(functionTree, activation) {
     var functionDefinitionOffset = functionTree.location.start.offset;
     var line = this._sourceFile.lineNumberTable.getLine(functionDefinitionOffset);
     this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
     
     this.tracedOffsetsByLine[line].functionOffsets = this.tracedOffsetsByLine[line].functionOffsets || [];
     this.tracedOffsetsByLine[line].functionOffsets.push(functionDefinitionOffset);
-    Querypoint.TraceVisitor.prototype.visitActivationTraced.call(this, functionTree, activation);
+    QuerypointPanel.TraceVisitor.prototype.visitActivationTraced.call(this, functionTree, activation);
   }
-  Querypoint.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, index, trace) {
+  QuerypointPanel.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, index, trace) {
     var offset = expressionTree.location.end.offset - 1;  // last char of the expression
     offset -= trace.length;  // backup to align with the end of the expression
     var line = this._sourceFile.lineNumberTable.getLine(offset);

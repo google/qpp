@@ -178,5 +178,5 @@ EditorByCodeMirror.prototype = {
   }
 }
 
-Querypoint.addEventFunctions(EditorByCodeMirror.prototype);
+QuerypointPanel.addEventFunctions(EditorByCodeMirror.prototype);
 

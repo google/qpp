@@ -2,9 +2,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
+  window.QuerypointPanel = window.QuerypointPanel || {};
 
-  Querypoint.addEventFunctions = function(prototype) {
+  QuerypointPanel.addEventFunctions = function(prototype) {
     
     prototype._getEventHandlers = function(eventName) {
       this.eventHandlers = this.eventHandlers || {};
@@ -32,11 +32,11 @@
 
   };
 
-  Querypoint.addEventFunctions.test = function() {
+  QuerypointPanel.addEventFunctions.test = function() {
     function TestType() {}
     TestType.prototype = {};
 
-    Querypoint.addEventFunctions(TestType.prototype);
+    QuerypointPanel.addEventFunctions(TestType.prototype);
 
     var aTest = new TestType();
     var testString = "been tested";
@@ -55,10 +55,10 @@
     );
   };
 
-  if (Querypoint.addEventFunctions.test()) {
-    console.log("Querypoint.addEventFunctions.test()");
+  if (QuerypointPanel.addEventFunctions.test()) {
+    console.log("QuerypointPanel.addEventFunctions.test()");
   } else {
-    console.error("Querypoint.addEventFunctions.test()");
+    console.error("QuerypointPanel.addEventFunctions.test()");
   }
 
 }());

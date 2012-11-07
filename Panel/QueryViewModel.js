@@ -2,15 +2,15 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
+  window.QuerypointPanel = window.QuerypointPanel || {};
   
-  Querypoint.QueryViewModel = function(tokenViewModel, project) {
+  QuerypointPanel.QueryViewModel = function(tokenViewModel, project) {
     this._tokenViewModel = tokenViewModel;
     this._project = project;
     ko.applyBindings(this, document.querySelector('.queryView'));
   }
   
-  Querypoint.QueryViewModel.prototype = {
+  QuerypointPanel.QueryViewModel.prototype = {
     lastChange: function(viewModel) {
       var tree = viewModel._tokenViewModel.currentTree();
       console.log("lastChange ", tree)
