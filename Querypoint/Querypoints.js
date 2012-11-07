@@ -126,20 +126,28 @@ Querypoint.Querypoints = {
     */
     traceObjectProperty: function(tree) {
       this._tracequeries.add(new Querypoint.PropertyChangeQuery(tree));
+      return this.turnExecuter();
     },
 
     // Query Acccess
 
     tracequeries: function() {
-        return this._tracequeries;
+      return this._tracequeries;
     },
 
     // Query Actions
     
     setConsole: function(qpConsole) {
-        this.qpConsole = qpConsole;
+      this.qpConsole = qpConsole;
     },
 
+    turnExecuter: function(executer) {
+      if (executer) {
+        this._turnExecuter = executer;
+      }
+      return this._turnExecuter;
+    },
+    
     // Different deployments may need different ways to transport the tracepoint
     // result back to the querypoint storage. 
     

@@ -14,7 +14,16 @@
     lastChange: function(viewModel) {
       var tree = viewModel._tokenViewModel.currentTree();
       console.log("lastChange ", tree)
-      viewModel._project.querypoints.traceObjectProperty(tree); 
+      var executer = viewModel._project.querypoints.traceObjectProperty(tree);
+      if (executer) {
+        if (executer.automatic) {
+          executer();
+        } else {
+          this.offerExecution(executer);
+        }
+      } else {
+        this.requestExecution(executer);
+      }
     }
   };
 }());
