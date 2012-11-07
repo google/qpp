@@ -51,6 +51,7 @@
       }
     },
 
+    // Manually update to avoid having ko.observables() all over the tree
     updateViewModel: function() {
       var i_viewport = 0;
       // Use the viewport to limit our work

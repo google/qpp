@@ -32,7 +32,7 @@ body {
 
 .log {
   height: 10em;
-  min-height: 4ex;
+  min-height: 10ex;
 }
 
 .panelInitialization {

@@ -11,6 +11,7 @@
   display: -webkit-flex;
 
   -webkit-flex-direction: row;
+	-webkit-flex: none;
 }
 
 .buffersStatusBar .commandLine {
