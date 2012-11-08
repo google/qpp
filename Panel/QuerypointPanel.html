@@ -97,8 +97,8 @@
           </tbody>
         </table>
         <div class="queryView">
-          <div class="toolbar">
-            <button class="command" data-bind="click: lastChange" title="Trace the changes to the current expression and report the last one">lastChange</button>
+          <div class="toolbar" data-bind="foreach: currentQueries">
+            <button class="command" data-bind="click: $parent.issueQuery.bind($parent), text: buttonName(), attr: {title: toolTip()}"></button>
           </div>
           <div class="reexecution" data-bind="attr: {isReproducing: _reproducing}">
             <span>Operate on the Web page, eg reproduce your bug</span>

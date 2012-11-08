@@ -35,7 +35,7 @@
   */
 
 
-  var PropertyChangeQueryTransformer = Querypoint.PropertyChangeQueryTransformer = function(propertyIdentifier) {
+  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier) {
     traceur.codegeneration.ParseTreeTransformer.call(this);
     this.propertyIdentifier = propertyIdentifier;
   }
@@ -43,7 +43,7 @@
   var QP_FUNCTION = '__qp_function';
 
   // Called once per load by QPRuntime
-  PropertyChangeQueryTransformer.runtimeInitializationStatements = function(tree) {
+  ValueChangeQueryTransformer.runtimeInitializationStatements = function(tree) {
     // window.__qp.propertyChanges = { <propertyIdentifier>: [] };
     var statement = 
       createAssignmentStatement(
@@ -64,7 +64,7 @@
      * @param {ObjectLiteralExpression} tree
      * @return {ParseTree}
      */
-  PropertyChangeQueryTransformer.prototype = {
+  ValueChangeQueryTransformer.prototype = {
     __proto__: traceur.codegeneration.ParseTreeTransformer.prototype,
 
     transformObjectLiteralExpression: function(tree) {

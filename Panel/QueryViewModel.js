@@ -10,14 +10,32 @@
     this.update = fileViewModel.update.bind(fileViewModel);
     
     this._reproducing = ko.observable(false);
+    
+    this.possibleQueries = [project.querypoints.ValueChangeQuery];
+    this.currentQueries = ko.computed(function() {
+      var tree = this._tokenViewModel.currentTree();
+      var queries = [];
+      if (tree) {
+        var project = this._project;
+        this.possibleQueries.forEach(function(possibleQuery) {
+          var query = possibleQuery.ifAvailableFor(tree);
+          if (query) {
+            query.project = project; 
+            queries.push(query);
+          }
+        });
+      }
+      return queries;
+    }.bind(this));
+    
     ko.applyBindings(this, document.querySelector('.queryView'));
   }
   
   QuerypointPanel.QueryViewModel.prototype = {
-    lastChange: function(viewModel) {
-      var tree = viewModel._tokenViewModel.currentTree();
-      console.log("lastChange ", tree);
-      var executer = viewModel._project.querypoints.traceObjectProperty(tree);
+
+    issueQuery: function(query, event) {
+      query.project.querypoints.appendQuery(query);
+      var executer = query.project.executer;
       if (executer) {
         if (executer.automatic) {
           executer();

@@ -43,27 +43,53 @@ Querypoint.IdentifierQuery.prototype = {
     
 };
 
-Querypoint.PropertyChangeQuery = function(tree) {
-  console.assert(tree.type === "MEMBER_EXPRESSION");
-  this._tree = tree;
-  var propertyIdentifier = tree.memberName;
+var getTreeNameForType = traceur.syntax.trees.getTreeNameForType;
 
-  this._transformer = new Querypoint.PropertyChangeQueryTransformer(propertyIdentifier);
+Querypoint.ValueChangeQueryVisitor = {
+  visitSome: function(tree) {
+    var method = 'visit' + getTreeNameForType(tree.type);
+    if (this.hasOwnProperty(method)) {
+      return this[method].call(this, tree);
+    }
+  },
+  visitMemberExpression: function(tree) {
+    return tree.memberName;
+  }
+};
 
-  // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<propertyIdentifier>
-  // 
-  this.transformParseTree = function(tree) {
-    return this._transformer.transformAny(tree);
-  };
-
-  // Pull trace results out of the page for this querypoint
-  this.extractTracepoints = function(callback) {
-    chrome.devtools.inspectedWindow.eval('window.__qp.propertyChanges.'+propertyIdentifier, callback);
-  };
-
+Querypoint.ValueChangeQuery = function(identifier) {
+  this.identifier = identifier;
+  this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
 }
 
+Querypoint.ValueChangeQuery.ifAvailableFor = function(tree) {
+  var identifier = Querypoint.ValueChangeQueryVisitor.visitSome(tree);
+  if (identifier) {
+    return new Querypoint.ValueChangeQuery(identifier);
+  }
+}
+
+Querypoint.ValueChangeQuery.prototype = {
+  buttonName: function() {
+    return 'lastChange';
+  },
+  toolTip: function() {
+    return "Trace the changes to the current expression and report the last one";
+  },
+  // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
+  // 
+  transformParseTree: function(tree) {
+    return this._transformer.transformAny(tree);
+  },
+
+  // Pull trace results out of the page for this querypoint
+  extractTracepoints: function(callback) {
+    chrome.devtools.inspectedWindow.eval('window.__qp.propertyChanges.'+this.identifier, callback);
+  },
+};
+
 Querypoint.Querypoints = {
+  ValueChangeQuery: Querypoint.ValueChangeQuery,
 
     _tracequeries: {
         _tqs: [],
@@ -117,37 +143,21 @@ Querypoint.Querypoints = {
 
     // Query Definitions
 
-    traceIdentifier: function(identifier) {
-        this._tracequeries.add(new IdentifierQuery(identifier));
+    appendQuery: function(query) {
+      this._tracequeries.add(query);
     },
-
-    /*
-      trace obj.prop updates
-    */
-    traceObjectProperty: function(tree) {
-      this._tracequeries.add(new Querypoint.PropertyChangeQuery(tree));
-      return this.turnExecuter();
-    },
-
     // Query Acccess
 
     tracequeries: function() {
-      return this._tracequeries;
+        return this._tracequeries;
     },
 
     // Query Actions
     
     setConsole: function(qpConsole) {
-      this.qpConsole = qpConsole;
+        this.qpConsole = qpConsole;
     },
 
-    turnExecuter: function(executer) {
-      if (executer) {
-        this._turnExecuter = executer;
-      }
-      return this._turnExecuter;
-    },
-    
     // Different deployments may need different ways to transport the tracepoint
     // result back to the querypoint storage. 
     
