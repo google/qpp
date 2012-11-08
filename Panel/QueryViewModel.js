@@ -47,6 +47,7 @@
       }
     },
     requestExecution: function() {
+      this._project.reload();
       this._reproducing(true);
     },
     reproductionDone: function() {

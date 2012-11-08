@@ -55,23 +55,8 @@ function onLoad() {
   }
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);
-
-  function transcode(str) {
-    console.log("transcode saw ", str);
-    return  "// ignored some JavaScript, Hah!";
-  }
-
-  var reloadOptions = {
-    ignoreCache: true, 
-    injectedScript:  '(' + Querypoint.runtime + '());', 
-    preprocessingScript: '(' + transcode + ')'
-  };
-  chrome.devtools.inspectedWindow.reload(reloadOptions);
-
-  /*chrome.devtools.inspectedWindow.eval("window.location.href", function(url) {
-    onNavigated(url);
-  });
-*/
+  // For initial development
+  QPProject.reload();
 }
 
 window.addEventListener('load', onLoad);

@@ -68,3 +68,17 @@ QPProject.prototype.isGeneratedFile = function(name){
 QPProject.prototype.treeFinder = function() {
   return Querypoint.FindInTree;
 }
+
+QPProject.prototype.reload = QPProject.reload = function() {
+  function transcode(str) {
+    console.log("transcode saw ", str);
+    return  "// ignored some JavaScript, Hah!";
+  }
+
+  var reloadOptions = {
+    ignoreCache: true, 
+    injectedScript:  '(' + Querypoint.runtime + '());', 
+    preprocessingScript: '(' + transcode + ')'
+  };
+  chrome.devtools.inspectedWindow.reload(reloadOptions);
+}
