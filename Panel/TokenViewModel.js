@@ -84,6 +84,7 @@
 
    $(".QPOutput").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
+      jQueryEvent.target.focus();
       var url = jQueryEvent.target.getAttribute('data-url');
       if (url) {
         panel.commands.openChainedEditor(url, editor);

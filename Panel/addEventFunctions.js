@@ -19,7 +19,8 @@
     }
 
     prototype.addListener = function(eventName, handler) {
-      this._getEventHandlers(eventName).push(handler);
+      var count = this._getEventHandlers(eventName).push(handler);
+      this.dispatch('onListenerChange', {eventName: eventName, count: count});
     }
     
     prototype.removeListener = function(eventName, handler) {
@@ -27,7 +28,12 @@
       var index = handlers.indexOf(handler);
       if (index !== -1) {
         handlers.splice(index, 1);
+        this.dispatch('onListenerChange', {eventName: eventName, count: handlers.length});
       }  
+    }
+    
+    prototype.hasListener = function(eventName) {
+      return !!this._getEventHandlers(eventName).length;
     }
 
   };

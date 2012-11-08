@@ -68,45 +68,47 @@
     </div>
     <div class="splitter"></div>
     <div class="sourceViewport">
-      <div class="QPOutput">
-        <span class="helpInfo">Tracing output, see tooltips for details</span>
-        <div class="tokenView" >
-          <div class="scopeChain" data-bind="foreach: scopes">
-            <div data-bind="html: scopeDeclaration"></div>
+      <a class="focusBlock QPOutput" tabindex="0">
+        <div>
+          <span class="helpInfo">Tracing output, see tooltips for details</span>
+          <div class="tokenView" >
+            <div class="scopeChain" data-bind="foreach: scopes">
+              <div data-bind="html: scopeDeclaration"></div>
+            </div>
+            <div class="currentExpression">
+              <span title="Current expression trace values displayed below" data-bind="html: _currentExpression"></span>
+            </div>
           </div>
-          <div class="currentExpression">
-            <span title="Current expression trace values displayed below" data-bind="html: _currentExpression"></span>
+          <table class="traceView" data-bind="attr: {hasTraceData: _hasTraceData}">
+            <caption>Trace Data</caption>
+            <thead>
+            <tr>
+              <th title="Function call within event turn, linked to source expression">Activation</th>
+              <th title="Expression value during specific activation">Value</th>
+            </tr>
+          </thead> 
+          <tbody  data-bind="foreach: currentTraces">
+            <tr >
+              <td class="activation">
+                <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
+                <span title="Load number" data-bind="text: load">
+                </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
+              </td>
+              <td data-bind="text: value"></td>
+            </tr>  
+            </tbody>
+          </table>
+          <div class="queryView" data-bind="if: currentQueries().length">
+            <div class="toolbar" data-bind="foreach: currentQueries">
+              <button class="command" data-bind="click: $parent.issueQuery.bind($parent), text: buttonName(), attr: {title: toolTip()}"></button>
+            </div>
+            <div class="reexecution" data-bind="attr: {isReproducing: _reproducing}">
+              <span>Operate on the Web page, eg reproduce your bug</span>
+              <button class="command" data-bind="click: reproductionDone">Done!</button>
+            </div>
           </div>
         </div>
-        <table class="traceView" data-bind="attr: {hasTraceData: _hasTraceData}">
-          <caption>Trace Data</caption>
-          <thead>
-          <tr>
-            <th title="Function call within event turn, linked to source expression">Activation</th>
-            <th title="Expression value during specific activation">Value</th>
-          </tr>
-        </thead> 
-        <tbody  data-bind="foreach: currentTraces">
-          <tr >
-            <td class="activation">
-              <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
-              <span title="Load number" data-bind="text: load">
-              </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
-            </td>
-            <td data-bind="text: value"></td>
-          </tr>  
-          </tbody>
-        </table>
-        <div class="queryView">
-          <div class="toolbar" data-bind="foreach: currentQueries">
-            <button class="command" data-bind="click: $parent.issueQuery.bind($parent), text: buttonName(), attr: {title: toolTip()}"></button>
-          </div>
-          <div class="reexecution" data-bind="attr: {isReproducing: _reproducing}">
-            <span>Operate on the Web page, eg reproduce your bug</span>
-            <button class="command" data-bind="click: reproductionDone">Done!</button>
-          </div>
-        </div>
-      </div>
+      </a>
       <div class="userDirectedEditor">
          <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
       </div>

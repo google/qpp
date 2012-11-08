@@ -24,9 +24,8 @@
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
-    editor.addListener('onTokenOver', this.showToken.bind(this));
-    editor.addListener('onExploreTraceMode', this.showExploreMode.bind(this));
-
+    
+    this._initTokenFollower(tree);    
     this.updateViewport(editor.getViewport());
   }
   
@@ -162,9 +161,28 @@
       }
     },
     
-    showExploreMode: function(modeEvent) {
-        this._tokenViewModel.setExploring(modeEvent.active);
-    }
+    _initTokenFollower: function(tree) {
+      this.showToken = this.showToken.bind(this);
+      var elementQPOutput = document.querySelector('.QPOutput');
+      elementQPOutput.addEventListener('focus', function(event) {
+        console.log("View focus "+this._editor.name, event);
+        if (!this._editor.hasListener('onTokenOver')) {
+          this._editor.addListener('onTokenOver', this.showToken);
+          this._tokenViewModel.setExploring(true);
+        }
+      }.bind(this));
+      elementQPOutput.addEventListener('blur', function(event) {
+        console.log("View blur "+this._editor.name, event);
+        this._editor.removeListener('onTokenOver', this.showToken);
+        this._tokenViewModel.setExploring(false);
+      }.bind(this));
+      // Give focus to QPOutput so the tokenOver starts active for discovery
+      elementQPOutput.focus();
+      // Show the program
+      this._tokenViewModel.setModel(tree);
+    },
+
+
   };
 
 }());

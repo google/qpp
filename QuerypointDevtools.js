@@ -38,11 +38,16 @@ function onLoad() {
 
   var loads = 0;
 
-  function tracePage(url) {
+  function resetProject(url) {
     project = new QPProject(url);
     project.uid = loads;
-    project.numberOfReloads = loads;
+    project.numberOfReloads = 0; 
     console.log(loads + " QPProject created for "+url);
+    tracePage(url);
+  }
+  
+  function tracePage(url) {
+
     project.getPageScripts(function () {
       project.run();
       if (qpPanel)
@@ -52,12 +57,18 @@ function onLoad() {
   
   function onNavigated(url) {
     loads += 1;
-    tracePage(url);
+    if (project.url !== url) {
+      resetProject(url);
+    } else {
+      tracePage(url);
+    }
   }
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);
+  
+  chrome.devtools.inspectedWindow.eval("window.location.toString()", resetProject);
   // For initial development
-  QPProject.reload();
+  //QPProject.reload();
 }
 
 window.addEventListener('load', onLoad);

@@ -15,13 +15,14 @@ function EditorByCodeMirror(containerElement, name, initialContent) {
   this.editorImpl.on('change', this._onChange.bind(this));
   this.editorImpl.on('viewportChange', this._onViewportChange.bind(this));
   this.editorImpl.on('gutterClick', this._onGutterClick.bind(this));
-  this.editorImpl.on('focus', this._onFocus.bind(this));
-  this.editorImpl.on('blur', this._onBlur.bind(this));
+//  this.editorImpl.on('focus', this._onFocus.bind(this));
+//  this.editorImpl.on('blur', this._onBlur.bind(this));
   
   this._container = containerElement;
   this._onMouseOver = this._onMouseOver.bind(this);
   
   this._addUniqueClassName();
+  this._initTokenOver();
 }
 
 EditorByCodeMirror.prototype = {
@@ -29,11 +30,11 @@ EditorByCodeMirror.prototype = {
   
   show: function() {
     this.editorImpl.getWrapperElement().classList.remove('hide');
-    this._watchMouse();
+
   },
   hide: function() {
     this.editorImpl.getWrapperElement().classList.add('hide');
-    this._unwatchMouse();
+
   },
   getContent: function() {
     return this.editorImpl.getValue();
@@ -68,6 +69,7 @@ EditorByCodeMirror.prototype = {
     var viewport = this.editorImpl.getViewport(); // (from:<integer> to:<integer>}
     return {name: this.name,start: viewport.from,end: viewport.to};
   },
+
 
   //-------------------------
   _addUniqueClassName: function() {
@@ -156,26 +158,29 @@ EditorByCodeMirror.prototype = {
     }
   },
 
-  _onFocus: function() {
-    console.log("Editor focus");
-    this._unwatchMouse();
-    this._removeTokenBox();
-  },
-
-  _onBlur: function() {
-    console.log("Editor blur");
-    this._watchMouse();
-  },
-
   _watchMouse: function() {
     // mouseover won't work because the text does not fire
     this._container.addEventListener('mousemove', this._onMouseOver);
-    this.dispatch('onExploreTraceMode', {active: true});
   },
   _unwatchMouse: function () {
     this._container.removeEventListener('mousemove', this._onMouseOver);    
-    this.dispatch('onExploreTraceMode', {active: false});
+  },
+  
+  _initTokenOver: function() {
+    this.addListener('onListenerChange', function(listenerChange) {
+      if (listenerChange.eventName === 'onTokenOver') {
+        if (listenerChange.count) {
+
+          this._watchMouse();
+        } else {
+
+          this._unwatchMouse();
+          this._removeTokenBox();
+        }
+      }
+    }.bind(this));
   }
+
 }
 
 QuerypointPanel.addEventFunctions(EditorByCodeMirror.prototype);

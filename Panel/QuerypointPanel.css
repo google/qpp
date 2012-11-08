@@ -55,6 +55,23 @@ body {
   font-size: xx-large;
   font-family: arial,san-serif;
 }
+.helpInfo {
+    display: none;
+}
+
+.showHelp .helpInfo {
+    z-index: 200;
+    position: absolute;
+
+    display: inline;
+    color: #d0d0d0;
+    background-color: #75715e;
+    left: 4em;
+    padding-left: 1ex;
+    padding-right: 1ex;
+    border-radius: 999px; /* any value larger than the radius of the object gives a circle */
+}  
+
 
 .userDirectedEditor {
   height: 100%;
@@ -81,46 +98,20 @@ body {
   -webkit-flex-direction: row;
 }
 
+a.focusBlock {
+  display: block;
+}
+a:focus, a:active {
+  background-color: rgb(33, 34, 31);
+}
+
 .QPOutput {
     -webkit-flex-grow: 1;
     -webkit-flex-shrink: 1;
+    padding: 4px;
     -webkit-flex-basis: 401px;
-}
-
-.CodeMirror-scroll {
-  overflow: auto;
 
 }
-
-.CodeMirror-lines {
-  padding: 0; /* bring the code close up the the splitter and edges */
-  cursor: pointer; /* the text pointer has no hot spot */
-}
-
-.CodeMirror-gutter-text {
-  padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
-}
-
-.helpInfo {
-    display: none;
-}
-
-.showHelp .helpInfo {
-    z-index: 200;
-    position: absolute;
-
-    display: inline;
-    color: #d0d0d0;
-    background-color: #75715e;
-    left: 4em;
-    padding-left: 1ex;
-    padding-right: 1ex;
-    border-radius: 999px; /* any value larger than the radius of the object gives a circle */
-}  
-
-.cm-s-monokai .qp-no-activations .CodeMirror-linenumber  {color: #75715e;}
-.cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
-.cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
 
 .traceView {
   padding-left: 4px;
@@ -139,7 +130,7 @@ body {
 }
 
 .currentExpression {
-  margin-left: 4px; 
+  margin-left: 0px; /* keep the line number hidden offscreen to the left */
 }
 
 .QPOutput caption {
@@ -177,7 +168,9 @@ pre.traceBackground {
 
 .QPOutput .queryButtons {
 }
-
+.QPOutput .activation {
+  color: #75715e;
+}
 .QPOutput .command {
   font-family: Lucida Grande, sans-serif;
   font-size: smaller;
@@ -204,3 +197,23 @@ pre.traceBackground {
   padding: 1ex;
   border:  1px solid #f8f8f2;
 }
+
+/* Editors */
+
+.CodeMirror-scroll {
+  overflow: auto;
+
+}
+
+.CodeMirror-lines {
+  padding: 0; /* bring the code close up the the splitter and edges */
+  cursor: pointer; /* the text pointer has no hot spot */
+}
+
+.CodeMirror-gutter-text {
+  padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
+}
+
+.cm-s-monokai .qp-no-activations .CodeMirror-linenumber  {color: #75715e;}
+.cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
+.cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
