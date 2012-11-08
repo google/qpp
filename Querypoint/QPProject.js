@@ -69,7 +69,8 @@ QPProject.prototype.treeFinder = function() {
   return Querypoint.FindInTree;
 }
 
-QPProject.prototype.reload = QPProject.reload = function() {
+// Need class level access for bootstrap, see QuerypointDevtools.js
+QPProject.reload = function() {
   function transcode(str) {
     console.log("transcode saw ", str);
     return  "// ignored some JavaScript, Hah!";
@@ -81,4 +82,9 @@ QPProject.prototype.reload = QPProject.reload = function() {
     preprocessingScript: '(' + transcode + ')'
   };
   chrome.devtools.inspectedWindow.reload(reloadOptions);
+}
+
+QPProject.prototype.reload = function() {
+  QPProject.reload();
+  return ++this.numberOfReloads;
 }

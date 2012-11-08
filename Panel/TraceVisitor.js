@@ -96,6 +96,7 @@
     if (expressionTree.location) {
       var traces = expressionTree.location.trace = expressionTree.location.trace || [];
       var trace = {
+        load: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
         value: trace

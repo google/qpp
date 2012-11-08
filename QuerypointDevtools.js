@@ -36,11 +36,12 @@ chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/Q
 //-----------------------------------------------------------------------------
 function onLoad() {
 
-  var loads = 1;
+  var loads = 0;
 
   function tracePage(url) {
     project = new QPProject(url);
     project.uid = loads;
+    project.numberOfReloads = loads;
     console.log(loads + " QPProject created for "+url);
     project.getPageScripts(function () {
       project.run();

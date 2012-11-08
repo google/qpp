@@ -22,6 +22,7 @@
               var start = tree.location.start;
               var end = tree.location.end;
               return {
+                load: trace.load,
                 turn: trace.turn,
                 activation: trace.activation,
                 tooltip: start.source.name + ' Line: ' + start.line,
