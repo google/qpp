@@ -2,34 +2,36 @@
 // Copyright 2011 Google Inc. johnjbarton@google.com
 console.log("QuerypointDevtools begins %o", chrome);
 
-var page = new InspectedPage();
-var project; 
+var model = {};  // composite model devtools + traceur
 
-//--------------------------------------------------------------------------
-// User interface
+var view = {};
 
-var qpPanel; // lazy created view
 
 chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/QuerypointPanel.html", function(panel) {
+  view.panel = panel;
   var helpButton = panel.createStatusBarButton("Panel/QuerypointHelpIcon.png", "Querypoint Panel Help", false);
   helpButton.onClicked.addListener(function() {
-    if (!qpPanel) {
-       console.error("No qpPanel?");
+    if (!model.qpPanel) {
+       console.error("No model.qpPanel?");
     } else {
-       qpPanel.toggleHelp();
+       model.qpPanel.toggleHelp();
     }
   });
   
   panel.onShown.addListener(function (panel_window) {
-    if (!qpPanel) {
-      if (!project) console.error("Trying to create QPPanel with no project");
-      qpPanel = new panel_window.QuerypointPanel.Panel(panel, panel_window, page, project);
+    view.window = panel_window;
+    if (!model.qpPanel) {
+
+        QPProject.reload();
+      
+    } else {
+      model.qpPanel.onShown();
     }
-    qpPanel.onShown();
   });
+  
   panel.onHidden.addListener(function() {
-    if (qpPanel)
-      qpPanel.onHidden();
+    if (model.qpPanel)
+      model.qpPanel.onHidden();
   });
 });
 
@@ -39,25 +41,31 @@ function onLoad() {
   var loads = 0;
 
   function resetProject(url) {
-    project = new QPProject(url);
-    project.uid = loads;
-    project.numberOfReloads = 0; 
+    model.devtoolsModel = new InspectedPage();  // TODO rename DevtoolsPageModel
+    model.project = new QPProject(url);
+    // Cross iframe fun
+    model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
+    model.project.uid = loads;
+    model.project.numberOfReloads = 0; 
     console.log(loads + " QPProject created for "+url);
+    model.qpPanel.onShown();
     tracePage(url);
   }
   
   function tracePage(url) {
 
-    project.getPageScripts(function () {
-      project.run();
-      if (qpPanel)
-        qpPanel.refresh();
+    model.project.getPageScripts(function () {
+      model.project.run();
+      if (model.qpPanel)
+        model.qpPanel.refresh();
     }); 
   }
   
   function onNavigated(url) {
+    if (!view.window)
+      return; 
     loads += 1;
-    if (project.url !== url) {
+    if (!model.project || model.project.url !== url) {
       resetProject(url);
     } else {
       tracePage(url);
@@ -66,7 +74,7 @@ function onLoad() {
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);
   
-  chrome.devtools.inspectedWindow.eval("window.location.toString()", resetProject);
+  //chrome.devtools.inspectedWindow.eval("window.location.toString()", resetProject);
   // For initial development
   //QPProject.reload();
 }

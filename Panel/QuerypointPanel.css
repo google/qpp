@@ -151,7 +151,7 @@ pre.traceBackground {
 }
 
 .hide {
-  display: none;
+  display: none !important;
 }
 
 .QPOutput .traceView {
