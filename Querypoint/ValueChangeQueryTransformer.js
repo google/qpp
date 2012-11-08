@@ -5,6 +5,7 @@
   
   window.Querypoint = window.Querypoint || {};
   
+  var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
   var createMemberExpression = ParseTreeFactory.createMemberExpression;
   var createMemberLookupExpression = ParseTreeFactory.createMemberLookupExpression;
@@ -36,7 +37,7 @@
 
 
   var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier) {
-    traceur.codegeneration.ParseTreeTransformer.call(this);
+    ParseTreeTransformer.call(this);
     this.propertyIdentifier = propertyIdentifier;
   }
 
@@ -65,7 +66,12 @@
      * @return {ParseTree}
      */
   ValueChangeQueryTransformer.prototype = {
-    __proto__: traceur.codegeneration.ParseTreeTransformer.prototype,
+    __proto__: ParseTreeTransformer.prototype,
+
+    transformAny: function(tree) {
+      if (!tree || !tree.location) return tree;
+      ParseTreeTransformer.prototype.transformAny.call(this, tree);
+    },
 
     transformObjectLiteralExpression: function(tree) {
       var propertyNameAndValues = this.transformList(tree.propertyNameAndValues);
@@ -108,9 +114,9 @@
      * @return {ParseTree}
      */
     transformMemberLookupExpression: function(tree) {
-      // Linearize ensures these trees are IdentifierExpressions
-      this._propertyWas = tree.memberExpression.identifierToken.value;
-      this._objectWas = tree.operand.identifierToken.value;
+
+      this._propertyWas = tree.memberExpression;
+      this._objectWas = tree.operand;
       return tree;
     },
 

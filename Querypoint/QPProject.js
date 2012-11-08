@@ -36,6 +36,10 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
     var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
     tree = preambleTransformer.transformAny(tree);
 
+    this.querypoints.tracequeries().forEach(function(tq) {
+      tq.transformParseTree(tree);
+    });
+
     file.generatedFileName = file.name + ".js";
     var writer = new QPTreeWriter(file.generatedFileName, this.querypoints.tracequeries());
     file = writer.generateSource(file, tree);

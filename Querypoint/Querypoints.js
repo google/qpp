@@ -149,7 +149,7 @@ Querypoint.Querypoints = {
     // Query Acccess
 
     tracequeries: function() {
-        return this._tracequeries;
+        return this._tracequeries._tqs;
     },
 
     // Query Actions

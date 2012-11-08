@@ -63,6 +63,7 @@ var QPTreeWriter = (function() {
         writeln_: function() {
           if (debug) console.log("current line "+this.currentLine_);
           ParseTreeMapWriter.prototype.writeln_.call(this);
+          return;
           if (this.currentLocation) {
             var trace = this._tracequeries.getTraceSource(this.previousLocation, this.currentLocation);
             if (trace) {
