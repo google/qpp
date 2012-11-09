@@ -485,65 +485,6 @@ ParseTreeValidator.validate(transformedElement);
         return this.transformWhileStatement(tree);
       },
 
-      _varDecl: function(loc, id, tree) {
-        return new VariableStatement(loc, 
-          new VariableDeclarationList(loc, TokenType.VAR, 
-            [new VariableDeclaration(loc, 
-                 new BindingIdentifier(loc, id), 
-                 tree
-            )]
-          )
-        );
-      },
-      
-      _postPendComma: function(loc, tree, value) {
-          return new ExpressionStatement(loc, 
-            new CommaExpression(loc, [tree, value || createUndefinedExpression()])
-          );
-      },
-      
-      _createActivationStatements: function(tree) {
-        // var activation = {turn: window.__qp.turn};   // used to store traces by offset
-
-        var activationStatement =
-          this._varDecl(
-            tree.location, 
-            activationId, 
-            new ObjectLiteralExpression(
-              tree.location, 
-              [
-                createPropertyNameAssignment('turn',
-                  createMemberExpression('window', '__qp', 'turn')
-                )
-              ]
-            )
-          );
-ParseTreeValidator.validate(activationStatement);
-
-        // __qp_function.push(activation),; 
-        var pushExpression = 
-          createCallExpression(
-            createMemberExpression(
-              createIdentifierExpression('__qp_function'),
-              'push'
-            ),
-            createArgumentList(
-              createIdentifierExpression(activationId)
-            )
-          );
-        
-        // We need to suppress the return value of the push() 
-        var pushStatement = this._postPendComma(tree.location, pushExpression);
-ParseTreeValidator.validate(pushStatement);
-        return [activationStatement, pushStatement];
-      },
-
-      transformFunctionBody: function(tree) {
-        // prefix the body with the definition of the new activation record
-        var statements = this._createActivationStatements(tree).concat(this.transformAny(tree).statements);
-        return new Block(tree.location, statements);
-      },
-      
       transformBinaryOperator: function(tree) {
         var left;
         if (tree.operator.isAssignmentOperator()) {
@@ -677,13 +618,9 @@ ParseTreeValidator.validate(pushStatement);
         return operandValue;  // eg __qp_11;
       },
 
-
-
       transformProgram: function(tree) {
-        var activationStatements = this._createActivationStatements(tree);
         var elements = this.transformListInsertEach(tree.programElements, 
           this.insertAbove);
-        elements = activationStatements.concat(elements);
         return new Program(tree.location, elements);
       },
 
