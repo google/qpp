@@ -1,22 +1,13 @@
 var obj = {
   field: 6
 };
+
+obj.field = 7;
+
+obj['field'] = 9;
+
+obj.field++;
+
 obj['field']++;
 
-var f = 5;
-
-function foo() {
-  return 6;
-}
-
-function bar() {
-  return obj.field;
-}
-
-function baz(a, b) {
-  var x = bar();
-  x = x + a + b;
-  return x + foo();
-}
-
-baz(f, f+1);
+console.log(obj.field);
