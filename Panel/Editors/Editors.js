@@ -114,10 +114,10 @@
           var name = currentEditor.getName();
           var index = editors._viewModel.savedEditors.indexOf(name);
           if (index === -1) {
-            editor._viewModel.savedEditors.push(name);
+            editors._viewModel.savedEditors.push(name);
           }
-          index = editors.unsavedBufferNames.indexOf(name);
-          editors.unsavedBufferNames.splice(index, 1);
+          index = editors.unsavedEditors.indexOf(name);
+          editors.unsavedEditors.splice(index, 1);
         } else {
           alert("Saved failed: "+response.error);
         }
@@ -137,8 +137,8 @@
     _beforeUnload: function(event) {
       var sure = null;
       if (this._viewModel.unsavedEditors.length) {
-        sure = "You have unsaved changes in " + unsavedBufferNames.length + "\nfiles: " + unsavedBufferNames.join(',');
-        this._showEditor(unsavedBufferNames[0]);
+        sure = "You have unsaved changes in " + unsavedEditors.length + "\nfiles: " + unsavedEditors.join(',');
+        this._showEditor(unsavedEditors[0]);
       } 
       event.returnValue = sure;
       return sure;  
