@@ -41,7 +41,7 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
     });
 
     file.generatedFileName = file.name + ".js";
-    var writer = new QPTreeWriter(file.generatedFileName, this.querypoints.tracequeries());
+    var writer = new QPTreeWriter(file.generatedFileName);
     file = writer.generateSource(file, tree);
 
     return file;

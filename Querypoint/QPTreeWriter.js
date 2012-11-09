@@ -58,12 +58,10 @@ var QPTreeWriter = (function() {
    * @param { {SourceMapGenerator} sourceMapGenerator
    * @constructor
    */
-  function QPTreeWriter(generatedSourceName, tracequeries) {
+  function QPTreeWriter(generatedSourceName) {
     var config = {file: generatedSourceName};
     this.sourceMapGenerator = new SourceMapGenerator(config);
     ParseTreeMapWriter.call(this, false, false, this.sourceMapGenerator);
-    
-    this._tracequeries = tracequeries;
   }
 
 
