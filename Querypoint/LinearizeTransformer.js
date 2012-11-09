@@ -21,7 +21,7 @@
 
   'use strict';
 
-  var debug = false;
+  var debug = true;
 
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;
@@ -221,35 +221,9 @@
           )
         );
         this.insertions.push(tempVariableStatement);
-ParseTreeValidator.validate(tempVariableStatement);
-        // (__qp_activation._offset = window.__qp.trace(__qp_XX))
-        
-        var traceExpression = createParenExpression(
-          createAssignmentExpression(
-            createMemberExpression(
-              createIdentifierExpression(activationId),
-              traceId
-            ),
-            createCallExpression(
-              createMemberExpression('window', '__qp','trace'),
-              createArgumentList(
-                createIdentifierExpression(varId)
-              )                    
-            )
-          )
-        );
-        
-        // (__qp_activation._offset = window.__qp.trace(__qp_XX)), __qp_XX;
-        
-        var linearExpression = createParenExpression(
-          new CommaExpression(
-            tree.location,
-            [
-              traceExpression,
-              createIdentifierExpression(varId)
-            ]  
-          )
-        );
+        // __qp__XX
+        var linearExpression = createIdentifierExpression(varId);
+        linearExpression.traceIdentifier = traceId;     // Signal TreeWriter 
        
 ParseTreeValidator.validate(linearExpression); 
         if (debug) {
