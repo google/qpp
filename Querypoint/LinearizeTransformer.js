@@ -21,7 +21,7 @@
 
   'use strict';
 
-  var debug = true;
+  var debug = false;
 
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;

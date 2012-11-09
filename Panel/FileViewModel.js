@@ -29,7 +29,7 @@
     this.updateViewport(editor.getViewport());
   }
   
-  QuerypointPanel.FileViewModel.debug = true;
+  QuerypointPanel.FileViewModel.debug = false;
   
 
   
