@@ -106,7 +106,8 @@
           
           expressionOffsets.forEach(function(offset, index) {
             var trace = this.getTraceByOffset(offset);
-            console.log("showTraceDataForLine " + line + " offset " + offset + " = " + trace);
+            if (QuerypointPanel.FileViewModel.debug) 
+              console.log("showTraceDataForLine " + line + " offset " + offset + " = " + trace);
             var column = parseInt(offset) - offsetOfLine;
             var element = this.getTraceDataElement(line, column, index, trace);
             
@@ -147,7 +148,8 @@
           var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
           var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
           var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
-          console.log("showToken " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
+          if (QuerypointPanel.FileViewModel.debug) 
+            console.log("showToken " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
         }
         this._tokenViewModel.setModel(tokenTree);
         var tokenBoxData =  {
@@ -176,8 +178,10 @@
         this._editor.removeListener('onTokenOver', this.showToken);
         this._tokenViewModel.setExploring(false);
       }.bind(this));
-      // Give focus to QPOutput so the tokenOver starts active for discovery
-      elementQPOutput.focus();
+      // Give focus to QPOutput after hide is removed, so the tokenOver starts active for discovery
+      setTimeout(function(){
+        elementQPOutput.focus();
+      });
       // Show the program
       this._tokenViewModel.setModel(tree);
     },
