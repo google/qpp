@@ -25,6 +25,7 @@
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
   var Program = traceur.syntax.trees.Program;
+  var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
 
   /*
     Trace expressions that change object property values.
@@ -35,45 +36,36 @@
     obj = {prop: value}
   */
 
+  function PropertyChangeTrace(objectExpression, propertyExpression) {
+    this.objectExpression = objectExpression;
+    this.propertyExpression = propertyExpression;
+  }
 
-  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier) {
-    ParseTreeTransformer.call(this);
+  PropertyChangeTrace.prototype = {
+    traceStatements: function() {
+      console.error("need to emit traceStatements");
+    }
+  };
+
+   /**
+     Find trees matching propertyIdentifier. Called when we want to scan the LHS of an assignment.
+    */
+
+  function PropertyReferenceVisitor(propertyIdentifier) {
+    ParseTreeVisitor.call(this);
     this.propertyIdentifier = propertyIdentifier;
   }
 
-  var QP_FUNCTION = '__qp_function';
+  PropertyReferenceVisitor.prototype = {
+    __proto__: ParseTreeVisitor.prototype,
 
-  // Called once per load by QPRuntime
-  ValueChangeQueryTransformer.runtimeInitializationStatements = function(tree) {
-    // window.__qp.propertyChanges = { <propertyIdentifier>: [] };
-    var statement = 
-      createAssignmentStatement(
-        createMemberExpression('window', '__qp', 'propertyChanges'),
-        createObjectLiteralExpression(
-          createPropertyNameAssignment(
-            propertyIdentifier, 
-            createArrayLiteralExpression([])
-          )
-        )
-      );
-    return [statement];
-  }
-
-
-    /**
-     * obj = {name: value}
-     * @param {ObjectLiteralExpression} tree
-     * @return {ParseTree}
-     */
-  ValueChangeQueryTransformer.prototype = {
-    __proto__: ParseTreeTransformer.prototype,
-
-    transformAny: function(tree) {
-      if (!tree || !tree.location) return tree;
-      ParseTreeTransformer.prototype.transformAny.call(this, tree);
+    visitAny: function(tree) {
+      delete this.propertyChangeTrace;
+      ParseTreeVisitor.prototype.visitAny.call(this);
+      return this.propertyChangeTrace;  // may be undefined
     },
 
-    transformObjectLiteralExpression: function(tree) {
+    visitObjectLiteralExpression: function(tree) {
       var propertyNameAndValues = this.transformList(tree.propertyNameAndValues);
       if (propertyNameAndValues == tree.propertyNameAndValues) {
         return tree;
@@ -86,7 +78,7 @@
      * @param {PropertyNameAssignment} tree
      * @return {ParseTree}
      */
-    transformPropertyNameAssignment: function(tree) {
+    visitPropertyNameAssignment: function(tree) {
       var value = this.transformAny(tree.value);
       if (value == tree.value) {
         return tree;
@@ -99,13 +91,11 @@
      * @param {MemberExpression} tree
      * @return {ParseTree}
      */
-    transformMemberExpression: function(tree) {
-      var operand = this.transformAny(tree.operand);
-      this._propertyWas = tree.memberName;
-      if (operand == tree.operand) {
-        return tree;
+    visitMemberExpression: function(tree) {
+      if (tree.memberName.value === this.propertyIdentifier.value) {
+        this.propertyChangeTrace = new PropertyChangeTrace(operand, tree.memberName);
       }
-      return new MemberExpression(tree.location, operand, tree.memberName);
+      // Since we are called after linearize we don't need to recurse
     },
 
     /**
@@ -114,10 +104,39 @@
      * @return {ParseTree}
      */
     transformMemberLookupExpression: function(tree) {
+       this.propertyChangeTrace = new PropertyChangeTrace(operand, tree.memberExpression);
+    },
 
-      this._propertyWas = tree.memberExpression;
-      this._objectWas = tree.operand;
-      return tree;
+    _createPropertyChangeAccessExpression: function(propertyIdentifier) {
+      // window.__qp.propertyChanges.<propertyIdentifier>
+      return createMemberLookupExpression(
+        createMemberExpression('window', '__qp', 'propertyChanges'),
+        createStringLiteral(propertyIdentifier)
+      );
+    },
+  };
+
+
+  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier) {
+    Querypoint.InsertingTransformer.call(this);
+    this.propertyIdentifier = propertyIdentifier;
+    this.visitor = new PropertyReferenceVisitor(propertyIdentifier);
+  }
+
+  var QP_FUNCTION = '__qp_function';
+
+
+    /**
+     * obj = {name: value}
+     * @param {ObjectLiteralExpression} tree
+     * @return {ParseTree}
+     */
+  ValueChangeQueryTransformer.prototype = {
+    __proto__: Querypoint.InsertingTransformer.prototype,
+
+    transformAny: function(tree) {
+      if (!tree || !tree.location) return tree;
+      return ParseTreeTransformer.prototype.transformAny.call(this, tree);
     },
 
     /**
@@ -132,7 +151,7 @@
         // operand++ -> (tmp = operand++, (_propertyWasId === propertyIdentifier) ? pushTrace(tmpObj, tmpPropName, tmp) :0), tmp) )
 
         delete this._propertyWas;  
-        delete thils._objectWas;
+        delete this._objectWas;
         return new UnaryExpression(tree.location, tree.operator, operand);
       }
       return tree;
@@ -144,21 +163,33 @@
      */
     transformBinaryOperator: function(tree) {
       var left = this.transformAny(tree.left);
+      var traceable = this.visitor.visitAny(left);
+      if (traceable) {
+        this.insertions.push(traceable.traceStatements());
+      }
       var right = this.transformAny(tree.right);
       if (left == tree.left && right == tree.right) {
         return tree;
       }
       return new BinaryOperator(tree.location, left, tree.operator, right);
     },
+    
+     // Called once per load by QPRuntime
+    runtimeInitializationStatements: function(tree) {
+      // window.__qp.propertyChanges = { <propertyIdentifier>: [] };
+      var statement = 
+        createAssignmentStatement(
+          createMemberExpression('window', '__qp', 'propertyChanges'),
+          createObjectLiteralExpression(
+            createPropertyNameAssignment(
+             propertyIdentifier, 
+             createArrayLiteralExpression([])
+           )
+         )
+       );
+      return [statement];
+    },
 
-
-    _createPropertyChangeAccessExpression: function(propertyIdentifier) {
-      // window.__qp.propertyChanges.<propertyIdentifier>
-      return createMemberLookupExpression(
-        createMemberExpression('window', '__qp', 'propertyChanges'),
-        createStringLiteral(propertyIdentifier)
-      );
-    }
   };
 
 }());
