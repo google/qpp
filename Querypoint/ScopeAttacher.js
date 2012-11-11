@@ -21,6 +21,7 @@
   var IdentifierToken = traceur.syntax.IdentifierToken;
   var IdentifierExpression = traceur.syntax.trees.IdentifierExpression;
   var BindingIdentifier = traceur.syntax.trees.BindingIdentifier;
+  var PredefinedName = traceur.syntax.PredefinedName;
 
   /**
    * Attachs a scope to each variable declaration tree
@@ -72,6 +73,17 @@
     new Querypoint.ScopeAttacher(reporter).visitProgram(tree, global);
   }
 
+  function Scope(parent, tree) {
+    this.parent = parent;
+    this.children = [];
+    if (parent) 
+      parent.children.push(this);
+    this.tree = tree;
+    this.references = Object.create(null);
+    this.declarations = Object.create(null);
+  }
+
+
   var proto = FreeVariableChecker.prototype;
   Querypoint.ScopeAttacher.prototype = traceur.createObject(proto, {
 
@@ -84,6 +96,10 @@
           tree.scope = scope;
         }
       }
+    },
+
+    pushScope_: function(tree) {
+      return this.scope_ = new Scope(this.scope_, tree);
     },
 
     visitIdentifierExpression: function(tree) {
@@ -102,6 +118,75 @@
         scope = scope.parent;
       }
     },
+
+    visitProgram: function(tree, global) {
+      var scope = this.pushScope_(tree);
+
+      // Declare variables from the global scope.
+      // TODO(jmesserly): this should be done through the module loaders, and by
+      // providing the user the option to import URLs like '@dom', but for now
+      // just bind against everything in the global scope.
+      var object = global;
+      while (object) {
+        Object.getOwnPropertyNames(object).forEach(this.declareVariable_, this);
+        object = Object.getPrototypeOf(object);
+      }
+
+      this.visitStatements_(tree.programElements);
+
+      this.pop_(scope);
+    },
+
+    visitFunction_: function(name, formalParameterList, body) {
+      // Declare the function name, 'arguments' and formal parameters inside the
+      // function
+      if (name)
+        this.declareVariable_(name);
+      this.declareVariable_(PredefinedName.ARGUMENTS);
+      this.visitAny(formalParameterList);
+
+      this.visitAny(body);
+    },
+
+    visitFunctionDeclaration: function(tree) {
+      var scope = this.pushScope_(tree);
+      this.visitFunction_(tree.name, tree.formalParameterList,
+                          tree.functionBody);
+      this.pop_(scope);
+    },
+
+    visitArrowFunctionExpression: function(tree) {
+      var scope = this.pushScope_(tree);
+      this.visitFunction_(null, tree.formalParameters, tree.functionBody);
+      this.pop_(scope);
+    },
+
+    visitGetAccessor: function(tree) {
+      var scope = this.pushScope_(tree);
+
+      this.visitAny(tree.body);
+
+      this.pop_(scope);
+    },
+
+    visitSetAccessor: function(tree) {
+      var scope = this.pushScope_(tree);
+
+      this.declareVariable_(tree.parameter.binding);
+      this.visitAny(tree.body);
+
+      this.pop_(scope);
+    },
+
+    visitCatch: function(tree) {
+      var scope = this.pushScope_(tree);
+
+      this.visitAny(tree.binding);
+      this.visitAny(tree.catchBody);
+
+      this.pop_(scope);
+    },
+
 
   });
 

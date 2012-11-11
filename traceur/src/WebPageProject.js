@@ -102,9 +102,9 @@ var WebPageProject = (function() {
       },
 
       compile: function() {
-        var trees = this.compiler.compile(this);
+        var trees = this.compiler.compile_();
         if (this.reporter.hadError()) {
-          console.error('Traceur compilation errors', this.reporter);
+          console.warn('Traceur compilation errors', this.reporter);
           return;
         }
         return trees;
@@ -142,9 +142,7 @@ var WebPageProject = (function() {
           return;
         }
         var trees = this.compile();
-        if (trees) {
-          this.runInWebPage(trees);
-        }
+        this.runInWebPage(trees);
       },
 
       run: function() {

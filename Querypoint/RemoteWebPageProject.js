@@ -67,6 +67,17 @@ RemoteWebPageProject.prototype.putFiles = function(files) {
   });
 };
 
+// TODO upstream to WebPageProject when we can use es6 traceur
+RemoteWebPageProject.prototype.compile = function() {
+  var trees = this.compiler.compile(this);
+  if (this.reporter.hadError()) {
+    console.error('Traceur compilation errors', this.reporter);
+    return;
+  }
+  return trees;
+}
+
+
 //----------------------------------------------------------------------------------------------------------
 // chrome.devtools.inspectedWindow.eval() based script extractor
 
@@ -117,4 +128,13 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
     return result;
   }
   return chrome.devtools.inspectedWindow.eval(this.evalStringify(putScripts, scripts), callback);
+}
+
+// TODO upstream to WebPageProject when we can use es6 traceur
+RemoteWebPageProject.prototype.runScriptsIfNonePending_ = function() {
+  if (this.numPending) {
+    return;
+  }
+  var trees = this.compile();
+  this.runInWebPage(trees);
 }
