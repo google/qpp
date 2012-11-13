@@ -14,8 +14,8 @@ var QPErrorReporter  = (function() {
     this.errors = [];
   }
 
-  QPErrorReporter.prototype = traceur.createObject(
-      ErrorReporter.prototype, {
+  QPErrorReporter.prototype = {
+    __proto__: ErrorReporter.prototype, 
     reportMessageInternal: function(location, kind, format, args) {
       var url = location.source.name + ':' + location.line + ':' + location.column;  
       console[kind].apply(console, [url + ': ' +format].concat(args));
@@ -26,7 +26,7 @@ var QPErrorReporter  = (function() {
         return error.indexOf(expected) !== -1;
       });
     }
-  });
+  };
 
   return QPErrorReporter;
   

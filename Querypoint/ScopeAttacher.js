@@ -84,8 +84,8 @@
   }
 
 
-  var proto = FreeVariableChecker.prototype;
-  Querypoint.ScopeAttacher.prototype = traceur.createObject(proto, {
+  Querypoint.ScopeAttacher.prototype = {
+    __proto__: FreeVariableChecker.prototype,
 
     declareVariable_: function(tree) {
       var name = getVariableName(tree);
@@ -188,7 +188,7 @@
     },
 
 
-  });
+  };
 
   return {
     ScopeAttacher: Querypoint.ScopeAttacher

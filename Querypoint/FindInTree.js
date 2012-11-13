@@ -40,38 +40,38 @@
     return Querypoint.FindInTree.findByDistanceFunction(tree, byOffset.bind(this, offset)) 
   }
 
-  Querypoint.FindInTree.prototype = traceur.createObject(
-    ParseTreeVisitor.prototype, {
-      getMatchedTree: function() {
-        return this._deepestTree;
-      },
-      visitAny: function(tree) {
-        var distance;
-        if (tree) {
-          distance = this._distanceFunction(tree);
-          if (distance < 0)
-            return false;
-          if (Querypoint.FindInTree.debug)
-            console.log("FindInTree " + distance + '<' + this._closest + " type " + tree.type + ':' + tree.location.start.offset + '-' + tree.location.end.offset);
-          if (distance <= this._closest) {
-            this._deepestTree = tree;
-            this._closest = distance;
-          }
-          if (distance) { // try to get closer
-            ParseTreeVisitor.prototype.visitAny.call(this, tree);
-          } // else hit
-          return true;
-        } else {
-          // Don't visit childern
+  Querypoint.FindInTree.prototype = {
+    __proto__: ParseTreeVisitor.prototype, 
+    getMatchedTree: function() {
+      return this._deepestTree;
+    },
+    visitAny: function(tree) {
+      var distance;
+      if (tree) {
+        distance = this._distanceFunction(tree);
+        if (distance < 0)
           return false;
+        if (Querypoint.FindInTree.debug)
+          console.log("FindInTree " + distance + '<' + this._closest + " type " + tree.type + ':' + tree.location.start.offset + '-' + tree.location.end.offset);
+        if (distance <= this._closest) {
+          this._deepestTree = tree;
+          this._closest = distance;
         }
-      },
-      visitList: function(list) {
-        for (var i = 0; i < list.length; i++) {
-          // List items don't over lap, so once we hit we are done.
-          if ( this.visitAny(list[i]) ) return true;
-        }
+        if (distance) { // try to get closer
+          ParseTreeVisitor.prototype.visitAny.call(this, tree);
+        } // else hit
         return true;
-      },
-    });
+      } else {
+        // Don't visit childern
+        return false;
+      }
+    },
+    visitList: function(list) {
+      for (var i = 0; i < list.length; i++) {
+        // List items don't over lap, so once we hit we are done.
+        if ( this.visitAny(list[i]) ) return true;
+      }
+      return true;
+    },
+  };
 }());

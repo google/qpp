@@ -5,7 +5,7 @@
 // extracts scripts via chrome.inspectedWindow.eval
 
 function RemoteWebPageProject(remoteURL) {
-  WebPageProject.call(this, remoteURL);
+  traceur.WebPageProject.call(this, remoteURL);
   RemoteWebPageProject.currentProject = this;
   console.log("RemoteWebPageProject created for "+remoteURL);
 }
@@ -22,7 +22,7 @@ RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
 RemoteWebPageProject.requestCreator = new ChannelPlate.RequestCreator(ChannelPlate.DevtoolsTalker);
 
-RemoteWebPageProject.prototype = Object.create(WebPageProject.prototype);
+RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype);
 
 // Our page is remote and already loaded.
 //
