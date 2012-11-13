@@ -13,10 +13,8 @@ var QPCompiler = (function() {
   function QPCompiler(reporter, opt_options) {
     this.reporter_ = reporter;
     
-    traceur.options.es6 = false;
-    traceur.options.harmony = false;
-    traceur.options.experimental = false;
-    
+    traceur.options.reset(false);
+
     if (opt_options) {
       traceur.options.es6 = !!opt_options.es6;
       traceur.options.harmony = !!opt_options.harmony;
@@ -31,6 +29,7 @@ var QPCompiler = (function() {
       if (!this.reporter_.hadError()) {
         this.analyze(project);
         if (!this.reporter_.hadError()) {
+           console.log("traceur.options.trapMemberLookup "+traceur.options.trapMemberLookup);
           return this.transform(project);
         }
        }
