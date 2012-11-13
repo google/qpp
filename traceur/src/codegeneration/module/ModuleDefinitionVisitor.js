@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,44 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration.module', function() {
-  'use strict';
+import ModuleSymbol from '../../semantics/symbols/ModuleSymbol.js';
+import ModuleVisitor from 'ModuleVisitor.js';
 
-  var ModuleVisitor = traceur.codegeneration.module.ModuleVisitor;
-
-  var ModuleSymbol = traceur.semantics.symbols.ModuleSymbol;
-
+/**
+ * Visits a parse tree and adds all the module definitions.
+ *
+ *   module m { ... }
+ */
+export class ModuleDefinitionVisitor extends ModuleVisitor {
   /**
-   * Visits a parse tree and adds all the module definitions.
-   *
-   *   module m { ... }
-   *
    * @param {traceur.util.ErrorReporter} reporter
    * @param {ProjectSymbol} project
    * @param {ModuleSymbol} module The root of the module system.
-   * @constructor
-   * @extends {ModuleVisitor}
    */
-  function ModuleDefinitionVisitor(reporter, project, module) {
-    ModuleVisitor.call(this, reporter, project, module);
+  constructor(reporter, project, module) {
+    super(reporter, project, module);
   }
 
-  ModuleDefinitionVisitor.prototype = traceur.createObject(
-      ModuleVisitor.prototype, {
-
-    visitModuleDefinition: function(tree) {
-      var name = tree.name.value;
-      if (this.checkForDuplicateModule_(name, tree)) {
-        var parent = this.currentModule;
-        var module = new ModuleSymbol(name, parent, tree, parent.url);
-        parent.addModule(module);
-      }
-
-      ModuleVisitor.prototype.visitModuleDefinition.call(this, tree);
+  visitModuleDefinition(tree) {
+    var name = tree.name.value;
+    if (this.checkForDuplicateModule_(name, tree)) {
+      var parent = this.currentModule;
+      var module = new ModuleSymbol(name, parent, tree, parent.url);
+      parent.addModule(module);
     }
-  });
 
-  return {
-    ModuleDefinitionVisitor: ModuleDefinitionVisitor
-  };
-});
+    super.visitModuleDefinition(tree);
+  }
+}

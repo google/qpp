@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,33 +25,13 @@
   var fs = require('fs');
   var path = require('path');
 
-  /**
-   * Reads a script and eval's it into the global scope.
-   * TODO: this is needed for now because of how our scripts are designed.
-   * Change this once we have a module system.
-   * @param {string} filename
-   */
-  function importScript(filename) {
-    filename = path.join(path.dirname(process.argv[1]), filename);
-    var data = fs.readFileSync(filename);
-    if (!data) {
-      throw new Error('Failed to import ' + filename);
-    }
-    data = data.toString('utf8');
-    eval.call(global, data);
-  }
-
-  // Allow traceur.js to use importScript.
-  global.traceurImportScript = importScript;
-
-  importScript('./traceur.js');
+  require('./traceur-node.js');
 
   var ErrorReporter = traceur.util.ErrorReporter;
   var ModuleAnalyzer = traceur.semantics.ModuleAnalyzer;
   var ModuleDefinition = traceur.syntax.trees.ModuleDefinition;
   var Program = traceur.syntax.trees.Program;
   var ModuleRequireVisitor = traceur.codegeneration.module.ModuleRequireVisitor;
-  var ModuleSymbol = traceur.semantics.symbols.ModuleSymbol;
   var ModuleTransformer = traceur.codegeneration.ModuleTransformer;
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var Parser = traceur.syntax.Parser;
@@ -59,16 +39,18 @@
   var Project = traceur.semantics.symbols.Project;
   var SourceFile = traceur.syntax.SourceFile
   var TreeWriter = traceur.outputgeneration.TreeWriter;
-  var ParseTreeType = traceur.syntax.trees.ParseTreeType;
   var SourceMapGenerator = traceur.outputgeneration.SourceMapGenerator;
 
   var canonicalizeUrl = traceur.util.canonicalizeUrl;
   var createIdentifierToken = traceur.codegeneration.ParseTreeFactory.createIdentifierToken;
   var createIdentifierExpression = traceur.codegeneration.ParseTreeFactory.createIdentifierExpression;
-  var evaluateStringLiteral = traceur.util.evaluateStringLiteral;
   var resolveUrl = traceur.util.resolveUrl;
 
   var outDirName = 'out';
+
+  function existsSync(p) {
+    return fs.existsSync ? fs.existsSync(p) : path.existsSync(p);
+  }
 
   /**
    * Recursively makes all directoires, similar to mkdir -p
@@ -80,7 +62,7 @@
     dir = '';
     for (var i = 0; i < parts.length; i++) {
       dir += parts[i] + '/';
-      if (!path.existsSync(dir)) {
+      if (!existsSync(dir)) {
         fs.mkdirSync(dir, 0x1FF);
       }
     }
@@ -127,7 +109,7 @@
         return false;
       }
       data = data.toString('utf8');
-      var sourceFile = new traceur.syntax.SourceFile(filename, data);
+      var sourceFile = new SourceFile(filename, data);
       project.addFile(sourceFile);
       return true;
     });
@@ -213,9 +195,10 @@
     this.url = url;
   }
 
-  Transformer.prototype = traceur.createObject(ParseTreeTransformer.prototype, {
+  Transformer.prototype = {
+    __proto__: ParseTreeTransformer.prototype,
     transformModuleRequire: function(tree) {
-      var url = evaluateStringLiteral(tree.url);
+      var url = tree.url.processedValue;
       // Don't handle builtin modules.
       if (url.charAt(0) === '@')
         return tree;
@@ -223,8 +206,7 @@
 
       return createIdentifierExpression(generateNameForUrl(url));
     }
-  });
-
+  };
 
   /**
    * Wraps a program in a module definition.

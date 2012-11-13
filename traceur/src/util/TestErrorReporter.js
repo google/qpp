@@ -12,35 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('util', function() {
-  'use strict';
+import ErrorReporter from 'ErrorReporter.js';
 
-  var ErrorReporter = traceur.util.ErrorReporter;
-
-  /**
-   * An error reporter that is used with the tests. It doesn't output anything
-   * to the console but it does keep track of reported errors
-   */
-  function TestErrorReporter() {
+/**
+ * An error reporter that is used with the tests. It doesn't output anything
+ * to the console but it does keep track of reported errors
+ */
+export class TestErrorReporter extends ErrorReporter {
+  constructor() {
     this.errors = [];
   }
 
-  TestErrorReporter.prototype = traceur.createObject(
-      ErrorReporter.prototype, {
-    reportMessageInternal: function(location, kind, format, args) {
-      if (kind !== 'error')
-        return;
-      this.errors.push(ErrorReporter.format(location, format, args));
-    },
+  reportMessageInternal(location, kind, format, args) {
+    if (kind !== 'error')
+      return;
+    this.errors.push(ErrorReporter.format(location, format, args));
+  }
 
-    hasMatchingError: function(expected) {
-      return this.errors.some(function(error) {
-        return error.indexOf(expected) !== -1;
-      });
-    }
-  });
-
-  return {
-    TestErrorReporter: TestErrorReporter
-  };
-});
+  hasMatchingError(expected) {
+    return this.errors.some((error) => error.indexOf(expected) !== -1);
+  }
+}

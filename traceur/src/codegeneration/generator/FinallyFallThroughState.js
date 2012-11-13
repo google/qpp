@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,57 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration.generator', function() {
-  'use strict';
+import State from 'State.js';
 
-  var State = traceur.codegeneration.generator.State;
+/**
+ * These are a placeholder for the fallthrough off the end of a finally block.
+ * They are added so that enclosing try blocks know that jumping to them does not exit their block.
+ * The code for them is generated in addFinallyFallThroughDispatches.
+ */
+export class FinallyFallThroughState extends State {
 
   /**
-   * These are a placeholder for the fallthrough off the end of a finally block.
-   * They are added so that enclosing try blocks know that jumping to them does not exit their block.
-   * The code for them is generated in addFinallyFallThroughDispatches.
-   * @param {number} id
-   * @constructor
-   * @extends {State}
+   * @param {number} oldState
+   * @param {number} newState
+   * @return {FinallyFallThroughState}
    */
-  function FinallyFallThroughState(id) {
-    State.call(this, id);
+  replaceState(oldState, newState) {
+    return new FinallyFallThroughState(State.replaceStateId(this.id, oldState, newState));
   }
 
-  FinallyFallThroughState.prototype = traceur.createObject(State.prototype, {
+  /**
+   * Transforms a state into a case clause during the final code generation pass
+   * @param {FinallyState} enclosingFinally
+   * @param {number} machineEndState
+   * @param {ErrorReporter} reporter
+   * @return {CaseClause}
+   */
+  transformMachineState(enclosingFinally, machineEndState, reporter) {
+    return null;
+  }
 
-    /**
-     * @param {number} oldState
-     * @param {number} newState
-     * @return {FinallyFallThroughState}
-     */
-    replaceState: function(oldState, newState) {
-      return new FinallyFallThroughState(State.replaceStateId(this.id, oldState, newState));
-    },
-
-    /**
-     * Transforms a state into a case clause during the final code generation pass
-     * @param {FinallyState} enclosingFinally
-     * @param {number} machineEndState
-     * @param {ErrorReporter} reporter
-     * @return {CaseClause}
-     */
-    transformMachineState: function(enclosingFinally, machineEndState, reporter) {
-      return null;
-    },
-
-    /**
-     * @param {FinallyState} enclosingFinally
-     * @param {number} machineEndState
-     * @param {ErrorReporter} reporter
-     * @return {Array.<ParseTree>}
-     */
-    transform: function(enclosingFinally, machineEndState, reporter) {
-      throw new Error('these are generated in addFinallyFallThroughDispatches');
-    }
-  });
-
-  return {
-    FinallyFallThroughState: FinallyFallThroughState
-  };
-});
+  /**
+   * @param {FinallyState} enclosingFinally
+   * @param {number} machineEndState
+   * @param {ErrorReporter} reporter
+   * @return {Array.<ParseTree>}
+   */
+  transform(enclosingFinally, machineEndState, reporter) {
+    throw new Error('these are generated in addFinallyFallThroughDispatches');
+  }
+}

@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,43 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration.generator', function() {
-  'use strict';
+import State from 'State.js';
 
-  var State = traceur.codegeneration.generator.State;
+export class EndState extends State {
 
   /**
-   * @param {number} id
-   * @constructor
-   * @extends {State}
+   * @param {number} oldState
+   * @param {number} newState
+   * @return {EndState}
    */
-  function EndState(id) {
-    State.call(this, id);
+  replaceState(oldState, newState) {
+    return new EndState(State.replaceStateId(this.id, oldState, newState));
   }
 
-  EndState.prototype = traceur.createObject(State.prototype, {
-
-    /**
-     * @param {number} oldState
-     * @param {number} newState
-     * @return {EndState}
-     */
-    replaceState: function(oldState, newState) {
-      return new EndState(State.replaceStateId(this.id, oldState, newState));
-    },
-
-    /**
-     * @param {FinallyState} enclosingFinally
-     * @param {number} machineEndState
-     * @param {ErrorReporter} reporter
-     * @return {Array.<ParseTree>}
-     */
-    transform: function(enclosingFinally, machineEndState, reporter) {
-      return State.generateJump(enclosingFinally, machineEndState);
-    }
-  });
-
-  return {
-    EndState: EndState
-  };
-});
+  /**
+   * @param {FinallyState} enclosingFinally
+   * @param {number} machineEndState
+   * @param {ErrorReporter} reporter
+   * @return {Array.<ParseTree>}
+   */
+  transform(enclosingFinally, machineEndState, reporter) {
+    return State.generateJump(enclosingFinally, machineEndState);
+  }
+}

@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,39 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import {
+  IdentifierExpression,
+  PropertyNameAssignment
+} from '../syntax/trees/ParseTrees.js';
+import ParseTreeTransformer from 'ParseTreeTransformer.js';
 
-  var IdentifierExpression = traceur.syntax.trees.IdentifierExpression;
-  var PropertyNameAssignment = traceur.syntax.trees.PropertyNameAssignment;
-  var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
+/**
+ * Desugars property name shorthands
+ *
+ * @see <a href="http://wiki.ecmascript.org/doku.php?id=strawman:object_initialiser_shorthand">strawman:object_initialiser_shorthand</a>
+ */
+export class PropertyNameShorthandTransformer extends ParseTreeTransformer {
+  transformPropertyNameShorthand(tree) {
+    // We need to pass along the location for the FreeVariableChecker to not
+    // fail.
+    return new PropertyNameAssignment(tree.location,
+        tree.name, new IdentifierExpression(tree.location, tree.name));
+  }
+}
 
-  /**
-   * Desugars property name shorthands
-   *
-   * @see <a href="http://wiki.ecmascript.org/doku.php?id=strawman:object_initialiser_shorthand">strawman:object_initialiser_shorthand</a>
-   *
-   * @extends {ParseTreeTransformer}
-   * @constructor
-   */
-  function PropertyNameShorthandTransformer() {}
-
-  PropertyNameShorthandTransformer.transformTree = function(tree) {
-    return new PropertyNameShorthandTransformer().transformAny(tree);
-  };
-
-  PropertyNameShorthandTransformer.prototype = traceur.createObject(
-      ParseTreeTransformer.prototype, {
-
-    transformPropertyNameShorthand: function(tree) {
-      // We need to pass along the location for the FreeVariableChecker to not
-      // fail.
-      return new PropertyNameAssignment(tree.location,
-          tree.name, new IdentifierExpression(tree.location, tree.name));
-    }
-  });
-
-  return {
-    PropertyNameShorthandTransformer: PropertyNameShorthandTransformer
-  };
-});
+PropertyNameShorthandTransformer.transformTree = function(tree) {
+  return new PropertyNameShorthandTransformer().transformAny(tree);
+};

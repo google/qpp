@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,41 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration.module', function() {
-  'use strict';
+import ModuleVisitor from 'ModuleVisitor.js';
 
-  var ModuleVisitor = traceur.codegeneration.module.ModuleVisitor;
-
+/**
+ * Visits a parse tree and adds all the module declarations.
+ *
+ *   module m from n, o from p.q.r
+ */
+export class ModuleDeclarationVisitor extends ModuleVisitor {
   /**
-   * Visits a parse tree and adds all the module declarations.
-   *
-   *   module m from n, o from p.q.r
-   *
    * @param {traceur.util.ErrorReporter} reporter
    * @param {ProjectSymbol} project
    * @param {ModuleSymbol} module The root of the module system.
-   * @constructor
-   * @extends {ModuleVisitor}
    */
-  function ModuleDeclarationVisitor(reporter, project, module) {
-    ModuleVisitor.call(this, reporter, project, module);
+  constructor(reporter, project, module) {
+    super(reporter, project, module);
   }
 
-  ModuleDeclarationVisitor.prototype = traceur.createObject(
-      ModuleVisitor.prototype, {
-
-    visitModuleSpecifier: function(tree) {
-      var name = tree.identifier.value;
-      var parent = this.currentModule;
-      var module = this.getModuleForModuleExpression(tree.expression);
-      if (!module) {
-        return;
-      }
-      parent.addModuleWithName(module, name);
+  visitModuleSpecifier(tree) {
+    var name = tree.identifier.value;
+    var parent = this.currentModule;
+    var module = this.getModuleForModuleExpression(tree.expression);
+    if (!module) {
+      return;
     }
-  });
-
-  return {
-    ModuleDeclarationVisitor: ModuleDeclarationVisitor
-  };
-});
+    parent.addModuleWithName(module, name);
+  }
+}

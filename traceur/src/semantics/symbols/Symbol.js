@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,48 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('semantics.symbols', function() {
-  'use strict';
+import SymbolType from 'SymbolType.js';
 
-  var assert = traceur.assert;
-
+/**
+ * A symbol is a named program element.
+ *
+ * Symbols are plain old data structures only. They have methods for querying their contents, but
+ * symbols do not implement more sophisticated semantics than simple data access.
+ */
+export class Symbol {
   /**
-   * A symbol is a named program element.
-   *
-   * Symbols are plain old data structures only. They have methods for querying their contents, but
-   * symbols do not implement more sophisticated semantics than simple data access.
-   *
    * @param {SymbolType} type
    * @param {ParseTree} tree
-   * @param {string} name
-   * @constructor
    */
-  function Symbol(type, tree, name) {
+  constructor(type, tree, name) {
     this.type = type;
     this.tree = tree;
     this.name = name;
   }
 
-  Symbol.prototype = {
+  /**
+   * @return {ExportSymbol}
+   */
+  asExport() {
+    traceur.assert(this.type == SymbolType.EXPORT);
+    return this;
+  }
 
-    /**
-     * @return {ExportSymbol}
-     */
-    asExport: function() {
-      assert(this instanceof traceur.semantics.symbols.ExportSymbol);
-      return this;
-    },
-
-    /**
-     * @return {ModuleSymbol}
-     */
-    asModuleSymbol: function() {
-      assert(this instanceof traceur.semantics.symbols.ModuleSymbol);
-      return this;
-    }
-  };
-
-  return {
-    Symbol: Symbol
-  };
-});
+  /**
+   * @return {ModuleSymbol}
+   */
+  asModuleSymbol() {
+    traceur.assert(this.type == SymbolType.MODULE);
+    return this;
+  }
+}

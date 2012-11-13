@@ -12,44 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration.module', function() {
-  'use strict';
+import IMPORT_SPECIFIER_SET from '../../syntax/trees/ParseTreeType.js';
+import ModuleVisitor from 'ModuleVisitor.js';
+import TokenType from '../../syntax/TokenType.js';
 
-  var ModuleVisitor = traceur.codegeneration.module.ModuleVisitor;
-  var ParseTreeType = traceur.syntax.trees.ParseTreeType;
-  var TokenType = traceur.syntax.TokenType;
-
+/**
+ * Finds all 'import * from moduleExpression' and associates the tree with
+ * the module symbol.
+ */
+export class ImportStarVisitor extends ModuleVisitor {
   /**
-   * Finds all 'import * from moduleExpression' and associates the tree with
-   * the module symbol.
-   *
    * @param {traceur.util.ErrorReporter} reporter
    * @param {ProjectSymbol} project
    * @param {ModuleSymbol} module The root of the module system.
-   * @constructor
-   * @extends {ModuleVisitor}
    */
-  function ImportStarVisitor(reporter, project, module) {
-    ModuleVisitor.call(this, reporter, project, module);
+  constructor(reporter, project, module) {
+    super(reporter, project, module);
   }
 
-  ImportStarVisitor.prototype = traceur.createObject(
-      ModuleVisitor.prototype, {
+  visitImportBinding(tree) {
+    // If we find an 'import * from m' we associate the tree with the module
+    // so that we can have access to it during the transformation phase.
+    var importSpecifierSet = tree.importSpecifierSet;
+    if (importSpecifierSet.type === IMPORT_SPECIFIER_SET &&
+        importSpecifierSet.specifiers.type === TokenType.STAR) {
 
-    visitImportBinding: function(tree) {
-      // If we find an 'import * from m' we associate the tree with the module
-      // so that we can have access to it during the transformation phase.
-      var importSpecifierSet = tree.importSpecifierSet;
-      if (importSpecifierSet.type === ParseTreeType.IMPORT_SPECIFIER_SET &&
-          importSpecifierSet.specifiers.type === TokenType.STAR) {
-
-        var module = this.getModuleForModuleExpression(tree.moduleExpression);
-        this.project.setModuleForStarTree(importSpecifierSet, module);
-      }
+      var module = this.getModuleForModuleExpression(tree.moduleExpression);
+      this.project.setModuleForStarTree(importSpecifierSet, module);
     }
-  });
-
-  return {
-    ImportStarVisitor: ImportStarVisitor
-  };
-});
+  }
+}

@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,38 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import FindVisitor from 'FindVisitor.js';
 
-  var FindVisitor = traceur.codegeneration.FindVisitor;
-
-  /**
-   * This is used to find something in a tree. Extend this class and override
-   * the desired visit functions to find what you are looking for. When the tree
-   * you are looking for is found set |this.found| to true. This will abort the
-   * search of the remaining sub trees.
-   *
-   * Does not search into nested functions.
-   *
-   * @param {ParseTree} tree
-   * @extends {FindVisitor}
-   * @constructor
-   */
-  function FindInFunctionScope(tree) {
-    FindVisitor.call(this, tree);
-  }
-
-  FindInFunctionScope.prototype = traceur.createObject(
-      FindVisitor.prototype, {
-
-    // don't visit function children or bodies
-    visitFunctionDeclaration: function(tree) {},
-    visitSetAccessor: function(tree) {},
-    visitGetAccessor: function(tree) {},
-    visitPropertyMethodAssignment: function(tree) {}
-  });
-
-  return {
-    FindInFunctionScope: FindInFunctionScope
-  };
-});
+/**
+ * This is used to find something in a tree. Extend this class and override
+ * the desired visit functions to find what you are looking for. When the tree
+ * you are looking for is found set |this.found| to true. This will abort the
+ * search of the remaining sub trees.
+ *
+ * Does not search into nested functions.
+ */
+export class FindInFunctionScope extends FindVisitor {
+  // don't visit function children or bodies
+  visitFunctionDeclaration(tree) {}
+  visitSetAccessor(tree) {}
+  visitGetAccessor(tree) {}
+  visitPropertyMethodAssignment(tree) {}
+}

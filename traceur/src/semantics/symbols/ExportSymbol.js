@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('semantics.symbols', function() {
-  'use strict';
+import Symbol from 'Symbol.js';
+import SymbolType from 'SymbolType.js';
 
-  var Symbol = traceur.semantics.symbols.Symbol;
-  var SymbolType = traceur.semantics.symbols.SymbolType;
-
+export class ExportSymbol extends Symbol {
   /**
    * @param {ParseTree} tree
    * @param {string} name
    * @param {ParseTree=} relatedTree
-   * @constructor
-   * @extends {Symbol}
    */
-  function ExportSymbol(tree, name, relatedTree) {
-    Symbol.call(this, SymbolType.EXPORT, tree, name);
+  constructor(tree, name, relatedTree) {
+    super(SymbolType.EXPORT, tree, name);
     this.relatedTree = relatedTree;
   }
+}
 
-  ExportSymbol.prototype = Object.create(Symbol.prototype);
-
-  return {
-    ExportSymbol: ExportSymbol
-  };
-});

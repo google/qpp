@@ -12,67 +12,52 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import ComprehensionTransformer from 'ComprehensionTransformer.js';
+import createYieldStatement from 'ParseTreeFactory.js';
 
-  var ComprehensionTransformer = traceur.codegeneration.ComprehensionTransformer;
-  var createYieldStatement = traceur.codegeneration.ParseTreeFactory.createYieldStatement;
+/**
+ * Generator Comprehension Transformer:
+ *
+ * The desugaring is defined at
+ * http://wiki.ecmascript.org/doku.php?id=harmony:generator_expressions#translation
+ * as something like this:
+ *
+ * ( Expression0 for LHSExpression1 of Expression1 ...
+ *               for LHSExpressionn of Expressionn if ( Expression )opt )
+ *
+ * =>
+ *
+ * (function () {
+ *     for (let LHSExpression1 of Expression1 ) {
+ *         ...
+ *         for (let LHSExpressionn of Expressionn ) {
+ *             if ( Expression )opt
+ *                 yield (Expression0);
+ *             }
+ *         }
+ *     }
+ * })()
+ *
+ * with alpha renaming of this and arguments of course.
+ */
+export class GeneratorComprehensionTransformer extends
+    ComprehensionTransformer {
 
-  /**
-   * Generator Comprehension Transformer:
-   *
-   * The desugaring is defined at
-   * http://wiki.ecmascript.org/doku.php?id=harmony:generator_expressions#translation
-   * as something like this:
-   *
-   * ( Expression0 for LHSExpression1 of Expression1 ...
-   *               for LHSExpressionn of Expressionn if ( Expression )opt )
-   *
-   * =>
-   *
-   * (function () {
-   *     for (let LHSExpression1 of Expression1 ) {
-   *         ...
-   *         for (let LHSExpressionn of Expressionn ) {
-   *             if ( Expression )opt
-   *                 yield (Expression0);
-   *             }
-   *         }
-   *     }
-   * })()
-   *
-   * with alpha renaming of this and arguments of course.
-   *
-   * @param {UniqueIdentifierGenerator} identifierGenerator
-   * @constructor
-   * @extends {ComprehensionTransformer}
-   */
-  function GeneratorComprehensionTransformer(identifierGenerator) {
-    ComprehensionTransformer.call(this, identifierGenerator);
+  transformGeneratorComprehension(tree) {
+    var expression = this.transformAny(tree.expression);
+    var statement = createYieldStatement(expression);
+    var isGenerator = true;
+    return this.transformComprehension(tree, statement, isGenerator);
   }
+}
 
-  /**
-   * @param {UniqueIdentifierGenerator} identifierGenerator
-   * @param {ParseTree} tree
-   * @return {ParseTree}
-   */
-  GeneratorComprehensionTransformer.transformTree =
-      function(identifierGenerator, tree) {
-    return new GeneratorComprehensionTransformer(identifierGenerator).
-        transformAny(tree);
-  };
-
-  GeneratorComprehensionTransformer.prototype = traceur.createObject(
-      ComprehensionTransformer.prototype, {
-    transformGeneratorComprehension: function(tree) {
-      var expression = this.transformAny(tree.expression);
-      var statement = createYieldStatement(expression);
-      var isGenerator = true;
-      return this.transformComprehension(tree, statement, isGenerator);
-    }
-  });
-
-  return {
-    GeneratorComprehensionTransformer: GeneratorComprehensionTransformer
-  };
-});
+/**
+ * @param {UniqueIdentifierGenerator} identifierGenerator
+ * @param {ParseTree} tree
+ * @return {ParseTree}
+ */
+GeneratorComprehensionTransformer.transformTree =
+    function(identifierGenerator, tree) {
+  return new GeneratorComprehensionTransformer(identifierGenerator).
+      transformAny(tree);
+};

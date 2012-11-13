@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,109 +12,95 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import FormalParameterList from '../syntax/trees/ParseTrees.js';
+import ParseTreeTransformer from 'ParseTreeTransformer.js';
+import {
+  ARGUMENTS,
+  ARRAY, 
+  CALL,
+  PROTOTYPE
+} from '../syntax/PredefinedName.js';
+import TokenType from '../syntax/TokenType.js';
+import {
+  createArgumentList,
+  createBlock,
+  createCallExpression,
+  createFunctionDeclaration,
+  createIdentifierExpression,
+  createMemberExpression,
+  createNumberLiteral,
+  createVariableStatement
+} from 'ParseTreeFactory.js';
 
-  var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
+function hasRestParameter(formalParameterList) {
+  var parameters = formalParameterList.parameters;
+  return parameters.length > 0 &&
+      parameters[parameters.length - 1].isRestParameter();
+}
 
-  var createArgumentList = traceur.codegeneration.ParseTreeFactory.createArgumentList;
-  var createBlock = traceur.codegeneration.ParseTreeFactory.createBlock;
-  var createCallExpression = traceur.codegeneration.ParseTreeFactory.createCallExpression;
-  var createFunctionDeclaration = traceur.codegeneration.ParseTreeFactory.createFunctionDeclaration;
-  var createIdentifierExpression = traceur.codegeneration.ParseTreeFactory.createIdentifierExpression;
-  var createMemberExpression = traceur.codegeneration.ParseTreeFactory.createMemberExpression;
-  var createNumberLiteral = traceur.codegeneration.ParseTreeFactory.createNumberLiteral;
-  var createVariableStatement = traceur.codegeneration.ParseTreeFactory.createVariableStatement;
+function getRestParameterName(formalParameterList) {
+  var parameters = formalParameterList.parameters;
+  return parameters[parameters.length - 1].identifier.identifierToken.value;
+}
 
-  var PredefinedName = traceur.syntax.PredefinedName;
-  var TokenType = traceur.syntax.TokenType;
 
-  var FormalParameterList = traceur.syntax.trees.FormalParameterList;
+/**
+ * Desugars rest parameters.
+ *
+ * @see <a href="http://wiki.ecmascript.org/doku.php?id=harmony:rest_parameters">harmony:rest_parameters</a>
+ */
+export class RestParameterTransformer extends ParseTreeTransformer {
+
+  transformFunctionDeclaration(tree) {
+    if (hasRestParameter(tree.formalParameterList)) {
+      return this.desugarRestParameters_(tree);
+    } else {
+      return super.transformFunctionDeclaration(tree);
+    }
+  }
 
   /**
-   * Desugars rest parameters.
-   *
-   * @see <a href="http://wiki.ecmascript.org/doku.php?id=harmony:rest_parameters">harmony:rest_parameters</a>
-   * @constructor
-   * @extends {ParseTreeTransformer}
+   * @param {FunctionDeclaration} tree
+   * @private
+   * @return {ParseTree}
    */
-  function RestParameterTransformer() {
-    ParseTreeTransformer.call(this);
+  desugarRestParameters_(tree) {
+
+    // Desugar rest parameters as follows:
+    //
+    // function f(x, ...y) {}
+    //
+    // function f(x) {
+    //   var y = Array.prototype.slice.call(arguments, 1);
+    // }
+
+    var parametersWithoutRestParam =
+        new FormalParameterList(
+            tree.formalParameterList.location,
+            tree.formalParameterList.parameters.slice(
+                0,
+                tree.formalParameterList.parameters.length - 1));
+
+    var sliceExpression = createCallExpression(
+        createMemberExpression(ARRAY, PROTOTYPE, 'slice', CALL),
+        createArgumentList(
+            createIdentifierExpression(ARGUMENTS),
+            createNumberLiteral(
+                tree.formalParameterList.parameters.length - 1)));
+
+    var variable = createVariableStatement(
+        TokenType.VAR,
+        getRestParameterName(tree.formalParameterList),
+        sliceExpression);
+
+    var statements = [variable, ...tree.functionBody.statements];
+
+    return createFunctionDeclaration(
+        tree.name, parametersWithoutRestParam,
+        this.transformAny(createBlock(statements)));
   }
+}
 
-  RestParameterTransformer.transformTree = function(tree) {
-    return new RestParameterTransformer().transformAny(tree);
-  };
-
-  function hasRestParameter(formalParameterList) {
-    var parameters = formalParameterList.parameters;
-    return parameters.length > 0 &&
-        parameters[parameters.length - 1].isRestParameter();
-  }
-
-  function getRestParameterName(formalParameterList) {
-    var parameters = formalParameterList.parameters;
-    return parameters[parameters.length - 1].identifier.identifierToken.value;
-  }
-
-  RestParameterTransformer.prototype = traceur.createObject(
-      ParseTreeTransformer.prototype, {
-
-    transformFunctionDeclaration: function(tree) {
-      if (hasRestParameter(tree.formalParameterList)) {
-        return this.desugarRestParameters_(tree);
-      } else {
-        return ParseTreeTransformer.prototype.transformFunctionDeclaration.
-            call(this, tree);
-      }
-    },
-
-    /**
-     * @param {FunctionDeclaration} tree
-     * @private
-     * @return {ParseTree}
-     */
-    desugarRestParameters_: function(tree) {
-
-      // Desugar rest parameters as follows:
-      //
-      // function f(x, ...y) {}
-      //
-      // function f(x) {
-      //   var y = Array.prototype.slice.call(arguments, 1);
-      // }
-
-      var parametersWithoutRestParam =
-          new FormalParameterList(
-              tree.formalParameterList.location,
-              tree.formalParameterList.parameters.slice(
-                  0,
-                  tree.formalParameterList.parameters.length - 1));
-
-      var sliceExpression = createCallExpression(
-          createMemberExpression(PredefinedName.ARRAY, PredefinedName.PROTOTYPE,
-                                 'slice', PredefinedName.CALL),
-          createArgumentList(
-              createIdentifierExpression(PredefinedName.ARGUMENTS),
-              createNumberLiteral(
-                  tree.formalParameterList.parameters.length - 1)));
-
-      var variable = createVariableStatement(
-          TokenType.VAR,
-          getRestParameterName(tree.formalParameterList),
-          sliceExpression);
-
-      var statements = [];
-      statements.push(variable);
-      statements.push.apply(statements, tree.functionBody.statements);
-
-      return createFunctionDeclaration(
-          tree.name, parametersWithoutRestParam,
-          this.transformAny(createBlock(statements)));
-    }
-  });
-
-  return {
-    RestParameterTransformer: RestParameterTransformer
-  };
-});
+RestParameterTransformer.transformTree = function(tree) {
+  return new RestParameterTransformer().transformAny(tree);
+};

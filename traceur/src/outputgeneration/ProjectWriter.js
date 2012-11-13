@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,31 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('outputgeneration', function() {
-  'use strict';
+import TreeWriter from 'TreeWriter.js';
 
-  var TreeWriter = traceur.outputgeneration.TreeWriter;
+// TODO(arv): This should just export the static function instead.
 
-  /**
-   * Writes all the files in the project to a stream.
-   */
-  function ProjectWriter() {}
+/**
+ * Writes all the files in the project to a stream.
+ */
+export class ProjectWriter {}
 
-  /**
-   * @param {traceur.util.ObjectMap} results
-   * @param {Object} opt_options to ParseTreeWriter.write
-   * @return {string}
-   */
-  ProjectWriter.write = function(results, opt_options) {
-    var sb = [];
-    results.keys().forEach(function(file) {
-      sb.push('// ' + file.name,
-              TreeWriter.write(results.get(file), opt_options));
-    });
-    return sb.join('\n') + '\n';
-  };
+/**
+ * @param {traceur.util.ObjectMap} results
+ * @param {Object} opt_options to ParseTreeWriter.write
+ * @return {string}
+ */
+ProjectWriter.write = function(results, opt_options) {
+  return results.keys().map((file) => {
+    return TreeWriter.write(results.get(file), opt_options);
+  }).join('');
+};
 
-  return {
-    ProjectWriter: ProjectWriter
-  };
-});

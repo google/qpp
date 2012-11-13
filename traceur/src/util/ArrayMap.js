@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,62 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('util', function() {
-  'use strict';
-
-  /**
-   * A map backed by arrays. All methods are O(n) so only use this when you
-   * cannot change the key object.
-   */
-  function ArrayMap() {
+/**
+ * A map backed by arrays. All methods are O(n) so only use this when you
+ * cannot change the key object.
+ */
+export class ArrayMap {
+  constructor() {
     this.values_ = [];
     this.keys_ = [];
   }
 
-  ArrayMap.prototype = {
-    has: function(key) {
-      return this.keys_.indexOf(key) != -1;
-    },
-    get: function(key) {
-      var index = this.keys_.indexOf(key);
-      if (index == -1) {
-        return undefined;
-      }
-      return this.values_[index];
-    },
-    put: function(key, value) {
-      var index = this.keys_.indexOf(key);
-      if (index == -1) {
-        this.keys_.push(key);
-        this.values_.push(value);
-      } else {
-        this.values_[index] = value;
-      }
-    },
-    addAll: function(other) {
-      var keys = other.keys();
-      var values = other.values();
-      for (var i = 0; i < keys.length; i++) {
-        this.put(keys[i], values[i]);
-      }
-    },
-    remove: function(key) {
-      var index = this.keys_.indexOf(key);
-      if (index == -1) {
-        return;
-      }
-      this.keys_.splice(index, 1);
-      this.values_.splice(index, 1);
-    },
-    keys: function() {
-      return this.keys_.concat();
-    },
-    values: function() {
-      return this.values_.concat();
-    }
-  };
+  has(key) {
+    return this.keys_.indexOf(key) != -1;
+  }
 
-  return {
-    ArrayMap: ArrayMap
-  };
-});
+  get(key) {
+    var index = this.keys_.indexOf(key);
+    if (index == -1) {
+      return undefined;
+    }
+    return this.values_[index];
+  }
+
+  set(key, value) {
+    var index = this.keys_.indexOf(key);
+    if (index == -1) {
+      this.keys_.push(key);
+      this.values_.push(value);
+    } else {
+      this.values_[index] = value;
+    }
+  }
+
+  addAll(other) {
+    var keys = other.keys();
+    var values = other.values();
+    for (var i = 0; i < keys.length; i++) {
+      this.set(keys[i], values[i]);
+    }
+  }
+
+  remove(key) {
+    var index = this.keys_.indexOf(key);
+    if (index == -1) {
+      return;
+    }
+    this.keys_.splice(index, 1);
+    this.values_.splice(index, 1);
+  }
+
+  keys() {
+    return this.keys_.concat();
+  }
+
+  values() {
+    return this.values_.concat();
+  }
+}

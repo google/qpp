@@ -110,7 +110,7 @@ traceur.runtime = (function(global) {
     }
 
     var descriptors = {};
-    $getOwnPropertyNames(proto).forEach(function(name) {
+    $getOwnPropertyNames(proto).forEach((name) => {
       descriptors[name] = $getOwnPropertyDescriptor(proto, name);
     });
 
@@ -159,44 +159,6 @@ traceur.runtime = (function(global) {
     throw new TypeError("Object has no setter '" + name + "'.");
   }
 
-  var pushItem = Array.prototype.push.call.bind(Array.prototype.push);
-  var pushArray = Array.prototype.push.apply.bind(Array.prototype.push);
-  var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
-  var filter = Array.prototype.filter.call.bind(Array.prototype.filter);
-
-  /**
-   * Spreads the elements in {@code items} into a single array.
-   * @param {Array} items Array of interleaving booleans and values.
-   * @return {Array}
-   */
-  function spread(items) {
-    var retval = [];
-    for (var i = 0; i < items.length; i += 2) {
-      if (items[i]) {
-        if (items[i + 1] == null)
-          continue;
-        if (typeof items[i + 1] != 'object')
-          throw TypeError('Spread expression has wrong type');
-        pushArray(retval, slice(items[i + 1]));
-      } else {
-        pushItem(retval, items[i + 1]);
-      }
-    }
-    return retval;
-  }
-
-  /**
-   * @param {Function} ctor
-   * @param {Array} items Array of interleaving booleans and values.
-   * @return {Object}
-   */
-  function spreadNew(ctor, items) {
-    var args = spread(items);
-    args.unshift(null);
-    var retval = new (bind.apply(ctor, args));
-    return retval && typeof retval == 'object' ? retval : object;
-  };
-
   /**
    * Marks properties as non enumerable.
    * @param {Object} object
@@ -204,7 +166,7 @@ traceur.runtime = (function(global) {
    * @return {Object}
    */
   function markMethods(object, names) {
-    names.forEach(function(name) {
+    names.forEach((name) => {
       $defineProperty(object, name, {enumerable: false});
     });
     return object;
@@ -280,6 +242,8 @@ traceur.runtime = (function(global) {
     elementDelete: elementDeleteName
   });
 
+  var filter = Array.prototype.filter.call.bind(Array.prototype.filter);
+
   // Override getOwnPropertyNames to filter out private name keys.
   function getOwnPropertyNames(object) {
     return filter($getOwnPropertyNames(object), function(str) {
@@ -296,7 +260,7 @@ traceur.runtime = (function(global) {
   }
 
   function elementDelete(object, name) {
-    if (traceur.options.collections &&
+    if (traceur.options.trapMemberLookup &&
         hasPrivateNameProperty(object, elementDeleteName)) {
       return getProperty(object, elementDeleteName).call(object, name);
     }
@@ -304,7 +268,7 @@ traceur.runtime = (function(global) {
   }
 
   function elementGet(object, name) {
-    if (traceur.options.collections &&
+    if (traceur.options.trapMemberLookup &&
         hasPrivateNameProperty(object, elementGetName)) {
       return getProperty(object, elementGetName).call(object, name);
     }
@@ -317,7 +281,7 @@ traceur.runtime = (function(global) {
   }
 
   function elementSet(object, name, value) {
-    if (traceur.options.collections &&
+    if (traceur.options.trapMemberLookup &&
         hasPrivateNameProperty(object, elementSetName)) {
       getProperty(object, elementSetName).call(object, name, value);
     } else {
@@ -581,18 +545,20 @@ traceur.runtime = (function(global) {
     assertName: assertName,
     createClass: createClass,
     createName: NameModule.Name,
+    deleteProperty: deleteProperty,
     elementDelete: elementDelete,
     elementGet: elementGet,
     elementHas: elementHas,
     elementSet: elementSet,
     getIterator: getIterator,
+    getProperty: getProperty,
+    has: has,
     is: is,
     isnt: isnt,
     markAsGenerator: markAsGenerator,
     markMethods: markMethods,
     modules: modules,
-    spread: spread,
-    spreadNew: spreadNew,
+    setProperty: setProperty,
     superCall: superCall,
     superGet: superGet,
     superSet: superSet,

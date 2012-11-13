@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('semantics.symbols', function() {
-  'use strict';
+import Symbol from 'Symbol.js';
+import SymbolType from 'SymbolType.js';
 
-  var Symbol = traceur.semantics.symbols.Symbol;
-  var SymbolType = traceur.semantics.symbols.SymbolType;
-
+export class ModuleSymbol extends Symbol {
   /**
    * @param {string} name
    * @param {ModuleSymbol} parent
    * @param {ModuleDefinition} tree
-   * @constructor
-   * @extends {Symbol}
    */
-  function ModuleSymbol(name, parent, tree, url) {
-    Symbol.call(this, SymbolType.MODULE, tree, name);
+  constructor(name, parent, tree, url) {
+    super(SymbolType.MODULE, tree, name);
     this.children_ = Object.create(null);
     this.exports_ = Object.create(null);
     this.parent = parent;
@@ -38,78 +34,69 @@ traceur.define('semantics.symbols', function() {
     this.url = url;
   }
 
-  ModuleSymbol.prototype = traceur.createObject(Symbol.prototype, {
+  /**
+   * @param {ModuleSymbol} module
+   * @return {void}
+   */
+  addModule(module) {
+    this.addModuleWithName(module, module.name);
+  }
 
-    /**
-     * @param {ModuleSymbol} module
-     * @return {void}
-     */
-    addModule: function(module) {
-      this.addModuleWithName(module, module.name);
-    },
+  /**
+   * @param {ModuleSymbol} module
+   * @param {string} name
+   * @return {void}
+   */
+  addModuleWithName(module, name) {
+    this.children_[name] = module;
+  }
 
-    /**
-     * @param {ModuleSymbol} module
-     * @param {string} name
-     * @return {void}
-     */
-    addModuleWithName: function(module, name) {
-      this.children_[name] = module;
-    },
+  /**
+   * @param {string} name
+   * @return {boolean}
+   */
+  hasModule(name) {
+    return name in this.children_;
+  }
 
-    /**
-     * @param {string} name
-     * @return {boolean}
-     */
-    hasModule: function(name) {
-      return name in this.children_;
-    },
+  /**
+   * @param {string} name
+   * @return {ModuleSymbol}
+   */
+  getModule(name) {
+    return this.children_[name];
+  }
 
-    /**
-     * @param {string} name
-     * @return {ModuleSymbol}
-     */
-    getModule: function(name) {
-      return this.children_[name];
-    },
+  /**
+   * @param {string} name
+   * @return {boolean}
+   */
+  hasExport(name) {
+    return name in this.exports_;
+  }
 
-    /**
-     * @param {string} name
-     * @return {boolean}
-     */
-    hasExport: function(name) {
-      return name in this.exports_;
-    },
+  /**
+   * @param {string} name
+   * @return {ExportSymbol}
+   */
+  getExport(name) {
+    return this.exports_[name];
+  }
 
-    /**
-     * @param {string} name
-     * @return {ExportSymbol}
-     */
-    getExport: function(name) {
-      return this.exports_[name];
-    },
+  /**
+   * @param {string} name
+   * @param {ExportSymbol} export
+   * @return {void}
+   */
+  addExport(name, exp) {
+    this.exports_[name] = exp;
+  }
 
-    /**
-     * @param {string} name
-     * @param {ExportSymbol} export
-     * @return {void}
-     */
-    addExport: function(name, exp) {
-      this.exports_[name] = exp;
-    },
-
-    /**
-     * @return {Array.<ExportSymbol>}
-     */
-    getExports: function() {
-      var exports = this.exports_;
-      return Object.keys(exports).map(function(key) {
-        return exports[key];
-      });
-    }
-  });
-
-  return {
-    ModuleSymbol: ModuleSymbol
-  };
-});
+  /**
+   * @return {Array.<ExportSymbol>}
+   */
+  getExports() {
+    var exports = this.exports_;
+    return Object.keys(exports).map((key) => exports[key]);
+  }
+}

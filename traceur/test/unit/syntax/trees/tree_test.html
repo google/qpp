@@ -25,7 +25,7 @@
 // NOTE: because they use document.write to add new script tags in place
 goog.require('goog.testing.jsunit');
 </script>
-<script src="../../../../src/traceur.js"></script>
+<script src="../../../../bin/traceur.js"></script>
 </head>
 <body>
 <script>
@@ -79,8 +79,6 @@ function testNullTree() {
   var tree = new traceur.syntax.trees.NullTree();
   assertEquals('NULL_TREE', tree.type);
   assertEquals(null, tree.location);
-  var tree2 = new traceur.syntax.trees.NullTree();
-  assertEquals(tree, tree2);
 }
 
 function testTreeConstructors() {
@@ -211,7 +209,7 @@ function testTreeConstructors() {
 
   validateTree(traceur.syntax.trees.GetAccessor,
       ParseTreeType.GET_ACCESSOR,
-      ['location', 'propertyName', 'body']);
+      ['location', 'name', 'body']);
 
   validateTree(traceur.syntax.trees.IdentifierExpression,
       ParseTreeType.IDENTIFIER_EXPRESSION,
@@ -332,7 +330,7 @@ function testTreeConstructors() {
 
   validateTree(traceur.syntax.trees.SetAccessor,
       ParseTreeType.SET_ACCESSOR,
-      ['location', 'propertyName', 'parameter', 'body']);
+      ['location', 'name', 'parameter', 'body']);
 
   validateTree(traceur.syntax.trees.SpreadExpression,
       ParseTreeType.SPREAD_EXPRESSION,

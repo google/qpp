@@ -25,7 +25,7 @@
 // NOTE: because they use document.write to add new script tags in place
 goog.require('goog.testing.jsunit');
 </script>
-<script src="../../../src/traceur.js"></script>
+<script src="../../../bin/traceur.js"></script>
 </head>
 <body>
 <script>
@@ -73,7 +73,7 @@ function testWriteStatement() {
   ]);
   var actual = TreeWriter.write(tree);
 
-  var expected = '\nvar x = 1; \nif(x > 0) { \n  x ++ \n} \n';
+  var expected = 'var x = 1;\nif (x > 0) {\n  x++\n}\n';
   assertEquals(expected, actual);
 }
 
@@ -122,9 +122,9 @@ function testParserAndWriteAllScripts() {
 
 function testParseAndWriteKeywords() {
   var result = parseAndWrite('test', 'x.case = 5;\n');
-  assertEquals('\nx.case = 5; \n', result);
-  var result = parseAndWrite('test', 'var obj = { var: 42 };\n');
-  assertEquals('\nvar obj = { var: 42 }; \n', result);
+  assertEquals('x.case = 5;\n', result);
+  var result = parseAndWrite('test', 'var obj = {var: 42};\n');
+  assertEquals('var obj = {var: 42};\n', result);
 }
 
 </script>

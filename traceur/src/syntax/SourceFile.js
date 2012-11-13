@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('syntax', function() {
-  'use strict';
+import LineNumberTable from 'LineNumberTable.js';
 
-  var LineNumberTable = traceur.syntax.LineNumberTable;
-
+/**
+ * A source file.
+ *
+ * Immutable.
+ */
+export class SourceFile {
   /**
-   * A source file.
-   *
-   * Immutable.
-   *
    * @param {string} name
    * @param {string} content
-   * @constructor
    */
-  function SourceFile(name, contents) {
+  constructor(name, contents) {
     this.name = name;
     this.contents = contents;
     this.lineNumberTable = new LineNumberTable(this);
     this.uid = traceur.getUid();
   }
-
-  return {
-    SourceFile: SourceFile
-  };
-});
+}

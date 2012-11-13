@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,158 +12,139 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration.generator', function() {
-  'use strict';
+import BreakState from 'BreakState.js';
+import {
+  BreakStatement,
+  ContinueStatement,
+  DoWhileStatement,
+  ForOfStatement,
+  ForStatement,
+  FunctionDeclaration,
+  SwitchStatement,
+  WhileStatement
+} from '../../syntax/trees/ParseTrees.js';
+import ContinueState from 'ContinueState.js';
+import ParseTreeTransformer from '../ParseTreeTransformer.js';
+import StateMachine from '../../syntax/trees/StateMachine.js';
 
-  var ParseTree = traceur.syntax.trees.ParseTree;
-  var ParseTreeType = traceur.syntax.trees.ParseTreeType;
-  var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
-  var BreakStatement = traceur.syntax.trees.BreakStatement;
-  var ContinueStatement = traceur.syntax.trees.ContinueStatement;
-  var DoWhileStatement = traceur.syntax.trees.DoWhileStatement;
-  var ForOfStatement = traceur.syntax.trees.ForOfStatement;
-  var ForStatement = traceur.syntax.trees.ForStatement;
-  var FunctionDeclaration = traceur.syntax.trees.FunctionDeclaration;
-  var ParseTree = traceur.syntax.trees.ParseTree;
-  var SwitchStatement = traceur.syntax.trees.SwitchStatement;
-  var WhileStatement = traceur.syntax.trees.WhileStatement;
+/**
+ * @param {BreakStatement|ContinueStatement} tree
+ * @return {string}
+ */
+function safeGetLabel(tree) {
+  return tree.name ? tree.name.value : null;
+}
 
-  var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
-
-  var BreakState = traceur.codegeneration.generator.BreakState;
-  var ContinueState = traceur.codegeneration.generator.ContinueState;
-  var State = traceur.codegeneration.generator.State;
-  var StateAllocator = traceur.codegeneration.generator.StateAllocator;
-  var StateMachine = traceur.syntax.trees.StateMachine;
-
-  var VariableBinder = traceur.semantics.VariableBinder;
-
+/**
+ * Converts statements which do not contain a yield, to a state machine. Always called from a
+ * context where the containing block contains a yield. Normally this just wraps the statement into
+ * a single state StateMachine. However, if the statement contains a break or continue which
+ * exits the statement, then the non-local break/continue must be converted into state machines.
+ *
+ * Note that parents of non-local break/continue statements are themselves translated into
+ * state machines by the caller.
+ */
+export class BreakContinueTransformer extends ParseTreeTransformer {
   /**
-   * Converts statements which do not contain a yield, to a state machine. Always called from a
-   * context where the containing block contains a yield. Normally this just wraps the statement into
-   * a single state StateMachine. However, if the statement contains a break or continue which
-   * exits the statement, then the non-local break/continue must be converted into state machines.
-   *
-   * Note that parents of non-local break/continue statements are themselves translated into
-   * state machines by the caller.
-   *
    * @param {StateAllocator} stateAllocator
-   * @extends {ParseTreeTransformer}
-   * @constructor
    */
-  function BreakContinueTransformer(stateAllocator) {
-    ParseTreeTransformer.call(this);
+  constructor(stateAllocator) {
+    super();
     this.transformBreaks_ = true;
     this.stateAllocator_ = stateAllocator;
   }
 
-  /**
-   * @param {BreakStatement|ContinueStatement} tree
-   * @return {string}
-   */
-  function safeGetLabel(tree) {
-    return tree.name ? tree.name.value : null;
+  /** @return {number} */
+  allocateState_() {
+    return this.stateAllocator_.allocateState();
   }
 
-  var proto = ParseTreeTransformer.prototype;
-  BreakContinueTransformer.prototype = traceur.createObject(proto, {
+  /**
+   * @param {State} newState
+   * @return {StateMachibneTree}
+   */
+  stateToStateMachine_(newState) {
+    // TODO: this shouldn't be required, but removing it requires making consumers resilient
+    // TODO: to a machine with INVALID fallThroughState
+    var fallThroughState = this.allocateState_();
+    return new StateMachine(newState.id, fallThroughState, [newState], []);
+  }
 
-    /** @return {number} */
-    allocateState_: function() {
-      return this.stateAllocator_.allocateState();
-    },
+  /**
+   * @param {BreakStatement} tree
+   * @return {ParseTree}
+   */
+  transformBreakStatement(tree) {
+    return this.transformBreaks_ ?
+        this.stateToStateMachine_(new BreakState(this.allocateState_(), safeGetLabel(tree))) :
+        tree;
+  }
 
-    /**
-     * @param {State} newState
-     * @return {StateMachibneTree}
-     */
-    stateToStateMachine_: function(newState) {
-      // TODO: this shouldn't be required, but removing it requires making consumers resilient
-      // TODO: to a machine with INVALID fallThroughState
-      var fallThroughState = this.allocateState_();
-      return new StateMachine(newState.id, fallThroughState, [newState], []);
-    },
+  /**
+   * @param {ContinueStatement} tree
+   * @return {ParseTree}
+   */
+  transformContinueStatement(tree) {
+    return this.stateToStateMachine_(new ContinueState(this.allocateState_(), safeGetLabel(tree)));
+  }
 
-    /**
-     * @param {BreakStatement} tree
-     * @return {ParseTree}
-     */
-    transformBreakStatement: function(tree) {
-      return this.transformBreaks_ ?
-          this.stateToStateMachine_(new BreakState(this.allocateState_(), safeGetLabel(tree))) :
-          tree;
-    },
+  /**
+   * @param {DoWhileStatement} tree
+   * @return {ParseTree}
+   */
+  transformDoWhileStatement(tree) {
+    return tree;
+  }
 
-    /**
-     * @param {ContinueStatement} tree
-     * @return {ParseTree}
-     */
-    transformContinueStatement: function(tree) {
-      return this.stateToStateMachine_(new ContinueState(this.allocateState_(), safeGetLabel(tree)));
-    },
+  /**
+   * @param {ForOfStatement} tree
+   * @return {ParseTree}
+   */
+  transformForOfStatement(tree) {
+    return tree;
+  }
 
-    /**
-     * @param {DoWhileStatement} tree
-     * @return {ParseTree}
-     */
-    transformDoWhileStatement: function(tree) {
-      return tree;
-    },
+  /**
+   * @param {ForStatement} tree
+   * @return {ParseTree}
+   */
+  transformForStatement(tree) {
+    return tree;
+  }
 
-    /**
-     * @param {ForOfStatement} tree
-     * @return {ParseTree}
-     */
-    transformForOfStatement: function(tree) {
-      return tree;
-    },
+  /**
+   * @param {FunctionDeclaration} tree
+   * @return {ParseTree}
+   */
+  transformFunctionDeclaration(tree) {
+    return tree;
+  }
 
-    /**
-     * @param {ForStatement} tree
-     * @return {ParseTree}
-     */
-    transformForStatement: function(tree) {
-      return tree;
-    },
+  /**
+   * @param {StateMachine} tree
+   * @return {ParseTree}
+   */
+  transformStateMachine(tree) {
+    return tree;
+  }
 
-    /**
-     * @param {FunctionDeclaration} tree
-     * @return {ParseTree}
-     */
-    transformFunctionDeclaration: function(tree) {
-      return tree;
-    },
+  /**
+   * @param {SwitchStatement} tree
+   * @return {ParseTree}
+   */
+  transformSwitchStatement(tree) {
+    var oldState = this.transformBreaks_;
+    this.transformBreaks = false;
+    var result = super.transformSwitchStatement(tree);
+    this.transformBreaks_ = oldState;
+    return result;
+  }
 
-    /**
-     * @param {StateMachine} tree
-     * @return {ParseTree}
-     */
-    transformStateMachine: function(tree) {
-      return tree;
-    },
-
-    /**
-     * @param {SwitchStatement} tree
-     * @return {ParseTree}
-     */
-    transformSwitchStatement: function(tree) {
-      var oldState = this.transformBreaks_;
-      this.transformBreaks = false;
-      var result = proto.transformSwitchStatement.call(this, tree);
-      this.transformBreaks_ = oldState;
-      return result;
-    },
-
-    /**
-     * @param {WhileStatement} tree
-     * @return {ParseTree}
-     */
-    transformWhileStatement: function(tree) {
-      return tree;
-    }
-  });
-
-  return {
-    BreakContinueTransformer: BreakContinueTransformer
-  };
-});
+  /**
+   * @param {WhileStatement} tree
+   * @return {ParseTree}
+   */
+  transformWhileStatement(tree) {
+    return tree;
+  }
+}

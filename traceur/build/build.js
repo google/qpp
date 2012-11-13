@@ -12,80 +12,88 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-(function() {
-  'use strict';
+'use strict';
 
-  var fs = require('fs');
-  var path = require('path');
-  var http = require('http');
-  var querystring = require('querystring');
+var fs = require('fs');
+var path = require('path');
+var flags;
+var cmdName = path.basename(process.argv[1]);
+try {
+  flags = new (require('commander').Command)(cmdName);
+} catch (ex) {
+  console.error('Commander.js is required for this to work. To install it ' +
+                'run:\n\n  npm install commander\n');
+  process.exit(1);
+}
+flags.setMaxListeners(100);
 
-  var dummyImportScript = '(global||this).traceurImportScript = function() {};';
+require('../src/traceur-node.js');
 
-  function build(fileList, outfile) {
-    var src = dummyImportScript;
-    console.log('Reading files...');
-    var success = fileList.every(function(filename) {
-      var data = fs.readFileSync('../src/' + filename);
-      if (!data) {
-        console.error('Failed to read ' + filename);
-        return false;
-      }
-      src += data.toString('utf8');
-      return true;
-    });
+flags.option('--out <FILE>', 'path to the file to output');
+flags.option('--all-options-off', 'all options are set to false');
+flags.on('all-options-off', function() {
+  traceur.options.reset(true);
+});
+flags.option('--dep', 'echo dependencies to stdout');
+flags.on('dep', function() {
+  if (!flags.out)
+    flags.missingArgument('out');
+  else
+    flags.depTarget = flags.out;
+});
+traceur.options.addOptions(flags);
 
-    if (!success) {
-      return false;
+flags.parse(process.argv);
+
+var outputfile = flags.out;
+if (!outputfile)
+  flags.help();
+
+var includes = flags.args;
+if (!includes.length) {
+  console.error('\n  At least one input file is needed');
+  flags.help();
+}
+
+var ErrorReporter = traceur.util.ErrorReporter;
+var TreeWriter = traceur.outputgeneration.TreeWriter;
+
+function existsSync(p) {
+  return fs.existsSync ? fs.existsSync(p) : path.existsSync(p);
+}
+
+/**
+ * Recursively makes all directoires, similar to mkdir -p
+ * @param {string} dir
+ */
+function mkdirRecursive(dir) {
+  var parts = path.normalize(dir).split('/');
+
+  dir = '';
+  for (var i = 0; i < parts.length; i++) {
+    dir += parts[i] + '/';
+    if (!existsSync(dir)) {
+      fs.mkdirSync(dir, 0x1FF);
     }
-
-    console.info('Compiling...');
-
-    var postData = querystring.stringify({
-      'compilation_level' : 'SIMPLE_OPTIMIZATIONS',
-      'output_format': 'text',
-      'language': 'ECMASCRIPT5',
-      'output_info': 'compiled_code',
-      'js_code': src,
-    });
-
-    var params = {
-      host: 'closure-compiler.appspot.com',
-      port: '80',
-      path: '/compile',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': postData.length
-      }
-    };
-
-    var compiledCode = '';
-    var req = http.request(params, function(res) {
-      res.setEncoding('utf8');
-      res.on('data', function (chunk) {
-        compiledCode += chunk;
-      });
-      res.on('end', function() {
-        console.log('Writing compiled code to:', outfile);
-        fs.writeFileSync(outfile, new Buffer(compiledCode));
-      });
-    });
-
-    req.write(postData);
-    req.end();
   }
+}
 
-  global.traceur = {
-    includes: [
-      'src/traceur.js',
-    ],
-  };
+var resolvedIncludes = includes.map(function(include) {
+  return path.resolve(include);
+});
 
-  var data = fs.readFileSync('../src/traceur.js');
-  data = data.toString('utf8');
-  eval(dummyImportScript + data);
+var reporter = new ErrorReporter();
 
-  build(global.traceur.includes,
-        process.argv[2] || 'tmp.js');
-})();
+var inlineAndCompile = require('./inline-module.js').inlineAndCompile;
+
+inlineAndCompile(resolvedIncludes, flags, reporter, function(tree) {
+  // Currently, passing flags.depTarget is the only reason tree would be null,
+  // but in the future there may be other reasons to require a no-op here.
+  if (tree) {
+    mkdirRecursive(path.dirname(outputfile));
+    fs.writeFileSync(outputfile, TreeWriter.write(tree), 'utf8');
+  }
+  process.exit(0);
+}, function(err) {
+  process.exit(1);
+});

@@ -12,24 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import ParseTreeVisitor from '../syntax/ParseTreeVisitor.js';
 
-  var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
+// Object used as a sentinel. This is thrown to abort visiting the rest of the
+// tree.
+var foundSentinel = {};
 
+/**
+ * This is used to find something in a tree. Extend this class and override
+ * the desired visit functions to find what you are looking for. When the tree
+ * you are looking for is found set |this.found| to true. This will abort the
+ * search of the remaining sub trees.
+ */
+export class FindVisitor extends ParseTreeVisitor {
   /**
-   * This is used to find something in a tree. Extend this class and override
-   * the desired visit functions to find what you are looking for. When the tree
-   * you are looking for is found set |this.found| to true. This will abort the
-   * search of the remaining sub trees.
-   *
    * @param {ParseTree} tree
    * @param {boolean} keepOnGoing Whether to stop searching after the first
    *     found condition.
-   * @extends {ParseTreeVisitor}
-   * @constructor
    */
-  function FindVisitor(tree, keepOnGoing) {
+  constructor(tree, keepOnGoing) {
     this.found_ = false;
     this.keepOnGoing_ = keepOnGoing;
     try {
@@ -41,31 +42,20 @@ traceur.define('codegeneration', function() {
     }
   }
 
-  // Object used as a sentinel. This is thrown to abort visiting the rest of the
-  // tree.
-  var foundSentinel = {};
+  /**
+   * Whether the searched for tree was found. Setting this to true aborts the
+   * search.
+   * @type {boolean}
+   */
+  get found() {
+    return this.found_;
+  }
 
-  FindVisitor.prototype = traceur.createObject(
-      ParseTreeVisitor.prototype, {
-
-    /**
-     * Whether the searched for tree was found. Setting this to true aborts the
-     * search.
-     * @type {boolean}
-     */
-    get found() {
-      return this.found_;
-    },
-    set found(v) {
-      if (v) {
-        this.found_ = true;
-        if (!this.keepOnGoing_)
-          throw foundSentinel;
-      }
+  set found(v) {
+    if (v) {
+      this.found_ = true;
+      if (!this.keepOnGoing_)
+        throw foundSentinel;
     }
-  });
-
-  return {
-    FindVisitor: FindVisitor
-  };
-});
+  }
+}

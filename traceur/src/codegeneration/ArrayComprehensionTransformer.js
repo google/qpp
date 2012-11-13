@@ -12,104 +12,80 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import ComprehensionTransformer from 'ComprehensionTransformer.js';
+import TokenType from '../syntax/TokenType.js';
+import {
+  createArrayLiteralExpression,
+  createAssignmentStatement,
+  createIdentifierExpression,
+  createMemberLookupExpression,
+  createNumberLiteral,
+  createPostfixExpression,
+  createReturnStatement,
+  createVariableDeclaration,
+  createVariableDeclarationList,
+  createVariableStatement
+} from 'ParseTreeFactory.js';
 
-  var ComprehensionTransformer = traceur.codegeneration.ComprehensionTransformer;
-  var ParseTree = traceur.syntax.trees.ParseTree;
-  var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
-  var TokenType = traceur.syntax.TokenType;
+/**
+ * Array Comprehension Transformer:
+ *
+ * The desugaring is defined at
+ * http://wiki.ecmascript.org/doku.php?id=harmony:array_comprehensions
+ * as something like this:
+ *
+ * [ Expression0 for ( LHSExpression1 of Expression1 )
+ *               ...
+ *               for ( LHSExpressionn ) if ( Expression )opt ]
+ *
+ * =>
+ *
+ * (function () {
+ *     var $result = [], $i = 0;
+ *     for (let LHSExpression1 of Expression1 ) {
+ *         ...
+ *         for (let LHSExpressionn of Expressionn ) {
+ *             if ( Expression )opt
+ *                 $result[$i++] = Expression0;
+ *             }
+ *         }
+ *     }
+ *     return $result;
+ * })()
+ *
+ * with alpha renaming of this and arguments of course.
+ */
+export class ArrayComprehensionTransformer extends ComprehensionTransformer {
 
-  var createArrayLiteralExpression = ParseTreeFactory.createArrayLiteralExpression;
-  var createAssignmentStatement = ParseTreeFactory.createAssignmentStatement;
-  var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
-  var createMemberLookupExpression = ParseTreeFactory.createMemberLookupExpression;
-  var createNumberLiteral = ParseTreeFactory.createNumberLiteral;
-  var createPostfixExpression = ParseTreeFactory.createPostfixExpression;
-  var createReturnStatement = ParseTreeFactory.createReturnStatement;
-  var createVariableDeclaration = ParseTreeFactory.createVariableDeclaration;
-  var createVariableDeclarationList = ParseTreeFactory.createVariableDeclarationList;
-  var createVariableStatement = ParseTreeFactory.createVariableStatement;
+  transformArrayComprehension(tree) {
+    var expression = this.transformAny(tree.expression);
 
-  /**
-   * Array Comprehension Transformer:
-   *
-   * The desugaring is defined at
-   * http://wiki.ecmascript.org/doku.php?id=harmony:array_comprehensions
-   * as something like this:
-   *
-   * [ Expression0 for ( LHSExpression1 of Expression1 )
-   *               ...
-   *               for ( LHSExpressionn ) if ( Expression )opt ]
-   *
-   * =>
-   *
-   * (function () {
-   *     var $result = [], $i = 0;
-   *     for (let LHSExpression1 of Expression1 ) {
-   *         ...
-   *         for (let LHSExpressionn of Expressionn ) {
-   *             if ( Expression )opt
-   *                 $result[$i++] = Expression0;
-   *             }
-   *         }
-   *     }
-   *     return $result;
-   * })()
-   *
-   * with alpha renaming of this and arguments of course.
-   *
-   * @param {UniqueIdentifierGenerator} identifierGenerator
-   * @constructor
-   * @extends {ComprehensionTransformer}
-   */
-  function ArrayComprehensionTransformer(identifierGenerator) {
-    ComprehensionTransformer.call(this, identifierGenerator);
+    var indexName = this.addTempVar(createNumberLiteral(0));
+    var resultName = this.addTempVar(createArrayLiteralExpression([]));
+    var resultIdentifier = createIdentifierExpression(resultName);
+
+    var statement = createAssignmentStatement(
+        createMemberLookupExpression(
+            resultIdentifier,
+            createPostfixExpression(createIdentifierExpression(indexName),
+                                    TokenType.PLUS_PLUS)),
+        expression);
+
+    var returnStatement = createReturnStatement(resultIdentifier);
+    var isGenerator = false;
+
+    return this.transformComprehension(tree, statement, isGenerator,
+                                       returnStatement);
   }
+}
 
-  /**
-   * @param {UniqueIdentifierGenerator} identifierGenerator
-   * @param {ParseTree} tree
-   * @return {ParseTree}
-   */
-  ArrayComprehensionTransformer.transformTree =
-      function(identifierGenerator, tree) {
-    return new ArrayComprehensionTransformer(identifierGenerator).
-        transformAny(tree);
-  };
-
-  ArrayComprehensionTransformer.prototype = traceur.createObject(
-      ComprehensionTransformer.prototype, {
-    transformArrayComprehension: function(tree) {
-      var expression = this.transformAny(tree.expression);
-
-      var indexName = this.identifierGenerator.generateUniqueIdentifier();
-      var resultName = this.identifierGenerator.generateUniqueIdentifier();
-      var resultIdentifier = createIdentifierExpression(resultName);
-
-      var initStatement = createVariableStatement(
-          createVariableDeclarationList(TokenType.VAR, [
-            createVariableDeclaration(indexName, createNumberLiteral(0)),
-            createVariableDeclaration(resultName,
-                                      createArrayLiteralExpression([]))
-          ]));
-
-      var statement = createAssignmentStatement(
-          createMemberLookupExpression(
-              resultIdentifier,
-              createPostfixExpression(createIdentifierExpression(indexName),
-                                      TokenType.PLUS_PLUS)),
-          expression);
-
-      var returnStatement = createReturnStatement(resultIdentifier);
-      var isGenerator = false;
-
-      return this.transformComprehension(tree, statement, isGenerator,
-                                         initStatement, returnStatement);
-    }
-  });
-
-  return {
-    ArrayComprehensionTransformer: ArrayComprehensionTransformer
-  };
-});
+/**
+ * @param {UniqueIdentifierGenerator} identifierGenerator
+ * @param {ParseTree} tree
+ * @return {ParseTree}
+ */
+ArrayComprehensionTransformer.transformTree =
+    function(identifierGenerator, tree) {
+  return new ArrayComprehensionTransformer(identifierGenerator).
+      transformAny(tree);
+};

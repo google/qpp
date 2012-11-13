@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,37 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
-
-  function UniqueIdentifierGenerator() {
+export class UniqueIdentifierGenerator {
+  constructor() {
     this.identifierIndex = 0;
-    this.nameMap_ = Object.create(null);
   }
 
-  UniqueIdentifierGenerator.prototype = {
-    /**
-     * @return {string}
-     */
-    generateUniqueIdentifier: function() {
-      return '$__' + this.identifierIndex++;
-    },
+  /**
+   * @return {string}
+   */
+  generateUniqueIdentifier() {
+    return `$__${this.identifierIndex++}`;
+  }
 
-    /**
-     * Gets a unique identifier that is reused based on the name passed in.
-     * @param {string} name
-     * @return {string}
-     */
-    getUniqueIdentifier: function(name) {
-      var newName = this.nameMap_[name];
-      if (!newName)
-        return this.nameMap_[name] = this.generateUniqueIdentifier();
-      return newName;
-    }
-  };
-
-  // Export
-  return {
-    UniqueIdentifierGenerator: UniqueIdentifierGenerator
-  };
-});
+  /**
+   * Gets a unique identifier that is reused based on the name passed in.
+   * @param {string} name
+   * @return {string}
+   */
+  getUniqueIdentifier(name) {
+    if (name[0] === '@')
+      return `$___${name.slice(1)}`;
+    return `$__${name}`;
+  }
+}

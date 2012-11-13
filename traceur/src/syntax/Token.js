@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,67 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('syntax', function() {
-  'use strict';
+import TokenType from 'TokenType.js';
 
-  var TokenType = traceur.syntax.TokenType;
-  var assert = traceur.assert;
-
+/**
+ * A Token in a javascript file.
+ * Immutable.
+ * A plain old data structure. Should contain data members and simple
+ * accessors only.
+ */
+export class Token {
   /**
-   * A Token in a javascript file.
-   * Immutable.
-   * A plain old data structure. Should contain data members and simple
-   * accessors only.
-   * @param {traceur.syntax.TokenType} type
-   * @param {traceur.util.SourceRange} location
-   * @constructor
+   * @param {TokenType} type
+   * @param {SourceRange} location
    */
-  function Token(type, location) {
+  constructor(type, location) {
     this.type = type;
     this.location = location;
   }
 
-  Token.prototype = {
-    toString: function() {
-      return this.type.toString();
-    },
+  toString() {
+    return this.type.toString();
+  }
 
-    /** @return {traceur.syntax.IdentifierToken} */
-    asIdentifier: function() {
-      assert(this instanceof traceur.syntax.IdentifierToken);
-      return this;
-    },
-
-    /** @return {traceur.syntax.LiteralToken} */
-    asLiteral: function() {
-      assert(this instanceof traceur.syntax.LiteralToken);
-      return this;
-    },
-
-    /** @return {boolean} */
-    isAssignmentOperator: function() {
-      switch (this.type) {
-        case TokenType.EQUAL:
-        case TokenType.STAR_EQUAL:
-        case TokenType.SLASH_EQUAL:
-        case TokenType.PERCENT_EQUAL:
-        case TokenType.PLUS_EQUAL:
-        case TokenType.MINUS_EQUAL:
-        case TokenType.LEFT_SHIFT_EQUAL:
-        case TokenType.RIGHT_SHIFT_EQUAL:
-        case TokenType.UNSIGNED_RIGHT_SHIFT_EQUAL:
-        case TokenType.AMPERSAND_EQUAL:
-        case TokenType.CARET_EQUAL:
-        case TokenType.BAR_EQUAL:
-          return true;
-        default:
-          return false;
-      }
+  /** @return {boolean} */
+  isAssignmentOperator() {
+    switch (this.type) {
+      case TokenType.EQUAL:
+      case TokenType.STAR_EQUAL:
+      case TokenType.SLASH_EQUAL:
+      case TokenType.PERCENT_EQUAL:
+      case TokenType.PLUS_EQUAL:
+      case TokenType.MINUS_EQUAL:
+      case TokenType.LEFT_SHIFT_EQUAL:
+      case TokenType.RIGHT_SHIFT_EQUAL:
+      case TokenType.UNSIGNED_RIGHT_SHIFT_EQUAL:
+      case TokenType.AMPERSAND_EQUAL:
+      case TokenType.CARET_EQUAL:
+      case TokenType.BAR_EQUAL:
+        return true;
+      default:
+        return false;
     }
-  };
-
-  // Export
-  return {
-    Token: Token
-  };
-});
+  }
+}

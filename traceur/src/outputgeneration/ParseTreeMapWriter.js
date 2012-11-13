@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,56 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('outputgeneration', function() {
-  'use strict';
+import ParseTreeWriter from 'ParseTreeWriter.js';
 
-  var ParseTreeWriter = traceur.outputgeneration.ParseTreeWriter;
-
-    /**
-   * Converts a ParseTree to text and a source Map
+/**
+ * Converts a ParseTree to text and a source Map
+ */
+export class ParseTreeMapWriter extends ParseTreeWriter {
+  /**
    * @param {ParseTree} highlighted
    * @param {boolean} showLineNumbers
-   * @param { {SourceMapGenerator} sourceMapGenerator
-   * @constructor
+   * @param {SourceMapGenerator} sourceMapGenerator
    */
-  function ParseTreeMapWriter(highlighted, showLineNumbers,
-                              sourceMapGenerator) {
-    ParseTreeWriter.call(this, highlighted, showLineNumbers);
+  constructor(highlighted, showLineNumbers, sourceMapGenerator) {
+    super(highlighted, showLineNumbers);
     this.sourceMapGenerator_ = sourceMapGenerator;
-    this.outputLineCount = 0;
+    this.outputLineCount_ = 1;
   }
 
-  ParseTreeMapWriter.prototype = traceur.createObject(
-      ParseTreeWriter.prototype, {
-
-    write_: function(value) {
-      if (this.currentLocation) {
-        this.addMapping();
-      }
-      ParseTreeWriter.prototype.write_.apply(this,[value]);
-    },
-
-    addMapping: function() {
-      var mapping = {
-        generated: {
-          // http://code.google.com/p/traceur-compiler/issues/detail?id=105
-          // +1 because PROGRAM puts a newline before the first stmt
-          line: this.outputLineCount + 1,
-          column: this.currentLine_.length
-        },
-        original: {
-          // +1 because line is zero based
-          line: this.currentLocation.start.line + 1,
-          column: this.currentLocation.start.column
-         },
-         source: this.currentLocation.start.source.name
-      };
-      this.sourceMapGenerator_.addMapping(mapping);
+  write_(value) {
+    if (this.currentLocation) {
+      this.addMapping();
     }
-  });
+    super.write_(value);
+  }
 
-  return {
-    ParseTreeMapWriter: ParseTreeMapWriter
-  };
+  writeCurrentln_() {
+    super.writeCurrentln_();
+    this.outputLineCount_++;
+  }
 
-});
+  addMapping() {
+    var mapping = {
+      generated: {
+        line: this.outputLineCount_,
+        column: this.currentLine_.length
+      },
+      original: {
+        // +1 because line is zero based
+        line: this.currentLocation.start.line + 1,
+        column: this.currentLocation.start.column
+       },
+       source: this.currentLocation.start.source.name
+    };
+    this.sourceMapGenerator_.addMapping(mapping);
+  }
+}

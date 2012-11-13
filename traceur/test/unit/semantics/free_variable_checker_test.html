@@ -25,7 +25,7 @@
 goog.require('goog.testing.jsunit');
 
 </script>
-<script src="../../../src/traceur.js"></script>
+<script src="../../../bin/traceur.js"></script>
 </head>
 <body>
 
@@ -110,7 +110,7 @@ function evalScript(scriptElement) {
                                                          sourceFile,
                                                          url);
   var code = traceur.outputgeneration.TreeWriter.write(tree);
-  traceur.strictGlobalEval(code);
+  ('global', eval)(code);
   assertFalse(errors.hadError());
 }
 

@@ -1,4 +1,10 @@
-bin
 out
 .svn
 *.swp
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+node_modules
+build/dep.mk
+build/local.mk
+bin/traceur.min.js

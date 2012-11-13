@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,125 +12,113 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('syntax', function() {
-  'use strict';
+import TokenType from 'TokenType.js';
 
-  var TokenType = traceur.syntax.TokenType;
+/**
+ * The javascript keywords.
+ */
+var keywords = [
+  // 7.6.1.1 Keywords
+  'break',
+  'case',
+  'catch',
+  'continue',
+  'debugger',
+  'default',
+  'delete',
+  'do',
+  'else',
+  'finally',
+  'for',
+  'function',
+  'if',
+  'in',
+  'instanceof',
+  'new',
+  'return',
+  'switch',
+  'this',
+  'throw',
+  'try',
+  'typeof',
+  'var',
+  'void',
+  'while',
+  'with',
 
-  /**
-   * The javascript keywords.
-   */
-  var keywords = [
-    // 7.6.1.1 Keywords
-    'break',
-    'case',
-    'catch',
-    'continue',
-    'debugger',
-    'default',
-    'delete',
-    'do',
-    'else',
-    'finally',
-    'for',
-    'function',
-    'if',
-    'in',
-    'instanceof',
-    'new',
-    'return',
-    'switch',
-    'this',
-    'throw',
-    'try',
-    'typeof',
-    'var',
-    'void',
-    'while',
-    'with',
+  // 7.6.1.2 Future Reserved Words
+  'class',
+  'const',
+  'enum',
+  'export',
+  'extends',
+  'import',
+  'super',
 
-    // 7.6.1.2 Future Reserved Words
-    'class',
-    'const',
-    'enum',
-    'export',
-    'extends',
-    'import',
-    'super',
+  // Future Reserved Words in a strict context
+  'implements',
+  'interface',
+  'let',
+  'package',
+  'private',
+  'protected',
+  'public',
+  'static',
+  'yield',
 
-    // Future Reserved Words in a strict context
-    'implements',
-    'interface',
-    'let',
-    'package',
-    'private',
-    'protected',
-    'public',
-    'static',
-    'yield',
+  // 7.8 Literals
+  'null',
+  'true',
+  'false',
 
-    // 7.8 Literals
-    'null',
-    'true',
-    'false',
+  // Traceur Specific
+  'await'
+];
 
-    // Traceur Specific
-    'await'
-  ];
+export var Keywords = {};
 
-  var Keywords = { };
+var keywordsByName = Object.create(null);
+var keywordsByType = Object.create(null);
 
-  var keywordsByName = Object.create(null);
-  var keywordsByType = Object.create(null);
-
-  function Keyword(value, type) {
+class Keyword {
+  constructor(value, type) {
     this.value = value;
     this.type = type;
   }
-  Keyword.prototype = {
-    toString: function() {
-      return this.value;
-    }
-  };
 
-  keywords.forEach(function(value) {
-    var uc = value.toUpperCase();
-    if (uc.indexOf('__') === 0) {
-      uc = uc.substring(2);
-    }
+  toString() {
+    return this.value;
+  }
+}
 
-    var kw = new Keyword(value, TokenType[uc]);
+keywords.forEach((value) => {
+  var uc = value.toUpperCase();
+  if (uc.indexOf('__') === 0) {
+    uc = uc.substring(2);
+  }
 
-    Keywords[uc] = kw;
-    keywordsByName[kw.value] = kw;
-    keywordsByType[kw.type] = kw;
-  });
+  var kw = new Keyword(value, TokenType[uc]);
 
-  Keywords.isKeyword = function(value) {
-    return value !== '__proto__' && value in keywordsByName;
-  };
-
-  /**
-   * @return {TokenType}
-   */
-  Keywords.getTokenType = function(value) {
-    if (value == '__proto__')
-      return null;
-    return keywordsByName[value].type;
-  };
-
-  Keywords.get = function(value) {
-    if (value == '__proto__')
-      return null;
-    return keywordsByName[value];
-  };
-
-  //Keywords.get = function(TokenType token) {
-  //  return keywordsByType.get(token);
-  //}
-
-  // Export
-  return {
-    Keywords: Keywords
-  };
+  Keywords[uc] = kw;
+  keywordsByName[kw.value] = kw;
+  keywordsByType[kw.type] = kw;
 });
+
+Keywords.isKeyword = function(value) {
+  return value !== '__proto__' && value in keywordsByName;
+};
+
+/**
+ * @return {TokenType}
+ */
+Keywords.getTokenType = function(value) {
+  if (value == '__proto__')
+    return null;
+  return keywordsByName[value].type;
+};
+
+Keywords.get = function(value) {
+  if (value == '__proto__')
+    return null;
+  return keywordsByName[value];
+};

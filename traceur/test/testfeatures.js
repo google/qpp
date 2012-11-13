@@ -1,21 +1,22 @@
+// Copyright 2012 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+'use strict';
+
 var fs = require('fs');
 var path = require('path');
-
-/**
- * Reads a script and eval's it into the global scope.
- * TODO: this is needed for now because of how our scripts are designed.
- * Change this once we have a module system.
- * @param {string} filename
- */
-function importScript(filename) {
-  // TODO(rnystrom): Hack. Assumes this is being run from a sibling of src/.
-  filename = path.join(__dirname, '../src/', filename);
-  var script = fs.readFileSync(filename, 'utf8');
-  if (!script) {
-    throw new Error('Failed to import ' + filename);
-  }
-  ('global', eval)('"use strict";' + script);
-}
+var testUtil = require('./test-utils.js');
 
 /**
  * Show a failure message for the given script.
@@ -71,38 +72,6 @@ var asserts = {
       return;
     }
     fail('Function should have thrown and did not.');
-  },
-
-  assertNoOwnProperties: function(o) {
-    var m = Object.getOwnPropertyNames(o);
-    if (m.length) {
-      fail('Unexpected members found:' + m.join(', '));
-    }
-  },
-
-  assertHasOwnProperty: function(o) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    for (var i = 0; i < args.length; i ++) {
-      var m = args[i];
-      if (!o.hasOwnProperty(m)) {
-        fail('Expected member ' + m + ' not found.');
-      }
-    }
-  },
-
-  assertLacksOwnProperty: function(o) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    for (var i = 0; i < args.length; i ++) {
-      var m = args[i];
-      if (o.hasOwnProperty(m)) {
-        fail('Unxpected member ' + m + ' found.');
-      }
-    }
-  },
-
-  assertArrayEquals: function(expected, actual) {
-    assertEquals(JSON.stringify(expected, null, 2),
-                 JSON.stringify(actual, null, 2));
   }
 };
 
@@ -116,27 +85,13 @@ function testScript(filePath) {
     return false;
   }
 
-  var onlyInBrowser = false;
-  var skip = false;
-  var shouldCompile = true;
-  var expectedErrors = [];
-  forEachPrologLine(source, function(line) {
-    var m;
-    if (line.indexOf('// Only in browser.') === 0) {
-      onlyInBrowser = true;
-    } else if (line.indexOf('// Should not compile.') === 0) {
-      shouldCompile = false;
-    } else if (line.indexOf('// Skip.') === 0) {
-      skip = true;
-    } else if ((m = /\/\ Options:\s*(.+)/.exec(line))) {
-      traceur.options.fromString(m[1]);
-    } else if ((m = /\/\/ Error:\s*(.+)/.exec(line))) {
-      expectedErrors.push(m[1]);
-    }
-  });
+  var options = testUtil.parseProlog(source);
+  var onlyInBrowser = options.onlyInBrowser;
+  var skip = options.skip;
+  var shouldCompile = options.shouldCompile;
+  var expectedErrors = options.expectedErrors;
 
   if (skip || onlyInBrowser) {
-
     return true;
   }
 
@@ -179,7 +134,7 @@ function testScript(filePath) {
     var javascript = TreeWriter.write(tree, false);
 
     try {
-      traceur.strictGlobalEval(javascript);
+      ('global', eval)(javascript);
       return true;
     } catch (e) {
       if (e instanceof UnitTestError) {
@@ -292,17 +247,19 @@ function runFeatureScripts(dir) {
   }
 }
 
-// Allow traceur.js to use importScript.
-global.traceurImportScript = importScript;
-
 // Add assert methods to global so that our FreeVariableChecker does not think
 // they are undefined.
 for (var key in asserts) {
   global[key] = asserts[key];
 }
+global.assertNoOwnProperties = testUtil.assertNoOwnProperties;
+global.assertHasOwnProperty = testUtil.assertHasOwnProperty;
+global.assertLacksOwnProperty = testUtil.assertLacksOwnProperty;
+global.assertArrayEquals = testUtil.assertArrayEquals;
+
 
 // Load the compiler.
-importScript('traceur.js');
+require('../src/traceur-node.js');
 
 // Run all of the feature scripts.
 var tests  = 0;

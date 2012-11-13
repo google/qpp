@@ -1,4 +1,4 @@
-// Copyright 2011 Google Inc.
+// Copyright 2012 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,105 +12,161 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-traceur.define('codegeneration', function() {
-  'use strict';
+import ParseTreeTransformer from 'ParseTreeTransformer.js';
+import {
+  ModuleDefinition,
+  Program
+} from '../syntax/trees/ParseTrees.js';
+import TokenType from '../syntax/TokenType.js';
+import {
+  createBlock,
+  createVariableDeclaration,
+  createVariableDeclarationList,
+  createVariableStatement
+} from 'ParseTreeFactory.js';
+import prependStatements from 'PrependStatements.js';
 
-  var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
-  var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
-  var Program = traceur.syntax.trees.Program;
+function getVars(self) {
+    var vars = self.tempVarStack_[self.tempVarStack_.length - 1];
+    if (!vars)
+      throw new Error('Invalid use of addTempVar');
+    return vars;
+}
 
-  var ParseTree = traceur.syntax.trees.ParseTree;
-  var TokenType = traceur.syntax.TokenType;
+class TempVarStatement {
+  constructor(name, initializer) {
+    this.name = name;
+    this.initializer = initializer;
+  }
+}
 
-  var createBlock = ParseTreeFactory.createBlock;
-  var createVariableStatement = ParseTreeFactory.createVariableStatement;
-  var createVariableDeclaration = ParseTreeFactory.createVariableDeclaration;
-  var createVariableDeclarationList = ParseTreeFactory.createVariableDeclarationList;
+/**
+ * A generic transformer that allows you to easily create a expression with
+ * temporary variables.
+ */
+export class TempVarTransformer extends ParseTreeTransformer {
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   */
+  constructor(identifierGenerator) {
+    super();
+    this.identifierGenerator = identifierGenerator;
+    // Stack used for variable declarations.
+    this.tempVarStack_ = [[]];
+    // Stack used for the temporary names currently being used.
+    this.tempIdentifierStack_ = [[]];
+    // Names that can be reused.
+    this.pool_ = [];
+  }
 
   /**
    * Transforms a an array of statements and adds a new temp var stack.
+   * @param {Array.<ParseTree>} statements
+   * @return {Array.<ParseTree>}
+   * @private
    */
-  function transformStatements(self, statements) {
-    self.tempVarStack_.push([]);
+  transformStatements_(statements) {
+    this.tempVarStack_.push([]);
 
-    var transformedStatements = self.transformList(statements);
+    var transformedStatements = this.transformList(statements);
 
-    var vars = self.tempVarStack_.pop();
+    var vars = this.tempVarStack_.pop();
     if (!vars.length)
       return transformedStatements;
 
+    // Remove duplicates.
+    var seenNames = Object.create(null);
+    vars = vars.filter((tempVarStatement) => {
+      var {name, initializer} = tempVarStatement;
+      if (name in seenNames) {
+        if (seenNames[name].initializer || initializer)
+          throw new Error('Invalid use of TempVarTransformer');
+        return false;
+      }
+      seenNames[name] = tempVarStatement;
+      return true;
+    });
+
     var variableStatement = createVariableStatement(
-        createVariableDeclarationList(TokenType.VAR, vars));
-    transformedStatements = [variableStatement].concat(transformedStatements);
-    return transformedStatements;
+        createVariableDeclarationList(
+            TokenType.VAR,
+            vars.map(({name, initializer}) => {
+              return createVariableDeclaration(name, initializer);
+            })));
+
+    return prependStatements(transformedStatements, variableStatement);
   }
 
-  function getVars(self) {
-      var vars = self.tempVarStack_[self.tempVarStack_.length - 1];
-      if (!vars)
-        throw new Error('Invalid use of addTempVar');
-      return vars;
+  transformProgram(tree) {
+    var programElements = this.transformStatements_(tree.programElements);
+    if (programElements == tree.programElements) {
+      return tree;
+    }
+    return new Program(tree.location, programElements);
+  }
+
+  transformFunctionBody(tree) {
+    this.pushTempVarState();
+    var statements = this.transformStatements_(tree.statements);
+    this.popTempVarState();
+    if (statements == tree.statements)
+      return tree;
+    return createBlock(statements);
+  }
+
+  transformModuleDefinition(tree) {
+    this.pushTempVarState();
+    var elements = this.transformStatements_(tree.elements);
+    this.popTempVarState();
+    if (elements == tree.elements)
+      return tree;
+    return new ModuleDefinition(tree.location, tree.name, elements);
   }
 
   /**
-   * A generic transformer that allows you to easily create a expression with
-   * temporary variables.
-   *
-   * @param {UniqueIdentifierGenerator} identifierGenerator
-   * @constructor
-   * @extends {ParseTreeTransformer}
+   * @return {string} An identifier string that can may be reused after the
+   *     current scope has been exited.
    */
-  function TempVarTransformer(identifierGenerator) {
-    this.identifierGenerator = identifierGenerator
-    this.tempVarStack_ = [];
+  getTempIdentifier() {
+    var name = this.pool_.length ?
+      this.pool_.pop() :
+      this.identifierGenerator.generateUniqueIdentifier();
+    this.tempIdentifierStack_[this.tempIdentifierStack_.length - 1].push(name);
+    return name;
   }
 
-  var proto = ParseTreeTransformer.prototype;
-  TempVarTransformer.prototype = traceur.createObject(proto, {
+  /**
+   * Adds a new temporary variable to the current function scope.
+   * @param {ParseTree=} opt_initializer If present then the variable will
+   *     have this as the initializer expression.
+   * @return {string} The name of the temporary variable.
+   */
+  addTempVar(opt_initializer) {
+    var vars = getVars(this);
+    var uid = this.getTempIdentifier();
+    vars.push(new TempVarStatement(uid, opt_initializer || null));
+    return uid;
+  }
 
-    transformProgram: function(tree) {
-      var elements = transformStatements(this, tree.programElements);
-      if (elements == tree.programElements) {
-        return tree;
-      }
-      return new Program(null, elements);
-    },
+  /**
+   * Pushes a new temporary variable state. This is useful if you know that
+   * your temporary variable can be reused sooner thatn after the current
+   * lexical scope has been exited.
+   */
+  pushTempVarState() {
+    this.tempIdentifierStack_.push([]);
+  }
 
-    transformFunctionBody: function(tree) {
-      var statements = transformStatements(this, tree.statements);
-      if (statements == tree.statements)
-        return tree;
-      return createBlock(statements);
-    },
+  popTempVarState() {
+    this.tempIdentifierStack_.pop().forEach(this.release_, this);
+  }
 
-    /**
-     * Adds a new temporary variable to the current function scope.
-     * @param {ParseTree=} opt_initializer If present then the variable will
-     *     have this as the initializer expression.
-     * @return {string} The name of the temporary variable.
-     */
-    addTempVar: function(opt_initializer) {
-      var vars = getVars(this);
-      var uid = this.identifierGenerator.generateUniqueIdentifier();
-      vars.push(createVariableDeclaration(uid, opt_initializer || null));
-      return uid;
-    },
-
-    removeTempVar: function(name) {
-      var vars = getVars(this);
-      var index = -1;
-      for (var i = 0; i < vars.length; i++) {
-        if (vars[i].lvalue.identifierToken.value === name) {
-          index = i;
-          break;
-        }
-      }
-      if (index !== -1)
-        vars.splice(index, 1);
-    },
-  });
-
-  return {
-    TempVarTransformer: TempVarTransformer
-  };
-});
+  /**
+   * Put back the |name| into the pool of reusable temporary varible names.
+   * @param {string} name
+   * @private
+   */
+  release_(name) {
+    this.pool_.push(name);
+  }
+}
