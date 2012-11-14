@@ -7,7 +7,7 @@
   /** 
    * A function that runs in the debuggee web page before any other JavaScript
    */
-  Querypoint.runtime = function() {
+     function define__qp() {
 
     var early = true;
 
@@ -32,7 +32,7 @@
       return expr + '';
     }
 
-    function initiailizeHiddenGlobalState() {
+    function initializeHiddenGlobalState() {
       window.__qp = {
         intercepts: {}, // keys are intercepted function names, values functions
         earlyEventHandlers: {}, // keys are event types, values are arrays of handlers
@@ -41,6 +41,7 @@
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
         fireLoad: fireLoad,
         trace: trace,
+        extractTracepoint:  extractTracepoint, // searches for tracepoints matching a query
       };      
     }
 
@@ -54,7 +55,7 @@
       return function() {
         var args = Array.prototype.slice.apply(arguments);
         window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
-        window.__qp.turn = window.__qp.turns.length;
+        window.__qp.turn = window.__qp.turns.length; 
         console.log("Turn " + window.__qp.turn + " starts "); 
         entryPointFunction.apply(window, args);  // TODO check |this| maybe use null
         console.log("Turn " + window.__qp.turn + " ends "); 
@@ -72,7 +73,7 @@
           } else {
             handlers[type].push(listener);
           }  
-        }        
+        }         
       }
 
       window.__qp.intercepts.Node = {prototype: {addEventListener: window.Node.prototype.addEventListener}};
@@ -81,13 +82,65 @@
       }
     }
 
-    initiailizeHiddenGlobalState();
+    function findMatchingActivation(activation, traceValue) {
+      var match;
+      // Is it better to store the file/offset for each tracepoint or do this search?
+      Object.keys(window.__qp.functions).some(function(file) {
+        var functions = window.__qp.functions[file];
+        return Object.keys(functions).some(function(offset) {
+          var activations = functions[offset];
+          var index = activations.indexOf(activation);
+          if (index !== -1) {
+            match = {functionOffset: offset, file: file, activation: activation, traceValue: traceValue};
+            return true;
+          }
+        });
+      });
+      return match;
+    }
+
+    function extractTracepoint(queryName, identifier) {
+      // eg window.__qp['propertyChange']['prop']
+      var tps = window.__qp[queryName][identifier];
+      console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
+      return tps.map(function(tp) {
+
+        var activation = tp.activations[tp.activationIndex - 1];
+        console.log("tp", tp);
+        console.log('activation', activation);
+        return findMatchingActivation(activation, tp.traceValue);
+      })[0];  // TODO we should only have one result I think
+    }
+     
+    initializeHiddenGlobalState();
     grabLoadEvent();
     interceptEntryPoints();
     wrapEntryPoint(function andWeBegin() {
       console.log("----------------------- Querypoint Runtime Initialized ---------------------------------");
       console.log("window.__qp: %o", window.__qp);    
     }());
-  };
+  }; 
 
-}())
+  Querypoint.QPRuntime = {
+    initialize: function() {
+      this.runtime =  [define__qp];
+      this.source = [];
+      return this;
+    },
+    runtimeSource: function() {
+      var fncs = this.runtime.map(function(fnc) {
+        return '(' + fnc + ')();\n';
+      });
+        
+      return fncs + '\n' + this.source.join('\n');
+    },
+    appendFunction: function(fnc) {
+      this.runtime.push(fnc);
+    },
+    appendSource: function(scr) {
+      this.source.push(scr);
+    }
+  };
+  Querypoint.QPRuntime.initialize();
+   
+}());

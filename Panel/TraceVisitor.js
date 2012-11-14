@@ -92,18 +92,62 @@
   }
   
   QuerypointPanel.TreeHangerTraceVisitor.prototype = Object.create(QuerypointPanel.TraceVisitor.prototype);
+  
+  QuerypointPanel.TreeHangerTraceVisitor.prototype.isDuplicate = function(trace, traces) {
+    var exists = traces.some(function(existingTrace) {
+        if (
+          trace.file && (trace.file !== existingTrace.file) ||
+          trace.functionOffset && (trace.functionOffset !== existingTrace.functionOffset)
+        ) return false;
+        
+        var same = 
+          trace.load === existingTrace.load && 
+          trace.turn === existingTrace.turn &&
+          trace.activation === existingTrace.activation &&
+          trace.value === trace.value;
+        return same;        
+    });
+    return exists;
+  }
+  
+  QuerypointPanel.TreeHangerTraceVisitor.prototype.appendUnique = function(trace, traces) {
+    var exists = this.isDuplicate(trace, traces);
+      
+    if (!exists) {
+      traces.push(trace);
+      this.isModified = true;
+    }
+  }
+      
   QuerypointPanel.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, activationCount, trace) {
     if (expressionTree.location) {
-      var traces = expressionTree.location.trace = expressionTree.location.trace || [];
+
       var trace = {
         load: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
         value: trace
       };
-      if (traces.indexOf(trace) === -1) {
-        expressionTree.location.trace.push(trace);
-        this.isModified = true;
+
+      var traces = expressionTree.location.traces = expressionTree.location.traces || [];
+      
+      this.appendUnique(trace,traces);
+      
+      if (expressionTree.location.query) {
+        var startTime = (new Date()).getTime();
+        expressionTree.location.query.extractTracepoints(function(result) {
+          trace = {
+            load: this._project.numberOfReloads,
+            turn: result.activation.turn,
+            activation: activationCount,
+            value: result.traceValue,
+            file: result.file,
+            functionOffset: result.functionOffset
+          };
+          this.appendUnique(trace,traces);
+          var endTime = (new Date()).getTime();
+          console.log((endTime - startTime) + "ms to query.extractTracepoints"); 
+        }.bind(this));
       } 
     } else {
       console.error("Trace with no location", expressionTree);

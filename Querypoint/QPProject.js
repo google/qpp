@@ -11,6 +11,7 @@ function QPProject(url) {
   this.compiler_ = new QPCompiler(this.reporter, {}); // TODO traceur options
       
   this.querypoints = Querypoint.Querypoints.initialize();
+  this.runtime = Querypoint.QPRuntime.initialize();
 
 }
 
@@ -21,15 +22,17 @@ function generateFileName(location) {
 };
 
 QPProject.prototype.generateSourceFromTrees = function(trees) {
-    var identifierGenerator = new traceur.codegeneration.UniqueIdentifierGenerator();
 
+  
+  Querypoint.QPRuntime.initialize();
+  
   return trees.keys().map(function(file) {
     var tree = trees.get(file);  
 
     Querypoint.ScopeAttacher.attachScopes(this.reporter_, tree, Querypoint.globalSymbols);
 
     // TODO Only trees subject to tracing need linearize 
-    var transformer = new Querypoint.LinearizeTransformer(identifierGenerator, generateFileName);
+    var transformer = new Querypoint.LinearizeTransformer(generateFileName);
     tree = transformer.transformAny(tree);
     
     // TODO only trees that the developer *might* debug needs dynamic hooks
@@ -37,7 +40,7 @@ QPProject.prototype.generateSourceFromTrees = function(trees) {
     tree = preambleTransformer.transformAny(tree);
 
     this.querypoints.tracequeries().forEach(function(tq) {
-      tq.transformParseTree(tree);
+      tree = tq.transformParseTree(tree);
     });
 
     file.generatedFileName = file.name + ".js";
@@ -82,13 +85,18 @@ QPProject.reload = function() {
 
   var reloadOptions = {
     ignoreCache: true, 
-    injectedScript:  '(' + Querypoint.runtime + '());', 
+    injectedScript:  Querypoint.QPRuntime.runtimeSource(), 
     preprocessingScript: '(' + transcode + ')'
   };
   chrome.devtools.inspectedWindow.reload(reloadOptions);
 }
 
 QPProject.prototype.reload = function() {
+  
+  this.querypoints.tracequeries().forEach(function(tq) {
+    Querypoint.QPRuntime.appendSource(tq.runtimeSource());
+  });
+    
   QPProject.reload();
   return ++this.numberOfReloads;
 }

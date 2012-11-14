@@ -34,6 +34,7 @@
   QuerypointPanel.QueryViewModel.prototype = {
 
     issueQuery: function(query, event) {
+      query.activate();
       query.project.querypoints.appendQuery(query);
       var executer = query.project.executer;
       if (executer) {

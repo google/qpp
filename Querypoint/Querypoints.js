@@ -57,15 +57,16 @@ Querypoint.ValueChangeQueryVisitor = {
   }
 };
 
-Querypoint.ValueChangeQuery = function(identifier) {
+Querypoint.ValueChangeQuery = function(identifier, tree) {
   this.identifier = identifier;
+  this.queryLocation = tree;
   this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
 }
 
 Querypoint.ValueChangeQuery.ifAvailableFor = function(tree) {
   var identifier = Querypoint.ValueChangeQueryVisitor.visitSome(tree);
   if (identifier) {
-    return new Querypoint.ValueChangeQuery(identifier);
+    return new Querypoint.ValueChangeQuery(identifier, tree);
   }
 }
 
@@ -76,15 +77,33 @@ Querypoint.ValueChangeQuery.prototype = {
   toolTip: function() {
     return "Trace the changes to the current expression and report the last one";
   },
+  
+  activate: function() {
+    console.log("query activated", this);
+    // mark tree as qp
+    this.queryLocation.location.query = this;
+  },
+
   // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
   // 
   transformParseTree: function(tree) {
+
     return this._transformer.transformAny(tree);
   },
 
+  runtimeSource: function() {
+    var tree = this._transformer.runtimeInitializationStatements();
+    return traceur.outputgeneration.TreeWriter.write(tree);
+  },
+
   // Pull trace results out of the page for this querypoint
-  extractTracepoints: function(callback) {
-    chrome.devtools.inspectedWindow.eval('window.__qp.propertyChanges.'+this.identifier, callback);
+  extractTracepoints: function(onTracepoint) {
+    function onEval(result, isException) {
+       if (!isException) {       
+        onTracepoint(result)
+      }
+    }
+    chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges","prop")', onEval);
   },
 };
 
@@ -143,7 +162,7 @@ Querypoint.Querypoints = {
 
     // Query Definitions
 
-    appendQuery: function(query) {
+    appendQuery: function(query, tree) {
       this._tracequeries.add(query);
     },
     // Query Acccess

@@ -98,8 +98,8 @@
         createCallExpression(
           createMemberExpression(QP_FUNCTION, 'redirect', 'apply'),
           createArgumentList(
-            createIdentifierExpression(PredefinedName.THIS), 
-            createIdentifierExpression(PredefinedName.ARGUMENTS)
+            createIdentifierExpression('this'), 
+            createIdentifierExpression('arguments')
           )
         )
       )

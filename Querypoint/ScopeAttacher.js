@@ -21,7 +21,7 @@
   var IdentifierToken = traceur.syntax.IdentifierToken;
   var IdentifierExpression = traceur.syntax.trees.IdentifierExpression;
   var BindingIdentifier = traceur.syntax.trees.BindingIdentifier;
-  var PredefinedName = traceur.syntax.PredefinedName;
+
 
   /**
    * Attachs a scope to each variable declaration tree
@@ -142,7 +142,7 @@
       // function
       if (name)
         this.declareVariable_(name);
-      this.declareVariable_(PredefinedName.ARGUMENTS);
+      this.declareVariable_('arguments');
       this.visitAny(formalParameterList);
 
       this.visitAny(body);

@@ -84,12 +84,13 @@
   
   // Constant
   var activationId = '__qp_activation';
+  var generatedIdentifierBase = 1;
 
   /**
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function InsertingTransformer(identifierGenerator, generateFileName) {
+  function InsertingTransformer(generateFileName) {
     ParseTreeTransformer.call(this);
     this.insertions = [];      // statements to be added to this block
     this.expressionStack = []; // tracks compound expressions
@@ -97,7 +98,6 @@
     this.blockStack = [];      // tracks nest blocks
     this.insertAbove = this.insertAbove.bind(this);
 
-    this.identifierGenerator_ = identifierGenerator;
     this._generateFileName = generateFileName;
   }
 
@@ -126,7 +126,7 @@
    
     generateIdentifier: function(tree) {
       if (!tree.location) {
-        return 'v'+this.identifierGenerator_.generateUniqueIdentifier();
+        return '__qp_' + generatedIdentifierBase++;
       }
       // The end.offset points just past the last character of the token
       var end = tree.location.end.offset;

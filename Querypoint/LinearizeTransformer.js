@@ -89,19 +89,19 @@
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function LinearizeTransformer(identifierGenerator, generateFileName) {
-    Querypoint.InsertingTransformer.call(this, identifierGenerator, generateFileName);
+  function LinearizeTransformer(generateFileName) {
+    Querypoint.InsertingTransformer.call(this, generateFileName);
     this.labelsInScope = [];        // emca 262 12.12
     this.unlabelledBreakLabels = []; // tracks nested loops and switches 
     this.unlabelledContinueLabels = []; // tracks nested loops
   }
 
-  LinearizeTransformer.transformTree = function(identifierGenerator, generateFileName, tree) {
+  LinearizeTransformer.transformTree = function(generateFileName, tree) {
     if (debug) { 
       console.log('LinearizeTransformer input:\n' + 
         traceur.outputgeneration.TreeWriter.write(tree));
     }
-    var transformer = new LinearizeTransformer(identifierGenerator, generateFileName);
+    var transformer = new LinearizeTransformer(generateFileName);
     var output_tree = transformer.transformAny(tree);
     if (debug) {
       console.log('LinearizeTransformer output:\n' + 
@@ -150,6 +150,10 @@
     },
     
     transformAnySkipLinearization: function(tree) {
+      // Don't process trees inserted by compiler transformations.
+      if (!tree.location) {
+        return tree;
+      }
       // skip linearization of the tree but not its children
       return ParseTreeTransformer.prototype.transformAny.call(this, tree);
     },

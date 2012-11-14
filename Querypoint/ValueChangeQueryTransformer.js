@@ -21,6 +21,8 @@
   var createArgumentList = ParseTreeFactory.createArgumentList;
   var createReturnStatement = ParseTreeFactory.createReturnStatement;
   var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
+  var createExpressionStatement = ParseTreeFactory.createExpressionStatement;
+  var createBlock = ParseTreeFactory.createBlock;
  
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
@@ -36,14 +38,33 @@
     obj = {prop: value}
   */
 
-  function PropertyChangeTrace(objectExpression, propertyExpression) {
+  function PropertyChangeTrace(propertyIdentifier, objectExpression, propertyExpression, traceId) {
+    this.propertyIdentifier = propertyIdentifier;
     this.objectExpression = objectExpression;
     this.propertyExpression = propertyExpression;
+    this.traceId = traceId; 
+    // TODO just create the trace statement and don't store the expressions
   }
 
   PropertyChangeTrace.prototype = {
-    traceStatements: function() {
-      console.error("need to emit traceStatements");
+    traceStatements: function(rhs) {
+      // window.__qp.propertyChanges.<propertyId>.push({obj: <objExpr>, prop: <propExpr>, ...)
+      var statement =
+        ParseTreeFactory.createExpressionStatement(
+          createCallExpression( 
+            createMemberExpression('window', '__qp','propertyChanges', this.propertyIdentifier, 'push'),
+            createArgumentList(
+              createObjectLiteralExpression([
+                createPropertyNameAssignment('obj', this.objectExpression),
+                createPropertyNameAssignment('property', createStringLiteral(this.propertyIdentifier)),
+                createPropertyNameAssignment('activations', createIdentifierExpression('__qp_function')),
+                createPropertyNameAssignment('activationIndex', createMemberExpression('__qp_function', 'length')),
+                createPropertyNameAssignment('traceValue', rhs),
+              ])
+            )
+          )
+        );
+        return statement;         
     }
   };
 
@@ -61,7 +82,7 @@
 
     visitAny: function(tree) {
       delete this.propertyChangeTrace;
-      ParseTreeVisitor.prototype.visitAny.call(this);
+      ParseTreeVisitor.prototype.visitAny.call(this, tree);
       return this.propertyChangeTrace;  // may be undefined
     },
 
@@ -93,7 +114,12 @@
      */
     visitMemberExpression: function(tree) {
       if (tree.memberName.value === this.propertyIdentifier.value) {
-        this.propertyChangeTrace = new PropertyChangeTrace(operand, tree.memberName);
+        this.propertyChangeTrace = new PropertyChangeTrace(
+          this.propertyIdentifier.value, 
+          tree.operand, 
+          createIdentifierExpression(tree.memberName),
+          tree.location.traceId
+        );
       }
       // Since we are called after linearize we don't need to recurse
     },
@@ -104,7 +130,11 @@
      * @return {ParseTree}
      */
     transformMemberLookupExpression: function(tree) {
-       this.propertyChangeTrace = new PropertyChangeTrace(operand, tree.memberExpression);
+       this.propertyChangeTrace = new PropertyChangeTrace(
+         this.propertyIdentifier.value, 
+         tree.operand, 
+         tree.memberExpression
+       );
     },
 
     _createPropertyChangeAccessExpression: function(propertyIdentifier) {
@@ -134,11 +164,6 @@
   ValueChangeQueryTransformer.prototype = {
     __proto__: Querypoint.InsertingTransformer.prototype,
 
-    transformAny: function(tree) {
-      if (!tree || !tree.location) return tree;
-      return ParseTreeTransformer.prototype.transformAny.call(this, tree);
-    },
-
     /**
      * obj.prop++ or obj[prop]++  equiv to obj.prop += 1
      * operand contains only linearization temps
@@ -165,7 +190,7 @@
       var left = this.transformAny(tree.left);
       var traceable = this.visitor.visitAny(left);
       if (traceable) {
-        this.insertions.push(traceable.traceStatements());
+        this.insertions.push(traceable.traceStatements(tree.right));
       }
       var right = this.transformAny(tree.right);
       if (left == tree.left && right == tree.right) {
@@ -175,19 +200,19 @@
     },
     
      // Called once per load by QPRuntime
-    runtimeInitializationStatements: function(tree) {
+    runtimeInitializationStatements: function() {
       // window.__qp.propertyChanges = { <propertyIdentifier>: [] };
       var statement = 
         createAssignmentStatement(
           createMemberExpression('window', '__qp', 'propertyChanges'),
           createObjectLiteralExpression(
             createPropertyNameAssignment(
-             propertyIdentifier, 
+             this.propertyIdentifier.value, 
              createArrayLiteralExpression([])
            )
          )
        );
-      return [statement];
+      return statement;
     },
 
   };

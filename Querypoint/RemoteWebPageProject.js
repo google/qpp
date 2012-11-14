@@ -22,7 +22,7 @@ RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
 RemoteWebPageProject.requestCreator = new ChannelPlate.RequestCreator(ChannelPlate.DevtoolsTalker);
 
-RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype);
+RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype || WebPageProject.prototype);
 
 // Our page is remote and already loaded.
 //

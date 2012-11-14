@@ -15,7 +15,7 @@
       read: function() {
         var tree = tokenViewModel.currentTree();
         if (tree) {
-          var traces = tree.location.trace;
+          var traces = tree.location.traces;
           if (traces) {
             this._hasTraceData('true');
             return traces.map(function(trace) {
