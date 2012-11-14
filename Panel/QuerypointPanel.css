@@ -27,7 +27,33 @@ body {
 .splitter {
   border-color: #75715e;
   border-style: solid;
+  position: relative;
   border-width: 0 0 1px 0;
+}
+
+.hoverGripperRight {
+     height:9px;
+     width: 9px;
+     border-radius: 9px;
+     background: #d0d0d0;
+     top: -4.5px;
+     left: -4.5px;
+     position: absolute;
+     z-index: 10;
+}
+.hoverGripperRight span {
+  display: none;
+}
+.hoverGripperRight:hover {
+  width: 20ex;
+  color: black;
+  font-size: 9px;
+  padding-bottom: 2px;
+  font-family: sans-serif;
+}
+.hoverGripperRight:hover span {
+  display: inline;
+  padding-left: 3ex;
 }
 
 .log {
