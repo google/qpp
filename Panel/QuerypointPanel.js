@@ -247,16 +247,24 @@ QuerypointPanel.Panel.prototype = {
     this.document.addEventListener('mousedown', this._onClickPanel.bind(this));
     this.panel_window.addEventListener('resize', this._onResize.bind(this));
     
+    var panel = this;
     $(".focusBlock .hoverDoor").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
-      var closer = $(this)[0];
-      var closee = $(this).closest('.hoverDoorChannel')[0].parentElement; 
+      panel._operateDoor($(this));
+    });
+    $(".hoverDoor span").mouseover(function(jQueryEvent){
+      panel._operateDoor($(this));  
+    });
+  },
+  
+  _operateDoor: function(jQ) {
+      var closer = jQ[0];
+      var closee = jQ.closest('.hoverDoorChannel')[0].parentElement; 
       if (closer.classList.contains('hoverCloser')) {
         closee.classList.add('closed');
       } else {
         closee.classList.remove('closed');
       }
-    })
   },
   
   _initViewModels: function(panelModel) {
