@@ -36,6 +36,8 @@
   QuerypointPanel.FileViewModel.prototype = {
     update: function() {
       this.updateTraceData(this.fileName, this.updateModel.bind(this, this.fileName));
+      var hoverDoorChannel = document.querySelector('.sourceViewport .hoverDoorChannel');
+      hoverDoorChannel.classList.remove('closed');
     },
 
     getCurrentViewport: function() {
@@ -165,7 +167,7 @@
     
     _initTokenFollower: function(tree) {
       this.showToken = this.showToken.bind(this);
-      var elementQPOutput = document.querySelector('.QPOutput');
+      var elementQPOutput = document.querySelector('.sourceViewport .focusBlock');
       elementQPOutput.addEventListener('focus', function(event) {
         console.log("View focus "+this._editor.name, event);
         if (!this._editor.hasListener('onTokenOver')) {

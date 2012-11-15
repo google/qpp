@@ -45,14 +45,11 @@ QuerypointPanel.Panel.prototype = {
   // Apply any changes since the last onShown call
   refresh: function() {
      console.log("QuerypointPanel.Panel refresh "+this._isShowing, this);
-     var QPOutput = document.querySelector('.QPOutput');
+
      var name = this._editors.currentEditorName();
      if (name && this._fileViewModels[name]) {
-       QPOutput.classList.remove('hide');
        this._fileViewModels[name].update();
-     } else {
-       QPOutput.classList.add('hide');
-     }
+     } 
 
   },
   
@@ -209,7 +206,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _onResize: function() {
-    this._setHeight(this._setWidth());
+   // this._setHeight(this._setWidth());
   },
   
   _setWidth: function() {
@@ -249,6 +246,16 @@ QuerypointPanel.Panel.prototype = {
   _initMouse: function() {
     this.document.addEventListener('mousedown', this._onClickPanel.bind(this));
     this.panel_window.addEventListener('resize', this._onResize.bind(this));
+    
+    $(".focusBlock .hoverDoor").live("click", function(jQueryEvent) {
+      console.log("Click ", jQueryEvent.target);
+      var closer = jQueryEvent.target.classList.contains('hoverCloser');
+      if (closer) {
+        jQueryEvent.target.parentElement.parentElement.classList.add('closed');
+      } else {
+        jQueryEvent.target.parentElement.parentElement.classList.remove('closed');
+      }
+    })
   },
   
   _initViewModels: function(panelModel) {

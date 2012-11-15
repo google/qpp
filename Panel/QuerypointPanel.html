@@ -67,12 +67,16 @@
       <span class="helpInfo">console.log and tracing status output</span>
     </div>
     <div class="splitter">
-      <div class="hoverGripperRight"><span>Close Tracing</span></div>
     </div>
     <div class="sourceViewport">
-      <a class="focusBlock QPOutput" tabindex="0">
-        <div>
+      <a class="focusBlock " tabindex="0">
+        <div class="hoverDoorChannel closed">
+          <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
+          <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
+        </div>
+        <div class="QPOutput overflowMe">
           <span class="helpInfo">Tracing output, see tooltips for details</span>
+          
           <div class="tokenView" >
             <div class="scopeChain" data-bind="foreach: scopes">
               <div data-bind="html: scopeDeclaration"></div>
