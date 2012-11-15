@@ -169,6 +169,7 @@ a.focusBlock {
 }
 a:focus, a:active {
   background-color: rgb(33, 34, 31);
+  outline: none;
 }
 
 .QPOutput {

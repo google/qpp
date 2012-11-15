@@ -249,11 +249,12 @@ QuerypointPanel.Panel.prototype = {
     
     $(".focusBlock .hoverDoor").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
-      var closer = jQueryEvent.target.classList.contains('hoverCloser');
-      if (closer) {
-        jQueryEvent.target.parentElement.parentElement.classList.add('closed');
+      var closer = $(this)[0];
+      var closee = $(this).closest('.hoverDoorChannel')[0].parentElement; 
+      if (closer.classList.contains('hoverCloser')) {
+        closee.classList.add('closed');
       } else {
-        jQueryEvent.target.parentElement.parentElement.classList.remove('closed');
+        closee.classList.remove('closed');
       }
     })
   },
