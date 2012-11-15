@@ -21,7 +21,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
   this._fileViewModels = {}; // one per editor
 
-  this.userDirectedEditor = this.document.querySelector('.userDirectedEditor');
+  this.fileEditor = this.document.querySelector('.fileEditor');
   this._onEditorCreated = this._onEditorCreated.bind(this);
   this._initModel();
   this._onResize();  // set initial sizes

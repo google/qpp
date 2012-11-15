@@ -183,7 +183,7 @@
       // Give focus to QPOutput after hide is removed, so the tokenOver starts active for discovery
       setTimeout(function(){
         elementQPOutput.focus();
-      });
+      }, 100);
       // Show the program
       this._tokenViewModel.setModel(tree);
     },

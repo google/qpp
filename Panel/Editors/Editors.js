@@ -14,7 +14,7 @@
 
       this._viewModel.savedEditors = ko.observableArray();
 
-      this.userDirectedEditor = document.querySelector('.userDirectedEditor');
+      this.fileEditor = document.querySelector('.fileEditor');
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
       window.onbeforeunload = this._beforeUnload.bind(this);
       
@@ -75,7 +75,7 @@
 
     createEditor: function(name, content, callback) {
       this._viewModel.openURLs.push(name);
-      var editor = new EditorByCodeMirror(this.userDirectedEditor, name, content);
+      var editor = new EditorByCodeMirror(this.fileEditor, name, content);
       editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
       this._editors.push(editor);

@@ -139,7 +139,7 @@ body {
     border-radius: 999px; /* any value larger than the radius of the object gives a circle */
 } 
 
-.userDirectedEditor {
+.fileEditor {
   height: 100%;
   position: relative;
   display: -webkit-flex;
@@ -156,6 +156,14 @@ body {
   -webkit-flex-grow: 2;
   -webkit-flex-shrink: 1;
   -webkit-flex-basis: 70%;
+  display: -webkit-flex;
+}
+
+
+.fileRowContainer {
+  -webkit-flex-grow: 2;
+  -webkit-flex-shrink: 1;
+  -webkit-flex-basis: auto;
   display: -webkit-flex;
 }
 

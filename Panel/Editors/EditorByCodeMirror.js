@@ -169,6 +169,7 @@ EditorByCodeMirror.prototype = {
   _initTokenOver: function() {
     this.addListener('onListenerChange', function(listenerChange) {
       if (listenerChange.eventName === 'onTokenOver') {
+        console.log('listenerChange ' + this.name + ', ' + listenerChange.eventName + ': '+listenerChange.count);
         if (listenerChange.count) {
 
           this._watchMouse();
