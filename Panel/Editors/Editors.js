@@ -116,8 +116,8 @@
           if (index === -1) {
             editors._viewModel.savedEditors.push(name);
           }
-          index = editors.unsavedEditors.indexOf(name);
-          editors.unsavedEditors.splice(index, 1);
+          index = editors._viewModel.unsavedEditors.indexOf(name);
+          editors._viewModel.unsavedEditors.splice(index, 1);
         } else {
           alert("Saved failed: "+response.error);
         }
