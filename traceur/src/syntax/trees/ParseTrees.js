@@ -925,17 +925,6 @@ export class QuasiSubstitution extends ParseTree {
   }
 }
 
-export class RequiresMember extends ParseTree {
-  /**
-   * @param {SourceRange} location
-   * @param {traceur.syntax.IdentifierToken} name
-   */
-  constructor(location, name) {
-    super(REQUIRES_MEMBER, location);
-    this.name = name;
-  }
-}
-
 export class RestParameter extends ParseTree {
   /**
    * @param {SourceRange} location
@@ -1139,19 +1128,6 @@ export class YieldExpression extends ParseTree {
    */
   constructor(location, expression, isYieldFor) {
     super(YIELD_EXPRESSION, location);
-    this.expression = expression;
-    this.isYieldFor = isYieldFor;
-  }
-}
-
-export class YieldStatement extends ParseTree {
-  /**
-   * @param {SourceRange} location
-   * @param {ParseTree} expression
-   * @param {boolean} isYieldFor
-   */
-  constructor(location, expression, isYieldFor) {
-    super(YIELD_STATEMENT, location);
     this.expression = expression;
     this.isYieldFor = isYieldFor;
   }

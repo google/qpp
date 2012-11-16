@@ -588,12 +588,6 @@ export class ParseTreeVisitor {
   }
 
   /**
-   * @param {RequiresMember} tree
-   */
-  visitRequiresMember(tree) {
-  }
-
-  /**
    * @param {RestParameter} tree
    */
   visitRestParameter(tree) {
@@ -720,13 +714,6 @@ export class ParseTreeVisitor {
    * @param {YieldExpression} tree
    */
   visitYieldExpression(tree) {
-    this.visitAny(tree.expression);
-  }
-
-  /**
-   * @param {YieldStatement} tree
-   */
-  visitYieldStatement(tree) {
     this.visitAny(tree.expression);
   }
 }

@@ -967,14 +967,6 @@ export class ParseTreeTransformer {
   }
 
   /**
-   * @param {RequiresMember} tree
-   * @return {ParseTree}
-   */
-  transformRequiresMember(tree) {
-    return tree;
-  }
-
-  /**
    * @param {RestParameter} tree
    * @return {ParseTree}
    */
@@ -1181,18 +1173,5 @@ export class ParseTreeTransformer {
       return tree;
     }
     return new YieldExpression(tree.location, expression, isYieldFor);
-  }
-
-  /**
-   * @param {YieldStatement} tree
-   * @return {ParseTree}
-   */
-  transformYieldStatement(tree) {
-    var expression = this.transformAny(tree.expression);
-    var isYieldFor = tree.isYieldFor;
-    if (expression == tree.expression) {
-      return tree;
-    }
-    return new YieldStatement(tree.location, expression, isYieldFor);
   }
 }

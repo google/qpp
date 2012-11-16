@@ -818,15 +818,6 @@ export class ParseTreeWriter extends ParseTreeVisitor {
     this.writeRaw_(TokenType.CLOSE_CURLY);
   }
 
-  /*
-   * @param {RequiresMember} tree
-   */
-  visitRequiresMember(tree) {
-    this.write_(REQUIRES);
-    this.write_(tree.name);
-    this.write_(TokenType.SEMI_COLON);
-  }
-
   /**
    * @param {ReturnStatement} tree
    */
@@ -841,7 +832,7 @@ export class ParseTreeWriter extends ParseTreeVisitor {
    */
   visitRestParameter(tree) {
     this.write_(TokenType.DOT_DOT_DOT);
-    this.write_(tree.identifier);
+    this.write_(tree.identifier.identifierToken);
   }
 
   /**
@@ -993,18 +984,6 @@ export class ParseTreeWriter extends ParseTreeVisitor {
     this.visitAny(tree.expression);
   }
 
-  /**
-   * @param {YieldStatement} tree
-   */
-  visitYieldStatement(tree) {
-    this.write_(TokenType.YIELD);
-    if (tree.isYieldFor) {
-      this.write_(TokenType.STAR);
-    }
-    this.visitAny(tree.expression);
-    this.write_(TokenType.SEMI_COLON);
-  }
-
   writeCurrentln_() {
       this.result_.append(this.currentLine_.toString());
       this.result_.append(NEW_LINE);
@@ -1137,6 +1116,7 @@ export class ParseTreeWriter extends ParseTreeVisitor {
       return false;
 
     var value = token.toString();
+    var lastValue = this.lastToken_.toString();
 
     switch (value) {
       case TokenType.CLOSE_CURLY:
@@ -1152,12 +1132,18 @@ export class ParseTreeWriter extends ParseTreeVisitor {
       case TokenType.CATCH:
       case TokenType.ELSE:
       case TokenType.FINALLY:
-      case TokenType.OPEN_CURLY:
       case TokenType.WHILE:
         return PRETTY_PRINT;
-    }
 
-    var lastValue = this.lastToken_.toString();
+      case TokenType.OPEN_CURLY:
+        switch (lastValue) {
+          case TokenType.OPEN_CURLY:
+          case TokenType.OPEN_PAREN:
+          case TokenType.OPEN_SQUARE:
+            return false;
+        }
+        return PRETTY_PRINT;
+    }
 
     switch (lastValue) {
       case TokenType.OPEN_CURLY:
