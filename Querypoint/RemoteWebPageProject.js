@@ -22,12 +22,12 @@ RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
 RemoteWebPageProject.requestCreator = new ChannelPlate.RequestCreator(ChannelPlate.DevtoolsTalker);
 
-RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype || WebPageProject.prototype);
+RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype);
 
 // Our page is remote and already loaded.
 //
 RemoteWebPageProject.prototype.run = function() {
-  this.addFilesFromScriptElements(this.remoteScripts);
+    this.runInWebPage(this.getSourceTrees());  
 }
 
 // XSS since we are remote to the web page
@@ -42,7 +42,7 @@ RemoteWebPageProject.prototype.loadResource = function(url, fncOfContentOrNull) 
     if (arguments[0] === "Error") {
       var message = arguments[1];
       console.error("XHR Failed ", message);
-      fncOfContentOrNull(null);
+      fncOfContentOrNull(null)
     } else {
       fncOfContentOrNull(arguments[0]);
     }
@@ -58,20 +58,12 @@ RemoteWebPageProject.prototype.putFiles = function(files) {
     console.log("Put " + scripts.length + " transcoded scripts", scripts);
     result.errors.forEach(function(error) {
       // As far as I can tell the eval does not provide meaningful line numbers for errors.
-      console.error(error.message, error.content);
+      var partialContent = error.content.substring(0, 300);
+      console.error(error.message, partialContent);
     });
   });
 };
 
-// TODO upstream to WebPageProject when we can use es6 traceur
-RemoteWebPageProject.prototype.compile = function() {
-  var trees = this.compiler.compile(this);
-  if (this.reporter.hadError()) {
-    console.error('Traceur compilation errors', this.reporter);
-    return;
-  }
-  return trees;
-}
 
 
 //----------------------------------------------------------------------------------------------------------
@@ -124,9 +116,4 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
     return result;
   }
   return chrome.devtools.inspectedWindow.eval(this.evalStringify(putScripts, scripts), callback);
-}
-
-RemoteWebPageProject.prototype.onScriptsReady = function() {
-  var trees = this.compile();
-  this.runInWebPage(trees);
 }

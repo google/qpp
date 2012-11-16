@@ -28,7 +28,7 @@ export class WebPageProject extends Project {
     this.numberInlined_ = 0;
   }
 
-  asyncLoad_(url, fncOfContent) {
+  asyncLoad_(url, fncOfContent, onScriptsReady) {
     this.numPending_++;
     this.loadResource(url, (content) => {
       if (content) 
@@ -37,7 +37,7 @@ export class WebPageProject extends Project {
         console.warn('Failed to load', url);
 
       if (--this.numPending_ <= 0) 
-        this.onScriptsReady();
+        onScriptsReady();
     });
   }
 
@@ -80,7 +80,7 @@ export class WebPageProject extends Project {
     return this.inlineScriptNameBase_ + '_' + this.numberInlined_ + '.js';
   }
 
-  addFilesFromScriptElements(scriptElements) {
+  addFilesFromScriptElements(scriptElements, onScriptsReady) {
     for (var i = 0, length = scriptElements.length; i < length; i++) {
       var scriptElement = scriptElements[i];
       if (!scriptElement.src) {
@@ -89,13 +89,16 @@ export class WebPageProject extends Project {
         this.addFileFromScriptElement(scriptElement, name, content);
       } else {
         var name = scriptElement.src;
-        this.asyncLoad_(name,
-            this.addFileFromScriptElement.bind(this, scriptElement, name));
+        this.asyncLoad_(
+          name,
+          this.addFileFromScriptElement.bind(this, scriptElement, name),
+          onScriptsReady
+        );
       }
     }
     // in case we did not load any scripts async
     if (this.numPending_ <= 0) 
-        this.onScriptsReady(); 
+        onScriptsReady(); 
   }
 
   get reporter() {
@@ -148,15 +151,6 @@ export class WebPageProject extends Project {
     });
   }
 
-  /**
-   * over-ride-able
-   * Called when the last async script tag loads
-   */
-  onScriptsReady() {
-    var trees = this.compile();
-    this.runInWebPage(trees); 
-  }
-
   run() {
     document.addEventListener('DOMContentLoaded', () => {
       var selector = 'script[type="text/traceur"]';
@@ -174,7 +168,10 @@ export class WebPageProject extends Project {
           contents: runtime });
       */
 
-      this.addFilesFromScriptElements(scripts);
+      this.addFilesFromScriptElements(scripts, () => {
+        var trees = this.compile();
+        this.runInWebPage(trees);     
+      });
     }, false);
   }
 }
