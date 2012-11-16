@@ -90,15 +90,15 @@ export class WebPageProject extends Project {
       } else {
         var name = scriptElement.src;
         this.asyncLoad_(
-          name,
-          this.addFileFromScriptElement.bind(this, scriptElement, name),
-          onScriptsReady
+            name,
+            this.addFileFromScriptElement.bind(this, scriptElement, name),
+            onScriptsReady
         );
       }
     }
     // in case we did not load any scripts async
     if (this.numPending_ <= 0) 
-        onScriptsReady(); 
+      onScriptsReady(); 
   }
 
   get reporter() {

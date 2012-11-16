@@ -15519,11 +15519,11 @@ var $__src_WebPageProject_js = (function() {
       this.numPending_ = 0;
       this.numberInlined_ = 0;
     },
-    asyncLoad_: function(url, fncOfContent) {
+    asyncLoad_: function(url, fncOfContent, onScriptsReady) {
       this.numPending_++;
       this.loadResource(url, (function(content) {
         if (content) fncOfContent(content); else console.warn('Failed to load', url);
-        if (--this.numPending_ <= 0) this.onScriptsReady();
+        if (--this.numPending_ <= 0) onScriptsReady();
       }).bind(this));
     },
     loadResource: function(url, fncOfContentOrNull) {
@@ -15553,7 +15553,7 @@ var $__src_WebPageProject_js = (function() {
       }
       return this.inlineScriptNameBase_ + '_' + this.numberInlined_ + '.js';
     },
-    addFilesFromScriptElements: function(scriptElements) {
+    addFilesFromScriptElements: function(scriptElements, onScriptsReady) {
       for (var i = 0, length = scriptElements.length; i < length; i++) {
         var scriptElement = scriptElements[i];
         if (!scriptElement.src) {
@@ -15562,10 +15562,10 @@ var $__src_WebPageProject_js = (function() {
           this.addFileFromScriptElement(scriptElement, name, content);
         } else {
           var name = scriptElement.src;
-          this.asyncLoad_(name, this.addFileFromScriptElement.bind(this, scriptElement, name));
+          this.asyncLoad_(name, this.addFileFromScriptElement.bind(this, scriptElement, name), onScriptsReady);
         }
       }
-      if (this.numPending_ <= 0) this.onScriptsReady();
+      if (this.numPending_ <= 0) onScriptsReady();
     },
     get reporter() {
       if (!this.reporter_) {
@@ -15609,10 +15609,6 @@ var $__src_WebPageProject_js = (function() {
         return file;
       }));
     },
-    onScriptsReady: function() {
-      var trees = this.compile();
-      this.runInWebPage(trees);
-    },
     run: function() {
       document.addEventListener('DOMContentLoaded', (function() {
         var selector = 'script[type="text/traceur"]';
@@ -15620,7 +15616,10 @@ var $__src_WebPageProject_js = (function() {
         if (!scripts.length) {
           return;
         }
-        this.addFilesFromScriptElements(scripts);
+        this.addFilesFromScriptElements(scripts, (function() {
+          var trees = this.compile();
+          this.runInWebPage(trees);
+        }).bind(this));
       }).bind(this), false);
     }
   }, Project, true, true);
