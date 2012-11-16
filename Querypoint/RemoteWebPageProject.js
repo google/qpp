@@ -28,14 +28,11 @@ RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype 
 //
 RemoteWebPageProject.prototype.run = function() {
   this.addFilesFromScriptElements(this.remoteScripts);
-  this.runScriptsIfNonePending_();
 }
 
 // XSS since we are remote to the web page
 //
-RemoteWebPageProject.prototype.asyncLoad_ = function(url, fncOfContent) {
-  var project = this;
-  project.numPending++;
+RemoteWebPageProject.prototype.loadResource = function(url, fncOfContentOrNull) {
   // mihaip@chromium.org on https://groups.google.com/a/chromium.org/d/msg/chromium-extensions/-/U33r217_Px8J
   // The whitelisting for cross-origin XHRs only happens when running in an extension process. 
   // Your iframe is running inside the devtools process, so it doesn't get that privilege. 
@@ -45,10 +42,9 @@ RemoteWebPageProject.prototype.asyncLoad_ = function(url, fncOfContent) {
     if (arguments[0] === "Error") {
       var message = arguments[1];
       console.error("XHR Failed ", message);
+      fncOfContentOrNull(null);
     } else {
-      fncOfContent(arguments[0]);
-      project.numPending--;
-      project.runScriptsIfNonePending_();
+      fncOfContentOrNull(arguments[0]);
     }
   });
 }
@@ -130,11 +126,7 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
   return chrome.devtools.inspectedWindow.eval(this.evalStringify(putScripts, scripts), callback);
 }
 
-// TODO upstream to WebPageProject when we can use es6 traceur
-RemoteWebPageProject.prototype.runScriptsIfNonePending_ = function() {
-  if (this.numPending) {
-    return;
-  }
+RemoteWebPageProject.prototype.onScriptsReady = function() {
   var trees = this.compile();
   this.runInWebPage(trees);
 }

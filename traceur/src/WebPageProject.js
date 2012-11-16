@@ -24,25 +24,36 @@ import TreeWriter from 'outputgeneration/TreeWriter.js';
 export class WebPageProject extends Project {
   constructor(url) {
     super(url);
-    this.numPending = 0;
+    this.numPending_ = 0;
     this.numberInlined_ = 0;
   }
 
   asyncLoad_(url, fncOfContent) {
-    this.numPending++;
+    this.numPending_++;
+    this.loadResource(url, (content) => {
+      if (content) 
+        fncOfContent(content);
+      else 
+        console.warn('Failed to load', url);
+
+      if (--this.numPending_ <= 0) 
+        this.onScriptsReady();
+    });
+  }
+
+  /** over-ride-able
+   * @param {string} url Uniform Resource Locator
+   * @param {function(string) | null} callback 
+   */
+  loadResource(url, fncOfContentOrNull) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.addEventListener('load', (e) => {
       if (xhr.status == 200 || xhr.status == 0)
-        fncOfContent(xhr.responseText);
-
-      this.numPending--;
-      this.runScriptsIfNonePending_();
+        fncOfContentOrNull(xhr.responseText);
     });
     var onFailure = () => {
-      this.numPending--;
-      console.warn('Failed to load', url);
-      this.runScriptsIfNonePending_();
+      fncOfContentOrNull(null);
     };
     xhr.addEventListener('error', onFailure, false);
     xhr.addEventListener('abort', onFailure, false);
@@ -82,6 +93,9 @@ export class WebPageProject extends Project {
             this.addFileFromScriptElement.bind(this, scriptElement, name));
       }
     }
+    // in case we did not load any scripts async
+    if (this.numPending_ <= 0) 
+        this.onScriptsReady(); 
   }
 
   get reporter() {
@@ -134,12 +148,13 @@ export class WebPageProject extends Project {
     });
   }
 
-  runScriptsIfNonePending_() {
-    if (this.numPending) {
-      return;
-    }
+  /**
+   * over-ride-able
+   * Called when the last async script tag loads
+   */
+  onScriptsReady() {
     var trees = this.compile();
-    this.runInWebPage(trees);
+    this.runInWebPage(trees); 
   }
 
   run() {
@@ -160,7 +175,6 @@ export class WebPageProject extends Project {
       */
 
       this.addFilesFromScriptElements(scripts);
-      this.runScriptsIfNonePending_();
     }, false);
   }
 }

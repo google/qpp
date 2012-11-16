@@ -15516,23 +15516,25 @@ var $__src_WebPageProject_js = (function() {
   var WebPageProject = traceur.runtime.createClass({
     constructor: function(url) {
       traceur.runtime.superCall(this, WebPageProject, "constructor", [url]);
-      this.numPending = 0;
+      this.numPending_ = 0;
       this.numberInlined_ = 0;
     },
     asyncLoad_: function(url, fncOfContent) {
-      this.numPending++;
+      this.numPending_++;
+      this.loadResource(url, (function(content) {
+        if (content) fncOfContent(content); else console.warn('Failed to load', url);
+        if (--this.numPending_ <= 0) this.onScriptsReady();
+      }).bind(this));
+    },
+    loadResource: function(url, fncOfContentOrNull) {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url);
       xhr.addEventListener('load', (function(e) {
-        if (xhr.status == 200 || xhr.status == 0) fncOfContent(xhr.responseText);
-        this.numPending--;
-        this.runScriptsIfNonePending_();
-      }).bind(this));
+        if (xhr.status == 200 || xhr.status == 0) fncOfContentOrNull(xhr.responseText);
+      }));
       var onFailure = (function() {
-        this.numPending--;
-        console.warn('Failed to load', url);
-        this.runScriptsIfNonePending_();
-      }).bind(this);
+        fncOfContentOrNull(null);
+      });
       xhr.addEventListener('error', onFailure, false);
       xhr.addEventListener('abort', onFailure, false);
       xhr.send();
@@ -15563,6 +15565,7 @@ var $__src_WebPageProject_js = (function() {
           this.asyncLoad_(name, this.addFileFromScriptElement.bind(this, scriptElement, name));
         }
       }
+      if (this.numPending_ <= 0) this.onScriptsReady();
     },
     get reporter() {
       if (!this.reporter_) {
@@ -15606,10 +15609,7 @@ var $__src_WebPageProject_js = (function() {
         return file;
       }));
     },
-    runScriptsIfNonePending_: function() {
-      if (this.numPending) {
-        return;
-      }
+    onScriptsReady: function() {
       var trees = this.compile();
       this.runInWebPage(trees);
     },
@@ -15621,7 +15621,6 @@ var $__src_WebPageProject_js = (function() {
           return;
         }
         this.addFilesFromScriptElements(scripts);
-        this.runScriptsIfNonePending_();
       }).bind(this), false);
     }
   }, Project, true, true);
