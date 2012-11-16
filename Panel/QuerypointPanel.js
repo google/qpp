@@ -19,7 +19,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
 
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
-  this._fileViewModels = {}; // one per editor
+  this._fileViewModels = {}; // one per file
 
   this.fileEditor = this.document.querySelector('.fileEditor');
   this._onEditorCreated = this._onEditorCreated.bind(this);
@@ -33,8 +33,9 @@ QuerypointPanel.Panel.debug = false;
 QuerypointPanel.Panel.prototype = {
   onShown: function() {
     this._isShowing = true;
-    this.keybindings.enter();
+
     this.refresh();
+    this.keybindings.enter();
   },
 
   onHidden: function() {
@@ -277,22 +278,25 @@ QuerypointPanel.Panel.prototype = {
     openURLs.forEach(this._openURL.bind(this));
   },
 
-  _restore: function(panelModel) {
-    console.log("restore", panelModel);
-    this._initViewModels(panelModel);
-
+  _restore: function(panelModel) {  
     this._initKeys();
     this._initMouse();
     this.document.querySelector('.panelInitialization').style.display = 'none';
+    console.log("restore", panelModel);
+    this._initViewModels(panelModel);
+    this.project.compile(function() {
+      this.commands.selectFile.call(this);  
+    }.bind(this));
   },
 
   _initModel: function() {
     var panel = this;
+    // TODO replace this with ko.mapping plugin
     QuerypointModel.Storage.recall(
-      function(model) {
+      function onSuccess(model) {
         panel._restore(model);
       },
-      function() {
+      function onError() {
         panel._restore(new QuerypointModel.PanelModel(panel.project.url));
       }
     );

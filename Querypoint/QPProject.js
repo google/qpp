@@ -3,8 +3,11 @@
 
 // A traceur RemoteWebPageProject that adds tracing to every compile
 
-function QPProject(url) {
+function QPProject(url, loads) {
   RemoteWebPageProject.call(this, url);
+  this.uid = loads;
+  this.numberOfReloads = 0; 
+
   // FIXME override parent __getter__ for reporter
   this.reporter_ = new QPErrorReporter();
 
@@ -12,7 +15,7 @@ function QPProject(url) {
       
   this.querypoints = Querypoint.Querypoints.initialize();
   this.runtime = Querypoint.QPRuntime.initialize();
-
+  console.log(loads + " QPProject created for "+url);
 }
 
 QPProject.prototype = Object.create(RemoteWebPageProject.prototype);
@@ -21,11 +24,20 @@ function generateFileName(location) {
     return location ? location.start.source.name : "internal";
 };
 
-QPProject.prototype.generateSourceFromTrees = function(trees) {
+QPProject.prototype.compile = function(onAllCompiled) {
+  function onScriptsReady() {
+    this.compiler_.compile(this);
+    onAllCompiled(); 
+  }
+  this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
+}
 
-  
+QPProject.prototype.generateSourceFromTrees = function(trees) {
+  if (!trees)
+    return [];
+
   Querypoint.QPRuntime.initialize();
-  
+
   return trees.keys().map(function(file) {
     var tree = trees.get(file);  
 

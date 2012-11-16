@@ -7,6 +7,42 @@ var model = {};  // composite model devtools + traceur
 var view = {};
 
 
+//-----------------------------------------------------------------------------
+function onLoad() {
+
+  var loads = 0;
+
+  function resetProject(url) {
+    model.devtoolsModel = new InspectedPage();  // TODO rename DevtoolsPageModel
+    model.project = new QPProject(url, loads);
+    collectScripts(url);
+
+  }
+  
+  function collectScripts(url) {
+    model.project.getPageScripts(function () {
+      if (!model.qpPanel) {
+        // Cross iframe fun
+        model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
+      }
+      model.qpPanel.onShown();
+
+    }); 
+  }
+  
+  function onNavigated(url) {
+    if (!view.window)
+      return; 
+    loads += 1;
+    if (!model.project || model.project.url !== url) {
+      resetProject(url);
+    } else {
+      collectScripts(url);
+    }
+  }
+
+  chrome.devtools.network.onNavigated.addListener(onNavigated);
+  
 chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/QuerypointPanel.html", function(panel) {
   view.panel = panel;
   var helpButton = panel.createStatusBarButton("Panel/QuerypointHelpIcon.png", "Querypoint Panel Help", false);
@@ -20,10 +56,8 @@ chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/Q
   
   panel.onShown.addListener(function (panel_window) {
     view.window = panel_window;
-    if (!model.qpPanel) {
-
-        QPProject.reload();
-      
+    if (!model.project) {
+      chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
     } else {
       model.qpPanel.onShown();
     }
@@ -35,48 +69,6 @@ chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/Q
   });
 });
 
-//-----------------------------------------------------------------------------
-function onLoad() {
-
-  var loads = 0;
-
-  function resetProject(url) {
-    model.devtoolsModel = new InspectedPage();  // TODO rename DevtoolsPageModel
-    model.project = new QPProject(url);
-    // Cross iframe fun
-    model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
-    model.project.uid = loads;
-    model.project.numberOfReloads = 0; 
-    console.log(loads + " QPProject created for "+url);
-    model.qpPanel.onShown();
-    tracePage(url);
-  }
-  
-  function tracePage(url) {
-
-    model.project.getPageScripts(function () {
-      model.project.run();
-      if (model.qpPanel)
-        model.qpPanel.refresh();
-    }); 
-  }
-  
-  function onNavigated(url) {
-    if (!view.window)
-      return; 
-    loads += 1;
-    if (!model.project || model.project.url !== url) {
-      resetProject(url);
-    } else {
-      tracePage(url);
-    }
-  }
-
-  chrome.devtools.network.onNavigated.addListener(onNavigated);
-  
-  //chrome.devtools.inspectedWindow.eval("window.location.toString()", resetProject);
-  // For initial development
-  //QPProject.reload();
 }
 
 window.addEventListener('load', onLoad);
