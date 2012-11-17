@@ -9,11 +9,11 @@
   window.QuerypointPanel = window.QuerypointPanel || {};
   
 
-  QuerypointPanel.FileViewModel = function(editor, sourceFile, treeRoot, panel) {
+  QuerypointPanel.FileViewModel = function(panel) {
     // These will be changed when the file we are viewing changes
-    this.editor = ko.observable(editor);
-    this.sourceFile = ko.observable(sourceFile);
-    this.treeRoot = ko.observable(treeRoot);
+    this.editor = ko.observable();
+    this.sourceFile = ko.observable();
+    this.treeRoot = ko.observable();
     this.project = panel.project;
     
     this._tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);
@@ -22,11 +22,8 @@
 
     this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this.project);
     
-    editor.addListener('onViewportChange', this.updateViewport.bind(this));
-    editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
     
-    this._initTokenFollower(this.treeRoot());    
-    this.updateViewport(editor.getViewport());
+    this._initTokenFollower();    
   }
   
   QuerypointPanel.FileViewModel.debug = false;
@@ -34,18 +31,28 @@
   QuerypointPanel.FileViewModel.prototype = {
     
     setModel: function(editor, sourceFile, treeRoot) {
-      this._tokenFollowerOff();
+      if (this.editor()) {
+        this._tokenFollowerOff();
+      }
       this.editor(editor);
       this.sourceFile(sourceFile);
       this.treeRoot(treeRoot);
       this._tokenFollowerOn();
+      if (editor) {
+        this.updateViewport(editor.getViewport()); // TODO ko
+        editor.addListener('onViewportChange', this.updateViewport.bind(this));
+        editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
+      }
+
       console.log("FileViewModel.update "+this.editor().name);  
     },
 
     update: function() {
-      this.updateTraceData(this.editor().name, this.updateModel.bind(this));
-      var hoverDoorChannel = document.querySelector('.sourceViewport .hoverDoorChannel');
-      hoverDoorChannel.classList.remove('closed');
+      if (this.editor() && this.treeRoot()) {
+        this.updateTraceData(this.editor().name, this.updateModel.bind(this));
+        var hoverDoorChannel = document.querySelector('.sourceViewport .hoverDoorChannel');
+        hoverDoorChannel.classList.remove('closed');
+      }
     },
 
     getCurrentViewport: function() {
@@ -93,7 +100,7 @@
           this._tokenViewModel.update();
         }
         this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
-        this.traceModel.visitTrace(this.tree(), traceData);      
+        this.traceModel.visitTrace(this.treeRoot(), traceData);      
         this.updateViewModel();
       }
     },
@@ -185,27 +192,30 @@
       this._tokenViewModel.setExploring(false);
     },
     
-    _initTokenFollower: function(tree) {
+    _initTokenFollower: function() {
       
       this.showToken = this.showToken.bind(this);
       var elementQPOutput = document.querySelector('.sourceViewport .focusBlock');
       
       elementQPOutput.addEventListener('focus', function(event) {
-        console.log("View focus "+this.editor().name, event);
-        this._tokenFollowerOn();
+        if (this.editor()) {
+          console.log("View focus "+this.editor().name, event);
+          this._tokenFollowerOn();
+        }
       }.bind(this));
       
       elementQPOutput.addEventListener('blur', function(event) {
-        console.log("View blur "+this.editor().name, event);
-        this._tokenFollowerOff();
+        if (this.editor()) {
+          console.log("View blur "+this.editor().name, event);
+          this._tokenFollowerOff();
+        }
       }.bind(this));
       
       // Give focus to QPOutput after hide is removed, so the tokenOver starts active for discovery
       setTimeout(function(){
         elementQPOutput.focus();
       }, 100);
-      // Show the program
-      this._tokenViewModel.setModel(tree);
+      
     },
 
 

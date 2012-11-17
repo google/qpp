@@ -19,6 +19,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
 
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
+  this._fileViewModel = new QuerypointPanel.FileViewModel(this);
 
   this.fileEditor = this.document.querySelector('.fileEditor');
   this._onEditorCreated = this._onEditorCreated.bind(this);
@@ -41,9 +42,9 @@ QuerypointPanel.Panel.prototype = {
   },
 
   // Apply any changes since the last onShown call
-  refresh: function(sourceFileOrResource, editor) {
+  refresh: function() {
      console.log("QuerypointPanel.Panel refresh "+this._isShowing, this);
-     if (this._fileViewModel && editor) {
+     if (this._fileViewModel) {
        this._fileViewModel.update();
      } 
   },
@@ -69,13 +70,11 @@ QuerypointPanel.Panel.prototype = {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
       var tree = this.project.getParseTree(sourceFile);
-      if (!this._fileViewModel)
-        this._fileViewModel = new QuerypointPanel.FileViewModel(editor, sourceFile, tree, this);
-      else 
-        this._fileViewModel.setModel(editor, sourceFile, tree, this);
+      this._fileViewModel.setModel(editor, sourceFile, tree);
     } else {
       if (this.project.isGeneratedFile(editor.name)) {
         console.log("Created editor for generated file");
+        this._fileViewModel.setModel(editor);
       } else {
         console.warn("No sourceFile for " + editor.name);
       }
