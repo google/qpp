@@ -152,7 +152,7 @@ body {
   -webkit-flex: 1 2 auto;
 }
 
-.sourceViewport {
+.fileViews {
   -webkit-flex-grow: 2;
   -webkit-flex-shrink: 1;
   -webkit-flex-basis: 70%;

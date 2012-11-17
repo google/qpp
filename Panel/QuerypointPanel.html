@@ -68,9 +68,9 @@
     </div>
     <div class="splitter">
     </div>
-    <div class="sourceViewport">
+    <div class="fileViews">
       <div class="fileRowContainer">
-        <a class="focusBlock fileView" tabindex="0">
+        <a class="focusBlock fileInfoView" tabindex="0">
           <div class="hoverDoorChannel closed">
             <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
             <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
@@ -106,9 +106,7 @@
               </tbody>
             </table>
             <div class="queryView">
-              <div  data-bind="text: hasQueries"></div>
               <div data-bind="if: hasQueries">
-                <div> I have queries! </div>
                 <div class="toolbar" data-bind="foreach: currentQueries">
                   <button class="command" data-bind="click: $parent.issueQuery.bind($parent), text: buttonName(), attr: {title: toolTip()}"></button>
                 </div>
@@ -116,7 +114,7 @@
                   <span>Operate on the Web page, eg reproduce your bug</span>
                   <button class="command" data-bind="click: reproductionDone">Done!</button>
                 </div>
-               </div>
+              </div>
             </div>
           </div>
         </a>

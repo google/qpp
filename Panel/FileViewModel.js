@@ -22,7 +22,11 @@
 
     this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this.project);
     
+    this.fileInfoView = document.querySelector('.fileViews .focusBlock');
     
+    this._fileInfoViewFocused = ko.observable(false);
+    this.tokenFollower = ko.computed(this._tokenFollower.bind(this));
+
     this._initTokenFollower();    
   }
   
@@ -31,18 +35,20 @@
   QuerypointPanel.FileViewModel.prototype = {
     
     setModel: function(editor, sourceFile, treeRoot) {
-      if (this.editor()) {
-        this._tokenFollowerOff();
-      }
+      this.fileInfoView.blur();
+      if (this.editor()) 
+        this.editor().hide();
+      
       this.editor(editor);
       this.sourceFile(sourceFile);
       this.treeRoot(treeRoot);
-      this._tokenFollowerOn();
-      if (editor) {
-        this.updateViewport(editor.getViewport()); // TODO ko
-        editor.addListener('onViewportChange', this.updateViewport.bind(this));
-        editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
-      }
+         
+      this.editor().show();
+      this.fileInfoView.focus();
+ 
+      this.updateViewport(editor.getViewport()); // TODO ko
+      editor.addListener('onViewportChange', this.updateViewport.bind(this));
+      editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
 
       console.log("FileViewModel.update "+this.editor().name);  
     },
@@ -50,7 +56,7 @@
     update: function() {
       if (this.editor() && this.treeRoot()) {
         this.updateTraceData(this.editor().name, this.updateModel.bind(this));
-        var hoverDoorChannel = document.querySelector('.sourceViewport .hoverDoorChannel');
+        var hoverDoorChannel = document.querySelector('.fileViews .hoverDoorChannel');
         hoverDoorChannel.classList.remove('closed');
       }
     },
@@ -180,41 +186,40 @@
       }
     },
     
-    _tokenFollowerOn: function() {
-      if (!this.editor().hasListener('onTokenOver')) {
-        this.editor().addListener('onTokenOver', this.showToken);
-        this._tokenViewModel.setExploring(true);
+    _tokenFollower: function() {
+      if (!this.editor()) {
+          return;
+      }
+      if (this._fileInfoViewFocused()) {          
+        if (!this.editor().hasListener('onTokenOver')) {
+          this.editor().addListener('onTokenOver', this.showToken);
+          this._tokenViewModel.setExploring(true);
+        }
+      } else {
+        this.editor().removeListener('onTokenOver', this.showToken);
+        this._tokenViewModel.setExploring(false);
       }
     },
-    
-    _tokenFollowerOff: function() {
-      this.editor().removeListener('onTokenOver', this.showToken);
-      this._tokenViewModel.setExploring(false);
-    },
-    
+        
     _initTokenFollower: function() {
       
       this.showToken = this.showToken.bind(this);
-      var elementQPOutput = document.querySelector('.sourceViewport .focusBlock');
       
-      elementQPOutput.addEventListener('focus', function(event) {
+      this.fileInfoView.addEventListener('focus', function(event) {
         if (this.editor()) {
           console.log("View focus "+this.editor().name, event);
-          this._tokenFollowerOn();
+          this._fileInfoViewFocused(true);
         }
       }.bind(this));
       
-      elementQPOutput.addEventListener('blur', function(event) {
+      this.fileInfoView.addEventListener('blur', function(event) {
         if (this.editor()) {
           console.log("View blur "+this.editor().name, event);
-          this._tokenFollowerOff();
+          this._fileInfoViewFocused(false);
+
         }
       }.bind(this));
-      
-      // Give focus to QPOutput after hide is removed, so the tokenOver starts active for discovery
-      setTimeout(function(){
-        elementQPOutput.focus();
-      }, 100);
+
       
     },
 

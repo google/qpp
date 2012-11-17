@@ -19,6 +19,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
 
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
+
   this._fileViewModel = new QuerypointPanel.FileViewModel(this);
 
   this.fileEditor = this.document.querySelector('.fileEditor');
@@ -49,6 +50,11 @@ QuerypointPanel.Panel.prototype = {
      } 
   },
   
+  showPrimaryFileView: function(sourceFile, editor) {
+    var tree = this.project.getParseTree(sourceFile);
+    this._fileViewModel.setModel(editor, sourceFile, tree);
+  },
+  
   toggleHelp: function() {
     if (this._helping) {
       this._helping = false;
@@ -72,12 +78,7 @@ QuerypointPanel.Panel.prototype = {
       var tree = this.project.getParseTree(sourceFile);
       this._fileViewModel.setModel(editor, sourceFile, tree);
     } else {
-      if (this.project.isGeneratedFile(editor.name)) {
-        console.log("Created editor for generated file");
-        this._fileViewModel.setModel(editor);
-      } else {
-        console.warn("No sourceFile for " + editor.name);
-      }
+      this._fileViewModel.setModel(editor);
     }
   },
 
@@ -88,7 +89,7 @@ QuerypointPanel.Panel.prototype = {
     if (!foundResource) {
       var sourceFile = this.project.getFile(url);
       if (sourceFile) {
-        this._openSourceFileAndRefresh(sourceFile);
+        this.openPrimaryFileView(sourceFile);
       } else {
         this._openWhenAvailable.push(url);
       }
@@ -110,8 +111,8 @@ QuerypointPanel.Panel.prototype = {
     }.bind(this));
   },
   
-  _openSourceFileAndRefresh: function(sourceFile) {
-    this._openSourceFile(sourceFile, this.refresh.bind(this, sourceFile));
+  openPrimaryFileView: function(sourceFile) {
+    this._openSourceFile(sourceFile, this.showPrimaryFileView.bind(this, sourceFile));
   },
   
   _openSourceFile: function(sourceFile, onShown) {
@@ -150,7 +151,7 @@ QuerypointPanel.Panel.prototype = {
       console.log("selectFile");
       var uriItems = new URISelector(this.extensionPanel);
       this.project.getSourceFiles().forEach(function(sourceFile){
-        uriItems.appendItem('open: '+sourceFile.name, this._openSourceFileAndRefresh.bind(this, sourceFile));
+        uriItems.appendItem('open: '+sourceFile.name, this.openPrimaryFileView.bind(this, sourceFile));
       }.bind(this));
       this.page.resources.forEach(function(resource, index) {
         uriItems.appendItem('open: '+resource.url, this._openResourceAndRefresh.bind(this, resource));
@@ -211,9 +212,9 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _setWidth: function() {
-    var sourceViewport = this.document.querySelector('.sourceViewport'); 
+    var fileViews = this.document.querySelector('.fileViews'); 
     var availableWidth = document.body.offsetWidth;
-    var cols = sourceViewport.children;
+    var cols = fileViews.children;
     var width = availableWidth - (availableWidth / 1.618);
     for (var i = 0; i < cols.length - 1; i++) {
       cols[i].style.width = width  + 'px';
@@ -224,19 +225,19 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _setHeight: function(width) {
-    var sourceViewport = this.document.querySelector('.sourceViewport'); 
-    var availableHeight = sourceViewport.parentElement.offsetHeight;
-    var rows = sourceViewport.parentElement.children;
+    var fileViews = this.document.querySelector('.fileViews'); 
+    var availableHeight = fileViews.parentElement.offsetHeight;
+    var rows = fileViews.parentElement.children;
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
-      if (row.classList.contains('sourceViewport'))
+      if (row.classList.contains('fileViews'))
         continue;
       if (QuerypointPanel.Panel.debug)
         console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
       availableHeight = availableHeight - row.offsetHeight;
     }
-    sourceViewport.style.height = availableHeight + 'px';
-    var cols = sourceViewport.children;
+    fileViews.style.height = availableHeight + 'px';
+    var cols = fileViews.children;
     for (var i = 0; i < cols.length; i++) {
       var col = cols[i];
       col.style.height = availableHeight + 'px';
