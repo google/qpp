@@ -68,8 +68,8 @@
     </div>
     <div class="splitter">
     </div>
-    <div class="fileViews">
-      <div class="fileRowContainer">
+    <div class="fileViews" data-bind="foreach: fileViewModels">
+      <div class="fileView">
         <a class="focusBlock fileInfoView" tabindex="0">
           <div class="hoverDoorChannel closed">
             <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>

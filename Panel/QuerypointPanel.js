@@ -20,10 +20,12 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
 
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
 
-  this._fileViewModel = new QuerypointPanel.FileViewModel(this);
+  this.fileViews = document.querySelector('.fileViews');
+  this.primaryFileView = this.fileViews.querySelector('.fileView');
 
+  this.fileViewModels = ko.observableArray([new QuerypointPanel.FileViewModel(this.primaryFileView, this)])
+  
   this.fileEditor = this.document.querySelector('.fileEditor');
-  this._onEditorCreated = this._onEditorCreated.bind(this);
   this._initModel();
   this._onResize();  // set initial sizes
 }
@@ -42,17 +44,14 @@ QuerypointPanel.Panel.prototype = {
     this._isShowing = false;
   },
 
-  // Apply any changes since the last onShown call
-  refresh: function() {
-     console.log("QuerypointPanel.Panel refresh "+this._isShowing, this);
-     if (this._fileViewModel) {
-       this._fileViewModel.update();
-     } 
-  },
-  
-  showPrimaryFileView: function(sourceFile, editor) {
-    var tree = this.project.getParseTree(sourceFile);
-    this._fileViewModel.setModel(editor, sourceFile, tree);
+  showPrimaryFileView: function(editor) {
+    var sourceFile = this.project.getFile(editor.name);  
+    if (sourceFile) {
+      var tree = this.project.getParseTree(sourceFile);
+      this.fileViewModels()[0].setModel(editor, sourceFile, tree);
+    } else {
+      this.fileViewModels()[0].setModel(editor);
+    }
   },
   
   toggleHelp: function() {
@@ -71,16 +70,6 @@ QuerypointPanel.Panel.prototype = {
   _hideHelp: function() {
       document.body.classList.remove('showHelp');
   },
-  
-  _onEditorCreated: function(editor) {
-    var sourceFile = this.project.getFile(editor.name); 
-    if (sourceFile) {
-      var tree = this.project.getParseTree(sourceFile);
-      this._fileViewModel.setModel(editor, sourceFile, tree);
-    } else {
-      this._fileViewModel.setModel(editor);
-    }
-  },
 
   _openURL: function(url) {
     var foundResource = this.page.resources.some(function(resource){
@@ -97,7 +86,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _openResourceAndRefresh: function(resource, item) {
-    return this._openResource(resource, item, this.refresh.bind(this, resource));
+    return this._openResource(resource, item, this.showPrimaryFileView.bind(this));
   },
   
   _openResource: function(resource, item, onShown) {
@@ -105,21 +94,21 @@ QuerypointPanel.Panel.prototype = {
       this._editors.openEditorForContent(
         resource.url, 
         content,
-        this._onEditorCreated.bind(this), 
+        this.showPrimaryFileView.bind(this), 
         onShown
       );
     }.bind(this));
   },
   
   openPrimaryFileView: function(sourceFile) {
-    this._openSourceFile(sourceFile, this.showPrimaryFileView.bind(this, sourceFile));
+    this._openSourceFile(sourceFile, this.showPrimaryFileView.bind(this));
   },
   
   _openSourceFile: function(sourceFile, onShown) {
     this._editors.openEditorForContent(
       sourceFile.name, 
       sourceFile.contents,
-      this._onEditorCreated,
+      this.showPrimaryFileView.bind(this),
       onShown
     );
   },

@@ -9,7 +9,7 @@
   window.QuerypointPanel = window.QuerypointPanel || {};
   
 
-  QuerypointPanel.FileViewModel = function(panel) {
+  QuerypointPanel.FileViewModel = function(element, panel) {
     // These will be changed when the file we are viewing changes
     this.editor = ko.observable();
     this.sourceFile = ko.observable();
@@ -22,7 +22,8 @@
 
     this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this.project);
     
-    this.fileInfoView = document.querySelector('.fileViews .focusBlock');
+    this.fileInfoView = element.querySelector('.focusBlock');
+
     
     this._fileInfoViewFocused = ko.observable(false);
     this.tokenFollower = ko.computed(this._tokenFollower.bind(this));
@@ -39,9 +40,9 @@
       if (this.editor()) 
         this.editor().hide();
       
-      this.editor(editor);
-      this.sourceFile(sourceFile);
+      this.sourceFile(sourceFile);  
       this.treeRoot(treeRoot);
+      this.editor(editor);   // editor last to ensure the new tree is consulted when we clone elements from the editor
          
       this.editor().show();
       this.fileInfoView.focus();

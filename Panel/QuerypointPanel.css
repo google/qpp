@@ -160,7 +160,7 @@ body {
 }
 
 
-.fileRowContainer {
+.fileView {
   -webkit-flex-grow: 2;
   -webkit-flex-shrink: 1;
   -webkit-flex-basis: auto;
