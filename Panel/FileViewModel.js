@@ -8,34 +8,42 @@
 (function() {
   window.QuerypointPanel = window.QuerypointPanel || {};
   
-  
-  QuerypointPanel.FileViewModel = function(editor, sourceFile, tree, panel) {
-    this._editor = editor;
-    this._sourceFile = sourceFile;
-    this._tree = tree;
-    this._project = panel.project;
+
+  QuerypointPanel.FileViewModel = function(editor, sourceFile, treeRoot, panel) {
+    // These will be changed when the file we are viewing changes
+    this.editor = ko.observable(editor);
+    this.sourceFile = ko.observable(sourceFile);
+    this.treeRoot = ko.observable(treeRoot);
+    this.project = panel.project;
     
-    this.fileName = editor.name;
-    
-    this._tokenViewModel = new QuerypointPanel.TokenViewModel(this._tree, this._editor, panel);
+    this._tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);
     this._traceViewModel = new QuerypointPanel.TraceViewModel(this._tokenViewModel, panel);
-    this._queryViewModel = new QuerypointPanel.QueryViewModel(this._tokenViewModel, this._project, this);
-    this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this._project);
+    this._queryViewModel = new QuerypointPanel.QueryViewModel(this._tokenViewModel, this.project, this);
+
+    this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this.project);
     
     editor.addListener('onViewportChange', this.updateViewport.bind(this));
     editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
     
-    this._initTokenFollower(tree);    
+    this._initTokenFollower(this.treeRoot());    
     this.updateViewport(editor.getViewport());
   }
   
   QuerypointPanel.FileViewModel.debug = false;
   
-
-  
   QuerypointPanel.FileViewModel.prototype = {
+    
+    setModel: function(editor, sourceFile, treeRoot) {
+      this._tokenFollowerOff();
+      this.editor(editor);
+      this.sourceFile(sourceFile);
+      this.treeRoot(treeRoot);
+      this._tokenFollowerOn();
+      console.log("FileViewModel.update "+this.editor().name);  
+    },
+
     update: function() {
-      this.updateTraceData(this.fileName, this.updateModel.bind(this, this.fileName));
+      this.updateTraceData(this.editor().name, this.updateModel.bind(this));
       var hoverDoorChannel = document.querySelector('.sourceViewport .hoverDoorChannel');
       hoverDoorChannel.classList.remove('closed');
     },
@@ -59,15 +67,15 @@
       for (var line = this._viewportData.start; line < this._viewportData.end; line++, i_viewport++) {
         var offsets = this.getTracedOffsetByLine(line);
         
-        this._editor.removeLineNumberClass(line);
+        this.editor().removeLineNumberClass(line);
         if (!offsets) {
-          this._editor.setLineNumberClass(line, 'qp-no-activations');
+          this.editor().setLineNumberClass(line, 'qp-no-activations');
         } else {
           if (offsets.functionOffsets) {
-            this._editor.setLineNumberClass(line, 'qp-activations');
+            this.editor().setLineNumberClass(line, 'qp-activations');
           }
           if (offsets.expressionOffsets) { // overwrite function marker
-            this._editor.setLineNumberClass(line, 'qp-traces');
+            this.editor().setLineNumberClass(line, 'qp-traces');
           }
         }
       }
@@ -78,14 +86,14 @@
       chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', callback);
     },
     
-    updateModel: function(fileName, traceData) {
-      console.log("updateModel " + fileName + " traceData: ", traceData);
+    updateModel: function(traceData) {
+      console.log("updateModel " + this.editor().name + " traceData: ", traceData);
       if (traceData) {
-        if (this.treeHanger.visitTrace(this._tree, traceData)) {
+        if (this.treeHanger.visitTrace(this.treeRoot(), traceData)) {
           this._tokenViewModel.update();
         }
-        this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this._project, this._sourceFile);
-        this.traceModel.visitTrace(this._tree, traceData);      
+        this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
+        this.traceModel.visitTrace(this.tree(), traceData);      
         this.updateViewModel();
       }
     },
@@ -100,7 +108,7 @@
 
     showTraceDataForLine: function(clickData) {
       var line = clickData.line;
-      var offsetOfLine = this._sourceFile.lineNumberTable.offsetOfLine(line);
+      var offsetOfLine = this.sourceFile().lineNumberTable.offsetOfLine(line);
       var offsets = this.getTracedOffsetByLine(line);
       if (offsets) {
         var expressionOffsets = offsets.expressionOffsets;
@@ -113,7 +121,7 @@
             var column = parseInt(offset) - offsetOfLine;
             var element = this.getTraceDataElement(line, column, index, trace);
             
-            this._editor.insertElement(line, column, element, true);
+            this.editor().insertElement(line, column, element, true);
 
           }.bind(this));
         }
@@ -141,9 +149,9 @@
 
     showToken: function(tokenEvent) {  
       var line = tokenEvent.start.line;
-      var offsetOfLine = this._sourceFile.lineNumberTable.offsetOfLine(line);
+      var offsetOfLine = this.sourceFile().lineNumberTable.offsetOfLine(line);
       var tokenOffset = offsetOfLine + tokenEvent.start.column;
-      var tokenTree = this._project.treeFinder().byOffset(this._tree, tokenOffset);
+      var tokenTree = this.project.treeFinder().byOffset(this.treeRoot(), tokenOffset);
       if (tokenTree) {
         var traces = tokenTree.location.trace;
         if (QuerypointPanel.FileViewModel.debug) {
@@ -159,27 +167,39 @@
           start: tokenTree.location.start, 
           end: tokenTree.location.end
         };
-        this._editor.drawTokenBox(tokenBoxData);
+        this.editor().drawTokenBox(tokenBoxData);
       } else {
         console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
       }
     },
     
+    _tokenFollowerOn: function() {
+      if (!this.editor().hasListener('onTokenOver')) {
+        this.editor().addListener('onTokenOver', this.showToken);
+        this._tokenViewModel.setExploring(true);
+      }
+    },
+    
+    _tokenFollowerOff: function() {
+      this.editor().removeListener('onTokenOver', this.showToken);
+      this._tokenViewModel.setExploring(false);
+    },
+    
     _initTokenFollower: function(tree) {
+      
       this.showToken = this.showToken.bind(this);
       var elementQPOutput = document.querySelector('.sourceViewport .focusBlock');
+      
       elementQPOutput.addEventListener('focus', function(event) {
-        console.log("View focus "+this._editor.name, event);
-        if (!this._editor.hasListener('onTokenOver')) {
-          this._editor.addListener('onTokenOver', this.showToken);
-          this._tokenViewModel.setExploring(true);
-        }
+        console.log("View focus "+this.editor().name, event);
+        this._tokenFollowerOn();
       }.bind(this));
+      
       elementQPOutput.addEventListener('blur', function(event) {
-        console.log("View blur "+this._editor.name, event);
-        this._editor.removeListener('onTokenOver', this.showToken);
-        this._tokenViewModel.setExploring(false);
+        console.log("View blur "+this.editor().name, event);
+        this._tokenFollowerOff();
       }.bind(this));
+      
       // Give focus to QPOutput after hide is removed, so the tokenOver starts active for discovery
       setTimeout(function(){
         elementQPOutput.focus();

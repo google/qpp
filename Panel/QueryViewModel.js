@@ -4,6 +4,8 @@
 (function() {
   window.QuerypointPanel = window.QuerypointPanel || {};
   
+  var bindings = 0;
+  
   QuerypointPanel.QueryViewModel = function(tokenViewModel, project, fileViewModel) {
     this._tokenViewModel = tokenViewModel;
     this._project = project;
@@ -12,6 +14,7 @@
     this._reproducing = ko.observable(false);
     
     this.possibleQueries = [project.querypoints.ValueChangeQuery];
+    
     this.currentQueries = ko.computed(function() {
       var tree = this._tokenViewModel.currentTree();
       var queries = [];
@@ -28,7 +31,12 @@
       return queries;
     }.bind(this));
     
+    this.hasQueries = ko.computed(function() {
+      return (this.currentQueries().length > 0)
+    }.bind(this));
+    
     ko.applyBindings(this, document.querySelector('.queryView'));
+    console.log("bindings: "+ (++bindings));
   }
   
   QuerypointPanel.QueryViewModel.prototype = {

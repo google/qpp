@@ -19,7 +19,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
 
   this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
-  this._fileViewModels = {}; // one per file
 
   this.fileEditor = this.document.querySelector('.fileEditor');
   this._onEditorCreated = this._onEditorCreated.bind(this);
@@ -33,8 +32,6 @@ QuerypointPanel.Panel.debug = false;
 QuerypointPanel.Panel.prototype = {
   onShown: function() {
     this._isShowing = true;
-
-    this.refresh();
     this.keybindings.enter();
   },
 
@@ -44,14 +41,11 @@ QuerypointPanel.Panel.prototype = {
   },
 
   // Apply any changes since the last onShown call
-  refresh: function() {
+  refresh: function(sourceFileOrResource, editor) {
      console.log("QuerypointPanel.Panel refresh "+this._isShowing, this);
-
-     var name = this._editors.currentEditorName();
-     if (name && this._fileViewModels[name]) {
-       this._fileViewModels[name].update();
+     if (this._fileViewModel && editor) {
+       this._fileViewModel.update();
      } 
-
   },
   
   toggleHelp: function() {
@@ -75,7 +69,10 @@ QuerypointPanel.Panel.prototype = {
     var sourceFile = this.project.getFile(editor.name); 
     if (sourceFile) {
       var tree = this.project.getParseTree(sourceFile);
-      this._fileViewModels[editor.name] = new QuerypointPanel.FileViewModel(editor, sourceFile, tree, this);
+      if (!this._fileViewModel)
+        this._fileViewModel = new QuerypointPanel.FileViewModel(editor, sourceFile, tree, this);
+      else 
+        this._fileViewModel.setModel(editor, sourceFile, tree, this);
     } else {
       if (this.project.isGeneratedFile(editor.name)) {
         console.log("Created editor for generated file");
@@ -100,7 +97,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _openResourceAndRefresh: function(resource, item) {
-    return this._openResource(resource, item, this.refresh.bind(this));
+    return this._openResource(resource, item, this.refresh.bind(this, resource));
   },
   
   _openResource: function(resource, item, onShown) {
@@ -115,7 +112,7 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _openSourceFileAndRefresh: function(sourceFile) {
-    this._openSourceFile(sourceFile, this.refresh.bind(this));
+    this._openSourceFile(sourceFile, this.refresh.bind(this, sourceFile));
   },
   
   _openSourceFile: function(sourceFile, onShown) {
@@ -161,6 +158,10 @@ QuerypointPanel.Panel.prototype = {
       }.bind(this));
       uriItems.selectItem();
       return false;
+    },
+    
+    show: function(url) {
+      console.error("TODO");
     },
 
     // Open an editor to view information selected out of another editor
@@ -272,7 +273,7 @@ QuerypointPanel.Panel.prototype = {
     this._log = QuerypointPanel.Log.initialize();
     this._scrubber = QuerypointPanel.LogScrubber.initialize(this._log, panelModel.scrubber);
     this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize();
-    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar);
+    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar, this.commands);
     var openURLs = panelModel.buffers.openURLs.slice(0);
     panelModel.buffers.openURLs = [];  // create an list next time we save
     openURLs.forEach(this._openURL.bind(this));

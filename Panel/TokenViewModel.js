@@ -5,16 +5,16 @@
 (function() {
   window.QuerypointPanel = window.QuerypointPanel || {};
   
-  QuerypointPanel.TokenViewModel = function(rootSyntaxTree, editor, panel) {
-    // Model
-    this._root = rootSyntaxTree;
-    this._tracesByTree = [];
+  QuerypointPanel.TokenViewModel = function(fileViewModel, panel) {
+    this._fileViewModel = fileViewModel;
+
+    this._cacheTracesByTree = [];
     // ViewModel
     this.currentTreeIndex = ko.observable();
     this.currentTree = ko.computed({
       read: function() {
         var index = this.currentTreeIndex(); // we need to call the observable to trigger dependency
-        return (typeof index === 'number') ? this._tracesByTree[index] : undefined;
+        return (typeof index === 'number') ? this._cacheTracesByTree[index] : undefined;
       }.bind(this),
       deferEvaluation: true
     });
@@ -31,8 +31,9 @@
         return;
 
       var scopesView = [];
+      var viewModel = this;
       function appendView(location) {
-        var clone = QuerypointPanel.TokenViewModel._cloneEditorLineByLocation(editor, location);
+        var clone = viewModel._cloneEditorLineByLocation(location);
         scopesView.push({scopeDeclaration: clone.outerHTML});
       }
 
@@ -65,21 +66,13 @@
       var location = this._currentLocation();
       if (!location) return "";
       
-      var clone = QuerypointPanel.TokenViewModel._cloneEditorLineByLocation(editor, location)
-      var box = editor.createTokenBox(location);
+      var clone = this._cloneEditorLineByLocation(location)
+      var box = this._fileViewModel.editor().createTokenBox(location);
       box.style.top = "0px";
       clone.appendChild(box);
       return clone.outerHTML;
     }.bind(this));
-    
-    this._currentOffsets = ko.computed({
-      read: function() {
-        var location = this._currentLocation()
-        return location.start.offset + '-' + location.end.offset;
-      }.bind(this),
-      deferEvaluation: true
-    });
-    
+ 
     ko.applyBindings(this, document.querySelector('.tokenView'));
 
    $(".QPOutput").live("click", function(jQueryEvent) {
@@ -87,31 +80,20 @@
       jQueryEvent.target.focus();
       var url = jQueryEvent.target.getAttribute('data-url');
       if (url) {
-        panel.commands.openChainedEditor(url, editor);
+        panel.commands.openChainedEditor(url, this._fileViewModel.editor());
       } // else the user did not click on something interesting.
     });
   }
-  
-  QuerypointPanel.TokenViewModel._cloneEditorLineByLocation = function(editor, location) {
-    var line = location.start.line;
-    editor.setLineNumberClass(line, 'traceViewedLine');
-    var traceViewedLine = document.querySelector('.traceViewedLine');
-    editor.removeLineNumberClass(line, 'traceViewedLine');
-    
-    var clone = traceViewedLine.cloneNode(true);
-    clone.classList.remove('traceViewedLine');
-    return clone;
-  }
+
 
   QuerypointPanel.TokenViewModel.prototype = {
 
     setModel: function(tree) {
-
-      var index = this._tracesByTree.indexOf(tree);
+      var index = this._cacheTracesByTree.indexOf(tree);
       if (index !== -1) {
         this.currentTreeIndex(index);
       } else {
-        this.currentTreeIndex(this._tracesByTree.push(tree) - 1);
+        this.currentTreeIndex(this._cacheTracesByTree.push(tree) - 1);
       }
     },
     
@@ -122,7 +104,18 @@
     // Force ko 
     update: function() {
       this.currentTreeIndex.valueHasMutated();
+    },
 
+    _cloneEditorLineByLocation: function(location) {
+      var line = location.start.line;
+      this._fileViewModel.editor().setLineNumberClass(line, 'traceViewedLine');
+      var traceViewedLine = document.querySelector('.traceViewedLine');
+      this._fileViewModel.editor().removeLineNumberClass(line, 'traceViewedLine');
+      
+      var clone = traceViewedLine.cloneNode(true);
+      clone.classList.remove('traceViewedLine');
+      return clone;
     }
+
   };
 }());

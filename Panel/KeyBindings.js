@@ -41,7 +41,7 @@ KeyBindings.prototype = {
       if (binding) 
         this.win.key(binding, 'qp', commands[command]);
       else  // developer error
-        console.error('No KeyBindings.bingings['+command+']');
+        console.error('No KeyBindings.bindings['+command+']');
     }.bind(this));
   }
 };

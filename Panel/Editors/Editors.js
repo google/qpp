@@ -3,10 +3,11 @@
 
 (function(){
   QuerypointPanel.Editors = {
-    initialize: function(buffers, editorsViewModel) {
+    initialize: function(buffers, editorsViewModel, commands) {
       console.assert(buffers);
       
       this._viewModel = editorsViewModel;
+      this.commands;
       
       this._editors = [];  // co-indexed with _viewMode.openURLs
 
@@ -89,10 +90,14 @@
           if (onCreated) {
             onCreated(editor);
           }
-          this._showEditor(name, onShown);
+          if (onShown) {
+            onShown(editor)
+          }
         }.bind(this));
       } else {
-        this._showEditor(name, onShown);
+        if (onShown) {
+            onShown(editor)
+        }
       }
     },
     
@@ -127,7 +132,7 @@
 
     _onResourceUpdate: function(resource, content) {
         if (this._viewModel.unsavedEditors.indexOf(resource.url) !== -1) {
-          this._showEditor(resource.url);
+          this.commands.show(resource.url);
           alert("This editor has changes and the file has changes");
         } else {
           editor.resetContent(content);
@@ -138,7 +143,7 @@
       var sure = null;
       if (this._viewModel.unsavedEditors.length) {
         sure = "You have unsaved changes in " + unsavedEditors.length + "\nfiles: " + unsavedEditors.join(',');
-        this._showEditor(unsavedEditors[0]);
+        this.commands.show(unsavedEditors[0]);
       } 
       event.returnValue = sure;
       return sure;  
