@@ -16,7 +16,7 @@
     this.possibleQueries = [project.querypoints.ValueChangeQuery];
     
     this.currentQueries = ko.computed(function() {
-      var tree = this._tokenViewModel.currentTree();
+      var tree = this._tokenViewModel.tokenTree();
       var queries = [];
       if (tree) {
         var project = this._project;

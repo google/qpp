@@ -243,9 +243,10 @@ QuerypointPanel.Panel.prototype = {
       console.log("Click ", jQueryEvent.target);
       panel._operateDoor($(this));
     });
-    $(".hoverDoor span").mouseover(function(jQueryEvent){
+    /*$(".hoverDoor span").mouseover(function(jQueryEvent){
       panel._operateDoor($(this));  
     });
+    */
   },
   
   _operateDoor: function(jQ) {

@@ -161,30 +161,8 @@
       return element;
     },
 
-    showToken: function(tokenEvent) {  
-      var line = tokenEvent.start.line;
-      var offsetOfLine = this.sourceFile().lineNumberTable.offsetOfLine(line);
-      var tokenOffset = offsetOfLine + tokenEvent.start.column;
-      var tokenTree = this.project.treeFinder().byOffset(this.treeRoot(), tokenOffset);
-      if (tokenTree) {
-        var traces = tokenTree.location.trace;
-        if (QuerypointPanel.FileViewModel.debug) {
-          var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
-          var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
-          var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
-          if (QuerypointPanel.FileViewModel.debug) 
-            console.log("showToken " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
-        }
-        this._tokenViewModel.setModel(tokenTree);
-        var tokenBoxData =  {
-          token: tokenEvent.token, 
-          start: tokenTree.location.start, 
-          end: tokenTree.location.end
-        };
-        this.editor().drawTokenBox(tokenBoxData);
-      } else {
-        console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
-      }
+    showToken: function(tokenEvent) {
+      this._tokenViewModel.tokenEvent(tokenEvent);
     },
     
     _tokenFollower: function() {

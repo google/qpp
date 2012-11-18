@@ -11,9 +11,8 @@
     this._hasTraceData = ko.observable('false');
     this._exploringMode = ko.observable(false);
 
-    this.currentTraces = ko.computed({
-      read: function() {
-        var tree = tokenViewModel.currentTree();
+    this.currentTraces = ko.computed(function() {
+        var tree = tokenViewModel.tokenTree();
         if (tree) {
           var traces = tree.location.traces;
           if (traces) {
@@ -37,9 +36,7 @@
             this._hasTraceData('false');
           }
         }
-      }.bind(this),
-      deferEvaluation: true
-    });
+      }.bind(this));
 
     ko.applyBindings(this, document.querySelector('.traceView'));
 

@@ -10,23 +10,48 @@
 
     this._cacheTracesByTree = [];
     // ViewModel
-    this.currentTreeIndex = ko.observable();
-    this.currentTree = ko.computed({
-      read: function() {
-        var index = this.currentTreeIndex(); // we need to call the observable to trigger dependency
-        return (typeof index === 'number') ? this._cacheTracesByTree[index] : undefined;
-      }.bind(this),
-      deferEvaluation: true
-    });
+
+    this.tokenEvent = ko.observable();
+    
+    this.tokenTree = ko.computed(function() {
+      var tokenEvent = this.tokenEvent();
+      if (!tokenEvent)
+          return; 
+          
+      var line = this.tokenEvent().start.line;
+      var offsetOfLine = this._fileViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
+      var tokenOffset = offsetOfLine + tokenEvent.start.column;
+      var tokenTree = this._fileViewModel.project.treeFinder().byOffset(this._fileViewModel.treeRoot(), tokenOffset);
+      if (tokenTree) {
+        var traces = tokenTree.location.trace;
+        if (QuerypointPanel.TokenViewModel.debug) {
+          var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
+          var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
+          var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
+          if (QuerypointPanel.FileViewModel.debug) 
+            console.log("showToken " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
+        }
+
+        var tokenBoxData =  {
+          token: tokenEvent.token, 
+          start: tokenTree.location.start, 
+          end: tokenTree.location.end
+        };
+        this._fileViewModel.editor().drawTokenBox(tokenBoxData);
+      } else {
+        console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
+      }
+      return tokenTree;
+    }.bind(this));
 
     this._currentLocation = ko.computed(function() {
-      var tree = this.currentTree(); 
+      var tree = this.tokenTree(); 
       if (!tree) return;
       return tree.location;
     }.bind(this));
     
     this.scopes = ko.computed(function() {
-      var tree = this.currentTree();
+      var tree = this.tokenTree();
       if (!tree)
         return;
 
@@ -71,8 +96,8 @@
       box.style.top = "0px";
       clone.appendChild(box);
       return clone.outerHTML;
-    }.bind(this));
- 
+    }.bind(this)).extend({throttle: 50 });  // let both location and editor update
+  
     ko.applyBindings(this, document.querySelector('.tokenView'));
 
    $(".QPOutput").live("click", function(jQueryEvent) {
@@ -88,23 +113,10 @@
 
   QuerypointPanel.TokenViewModel.prototype = {
 
-    setModel: function(tree) {
-      var index = this._cacheTracesByTree.indexOf(tree);
-      if (index !== -1) {
-        this.currentTreeIndex(index);
-      } else {
-        this.currentTreeIndex(this._cacheTracesByTree.push(tree) - 1);
-      }
-    },
-    
     setExploring: function(active) {
       QuerypointPanel.BuffersStatusBar.exploringMode(active);
     },
     
-    // Force ko 
-    update: function() {
-      this.currentTreeIndex.valueHasMutated();
-    },
 
     _cloneEditorLineByLocation: function(location) {
       var line = location.start.line;
