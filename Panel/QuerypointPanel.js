@@ -18,8 +18,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
-  this._openWhenAvailable = []; // TODO monitor new script addition and edit any on this list
-
   this.fileViews = document.querySelector('.fileViews');
   this.primaryFileView = this.fileViews.querySelector('.fileView');
 
@@ -79,9 +77,7 @@ QuerypointPanel.Panel.prototype = {
       var sourceFile = this.project.getFile(url);
       if (sourceFile) {
         this.openPrimaryFileView(sourceFile);
-      } else {
-        this._openWhenAvailable.push(url);
-      }
+      } 
     }
   },
 
@@ -139,11 +135,14 @@ QuerypointPanel.Panel.prototype = {
     selectFile: function() {
       console.log("selectFile");
       var uriItems = new URISelector(this.extensionPanel);
+      var names = {};
       this.project.getSourceFiles().forEach(function(sourceFile){
+        names[sourceFile.name] = sourceFile;
         uriItems.appendItem('open: '+sourceFile.name, this.openPrimaryFileView.bind(this, sourceFile));
       }.bind(this));
       this.page.resources.forEach(function(resource, index) {
-        uriItems.appendItem('open: '+resource.url, this._openResourceAndRefresh.bind(this, resource));
+        if (!names.hasOwnProperty(resource.url))
+          uriItems.appendItem('open: '+resource.url, this._openResourceAndRefresh.bind(this, resource));
       }.bind(this));
       uriItems.selectItem();
       return false;
