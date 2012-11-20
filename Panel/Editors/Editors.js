@@ -15,7 +15,6 @@
 
       this._viewModel.savedEditors = ko.observableArray();
 
-      this.fileEditor = document.querySelector('.fileEditor');
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
       window.onbeforeunload = this._beforeUnload.bind(this);
       
@@ -74,19 +73,19 @@
       }
     },
 
-    createEditor: function(name, content, callback) {
+    createEditor: function(fileEditorView, name, content, callback) {
       this._viewModel.openURLs.push(name);
-      var editor = new EditorByCodeMirror(this.fileEditor, name, content);
+      var editor = new EditorByCodeMirror(fileEditorView, name, content);
       editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
       this._editors.push(editor);
       callback(editor);
     },
     
-    openEditorForContent: function(name, content, onCreated, onShown) {
+    openEditorForContent: function(fileEditorView, name, content, onCreated, onShown) {
       var editor = this._getEditorByName(name);
       if (!editor) {
-        this.createEditor(name, content, function(editor) {
+        this.createEditor(fileEditorView, name, content, function(editor) {
           if (onCreated) {
             onCreated(editor);
           }

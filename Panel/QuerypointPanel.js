@@ -21,13 +21,14 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.fileViews = document.querySelector('.fileViews');
   this.primaryFileView = this.fileViews.querySelector('.fileView');
 
-  this.fileViewModels = ko.observableArray([new QuerypointPanel.FileViewModel(this.primaryFileView, this)])
-  
+  this.fileViewModels = ko.observableArray([new QuerypointPanel.FileViewModel(this.primaryFileView, this)]);
+
   this.fileEditor = this.document.querySelector('.fileEditor');
   this._initModel();
   this._onResize();  // set initial sizes
+  
+  ko.applyBindings(this, this.fileViews);
 }
-
 
 QuerypointPanel.Panel.debug = false;
 
@@ -85,9 +86,10 @@ QuerypointPanel.Panel.prototype = {
     return this._openResource(resource, item, this.showPrimaryFileView.bind(this));
   },
   
-  _openResource: function(resource, item, onShown) {
+  _openResource: function(fileEditorView, resource, item, onShown) {
     resource.getContent(function(content, encoding) {
       this._editors.openEditorForContent(
+        fileEditorView, 
         resource.url, 
         content,
         this.showPrimaryFileView.bind(this), 
@@ -97,11 +99,13 @@ QuerypointPanel.Panel.prototype = {
   },
   
   openPrimaryFileView: function(sourceFile) {
-    this._openSourceFile(sourceFile, this.showPrimaryFileView.bind(this));
+    var view = this.fileViews.querySelector(".fileEditor");
+    this._openSourceFile(view, sourceFile, this.showPrimaryFileView.bind(this));
   },
   
-  _openSourceFile: function(sourceFile, onShown) {
+  _openSourceFile: function(fileEditorView, sourceFile, onShown) {
     this._editors.openEditorForContent(
+      fileEditorView, 
       sourceFile.name, 
       sourceFile.contents,
       this.showPrimaryFileView.bind(this),
@@ -263,9 +267,10 @@ QuerypointPanel.Panel.prototype = {
     this._scrubber = QuerypointPanel.LogScrubber.initialize(this._log, panelModel.scrubber);
     this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize();
     this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar, this.commands);
-    var openURLs = panelModel.buffers.openURLs.slice(0);
+    
+    var lastURL = panelModel.buffers.openURLs.pop();
     panelModel.buffers.openURLs = [];  // create an list next time we save
-    openURLs.forEach(this._openURL.bind(this));
+  //  this._openURL(lastURL);
   },
 
   _restore: function(panelModel) {  

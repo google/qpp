@@ -5,15 +5,25 @@
 (function() {
   window.QuerypointPanel = window.QuerypointPanel || {};
   
-  QuerypointPanel.TraceViewModel = function(tokenViewModel, panel) {
-  
-    // ViewModel
+  QuerypointPanel.TraceViewModel = function(fileViewModel, panel) {
+
     this._hasTraceData = ko.observable('false');
-    this._exploringMode = ko.observable(false);
+    this.freshTraceData = ko.computed(function() {
+      var additions = false;
+      if (fileViewModel.project) {
+        fileViewModel.project.querypoints.tracequeries().forEach(function(tq){
+          tq.extractTracepoints(tree, function (traceData){
+            additions = additions || treeHanger().visitTrace(fileViewModel.treeRoot(), traceData);    
+          });
+        });
+      }
+      return additions;
+    });    
 
     this.currentTraces = ko.computed(function() {
-        var tree = tokenViewModel.tokenTree();
-        if (tree) {
+        var tree = fileViewModel.tokenViewModel.tokenTree();
+
+        if (tree && this.freshTraceData()) {
           var traces = tree.location.traces;
           if (traces) {
             this._hasTraceData('true');
@@ -38,7 +48,7 @@
         }
       }.bind(this));
 
-    ko.applyBindings(this, document.querySelector('.traceView'));
+    // ko.applyBindings(this, document.querySelector('.traceView'));
 
    $(".QPOutput").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
@@ -51,6 +61,11 @@
   }
   
   QuerypointPanel.TraceViewModel.prototype = {
-
+    treeHanger: function() {
+      if (!this._treeHanger) {
+        this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(fileViewModel.project);  
+      } 
+      return this._treeHanger;
+    }
   };
 }());

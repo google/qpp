@@ -8,10 +8,24 @@
   QuerypointPanel.TokenViewModel = function(fileViewModel, panel) {
     this._fileViewModel = fileViewModel;
 
-    this._cacheTracesByTree = [];
-    // ViewModel
-
     this.tokenEvent = ko.observable();
+    this.followTokens = ko.observable(false);
+
+    this.followingTokens = ko.computed(function() {
+      if (!this._fileViewModel.editor()) {
+          return;
+      }
+      if (this.followTokens()) {          
+        if (!this._fileViewModel.editor().hasListener('onTokenOver')) {
+          this._fileViewModel.editor().addListener('onTokenOver', this.tokenEvent);
+          QuerypointPanel.BuffersStatusBar.exploringMode(true);
+        }
+      } else {
+        this._fileViewModel.editor().removeListener('onTokenOver', this.tokenEvent);
+        QuerypointPanel.BuffersStatusBar.exploringMode(false);
+      }
+
+    }.bind(this));
     
     this.tokenTree = ko.computed(function() {
       var tokenEvent = this.tokenEvent();
@@ -29,7 +43,7 @@
           var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
           var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
           if (QuerypointPanel.FileViewModel.debug) 
-            console.log("showToken " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
+            console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
         }
 
         var tokenBoxData =  {
@@ -98,7 +112,7 @@
       return clone.outerHTML;
     }.bind(this)).extend({throttle: 50 });  // let both location and editor update
   
-    ko.applyBindings(this, document.querySelector('.tokenView'));
+    //ko.applyBindings(this, document.querySelector('.tokenView'));
 
    $(".QPOutput").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
@@ -112,11 +126,6 @@
 
 
   QuerypointPanel.TokenViewModel.prototype = {
-
-    setExploring: function(active) {
-      QuerypointPanel.BuffersStatusBar.exploringMode(active);
-    },
-    
 
     _cloneEditorLineByLocation: function(location) {
       var line = location.start.line;

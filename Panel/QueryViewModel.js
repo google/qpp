@@ -6,24 +6,22 @@
   
   var bindings = 0;
   
-  QuerypointPanel.QueryViewModel = function(tokenViewModel, project, fileViewModel) {
-    this._tokenViewModel = tokenViewModel;
+  QuerypointPanel.QueryViewModel = function(fileViewModel, project) {
+    this.fileViewModel = fileViewModel;
+    this.tokenViewModel = fileViewModel.tokenViewModel;
     this._project = project;
     this.update = fileViewModel.update.bind(fileViewModel);
     
-    this._reproducing = ko.observable(false);
-    
-    this.possibleQueries = [project.querypoints.ValueChangeQuery];
-    
+    this.isTracing = ko.observable(false);
+        
     this.currentQueries = ko.computed(function() {
-      var tree = this._tokenViewModel.tokenTree();
+      var tree = this.tokenViewModel.tokenTree();
       var queries = [];
       if (tree) {
         var project = this._project;
-        this.possibleQueries.forEach(function(possibleQuery) {
+        project.querypoints.possibleQueries().forEach(function(possibleQuery) {
           var query = possibleQuery.ifAvailableFor(tree);
           if (query) {
-            query.project = project; 
             queries.push(query);
           }
         });
@@ -35,16 +33,15 @@
       return (this.currentQueries().length > 0)
     }.bind(this));
     
-    ko.applyBindings(this, document.querySelector('.queryView'));
+    //ko.applyBindings(this, document.querySelector('.queryView'));
     console.log("bindings: "+ (++bindings));
   }
   
   QuerypointPanel.QueryViewModel.prototype = {
 
-    issueQuery: function(query, event) {
-      query.activate();
-      query.project.querypoints.appendQuery(query);
-      var executer = query.project.executer;
+    issueQuery: function(tracer) {
+      this.fileViewModel.project.querypoints.appendQuery(tracer);
+      var executer = this.fileViewModel.project.executer;
       if (executer) {
         if (executer.automatic) {
           executer();
@@ -57,11 +54,11 @@
     },
     requestExecution: function() {
       this._project.reload();
-      this._reproducing(true);
+      this.isTracing(true);
     },
     reproductionDone: function() {
       this.update();
-      this._reproducing(false);
+      this.isTracing(false);
     }
   };
 }());

@@ -70,7 +70,7 @@
     </div>
     <div class="fileViews" data-bind="foreach: fileViewModels">
       <div class="fileView">
-        <a class="focusBlock fileInfoView" tabindex="0">
+        <a class="focusBlock fileInfoView"  data-bind="hasfocus: tokenViewModel.followTokens" tabindex="0">
           <div class="hoverDoorChannel">
             <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
             <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
@@ -79,14 +79,14 @@
             <span class="helpInfo">Tracing output, see tooltips for details</span>
             
             <div class="tokenView" >
-              <div class="scopeChain" data-bind="foreach: scopes">
+              <div class="scopeChain" data-bind="foreach: tokenViewModel.scopes">
                 <div data-bind="html: scopeDeclaration"></div>
               </div>
               <div class="currentExpression">
-                <span title="Current expression trace values displayed below" data-bind="html: _currentExpression"></span>
+                <span title="Current expression trace values displayed below" data-bind="html: tokenViewModel._currentExpression"></span>
               </div>
             </div>
-            <table class="traceView" data-bind="attr: {hasTraceData: _hasTraceData}">
+            <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel._hasTraceData}">
               <caption>Trace Data</caption>
               <thead>
               <tr>
@@ -94,7 +94,7 @@
                 <th title="Expression value during specific activation">Value</th>
               </tr>
             </thead> 
-            <tbody  data-bind="foreach: currentTraces">
+            <tbody  data-bind="foreach: traceViewModel.currentTraces">
               <tr >
                 <td class="activation">
                   <span class="command" data-bind="html: commandName, attr: {title: tooltip, 'data-url': url}"></span>
@@ -106,13 +106,15 @@
               </tbody>
             </table>
             <div class="queryView">
-              <div data-bind="if: hasQueries">
-                <div class="toolbar" data-bind="foreach: currentQueries">
-                  <button class="command" data-bind="click: $parent.issueQuery.bind($parent), text: buttonName(), attr: {title: toolTip()}"></button>
+              <div data-bind="if: queryViewModel.hasQueries">
+                <div class="toolbar" data-bind="foreach: queryViewModel.currentQueries">
+                  <button class="command" data-bind="text: buttonName(), attr: {title: toolTip()}, click: activateQuery.bind($data, $parent)"></button>
                 </div>
-                <div class="reexecution" data-bind="attr: {isReproducing: _reproducing}">
-                  <span>Operate on the Web page, eg reproduce your bug</span>
-                  <button class="command" data-bind="click: reproductionDone">Done!</button>
+                <div data-bind="if: queryViewModel.isTracing">
+                  <div class="reexecution"> 
+                    <span>Operate on the Web page, eg reproduce your bug</span>
+                    <button class="command" data-bind="click: queryViewModel.reproductionDone.bind(queryViewModel)">Done!</button>
+                  </div>
                 </div>
               </div>
             </div>

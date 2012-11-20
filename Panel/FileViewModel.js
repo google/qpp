@@ -16,19 +16,9 @@
     this.treeRoot = ko.observable();
     this.project = panel.project;
     
-    this._tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);
-    this._traceViewModel = new QuerypointPanel.TraceViewModel(this._tokenViewModel, panel);
-    this._queryViewModel = new QuerypointPanel.QueryViewModel(this._tokenViewModel, this.project, this);
-
-    this.treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(this.project);
-    
-    this.fileInfoView = element.querySelector('.focusBlock');
-
-    
-    this._fileInfoViewFocused = ko.observable(false);
-    this.tokenFollower = ko.computed(this._tokenFollower.bind(this));
-
-    this._initTokenFollower();    
+    this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);
+    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);
+    this.queryViewModel = new QuerypointPanel.QueryViewModel(this, this.project);
   }
   
   QuerypointPanel.FileViewModel.debug = false;
@@ -36,7 +26,7 @@
   QuerypointPanel.FileViewModel.prototype = {
     
     setModel: function(editor, sourceFile, treeRoot) {
-      this.fileInfoView.blur();
+      this.tokenViewModel.followTokens(false);
       if (this.editor()) 
         this.editor().hide();
       
@@ -45,7 +35,8 @@
       this.editor(editor);   // editor last to ensure the new tree is consulted when we clone elements from the editor
          
       this.editor().show();
-      this.fileInfoView.focus();
+      this.tokenViewModel.followTokens(true);
+
  
       this.updateViewport(editor.getViewport()); // TODO ko
       editor.addListener('onViewportChange', this.updateViewport.bind(this));
@@ -103,9 +94,6 @@
     updateModel: function(traceData) {
       console.log("updateModel " + this.editor().name + " traceData: ", traceData);
       if (traceData) {
-        if (this.treeHanger.visitTrace(this.treeRoot(), traceData)) {
-          this._tokenViewModel.update();
-        }
         this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
         this.traceModel.visitTrace(this.treeRoot(), traceData);      
         this.updateViewModel();
@@ -160,48 +148,6 @@
       element.classList.add('traceBackground');
       return element;
     },
-
-    showToken: function(tokenEvent) {
-      this._tokenViewModel.tokenEvent(tokenEvent);
-    },
-    
-    _tokenFollower: function() {
-      if (!this.editor()) {
-          return;
-      }
-      if (this._fileInfoViewFocused()) {          
-        if (!this.editor().hasListener('onTokenOver')) {
-          this.editor().addListener('onTokenOver', this.showToken);
-          this._tokenViewModel.setExploring(true);
-        }
-      } else {
-        this.editor().removeListener('onTokenOver', this.showToken);
-        this._tokenViewModel.setExploring(false);
-      }
-    },
-        
-    _initTokenFollower: function() {
-      
-      this.showToken = this.showToken.bind(this);
-      
-      this.fileInfoView.addEventListener('focus', function(event) {
-        if (this.editor()) {
-          console.log("View focus "+this.editor().name, event);
-          this._fileInfoViewFocused(true);
-        }
-      }.bind(this));
-      
-      this.fileInfoView.addEventListener('blur', function(event) {
-        if (this.editor()) {
-          console.log("View blur "+this.editor().name, event);
-          this._fileInfoViewFocused(false);
-
-        }
-      }.bind(this));
-
-      
-    },
-
 
   };
 

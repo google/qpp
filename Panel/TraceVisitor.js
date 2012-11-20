@@ -135,7 +135,7 @@
       
       if (expressionTree.location.query) {
         var startTime = (new Date()).getTime();
-        expressionTree.location.query.extractTracepoints(function(result) {
+        expressionTree.location.query.extractTracepoints(expressionTree, function(result) {
           trace = {
             load: this._project.numberOfReloads,
             turn: result.activation.turn,

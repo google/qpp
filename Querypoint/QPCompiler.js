@@ -44,6 +44,10 @@ var QPCompiler = (function() {
     analyze: function(project) {
       var analyzer = new ModuleAnalyzer(this.reporter_, project);
       analyzer.analyze();
+      project.getSourceFiles().forEach(function(file){
+        var tree = project.getParseTree(file);
+        Querypoint.ScopeAttacher.attachScopes(project.reporter_, tree, Querypoint.globalSymbols);  
+      });
     },
 
     transform: function(project) {
