@@ -3,8 +3,21 @@
 
 (function() {
   QuerypointPanel.LogScrubber = {
-    initialize: function(log, initialModel) {
-      
-    }
+
+    initialize: function(logElement) {
+      this.lastShown = ko.observable(0);
+     
+      this.trackLatestMessage = ko.observable(true);
+
+      // TODO depends on resize of logElement
+      this.rangeShowable = ko.computed(function(){
+        var height = logElement.offsetHeight;
+        var lineHeight = 12;
+        var lines = Math.ceil(height / lineHeight);
+        return lines;
+      }.bind(this));
+      return this;
+    },
+
   };
 }());

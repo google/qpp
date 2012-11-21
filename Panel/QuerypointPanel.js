@@ -26,6 +26,10 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
+  var logElement = document.querySelector('.log');
+  this.logScrubber = new QuerypointPanel.LogScrubber.initialize(logElement);
+  this.log = new QuerypointPanel.Log.initialize(this.logScrubber);
+
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({syncArray: this.project.querypoints.tracequeries});
 

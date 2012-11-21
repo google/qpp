@@ -14,7 +14,8 @@
   "permissions" :
     [
       "debugger",
-      "<all_urls>"
+      "<all_urls>",
+      "experimental"
     ],
     "sandbox": {
       "pages": ["QuerypointSandbox.html"]
