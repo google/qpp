@@ -63,9 +63,10 @@
       </div>
     </div>
     <div class="splitter"></div>
-    <div class='log' data-bind="forEach: log.visibleMessages">
+    <div class='log'>
       <span class="helpInfo">console.log and tracing status output</span>
-      <div>
+      <div class='messages' data-bind="foreach: log.visibleMessages">
+        <div class="message" data-bind="text: text"></div>
       </div>
     </div>
     <div class="splitter">

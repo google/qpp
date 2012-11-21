@@ -27,8 +27,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
 
   var logElement = document.querySelector('.log');
-  this.logScrubber = new QuerypointPanel.LogScrubber.initialize(logElement);
-  this.log = new QuerypointPanel.Log.initialize(this.logScrubber);
+  this._logScrubber = QuerypointPanel.LogScrubber.initialize(logElement);
+  this.log = QuerypointPanel.Log.initialize(this._logScrubber);
+  ko.applyBindings(this, logElement);
 
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({syncArray: this.project.querypoints.tracequeries});
@@ -278,9 +279,7 @@ QuerypointPanel.Panel.prototype = {
       }
   },
   
-  _initViewModels: function(panelModel) {
-    this._log = QuerypointPanel.Log.initialize();
-    this._scrubber = QuerypointPanel.LogScrubber.initialize(this._log, panelModel.scrubber);
+  _initEditors: function(panelModel) {
     this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize();
     this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar, this.commands);
     
@@ -294,7 +293,7 @@ QuerypointPanel.Panel.prototype = {
     this._initMouse();
     this.document.querySelector('.panelInitialization').style.display = 'none';
     console.log("restore", panelModel);
-    this._initViewModels(panelModel);
+    this._initEditors(panelModel);
     this.project.compile(function() {
       this.commands.selectFile.call(this);  
     }.bind(this));

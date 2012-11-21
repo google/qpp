@@ -13,26 +13,27 @@
       this.logScrubber = logScrubber;
       
       this.visibleMessages = ko.computed(function() {
-        if (! this._messages.length) {
-          return [];
-        }
-
         var last = logScrubber.lastShown();
         var first = last - logScrubber.rangeShowable();
         if (first < 0)
           first = 0;
 
-        return this._messages.slice(first, last);
+        return this._messages.length ? this._messages.slice(first, last) : [];
+        
       }.bind(this)).extend({throttle: 10}); // enough time to shift the array
 
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
+
+      chrome.experimental.devtools.console.getMessages(function(messages){
+        messages.forEach(this._onMessageAdded.bind(this));
+      }.bind(this));
       return this;
     },
 
     _onMessageAdded: function(message) {
-      _messages.push(message);
-      if (logScrubber.trackLatestMessage()) {
-        logScrubber.lastShown(_message.length);
+      this._messages.push(message);
+      if (this.logScrubber.trackLatestMessage()) {
+        this.logScrubber.lastShown(this._messages.length - 1);
       }
     }
 
