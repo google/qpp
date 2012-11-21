@@ -57,14 +57,14 @@ Querypoint.AllExpressionsQueryTracer.prototype = {
   },
 
   // Pull trace results out of the page for this querypoint
-  extractTracepoints: function(tree, onTracepoint) {
+  extractTracepoints: function(rootTree, onTracepoint) {
     function onEval(result, isException) {
        if (!isException) {       
         onTracepoint(result);
       }
     }
-    var fileName = tree.location.start.source.name;
-    chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', callback);
+    var fileName = rootTree.location.start.source.name;
+    chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', onEval);
   },
 };
 

@@ -60,7 +60,7 @@
         var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
         tree = preambleTransformer.transformAny(tree);
 
-        this.querypoints.tracequeries().forEach(function(tq) {
+        this.querypoints.tracequeries.forEach(function(tq) {
           tree = tq.transformParseTree(tree);
         });
 
@@ -98,7 +98,7 @@
     },
 
     reload: function() {    
-      this.querypoints.tracequeries().forEach(function(tq) {
+      this.querypoints.tracequeries.forEach(function(tq) {
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
       });
         

@@ -87,8 +87,9 @@
 
   //--------------------------------------------------------------------------------------------------------------------------------------------------------
   // Attach traceData to the appropriate subtree
-  QuerypointPanel.TreeHangerTraceVisitor = function(project) {
+  QuerypointPanel.TreeHangerTraceVisitor = function(project, rootTree) {
     QuerypointPanel.TraceVisitor.call(this, project);
+    this._rootTree = rootTree;
   }
   
   QuerypointPanel.TreeHangerTraceVisitor.prototype = Object.create(QuerypointPanel.TraceVisitor.prototype);
@@ -135,7 +136,7 @@
       
       if (expressionTree.location.query) {
         var startTime = (new Date()).getTime();
-        expressionTree.location.query.extractTracepoints(expressionTree, function(result) {
+        expressionTree.location.query.extractTracepoints(this._rootTree, function(result) {
           trace = {
             load: this._project.numberOfReloads,
             turn: result.activation.turn,

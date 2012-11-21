@@ -7,7 +7,6 @@
 
 (function() {
   window.QuerypointPanel = window.QuerypointPanel || {};
-  
 
   QuerypointPanel.FileViewModel = function(element, panel) {
     // These will be changed when the file we are viewing changes
@@ -16,9 +15,9 @@
     this.treeRoot = ko.observable();
     this.project = panel.project;
     
-    this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);
-    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);
-    this.queryViewModel = new QuerypointPanel.QueryViewModel(this, this.project);
+    this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
+    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
+    this.queryViewModel = new QuerypointPanel.QueryViewModel(this, panel);  // wired to token viewed.
   }
   
   QuerypointPanel.FileViewModel.debug = false;
@@ -37,7 +36,6 @@
       this.editor().show();
       this.tokenViewModel.followTokens(true);
 
- 
       this.updateViewport(editor.getViewport()); // TODO ko
       editor.addListener('onViewportChange', this.updateViewport.bind(this));
       editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));

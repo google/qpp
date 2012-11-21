@@ -30,25 +30,26 @@ Querypoint.ValueChangeQueryTracerVisitor = {
 Querypoint.ValueChangeQueryTracer = function(identifier, tree) {
   this.identifier = identifier;
   this.queryLocation = tree;
-  this._transformer = new Querypoint.ValueChangeQueryTracerTransformer(this.identifier);
+  this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
 }
 
 Querypoint.ValueChangeQuery = function(identifier, tree) {
-  this.identifier = identifier;
+  this.identifier = identifier; 
   this.tree = tree;
 }
   
 Querypoint.ValueChangeQuery.ifAvailableFor = function(tree) {
-    var identifier = Querypoint.ValueChangeQueryTracerVisitor.visitSome(tree);
-    if (identifier) {
-      return new Querypoint.ValueChangeQuery(identifier, tree);
-    }
-  },
+  var identifier = Querypoint.ValueChangeQueryTracerVisitor.visitSome(tree);
+  if (identifier) {
+    return new Querypoint.ValueChangeQuery(identifier, tree);
+  }
+},
 
 
 Querypoint.ValueChangeQuery.prototype = {
 
   buttonName: function() {
+    console.log("ValueChangeQuery buttonName called")
     return 'lastChange';
   },
   
@@ -56,9 +57,9 @@ Querypoint.ValueChangeQuery.prototype = {
     return "Trace the changes to the current expression and report the last one";
   },
   
-  activateQuery: function(queryViewModel) {
+  activateQuery: function(fileViewModel) {
     this.tree.location.query = this;      // mark tree as qp
-    queryViewModel.issueQuery(new Querypoint.ValueChangeQueryTracer(this.identifier, this.tree));
+    fileViewMode.queryViewModel.issueQuery(new Querypoint.ValueChangeQueryTracer(this.identifier, this.tree));
   },
 }
 
@@ -76,7 +77,7 @@ Querypoint.ValueChangeQueryTracer.prototype = {
   },
 
   // Pull trace results out of the page for this querypoint
-  extractTracepoints: function(tree, onTracepoint) {
+  extractTracepoints: function(rootTree, onTracepoint) {
     function onEval(result, isException) {
        if (!isException) {       
         onTracepoint(result)

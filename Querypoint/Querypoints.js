@@ -3,126 +3,107 @@
 
 (function(){
 
-window.Querypoint = window.Querypoint || {};
+  window.Querypoint = window.Querypoint || {};
 
-function protect(expr) {
-    return "eval(" + expr + ")"; // unwrapped by Querypoints
-}
+  function protect(expr) {
+      return "eval(" + expr + ")"; // unwrapped by Querypoints
+  }
 
-function unprotect(str) {
-    return str.replace(/:\"eval\(([^\)]*)\)\"/,":$1");
-}
+  function unprotect(str) {
+      return str.replace(/:\"eval\(([^\)]*)\)\"/,":$1");
+  }
 
-var getTreeNameForType = traceur.syntax.trees.getTreeNameForType;
+  var getTreeNameForType = traceur.syntax.trees.getTreeNameForType;
 
+  Querypoint.Querypoints = {
 
-Querypoint.Querypoints = {
-
-  _tracequeries: {
-      _tqs: [],
-      
-      by: function(field) {
-          var tqByField = {};
-          this._tqs.forEach(function(tq){
-              if (field in tq)
-                tqByField[tq[field]] = tq;
-          });
-          return tqByField;
-      },
-      
-      byIdentifier: function() {
-          return this.by('identifier');
-      },
-      
-      byId: function() {
-          return this.by('id');
-      },
-
-      getTraceSource: function(previousLocation, currentLocation) {
-        // todo sort tqs
-        var previous = previousLocation ? previousLocation.start.offset : 0;
-        var current = currentLocation.start.offset;
-        var message;
-        this._tqs.forEach(function(tq, tqIndex) {
-          return tq.traceLocations.forEach(function(traceLocation, locationIndex) {
-            var offset = traceLocation.start.offset;
-            console.log(previous + " <= " + offset + " < " + current);
-            if ( (previous <= offset) &&  (offset < current) ) {
-              message = Querypoints.formatTraceMessage(tq.tracepointMessage(locationIndex));
-              return true;
-            } 
-          });
+    tracequeries: [],
+    
+    byField: function(field) {
+        var tqByField = {};
+        this.tracequeries.forEach(function(tq){
+            if (field in tq)
+              tqByField[tq[field]] = tq;
         });
-        return message;
-      },
+        return tqByField;
+    },
+    
+    byIdentifier: function() {
+        return this.byField('identifier');
+    },
+    
+    byId: function() {
+        return this.byField('id');
+    },
 
-      add: function(tq) {
-          tq.traceLocations = [];
-          tq.tracepoints = [];
-          tq.id = this._tqs.length;
-          this._tqs.push(tq);
-      },
-
-      clear: function() {
-          this._tqs = [];
-      }
-  },
-
-  // Query Definitions
-
-  appendQuery: function(query, tree) {
-    this._tracequeries.add(query);
-  },
-  // Query Acccess
-
-  possibleQueries: function() {
-    return [Querypoint.ValueChangeQuery, Querypoint.AllExpressionsQuery];
-  },
-
-  tracequeries: function() {
-      return this._tracequeries._tqs;
-  },
-
-  // Query Actions
-  
-  setConsole: function(qpConsole) {
-      this.qpConsole = qpConsole;
-  },
-
-  // Different deployments may need different ways to transport the tracepoint
-  // result back to the querypoint storage. 
-  
-  // Each trace is passed
-  // through this function before injecting in the syntax tree. 
-  
-  formatTraceMessage: function(traceJSONable) {
-    var json = JSON.stringify(traceJSONable);
-    // expressions we want to evaluate at the tracepoint are escaped by wrapping 'eval()' around them.
-    // convert these back. 
-    return "__qp_tps.push(" + unprotect(json) + ");";
-  },
-  
-  // The stream of tracepoint results 
-  
-  tracepoints: function() {
-      var tqById = this._tracequeries.byId();
-      return __qp_tps.map(function (tp) {
-          tq = tqById[tp.tq];
-          console.log(tp);
-          return tq.tracepoint(tp);
+    getTraceSource: function(previousLocation, currentLocation) {
+      // todo sort tqs
+      var previous = previousLocation ? previousLocation.start.offset : 0;
+      var current = currentLocation.start.offset;
+      var message;
+      this.tracequeries.forEach(function(tq, tqIndex) {
+        return tq.traceLocations.forEach(function(traceLocation, locationIndex) {
+          var offset = traceLocation.start.offset;
+          console.log(previous + " <= " + offset + " < " + current);
+          if ( (previous <= offset) &&  (offset < current) ) {
+            message = Querypoints.formatTraceMessage(tq.tracepointMessage(locationIndex));
+            return true;
+          } 
+        });
       });
-  },
-  
-  // The querypoint results
-  querypoints: function() {
-      console.log("TODO: analyze the tracepoints");
-  },
-  
-  initialize: function() {
-    this._tracequeries.clear();
-    __qp_tps = [];
-    return this;
-  },
-};
+      return message;
+    },
+
+    clear: function() {
+        this.tracequeries = [];
+    },
+
+    // Query Acccess
+
+    possibleQueries: function() {
+      return [Querypoint.ValueChangeQuery, Querypoint.AllExpressionsQuery];
+    },
+
+    // Query Actions
+    
+    setConsole: function(qpConsole) {
+        this.qpConsole = qpConsole;
+    },
+
+    // Different deployments may need different ways to transport the tracepoint
+    // result back to the querypoint storage. 
+    
+    // Each trace is passed
+    // through this function before injecting in the syntax tree. 
+    
+    formatTraceMessage: function(traceJSONable) {
+      var json = JSON.stringify(traceJSONable);
+      // expressions we want to evaluate at the tracepoint are escaped by wrapping 'eval()' around them.
+      // convert these back. 
+      return "__qp_tps.push(" + unprotect(json) + ");";
+    },
+    
+    // The stream of tracepoint results 
+    
+    tracepoints: function() {
+        var tqById = this.byId();
+        return __qp_tps.map(function (tp) {
+            tq = tqById[tp.tq];
+            console.log(tp);
+            return tq.tracepoint(tp);
+        });
+    },
+    
+    // The querypoint results
+    querypoints: function() {
+        console.log("TODO: analyze the tracepoints");
+    },
+    
+    initialize: function() {
+      this.clear();
+      __qp_tps = [];
+      return this;
+    },
+  };
 
 }());

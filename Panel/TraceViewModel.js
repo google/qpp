@@ -10,20 +10,25 @@
     this._hasTraceData = ko.observable('false');
     this.freshTraceData = ko.computed(function() {
       var additions = false;
-      if (fileViewModel.project) {
-        fileViewModel.project.querypoints.tracequeries().forEach(function(tq){
-          tq.extractTracepoints(tree, function (traceData){
-            additions = additions || treeHanger().visitTrace(fileViewModel.treeRoot(), traceData);    
+      var treeRoot = fileViewModel.treeRoot();
+      if (fileViewModel.project && treeRoot) {
+        var treeHanger = this.treeHanger(fileViewModel.project, treeRoot);
+        panel.tracequeries().forEach(function(tq){
+          tq.extractTracepoints(fileViewModel.treeRoot(), function (traceData){
+            var hasTracepoints = traceData && treeHanger.visitTrace(treeRoot, traceData);    
+            additions = additions || hasTracepoints;
           });
-        });
+        }.bind(this));
       }
       return additions;
-    });    
+    }.bind(this));    
+    
+    this.trace
 
     this.currentTraces = ko.computed(function() {
         var tree = fileViewModel.tokenViewModel.tokenTree();
 
-        if (tree && this.freshTraceData()) {
+        if (tree && panel.tracequeries().length) {
           var traces = tree.location.traces;
           if (traces) {
             this._hasTraceData('true');
@@ -61,9 +66,9 @@
   }
   
   QuerypointPanel.TraceViewModel.prototype = {
-    treeHanger: function() {
+    treeHanger: function(project, rootTree) {
       if (!this._treeHanger) {
-        this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(fileViewModel.project);  
+        this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(project, rootTree);  
       } 
       return this._treeHanger;
     }

@@ -6,10 +6,10 @@
   
   var bindings = 0;
   
-  QuerypointPanel.QueryViewModel = function(fileViewModel, project) {
+  QuerypointPanel.QueryViewModel = function(fileViewModel, panel) {
     this.fileViewModel = fileViewModel;
     this.tokenViewModel = fileViewModel.tokenViewModel;
-    this._project = project;
+    this._panel = panel;
     this.update = fileViewModel.update.bind(fileViewModel);
     
     this.isTracing = ko.observable(false);
@@ -18,7 +18,7 @@
       var tree = this.tokenViewModel.tokenTree();
       var queries = [];
       if (tree) {
-        var project = this._project;
+        var project = this._panel.project;
         project.querypoints.possibleQueries().forEach(function(possibleQuery) {
           var query = possibleQuery.ifAvailableFor(tree);
           if (query) {
@@ -39,9 +39,23 @@
   
   QuerypointPanel.QueryViewModel.prototype = {
 
+    attachTracePrompt: function(tree) {
+      var trace = {
+        load: '_',
+        turn: '_',
+        activation: '_',
+        value: '(awaiting execution)'
+      };
+
+      var traces = tree.location.traces = tree.location.traces || [];
+      
+      traces.push(trace);
+    },
+
     issueQuery: function(tracer) {
-      this.fileViewModel.project.querypoints.appendQuery(tracer);
-      var executer = this.fileViewModel.project.executer;
+      this.attachTracePrompt(this.fileViewModel.tokenViewModel.tokenTree());
+      this._panel.tracequeries.push(tracer);
+      var executer = this._panel.project.executer;
       if (executer) {
         if (executer.automatic) {
           executer();
@@ -53,7 +67,7 @@
       }
     },
     requestExecution: function() {
-      this._project.reload();
+      this._panel.project.reload();
       this.isTracing(true);
     },
     reproductionDone: function() {

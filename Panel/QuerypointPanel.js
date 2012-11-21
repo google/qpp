@@ -1,15 +1,23 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// Interface between Querypoint Panel and chrome.devtools extension system
+// ViewModel for project/page
 //  
+
+(function(){
+  
+  ko.extenders.syncArray = function(target, array) {
+    target.subscribe(function(newValue){
+      console.log("syncArray ", newValue);
+      array = newValue;
+    });
+    return target;
+  }
 
 /**
  * @param panel {ExtensionPanel} devtools panel
  * @param panel_window {Window} the content window of the extension panel
  */
-
-(function(){
 
 QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.extensionPanel = extensionPanel;
@@ -18,9 +26,13 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
+  // Active queries are synced back to the project
+  this.tracequeries = ko.observableArray().extend({syncArray: this.project.querypoints.tracequeries});
+
   this.fileViews = document.querySelector('.fileViews');
   this.primaryFileView = this.fileViews.querySelector('.fileView');
 
+  // We view the page through 'files'
   this.fileViewModels = ko.observableArray([new QuerypointPanel.FileViewModel(this.primaryFileView, this)]);
 
   this.fileEditor = this.document.querySelector('.fileEditor');
