@@ -59,7 +59,7 @@ Querypoint.ValueChangeQuery.prototype = {
   
   activateQuery: function(fileViewModel) {
     this.tree.location.query = this;      // mark tree as qp
-    fileViewMode.queryViewModel.issueQuery(new Querypoint.ValueChangeQueryTracer(this.identifier, this.tree));
+    fileViewModel.queryViewModel.issueQuery(new Querypoint.ValueChangeQueryTracer(this.identifier, this.tree));
   },
 }
 

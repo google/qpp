@@ -19,8 +19,7 @@
         var first = last - logScrubber.rangeShowable();
         if (first < 0)
           first = 0;
-        var visibleMessageSources = this._messages.length ? this._messages.slice(first, last) : [];
-        return this._reformat(visibleMessageSources);
+        return this._reformat(this._messages, first, last);
       }.bind(this)).extend({throttle: 10}); // enough time to shift the array
 
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
@@ -34,8 +33,9 @@
     _onMessageAdded: function(message) {
       this._parse(message);
       this._messages.push(message);
-      if (this.logScrubber.trackLatestMessage()) {
-        this.logScrubber.lastShown(this._messages.length - 1);
+      if (message.qp && this.logScrubber.trackLatestMessage()) {
+        var last = this.logScrubber.lastShown() + 1;
+        this.logScrubber.lastShown(last);
       }
     },
     
@@ -71,17 +71,19 @@
       return {turn: messageSource.turn, messages: [messageSource]};
     },
 
-    _reformat: function(messageSources) {
+    _reformat: function(messageSources, first, last) {
       if (!messageSources.length) return;
 
       var visibleMessages = [];
       var currentReload = {};
       var currentTurn = {};
-      var visibleLines = 0;
+      var visibleLines = last;
 
-      messageSources.forEach(function(messageSource){
-        if (messageSource.qp) return;
-        messageSource.odd = (++visibleLines) % 2;
+      var length = messageSources.length;
+      for (var i = 0; i < length; i++) {
+        var messageSource = messageSources[length - i - 1];
+        if (messageSource.qp) continue;
+        messageSource.odd = (--visibleLines) % 2;
         if (currentReload.load !== messageSource.load) {
           currentReload = this._reloadRow(messageSource);
           currentTurn = currentReload.turns[0];
@@ -92,7 +94,8 @@
         } else {
           currentTurn.messages.push(messageSource);
         }
-      }.bind(this));
+        if (visibleLines < first) break;
+      }
       return visibleMessages;
     }
 
