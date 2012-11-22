@@ -93,14 +93,6 @@ body {
   margin-top: -4px; /* compensate for QPOutput padding */
 }
 
-.log {
-  height: 10em;
-  min-height: 10ex;
-  -webkit-flex-grow: 1;
-  -webkit-flex-shrink: 4;
-  -webkit-flex-basis: 10em;
-}
-
 .panelInitialization {
   margin: 0;
   background: gray; 

@@ -21,11 +21,14 @@
   }
 
   // Need class level access for bootstrap, see QuerypointDevtools.js
-  QPProject.reload = function() {
+  QPProject.reload = function(numberOfReloads) {
+    console.assert(typeof numberOfReloads === 'number');
     function transcode(str) {
       console.log("transcode saw ", str);
       return  "// ignored some JavaScript, Hah!";
     }
+
+    Querypoint.QPRuntime.setReloadCounter(numberOfReloads);
 
     var reloadOptions = {
       ignoreCache: true, 
@@ -102,8 +105,8 @@
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
       });
         
-      QPProject.reload();
-      return ++this.numberOfReloads;
+      QPProject.reload(++this.numberOfReloads);
+      return this.numberOfReloads;
     }
   };
 

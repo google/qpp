@@ -7,7 +7,7 @@
   /** 
    * A function that runs in the debuggee web page before any other JavaScript
    */
-     function define__qp() {
+  function define__qp() {
 
     var early = true;
 
@@ -50,15 +50,15 @@
         window.__qp.loadEvent = event;
       });
     }
-    
+       
     function wrapEntryPoint(entryPointFunction) {
       return function() {
         var args = Array.prototype.slice.apply(arguments);
         window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
         window.__qp.turn = window.__qp.turns.length; 
-        console.log("Turn " + window.__qp.turn + " starts "); 
+        console.log("qp| startTurn " + window.__qp.turn); 
         entryPointFunction.apply(window, args);  // TODO check |this| maybe use null
-        console.log("Turn " + window.__qp.turn + " ends "); 
+        console.log("qp| endTurn " + window.__qp.turn); 
       }
     }
 
@@ -116,7 +116,7 @@
     grabLoadEvent();
     interceptEntryPoints();
     wrapEntryPoint(function andWeBegin() {
-      console.log("----------------------- Querypoint Runtime Initialized ---------------------------------");
+      console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
       console.log("window.__qp: %o", window.__qp);    
     }());
   }; 
@@ -125,14 +125,19 @@
     initialize: function() {
       this.runtime =  [define__qp];
       this.source = [];
+      this._reloadNumber = 0;
       return this;
+    },
+    setReloadCounter: function(reloadNumber) {
+      console.assert(typeof reloadNumber === 'number');
+      this._reloadNumber = reloadNumber;
     },
     runtimeSource: function() {
       var fncs = this.runtime.map(function(fnc) {
         return '(' + fnc + ')();\n';
       });
-        
-      return fncs + '\n' + this.source.join('\n');
+      var reload = 'window.__qp_reloads = ' + this._reloadNumber + ';\n';  
+      return reload + fncs + '\n' + this.source.join('\n');
     },
     appendFunction: function(fnc) {
       this.runtime.push(fnc);

@@ -65,9 +65,27 @@
     <div class="splitter"></div>
     <div class='log'>
       <span class="helpInfo">console.log and tracing status output</span>
-      <div class='messages' data-bind="foreach: log.visibleMessages">
-        <div class="message" data-bind="text: text"></div>
-      </div>
+      <div class="floaty">
+        <table class="messagesByLoadNumber">
+          <tbody data-bind="foreach: log.messagesByLoadNumber">
+          <tr>
+            <td class="loadNumber" title="Reload number" data-bind="text: load"></td>
+            <td>
+              <table>
+                <tbody class='turns' data-bind="foreach: turns">
+                  <tr>
+                    <td class="turnNumber" title="Event turn number" data-bind="text: turn"></td>
+                    <td class="messages" title="console output" data-bind="foreach: messages">
+                          <div data-bind="text: text, attr:{severity: severity, odd: odd}"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+     </div>
     </div>
     <div class="splitter">
     </div>

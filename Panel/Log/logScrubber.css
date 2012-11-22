@@ -31,4 +31,56 @@
     padding-right: .3em;
 }
 
-  
+.log {
+  min-height: 10ex;
+  -webkit-flex-grow: 2;
+  -webkit-flex-shrink: 0;
+  -webkit-flex-basis: auto;
+  -webkit-flex-flow: row;
+  display: -webkit-flex;
+  -webkit-justify-content: flex-end;
+}
+
+.floaty {
+  -webkit-flex-grow: 4;
+}
+
+.squishy {
+  -webkit-flex-shrink: 100;
+  height: 100ex;
+}
+
+.log {
+  color: #75715e;
+  cursor: default;
+}
+.log table,tr {
+  width: 100%;
+  border: none;
+  border-spacing: 0px;
+}
+.log td {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+.log .loadNumber {
+  padding-left: 2px;
+}
+.log .turnNumber {
+  border-right: 1px solid #75715e;
+  padding-right: 2px;
+}
+.log .messages {
+  width: 100%;
+}
+.log .messages div {
+  padding-left: 3px;
+}
+.log .messages div {
+  background-color: rgb(56, 58, 45);
+  color: rgb(141, 141, 134);
+}
+.log .messages div[odd="1"] {
+  color: rgb(148, 143, 118);
+  background-color: rgb(32, 32, 29);
+}

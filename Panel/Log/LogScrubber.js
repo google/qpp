@@ -11,8 +11,8 @@
 
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){
-        var height = logElement.offsetHeight;
-        var lineHeight = 12;
+        var height = logElement.clientHeight;
+        var lineHeight = 13;
         var lines = Math.ceil(height / lineHeight);
         return lines;
       }.bind(this));
