@@ -21,6 +21,7 @@ function onClick() {
 
 function updateButton() {
   var message = "I've been clicked " + obj.prop + " times";
+  console.error(message);
   document.querySelector("#myButton").innerHTML = message;
   console.log(message);
 }
@@ -40,7 +41,8 @@ function onLoad() {
   button.innerHTML = "Try Me!";
   button.addEventListener('click', onClick);
   button.id = "myButton";
-  document.body.appendChild(button);  
+  document.body.appendChild(button);
+  console.warn("This is your first warning");  
 }
 
 window.addEventListener('load',onLoad);

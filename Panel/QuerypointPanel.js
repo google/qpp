@@ -26,9 +26,14 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
-  var logElement = document.querySelector('.log');
-  this._logScrubber = QuerypointPanel.LogScrubber.initialize(logElement);
-  this.log = QuerypointPanel.Log.initialize(this._logScrubber);
+  var logElement = document.querySelector('.logView');
+  var logScrubberElement = document.querySelector('.logScrubber');
+
+  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement);
+  this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
+  this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
+
+  ko.applyBindings(this.logScrubber, logScrubberElement);
   ko.applyBindings(this, logElement);
 
   // Active queries are synced back to the project

@@ -2,25 +2,14 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  
-  window.QuerypointPanel = window.QuerypointPanel || {};
-
   QuerypointPanel.Log = {
-    
-    _messages: [],
-    _reloadCount: 0,
-    _turn: 0,
 
-    initialize: function(logScrubber) {
-      this.logScrubber = logScrubber;
-     
-      this.messagesByLoadNumber = ko.computed(function() {
-        var last = logScrubber.lastShown();
-        var first = last - logScrubber.rangeShowable();
-        if (first < 0)
-          first = 0;
-        return this._reformat(this._messages, first, last);
-      }.bind(this)).extend({throttle: 10}); // enough time to shift the array
+    currentReload: {},
+    currentTurn: {},
+
+    initialize: function(project, logScrubber) {
+      this.project = project;
+      this._logScrubber = logScrubber;
 
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
 
@@ -28,15 +17,12 @@
         messages.forEach(this._onMessageAdded.bind(this));
       }.bind(this));
       return this;
-    },
 
+      return this;
+    },
+    
     _onMessageAdded: function(message) {
-      this._parse(message);
-      this._messages.push(message);
-      if (message.qp && this.logScrubber.trackLatestMessage()) {
-        var last = this.logScrubber.lastShown() + 1;
-        this.logScrubber.lastShown(last);
-      }
+      this._reformatMessage(this._parse(message));
     },
     
     _parse: function(messageSource) {
@@ -60,7 +46,8 @@
         }
       }
       messageSource.load = this._reloadCount;
-      messageSource.turn = this._turn; 
+      messageSource.turn = this._turn;
+      return messageSource; 
     },
 
     _reloadRow: function(messageSource) {
@@ -71,33 +58,30 @@
       return {turn: messageSource.turn, messages: [messageSource]};
     },
 
-    _reformat: function(messageSources, first, last) {
-      if (!messageSources.length) return;
-
-      var visibleMessages = [];
-      var currentReload = {};
-      var currentTurn = {};
-      var visibleLines = last;
-
-      var length = messageSources.length;
-      for (var i = 0; i < length; i++) {
-        var messageSource = messageSources[length - i - 1];
-        if (messageSource.qp) continue;
-        messageSource.odd = (--visibleLines) % 2;
-        if (currentReload.load !== messageSource.load) {
-          currentReload = this._reloadRow(messageSource);
-          currentTurn = currentReload.turns[0];
-          visibleMessages.push(currentReload);
-        } else if (currentTurn.turn !== messageSource.turn) {
-          currentTurn = this._turnRow(messageSource)
-          currentReload.turns.push(currentTurn);
-        } else {
-          currentTurn.messages.push(messageSource);
-        }
-        if (visibleLines < first) break;
+    _reformatMessage: function(messageSource) {
+      if (messageSource.qp) return;
+      if (typeof messageSource.load === 'undefined') messageSource.load = this.project.numberOfReloads + 1;
+      if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
+      
+      if (this.currentReload.load !== messageSource.load) {
+        this.currentReload = this._reloadRow(messageSource);
+        this.currentTurn = this.currentReload.turns[0];
+        this._logScrubber.loads.push(this.currentReload);
+        console.log("_reformat "+this._logScrubber.loads().length);
+      } else if (this.currentTurn.turn !== messageSource.turn) {
+        this.currentTurn = this._turnRow(messageSource)
+        this.currentReload.turns.push(this.currentTurn);
+      } else {
+        this.currentTurn.messages.push(messageSource);
       }
-      return visibleMessages;
+    },
+    
+    extractMessages: function(first, last) {
+      var visibleMessages = [];
+      //messageSource.odd = (--visibleLines) % 2;
+      return this._logScrubber.loads();
     }
+
 
   };
 }());

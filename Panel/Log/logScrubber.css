@@ -10,17 +10,56 @@
 
 .scrubberBox {
 	color: #272822; /* reverse from cm-s */
-	background-color: #f8f8f2;
-	border-radius: 5px;
+	/*background: -webkit-radial-gradient(black 15%, transparent 16%) 0 0, -webkit-radial-gradient(black 15%, transparent 16%) 4px 4px, -webkit-radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 0 1px, -webkit-radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 4px 4.5px;
+    background-color:#272822;
+    background-size:8px 8px;
+    */
+    
+	font-size: 0px;
+	background-color: #75715E;
 }
 
-.logScrubber .scrubberIndicator {
+/* http://colorschemedesigner.com/#1q11T6ieGw0w0 */
+.logScrubber span.loadNumber:nth-child(even) {
+    border: 1px solid #58564B;
+}
+
+.logScrubber span.loadNumber:nth-child(odd) {
+    border: 1px solid #BAB7A6;
+}
+
+.logScubber span.turnNumber:nth-child(even) {
+    border: 1px solid #4c441f;
+}
+.logScubber span.turnNumber:nth-child(odd) {
+    border: 1px solid #BAB59F;
+}
+
+.logScrubber span.turns {
+    border: none;
+}
+
+.logScrubber .log {
+    font-size: 9px;
+}
+
+.logScrubber .error {
+    font-size: 9px;
+    background-color: red;
+}
+.logScrubber .warning {
+    font-size: 9px;
+    background-color: yellow;
+}
+
+.logScrubber span.scrubberIndicator {
 	position: absolute;
 	width: 3ex;
 	height: 1em;
-	border: red solid 1px;
+	border: purple solid 1px;
 	right: 1ex;
 	padding: 0px;
+	top: 0px;
 }
 
 .runNumber {
@@ -31,7 +70,7 @@
     padding-right: .3em;
 }
 
-.log {
+.logView {
   min-height: 10ex;
   -webkit-flex-grow: 2;
   -webkit-flex-shrink: 0;
@@ -50,37 +89,39 @@
   height: 100ex;
 }
 
-.log {
+.logView {
   color: #75715e;
   cursor: default;
 }
-.log table,tr {
+.logView table,tr {
   width: 100%;
   border: none;
   border-spacing: 0px;
 }
-.log td {
+.logView td {
   padding-top: 0px;
   padding-bottom: 0px;
 }
-.log .loadNumber {
+.logView .loadNumber {
   padding-left: 2px;
+  width: 2ex;
+  margin-right: 1ex;
 }
-.log .turnNumber {
+.logView .turnNumber {
   border-right: 1px solid #75715e;
   padding-right: 2px;
 }
-.log .messages {
+.logView .messages {
   width: 100%;
 }
-.log .messages div {
+.logView .messages div {
   padding-left: 3px;
 }
-.log .messages div {
+.logView .messages div {
   background-color: rgb(56, 58, 45);
   color: rgb(141, 141, 134);
 }
-.log .messages div[odd="1"] {
+.logView .messages div[odd="1"] {
   color: rgb(148, 143, 118);
   background-color: rgb(32, 32, 29);
 }

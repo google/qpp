@@ -4,11 +4,18 @@
 (function() {
   QuerypointPanel.LogScrubber = {
 
+
+    
     initialize: function(logElement) {
-      this.lastShown = ko.observable(0);
-     
+      this.loads = ko.observableArray();
+
       this.trackLatestMessage = ko.observable(true);
-      this.scrubTrack = ko.observableArray();
+      
+      this.lastShown = ko.computed(function() {
+        console.log(this.loads().length + " loads");
+        return this.loads().length;
+      }.bind(this));
+      
       this.lastLoad = 0;
       this.lastTurn = 0;
 
@@ -19,6 +26,7 @@
         var lines = Math.ceil(height / lineHeight) + 1;
         return lines;
       }.bind(this));
+
       return this;
     },
     
