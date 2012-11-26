@@ -1,0 +1,70 @@
+/* Turn on a 13x13 scrollbar */
+.scrubMe::-webkit-scrollbar {
+    width: 13px;
+    height: 13px;
+}
+
+.scrubMe::-webkit-scrollbar-button:horizontal {
+    background-color: red;
+    border: 1px dashed blue;
+}
+
+/* Turn on single button left and right */
+.scrubMe::-webkit-scrollbar-button:start:decrement,
+.scrubMe::-webkit-scrollbar-button:end:increment {
+    display: block;
+}
+
+/* Turn off the left area up on right, and right area on left */
+.scrubMe::-webkit-scrollbar-button:horizontal:start:increment,
+.scrubMe::-webkit-scrollbar-button:horizontal:end:decrement {
+    display: none;
+}
+
+/* Place The scroll right button at the right */
+.scrubMe::-webkit-scrollbar-button:horizontal:increment {
+    background-color: black;
+    border: 1px dashed blue;
+}
+
+/* Place The scroll left button at the left */
+.scrubMe::-webkit-scrollbar-button:horizontal:decrement {
+    background-color: purple;
+    border: 1px dashed blue;
+}
+
+.scrubMe::-webkit-scrollbar-track:horizontal {
+    background-color: blue;
+    border: 1px dashed pink;
+}
+
+/* Top area above thumb and below up button */
+.scrubMe::-webkit-scrollbar-track-piece:horizontal:start {
+    border: 1px solid #000;
+}
+
+/* Bottom area below thumb and down button */
+.scrubMe::-webkit-scrollbar-track-piece:horizontal:end {
+    border: 1px dashed pink;
+}
+
+/* Track below and above */
+.scrubMe::-webkit-scrollbar-track-piece {
+    background-color: green;
+}
+
+/* The thumb itself */
+.scrubMe::-webkit-scrollbar-thumb:horizontal {
+    height: 50px;
+    background-color: yellow;
+}
+
+/* Corner */
+.scrubMe::-webkit-scrollbar-corner:horizontal {
+    background-color: black;
+}
+
+/* Resizer */
+.scrubMe::-webkit-scrollbar-resizer:horizontal {
+    background-color: gray;
+}
