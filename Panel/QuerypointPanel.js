@@ -105,7 +105,8 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _openResourceAndRefresh: function(resource, item) {
-    return this._openResource(resource, item, this.showPrimaryFileView.bind(this));
+    var view = this.fileViews.querySelector(".fileEditor");
+    return this._openResource(view, resource, item, this.showPrimaryFileView.bind(this));
   },
   
   _openResource: function(fileEditorView, resource, item, onShown) {

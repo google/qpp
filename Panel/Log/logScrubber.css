@@ -79,11 +79,12 @@
   -webkit-flex-flow: row;
   display: -webkit-flex;
   -webkit-justify-content: flex-end;
-  height:  20%;
+  height: 200px;
 }
 
 .floaty {
-  -webkit-flex-grow: 4;
+  overflow-y: scroll;
+  overflow-x: auto;
 }
 
 .squishy {
@@ -97,6 +98,7 @@
 }
 .logView table,tr {
   width: 100%;
+  height: 100%;
   border: none;
   border-spacing: 0px;
 }

@@ -133,10 +133,8 @@ body {
 
 .fileEditor {
   height: 100%;
-  position: relative;
-  display: -webkit-flex;
-  -webkit-flex-shrink: 0; -webkit-flex-grow: 0; 
-  -webkit-flex-basis: auto;
+  position: relative;  
+  overflow-y: auto;
 }
 
 .explainTokenPanel {
@@ -145,17 +143,19 @@ body {
 }
 
 .fileViews {
-  -webkit-flex-grow: 2;
+  -webkit-flex-grow: 8;
+  min-height: 20ex;
   -webkit-flex-shrink: 1;
-  -webkit-flex-basis: 70%;
   display: -webkit-flex;
+  -webkit-flex-flow: column;
 }
 
 
 .fileView {
   -webkit-flex-grow: 2;
   -webkit-flex-shrink: 1;
-  -webkit-flex-basis: auto;
+  -webkit-flex-basis: 100%;
+  height: 100%;
   display: -webkit-flex;
 }
 
@@ -271,6 +271,7 @@ pre.traceBackground {
 .CodeMirror-scroll {
   overflow: auto;
 
+  height: 100%;
 }
 
 .CodeMirror-lines {

@@ -19,6 +19,9 @@ function EditorByCodeMirror(containerElement, name, initialContent) {
 //  this.editorImpl.on('blur', this._onBlur.bind(this));
   
   this._container = containerElement;
+  window.addEventListener('resize', this._setSize.bind(this));
+  /* Set an initial size heusitically */
+  setTimeout( this._setSize.bind(this) ); 
   this._onMouseOver = this._onMouseOver.bind(this);
   
   this._addUniqueClassName();
@@ -34,7 +37,6 @@ EditorByCodeMirror.prototype = {
   },
   hide: function() {
     this.editorImpl.getWrapperElement().classList.add('hide');
-
   },
   getContent: function() {
     return this.editorImpl.getValue();
@@ -62,9 +64,11 @@ EditorByCodeMirror.prototype = {
     var lineHandle = this.editorImpl.getLineHandle(line);
     this.editorImpl.addLineWidget(lineHandle, element);
   },
+
   setLineClass: function(line, textClassName, backgroundClassName) {
     this.editorImpl.addLineClass(line, 'wrap');
   },
+
   getViewport: function() {
     var viewport = this.editorImpl.getViewport(); // (from:<integer> to:<integer>}
     return {name: this.name,start: viewport.from,end: viewport.to};
@@ -86,13 +90,16 @@ EditorByCodeMirror.prototype = {
   _onChange: function(editor, changes) {
     this.dispatch('onChange', {name: this.name,changes: changes});
   },
+
   _onViewportChange: function(editor, from, to) {
     console.log("EditorByCodeMirror onViewportChange" + this.name + ':' + from + ',' + to);
     this.dispatch('onViewportChange', {name: this.name,start: from,end: to});
   },
+
   _onGutterClick: function(editor, line) {
     this.dispatch('onClickLineNumber', {name: this.name,line: line});
   },
+
   _onMouseOver: function(event) { // emit tokenEvent iff things change
     var pos = this.editorImpl.coordsChar({top: event.clientY,left: event.clientX});
     var posDidChange = 
@@ -171,17 +178,19 @@ EditorByCodeMirror.prototype = {
       if (listenerChange.eventName === 'onTokenOver') {
         console.log('listenerChange ' + this.name + ', ' + listenerChange.eventName + ': '+listenerChange.count);
         if (listenerChange.count) {
-
           this._watchMouse();
         } else {
-
           this._unwatchMouse();
           this._removeTokenBox();
         }
       }
     }.bind(this));
+  },
+  
+  _setSize: function() {
+    // Trial and error soln.
+    this.resize(this._container.offsetWidth, this._container.parentElement.offsetHeight);
   }
-
 }
 
 QuerypointPanel.addEventFunctions(EditorByCodeMirror.prototype);
