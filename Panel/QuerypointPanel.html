@@ -72,19 +72,9 @@
     <div class="logScrubber">
       <span class="helpInfo">
         Log Scrubber: click or drag to change log viewport 
-      </span>
-      <div class="scrubberBox" data-bind="foreach: loads"><!--
-          --><span class="loadNumber" title="Reload number" data-bind="attr:{load: load}"><!--
-           --><span class="turns" data-bind="foreach: turns"><!--
-             --><span class="turnNumber" title="Event turn number" data-bind="attr:{turn: turn}"><!--
-               --><span class="messages" title="console output" data-bind="foreach: messages"><!--
-                  --><span class="message" data-bind="attr: {class: severity}">x</span>      
-                  </span>
-              </span>
-            </span>
-          </span>          
-      </div>
-      <span class="CodeMirror-gutter-text scrubberIndicator"></span>
+      </span><!-- http://robertnyman.com/2010/02/24/css-display-inline-block-why-it-rocks-and-why-it-sucks/ -->
+      <div class="scrubberBox" data-bind="foreach: loads"><span class="loadNumber" title="Reload number" data-bind="attr:{load: load}"><span class="turns" data-bind="foreach: turns"><span class="turnNumber" title="Event turn number" data-bind="attr:{turn: turn}"><span class="messages" title="console output" data-bind="foreach: messages"><span class="message" data-bind="attr: {class: severity, title: tooltip()}">x</span></span></span></span></span></div>
+      <span class="scrubberIndicator" title="slide sideways to select visible log entries, up/down to resize log view"></span>
     </div>
     <div class="fileViews" data-bind="foreach: fileViewModels">
       <div class="fileView">

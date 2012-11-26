@@ -2,6 +2,13 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
+  
+  var messagePrototype = {
+    tooltip: function() {
+      return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
+    }
+  };
+  
   QuerypointPanel.Log = {
 
     currentReload: {},
@@ -62,6 +69,7 @@
       if (messageSource.qp) return;
       if (typeof messageSource.load === 'undefined') messageSource.load = this.project.numberOfReloads + 1;
       if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
+      messageSource.__proto__ = messagePrototype;
       
       if (this.currentReload.load !== messageSource.load) {
         this.currentReload = this._reloadRow(messageSource);
@@ -81,7 +89,6 @@
       //messageSource.odd = (--visibleLines) % 2;
       return this._logScrubber.loads();
     }
-
 
   };
 }());

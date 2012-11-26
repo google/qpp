@@ -27,9 +27,37 @@
         return lines;
       }.bind(this));
 
+      this._initMouse();
+
       return this;
     },
     
+    _initMouse: function() {
+      var scrubber = this;
+      var scrubberIndicator = $('.scrubberIndicator');
+      scrubberIndicator.on('mousedown', function(downEvent){
+        var originalPosition = $('.scrubberIndicator').position();
+        function mousemove(moveEvent) {
+          var dx = downEvent.pageX - moveEvent.pageX;
+          var dy = downEvent.pageY - moveEvent.pageY;
+          if (Math.abs(dx) > Math.abs(dy)) {
+            scrubberIndicator.css({left: (originalPosition.left - dx) + 'px'});;
+          } else {
+
+          }
+          moveEvent.preventDefault();
+          moveEvent.stopPropagation();
+        };
+        
+        $('.scrubberIndicator').on('mousemove', mousemove);
+
+        $('.scrubberIndicator').on('mouseup mouseleave', function(upEvent){
+          $('.scrubberIndicator').off('mousemove', mousemove);
+          upEvent.preventDefault();
+          upEvent.stopPropagation();
+        });
+      });
+    }
 
   };
 }());

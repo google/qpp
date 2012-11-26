@@ -3,9 +3,8 @@
 // Copyright 2011 Google Inc. johnjbarton@google.com
 */
 .logScrubber {
-	height: 1em;
+	height: 11px;
 	position: relative;
-	-webkit-flex: none;
 }
 
 .scrubberBox {
@@ -15,8 +14,15 @@
     background-size:8px 8px;
     */
     
-	font-size: 0px;
 	background-color: #75715E;
+	line-height: 7px;
+	font-size: 0px; /* prevent whitespace */
+}
+
+.scrubberBox span {  /* spans to have width and height */
+  display: inline-block;
+  height: 11px;
+  width: 9px;
 }
 
 /* http://colorschemedesigner.com/#1q11T6ieGw0w0 */
@@ -39,27 +45,25 @@
     border: none;
 }
 
-.logScrubber .log {
-    font-size: 9px;
-}
-
 .logScrubber .error {
-    font-size: 9px;
     background-color: red;
 }
 .logScrubber .warning {
-    font-size: 9px;
     background-color: yellow;
 }
 
 .logScrubber span.scrubberIndicator {
 	position: absolute;
 	width: 3ex;
-	height: 1em;
-	border: purple solid 1px;
-	right: 1ex;
+	height: 11px;
 	padding: 0px;
 	top: 0px;
+	background-color: purple;
+	opacity: .2;
+	left: 20px;
+}
+.logScrubber span.scrubberIndicator:hover {
+  opacity: .8;
 }
 
 .runNumber {
@@ -72,12 +76,10 @@
 
 .logView {
   min-height: 10ex;
-  -webkit-flex-grow: 2;
-  -webkit-flex-shrink: 0;
-  -webkit-flex-basis: auto;
   -webkit-flex-flow: row;
   display: -webkit-flex;
   -webkit-justify-content: flex-end;
+  height:  20%;
 }
 
 .floaty {
