@@ -6,12 +6,16 @@
   var buffersStatusBarSelector = ".buffersStatusBar";
   
   QuerypointPanel.BuffersStatusBar = {
-    initialize: function() {
+    initialize: function(panel) {
       this.exploringMode = ko.observable(false);
       this.openURLs = ko.observableArray();
       this.unsavedEditors = ko.observableArray();
       // at start up we assume the web page has reloaded since our last edit....
       this.savedEditors = ko.observableArray();
+      
+      this.currentTurnNumber = ko.computed(function() {
+        return panel.logScrubber.turnStarted();
+      });
 
       ko.applyBindings(this, document.querySelector(buffersStatusBarSelector));
       return this;

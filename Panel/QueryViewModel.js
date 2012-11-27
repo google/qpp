@@ -10,7 +10,6 @@
     this.fileViewModel = fileViewModel;
     this.tokenViewModel = fileViewModel.tokenViewModel;
     this._panel = panel;
-    this.update = fileViewModel.update.bind(fileViewModel);
     
     this.isTracing = ko.observable(false);
         
@@ -72,7 +71,7 @@
       this.isTracing(true);
     },
     reproductionDone: function() {
-      this.update();
+
       this.isTracing(false);
     }
   };

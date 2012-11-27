@@ -17,7 +17,8 @@
       }.bind(this));
       
       this.lastLoad = 0;
-      this.lastTurn = 0;
+      this.turnStarted = ko.observable(0);
+      this.turnEnded = ko.observable(0);
 
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){
@@ -26,6 +27,7 @@
         var lines = Math.ceil(height / lineHeight) + 1;
         return lines;
       }.bind(this));
+
 
       this._initMouse();
 

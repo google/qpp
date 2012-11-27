@@ -44,9 +44,10 @@
             break;
           case 'startTurn': 
             this._turn = parseInt(segments[2], 10);
+            this._logScrubber.turnStarted(this._turn);
             break;
           case 'endTurn':
-            this.project.turnEnds(parseInt(segments[2], 10));
+            this._logScrubber.turnEnded(parseInt(segments[2], 10));
             break;  
           default: 
             console.error("unknown keyword: "+messageSource.text);

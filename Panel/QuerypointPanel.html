@@ -121,9 +121,10 @@
               </div>
             </div>
             <div class="explainTokenPanel">
-              <span data-bind="if: tokenViewModel.followingTokens()">Focus Editor to Lock</span>
-              <span data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Token</span>
+              <p data-bind="if: tokenViewModel.followingTokens()">Selecting Syntax Tree; Focus Editor to Lock</p>
+              <p data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Syntax Tree</p>
           </div>
+          <span class="updatedOnTurnNumber" data-bind="text: updatedOnTurnNumber"></span>
           </div>
         </a>
         <div class="fileEditor">
@@ -131,22 +132,31 @@
         </div>
       </div>
     </div>
-    <div class="splitter"></div>
     <div class="buffersStatusBar">
-      <span class="helpInfo">Current Editor URL</span>
-      <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
-      
-
-      <span 
-        title="Files changed and not saved" 
-        class="unsavedChangedFiles centeringHack" 
-        data-bind="text: '*' + unsavedEditors().length"
-        >*1</span>
-      <span 
-        title="Files saved since the last reload" 
-        class="savedChangedFiles centeringHack" 
-        data-bind="text: '&#x2206;' + savedEditors().length"
-        > 2</span>
+      <div class="commandLine">
+        <span>&#x1433;</span><input class="commandInput" type="search" size="100" value="Eventual home of command line">
+      </div>
+      <div class="counters">
+        <span
+          title="Current turn number"
+          class="turnNumber centeringHack"
+          data-bind="text: '&#x2941' + currentTurnNumber()"
+          ></span>
+        <span 
+          title="Files changed and not saved" 
+          class="unsavedChangedFiles centeringHack" 
+          data-bind="text: '*' + unsavedEditors().length"
+          >*1</span>
+        <span 
+          title="Files saved since the last reload" 
+          class="savedChangedFiles centeringHack" 
+          data-bind="text: '&#x2206;' + savedEditors().length"
+          > 2</span>
+        <span 
+          title="Options changed from default values" 
+          class="changedOptions centeringHack" 
+          ><span class='changedOptionsIcon'>&#x2699;</span><span data-bind="text: '' +'0'"></span></span>
+      </div>
     </div>
     <div class="splitter"></div>
     </tbody>

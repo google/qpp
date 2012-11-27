@@ -38,6 +38,17 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
 
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({syncArray: this.project.querypoints.tracequeries});
+  // Turns in the current load are synced back to the project
+  this.turns = ko.observableArray().extend({syncArray: this.project.turns});
+  
+  var panel = this;
+  this.currentTurnActive = ko.computed(function() {
+    var active = !!(panel.logScrubber.turnEnded() - panel.logScrubber.turnStarted());
+    return active;
+  });
+  this.currentTurnNumber = ko.computed(function() {
+    return panel.logScrubber.turnStarted();
+  });
 
   this.fileViews = document.querySelector('.fileViews');
   this.primaryFileView = this.fileViews.querySelector('.fileView');
@@ -286,7 +297,7 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _initEditors: function(panelModel) {
-    this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize();
+    this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize(this);
     this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar, this.commands);
     
     var lastURL = panelModel.buffers.openURLs.pop();

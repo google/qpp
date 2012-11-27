@@ -3,36 +3,55 @@
 // Copyright 2011 Google Inc. johnjbarton@google.com
 */
 .buffersStatusBar {
-	height: 1em;
+	height: 17px;
     color: #272822; /* reverse from cm-s */
-	background-color: #f8f8f2;
+	background-color: #75715E;
 	position: relative;
 	font-size: 15px;
-  display: -webkit-flex;
-
-  -webkit-flex-direction: row;
+    display: -webkit-flex;
+    -webkit-flex-direction: row;
+    -webkit-justify-content: space-between;
+    
 	-webkit-flex: none;
 }
-
 .buffersStatusBar .commandLine {
+  background-color: #75715E;
+  color: #d0d0d0;
+}
+.buffersStatusBar .commandInput {
   height: 17px; 
   border-radius: 7px;
+  background-color: #75715E;
+  color: #d0d0d0;
 }
 
+.buffersStatusBar .counters span {
+  margin-right: 2px;
+  cursor: pointer;
+} 
 
 .buffersStatusBar .unsavedChangedFiles {
 	color: #f92672;
-	float: right;
-	margin-right: 2px;
-	cursor: pointer;
 }
 
 .buffersStatusBar .savedChangedFiles {
 	color: #a6e22e;
-	float: right;
+}
 
-	margin-right: 2px;
-	cursor: pointer;
+.buffersStatusBar .turnNumber {
+  color: rgb(26, 6, 255);
+}
+.buffersStatusBar .turnNumber[active='true'] {
+  background=color: black;
+}
+
+
+.buffersStatusBar .changedOptionsIcon {
+  font-size: x-large; /* our funky gear unicode is too small */
+}
+
+.buffersStatusBar .changedOptions {
+  color: rgb(255, 208, 69);
 }
 
 .buffersStatusBar .centeringHack {
