@@ -78,7 +78,7 @@
     </div>
     <div class="fileViews" data-bind="foreach: fileViewModels">
       <div class="fileView">
-        <a class="focusBlock fileInfoView"  data-bind="hasfocus: tokenViewModel.followTokens" tabindex="0">
+        <a class="focusBlock"  data-bind="hasfocus: tokenViewModel.followTokens" tabindex="0">
           <div class="hoverDoorChannel">
             <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
             <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
@@ -120,10 +120,10 @@
                 </div>
               </div>
             </div>
+            <div class="explainTokenPanel">
+              <span data-bind="if: tokenViewModel.followingTokens()">Focus Editor to Lock</span>
+              <span data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Token</span>
           </div>
-         <div class="explainTokenPanel">
-            <span data-bind="if: tokenViewModel.followingTokens()">Focus Editor to Lock</span>
-            <span data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Token</span>
           </div>
         </a>
         <div class="fileEditor">

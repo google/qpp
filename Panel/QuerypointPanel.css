@@ -160,10 +160,6 @@ body {
 }
 
 a.focusBlock {
-  display: -webkit-flex;
-  -webkit-flex-flow: column;
-  -webkit-justify-content: space-between;
-  
   -webkit-flex-shrink: 0;
   -webkit-flex-grow: 0;
   -webkit-flex-basis: auto;
@@ -175,7 +171,11 @@ a:focus, a:active {
 }
 
 .QPOutput {
-    padding: 4px;
+  padding: 4px;
+  display: -webkit-flex;
+  -webkit-flex-flow: column;
+  -webkit-justify-content: space-between;
+  -webkit-flex-basis: 100%;
 }
 
 .overflowMe {

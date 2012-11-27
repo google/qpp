@@ -217,7 +217,7 @@ QuerypointPanel.Panel.prototype = {
       this._openContextMenu(event);
     } else {
       if (event.target.classList.contains('QPOutput')) {
-        this.refresh();
+        //this.refresh();
       }
     }
   },
