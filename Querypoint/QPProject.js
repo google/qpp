@@ -109,10 +109,6 @@
       return this.numberOfReloads;
     },
     
-    turnEnds: function(turnNumber) {
-        debugger;
-    },
-    
   };
 
   window.Querypoint = window.Querypoint || {};
