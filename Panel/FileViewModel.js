@@ -38,7 +38,7 @@
 
       this.updateViewport(editor.getViewport()); // TODO ko
       editor.addListener('onViewportChange', this.updateViewport.bind(this));
-      editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
+      //editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
 
       console.log("FileViewModel.update "+this.editor().name);  
     },

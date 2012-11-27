@@ -118,14 +118,12 @@
                 <div class="toolbar" data-bind="foreach: queryViewModel.currentQueries">
                   <button class="command" data-bind="text: buttonName(), attr: {title: toolTip()}, click: activateQuery.bind($data, $parent)"></button>
                 </div>
-                <div data-bind="if: queryViewModel.isTracing">
-                  <div class="reexecution"> 
-                    <span>Operate on the Web page, eg reproduce your bug</span>
-                    <button class="command" data-bind="click: queryViewModel.reproductionDone.bind(queryViewModel)">Done!</button>
-                  </div>
-                </div>
               </div>
             </div>
+          </div>
+         <div class="explainTokenPanel">
+            <span data-bind="if: tokenViewModel.followingTokens()">Focus Editor to Lock</span>
+            <span data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Token</span>
           </div>
         </a>
         <div class="fileEditor">
@@ -137,10 +135,7 @@
     <div class="buffersStatusBar">
       <span class="helpInfo">Current Editor URL</span>
       <!--<span>&#x1433;</span><input class="commandLine" type="search" size="100">-->
-      <div class="explainTokenPanel">
-            <span title="Hint on how the display works" data-bind="if: exploringMode()">Exploring ... focus editor to lock</span>
-            <span data-bind="if: !exploringMode()">Locked ... blur editor to unlock</span>
-      </div>
+      
 
       <span 
         title="Files changed and not saved" 

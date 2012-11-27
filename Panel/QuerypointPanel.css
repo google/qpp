@@ -139,7 +139,6 @@ body {
 
 .explainTokenPanel {
   font-family: Lucida Grande, sans-serif;
-  -webkit-flex: 1 2 auto;
 }
 
 .fileViews {
@@ -157,15 +156,18 @@ body {
   -webkit-flex-basis: 100%;
   height: 100%;
   display: -webkit-flex;
+  -webkit-flex-direction: row;
 }
 
 a.focusBlock {
-  display: block;
-
+  display: -webkit-flex;
+  -webkit-flex-flow: column;
+  -webkit-justify-content: space-between;
+  
   -webkit-flex-shrink: 0;
   -webkit-flex-grow: 0;
   -webkit-flex-basis: auto;
-  width:  30%;
+  width:  326px;  /* must be fixed to avoid flashy resizing of the width */
 }
 a:focus, a:active {
   background-color: rgb(33, 34, 31);
@@ -174,15 +176,12 @@ a:focus, a:active {
 
 .QPOutput {
     padding: 4px;
-    width: 30%;
 }
 
 .overflowMe {
   left: 0;
   overflow: hidden;
-  position: absolute;
   right: 0;
-  width: 30%;
 }
 
 .traceView {
@@ -283,6 +282,8 @@ pre.traceBackground {
   padding: 0em .2em .4em .4em; /* match the CodeMirror-lines so the line numbers match the lines */
 }
 
+/* dark by default so active stands out */
+.cm-s-monokai .CodeMirror-linenumber  {color: #75715e;}
 .cm-s-monokai .qp-no-activations .CodeMirror-linenumber  {color: #75715e;}
 .cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
 .cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}

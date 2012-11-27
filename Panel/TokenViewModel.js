@@ -13,16 +13,16 @@
 
     this.followingTokens = ko.computed(function() {
       if (!this._fileViewModel.editor()) {
-          return;
+          return false;
       }
       if (this.followTokens()) {          
         if (!this._fileViewModel.editor().hasListener('onTokenOver')) {
           this._fileViewModel.editor().addListener('onTokenOver', this.tokenEvent);
-          QuerypointPanel.BuffersStatusBar.exploringMode(true);
+          return true;
         }
       } else {
         this._fileViewModel.editor().removeListener('onTokenOver', this.tokenEvent);
-        QuerypointPanel.BuffersStatusBar.exploringMode(false);
+        return false;
       }
 
     }.bind(this));
