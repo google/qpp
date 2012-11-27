@@ -46,6 +46,7 @@
             this._turn = parseInt(segments[2], 10);
             break;
           case 'endTurn':
+            this.project.turnEnds(parseInt(segments[2], 10));
             break;  
           default: 
             console.error("unknown keyword: "+messageSource.text);

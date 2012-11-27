@@ -29,7 +29,7 @@
     
     this.tokenTree = ko.computed(function() {
       var tokenEvent = this.tokenEvent();
-      if (!tokenEvent)
+      if (!tokenEvent || !this._fileViewModel.sourceFile())
           return; 
           
       var line = this.tokenEvent().start.line;

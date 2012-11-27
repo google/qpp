@@ -39,12 +39,13 @@
   
   QuerypointPanel.QueryViewModel.prototype = {
 
-    attachTracePrompt: function(tree) {
+    attachTracePrompt: function(tree, tracer) {
       var trace = {
         load: '_',
         turn: '_',
         activation: '_',
-        value: '(awaiting execution)'
+        value: tracer.tracePrompt(),
+        tracer: tracer,
       };
 
       var traces = tree.location.traces = tree.location.traces || [];
@@ -53,7 +54,7 @@
     },
 
     issueQuery: function(tracer) {
-      this.attachTracePrompt(this.fileViewModel.tokenViewModel.tokenTree());
+      this.attachTracePrompt(this.fileViewModel.tokenViewModel.tokenTree(), tracer);
       this._panel.tracequeries.push(tracer);
       var executer = this._panel.project.executer;
       if (executer) {

@@ -64,7 +64,10 @@ Querypoint.ValueChangeQuery.prototype = {
 }
 
 Querypoint.ValueChangeQueryTracer.prototype = {
-
+  tracePrompt: function() {
+    return "(no changes)";
+  }, 
+  
   // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
   // 
   transformParseTree: function(tree) {

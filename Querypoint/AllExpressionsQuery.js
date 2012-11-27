@@ -43,7 +43,10 @@ Querypoint.AllExpressionsQuery.prototype = {
 };
 
 Querypoint.AllExpressionsQueryTracer.prototype = {
-
+  tracePrompt: function() {
+    return "(awaiting execution)";
+  },
+  
   // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
   // 
   transformParseTree: function(tree) {

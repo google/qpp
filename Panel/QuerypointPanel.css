@@ -135,6 +135,7 @@ body {
   height: 100%;
   position: relative;  
   overflow-y: auto;
+  width: 100%;
 }
 
 .explainTokenPanel {
@@ -164,6 +165,8 @@ a.focusBlock {
   -webkit-flex-grow: 0;
   -webkit-flex-basis: auto;
   width:  326px;  /* must be fixed to avoid flashy resizing of the width */
+;
+  position: relative;
 }
 a:focus, a:active {
   background-color: rgb(33, 34, 31);
@@ -176,6 +179,8 @@ a:focus, a:active {
   -webkit-flex-flow: column;
   -webkit-justify-content: space-between;
   -webkit-flex-basis: 100%;
+  min-height: 100%;
+  position: absolute; /* http://offshootinc.com/blog/2011/11/23/getting-100-column-height-with-css/ */
 }
 
 .overflowMe {
