@@ -91,10 +91,7 @@
 }
 
 .logView {
-  min-height: 10ex;
-  -webkit-flex-flow: row;
-  display: -webkit-flex;
-  -webkit-justify-content: flex-end;
+
   height: 200px;
 }
 
