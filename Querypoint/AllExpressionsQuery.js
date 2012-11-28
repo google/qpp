@@ -10,17 +10,12 @@ window.Querypoint = window.Querypoint || {};
       return location ? location.start.source.name : "internal";
   };
 
-Querypoint.AllExpressionsQueryTracer = function(tree) {
-  Querypoint.AllExpressionsQueryTracer.filesTraced[tree.location.start.source.name] = this;
-  this._transformer = new Querypoint.LinearizeTransformer(generateFileName);
-}
-
-Querypoint.AllExpressionsQueryTracer.filesTraced = {};
-
-
 Querypoint.AllExpressionsQuery = function(tree) {
   this.tree = tree;
 }
+
+// global record of which files are traced.
+Querypoint.AllExpressionsQuery.filesTraced = {};
 
 Querypoint.AllExpressionsQuery.ifAvailableFor = function(tree) {
   if(!!tree.location) return new Querypoint.AllExpressionsQuery(tree);
@@ -38,11 +33,11 @@ Querypoint.AllExpressionsQuery.prototype = {
   },
   
   activateQuery: function(fileViewModel) {
-    fileViewModel.queryViewModel.issueQuery(new Querypoint.AllExpressionsQueryTracer(this.tree));   
+    Querypoint.AllExpressionsQuery.filesTraced[this.tree.location.start.source.name] = this;
+    this._transformer = new Querypoint.LinearizeTransformer(generateFileName);
+    fileViewModel.queryViewModel.issueQuery(this);   
   },
-};
 
-Querypoint.AllExpressionsQueryTracer.prototype = {
   tracePrompt: function() {
     return "(awaiting execution)";
   },
@@ -70,6 +65,5 @@ Querypoint.AllExpressionsQueryTracer.prototype = {
     chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', onEval);
   },
 };
-
 
 }());

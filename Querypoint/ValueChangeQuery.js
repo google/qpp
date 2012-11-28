@@ -27,12 +27,6 @@ Querypoint.ValueChangeQueryTracerVisitor = {
   }
 };
 
-Querypoint.ValueChangeQueryTracer = function(identifier, tree) {
-  this.identifier = identifier;
-  this.queryLocation = tree;
-  this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
-}
-
 Querypoint.ValueChangeQuery = function(identifier, tree) {
   this.identifier = identifier; 
   this.tree = tree;
@@ -59,11 +53,11 @@ Querypoint.ValueChangeQuery.prototype = {
   
   activateQuery: function(fileViewModel) {
     this.tree.location.query = this;      // mark tree as qp
-    fileViewModel.queryViewModel.issueQuery(new Querypoint.ValueChangeQueryTracer(this.identifier, this.tree));
+    this.queryLocation = this.tree;
+    this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
+    fileViewModel.queryViewModel.issueQuery(this);
   },
-}
 
-Querypoint.ValueChangeQueryTracer.prototype = {
   tracePrompt: function() {
     return "(no changes)";
   }, 
