@@ -28,6 +28,7 @@ var QPCompiler = (function() {
       this.parse(project);
       if (!this.reporter_.hadError()) {
         this.analyze(project);
+        return;
         if (!this.reporter_.hadError()) {
            console.log("traceur.options.trapMemberLookup "+traceur.options.trapMemberLookup);
           return this.transform(project);
