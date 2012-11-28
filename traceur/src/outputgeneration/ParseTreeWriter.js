@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Keywords from '../syntax/Keywords.js';
 import ParseTreeVisitor from '../syntax/ParseTreeVisitor.js';
 import {
   FROM,
@@ -23,7 +22,9 @@ import {
   SET
 } from '../syntax/PredefinedName.js';
 import StringBuilder from '../util/StringBuilder.js';
+import Token from '../syntax/Token.js';
 import TokenType from '../syntax/TokenType.js';
+import isKeyword from '../syntax/Keywords.js';
 
 // constants
 var NEW_LINE = '\n';
@@ -57,7 +58,7 @@ export class ParseTreeWriter extends ParseTreeVisitor {
     this.indentDepth_ = 0;
 
     /**
-     * @type {string|Token|TokenType|Keywords}
+     * @type {string|Token|TokenType}
      * @private
      */
     this.lastToken_ = null;
@@ -492,10 +493,10 @@ export class ParseTreeWriter extends ParseTreeVisitor {
   }
 
   /**
-   * @param {FunctionDeclaration} tree
+   * @param {FunctionDeclaration|FunctionExpression} tree
    */
-  visitFunctionDeclaration(tree) {
-    this.write_(Keywords.FUNCTION);
+  visitFunction(tree) {
+    this.write_(TokenType.FUNCTION);
     if (tree.isGenerator) {
       this.write_(TokenType.STAR);
     }
@@ -695,12 +696,6 @@ export class ParseTreeWriter extends ParseTreeVisitor {
     this.write_(TokenType.NEW);
     this.visitAny(tree.operand);
     this.visitAny(tree.args);
-  }
-
-  /**
-   * @param {NullTree} tree
-   */
-  visitNullTree(tree) {
   }
 
   /**
@@ -1045,7 +1040,7 @@ export class ParseTreeWriter extends ParseTreeVisitor {
   }
 
   /**
-   * @param {string|Token|TokenType|Keywords} value
+   * @param {string|Token|TokenType} value
    * @private
    */
   writeRaw_(value) {
@@ -1055,7 +1050,7 @@ export class ParseTreeWriter extends ParseTreeVisitor {
   }
 
   /**
-   * @param {string|Token|TokenType|Keywords} value
+   * @param {string|Token|TokenType} value
    * @private
    */
   write_(value) {
@@ -1084,13 +1079,18 @@ export class ParseTreeWriter extends ParseTreeVisitor {
   }
 
   /**
-   * @param {string|Token|TokenType|Keywords} token
+   * @param {string|Token|TokenType} token
    */
   isIdentifierNameOrNumber_(token) {
-    switch (token.type) {
-      case TokenType.IDENTIFIER:
-      case TokenType.NUMBER:
+    if (token instanceof Token) {
+      if (token.isKeyword())
         return true;
+
+      switch (token.type) {
+        case TokenType.IDENTIFIER:
+        case TokenType.NUMBER:
+          return true;
+      }
     }
 
     var value = token.toString();
@@ -1104,11 +1104,12 @@ export class ParseTreeWriter extends ParseTreeVisitor {
       case SET:
         return true;
     }
-    return Keywords.isKeyword(value);
+
+    return isKeyword(value);
   }
 
   /**
-   * @param {string|Token|TokenType|Keywords} value
+   * @param {string|Token|TokenType} value
    */
   needsSpace_(token) {
     if (!this.lastToken_)

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import getTreeNameForType from '../syntax/trees/ParseTree.js';
 import * from '../syntax/trees/ParseTrees.js';
 
 /**
@@ -29,12 +28,7 @@ export class ParseTreeTransformer {
    * @return {ParseTree}
    */
   transformAny(tree) {
-    if (tree == null) {
-      return null;
-    }
-
-    var name = getTreeNameForType(tree.type);
-    return this[`transform${name}`](tree);
+    return tree && tree.transform(this);
   }
 
   /**
@@ -567,10 +561,10 @@ export class ParseTreeTransformer {
   }
 
   /**
-   * @param {FunctionDeclaration} tree
+   * @param {FunctionDeclaration|FunctionExpression} tree
    * @return {ParseTree}
    */
-  transformFunctionDeclaration(tree) {
+  transformFunction(tree) {
     var name = this.transformAny(tree.name);
     var formalParameterList =
         this.transformAny(tree.formalParameterList);
@@ -580,8 +574,25 @@ export class ParseTreeTransformer {
         functionBody === tree.functionBody) {
       return tree;
     }
-    return new FunctionDeclaration(tree.location, name, tree.isGenerator,
-                                   formalParameterList, functionBody);
+
+    return new tree.constructor(tree.location, name, tree.isGenerator,
+                                formalParameterList, functionBody);
+  }
+
+  /**
+   * @param {FunctionDeclaration} tree
+   * @return {ParseTree}
+   */
+  transformFunctionDeclaration(tree) {
+    return this.transformFunction(tree);
+  }
+
+  /**
+   * @param {FunctionExpression} tree
+   * @return {ParseTree}
+   */
+  transformFunctionExpression(tree) {
+    return this.transformFunction(tree);
   }
 
   /**
@@ -816,14 +827,6 @@ export class ParseTreeTransformer {
       return tree;
     }
     return new NewExpression(tree.location, operand, args);
-  }
-
-  /**
-   * @param {NullTree} tree
-   * @return {ParseTree}
-   */
-  transformNullTree(tree) {
-    return tree;
   }
 
   /**

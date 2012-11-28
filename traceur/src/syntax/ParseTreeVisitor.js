@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  ParseTreeType,
-  getTreeNameForType
-} from 'trees/ParseTree.js';
-
 /**
  * A base class for traversing a ParseTree in top down (pre-Order) traversal.
  *
@@ -31,12 +26,7 @@ export class ParseTreeVisitor {
    * @param {ParseTree} tree
    */
   visitAny(tree) {
-    if (tree === null) {
-      return;
-    }
-
-    var name = getTreeNameForType(tree.type);
-    this['visit' + name](tree);
+    tree && tree.visit(this);
   }
 
   /**
@@ -345,12 +335,26 @@ export class ParseTreeVisitor {
   }
 
   /**
-   * @param {FunctionDeclaration} tree
+   * @param {FunctionDeclaration|FunctionExpression} tree
    */
-  visitFunctionDeclaration(tree) {
+  visitFunction(tree) {
     this.visitAny(tree.name);
     this.visitAny(tree.formalParameterList);
     this.visitAny(tree.functionBody);
+  }
+
+  /**
+   * @param {FunctionDeclaration} tree
+   */
+  visitFunctionDeclaration(tree) {
+    this.visitFunction(tree);
+  }
+
+  /**
+   * @param {FunctionExpression} tree
+   */
+  visitFunctionExpression(tree) {
+    this.visitFunction(tree);
   }
 
   /**
@@ -498,12 +502,6 @@ export class ParseTreeVisitor {
   }
 
   /**
-   * @param {NullTree} tree
-   */
-  visitNullTree(tree) {
-  }
-
-  /**
    * @param {ObjectLiteralExpression} tree
    */
   visitObjectLiteralExpression(tree) {
@@ -604,6 +602,7 @@ export class ParseTreeVisitor {
    * @param {SetAccessor} tree
    */
   visitSetAccessor(tree) {
+    this.visitAny(tree.parameter);
     this.visitAny(tree.body);
   }
 

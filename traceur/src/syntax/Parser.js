@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import IdentifierToken from 'IdentifierToken.js';
-import Keywords from 'Keywords.js';
 import MutedErrorReporter from '../util/MutedErrorReporter.js';
 import ParseTreeType from 'trees/ParseTree.js';
 import {
@@ -29,6 +28,7 @@ import Scanner from 'Scanner.js';
 import SourceRange from '../util/SourceRange.js';
 import Token from 'Token.js';
 import TokenType from 'TokenType.js';
+import isKeyword from 'Keywords.js';
 import {parseOptions: options} from '../options.js';
 import * from 'trees/ParseTrees.js';
 
@@ -219,24 +219,21 @@ export class Parser {
   * @private
   */
   peekModuleDefinition_() {
-    return this.peekPredefinedString_(MODULE) &&
-        this.peek_(TokenType.IDENTIFIER, 1) &&
-        this.peek_(TokenType.OPEN_CURLY, 2);
+    return this.peek_(TokenType.IDENTIFIER) &&
+        this.peek_(TokenType.OPEN_CURLY, 1);
   }
 
   /**
    * @return {ParseTree}
    * @private
    */
-  parseModuleDefinition_(load) {
+  parseModuleDefinition_(load, start) {
 
     // ModuleDeclaration ::= "module" ModuleSpecifier(load) ("," ModuleSpecifier(load))* ";"
     //              | ModuleDefinition(load)
     // ModuleDefinition(load) ::= "module" Identifier "{" ModuleBody(load) "}"
     // ModuleSpecifier(load) ::= Identifier "from" ModuleExpression(load)
 
-    var start = this.getTreeStartLocation_();
-    this.eatId_(); // module
     var name = this.eatId_();
     this.eat_(TokenType.OPEN_CURLY);
     var result = [];
@@ -546,8 +543,8 @@ export class Parser {
   }
 
   peekIdName_(opt_index) {
-    var type = this.peekType_(opt_index);
-    return type == TokenType.IDENTIFIER || Keywords.isKeyword(type);
+    var token = this.peekToken_(opt_index);
+    return token.type === TokenType.IDENTIFIER || token.isKeyword();
   }
 
   // TODO: ModuleLoadRedeclarationList
@@ -563,9 +560,7 @@ export class Parser {
     // ModuleSpecifier(load) ::= Identifier "from" ModuleExpression(load)
     return options.modules &&
         this.peekPredefinedString_(MODULE) &&
-        this.peek_(TokenType.IDENTIFIER, 1) &&
-        (this.peekPredefinedString_(FROM, 2) ||
-         this.peek_(TokenType.OPEN_CURLY, 2));
+        this.peek_(TokenType.IDENTIFIER, 1);
   }
 
   /**
@@ -573,11 +568,11 @@ export class Parser {
    * @private
    */
   parseModuleDeclaration_(load) {
-    if (this.peekModuleDefinition_(load))
-      return this.parseModuleDefinition_(load);
-
     var start = this.getTreeStartLocation_();
     this.eatId_(); // module
+
+    if (this.peekModuleDefinition_(load))
+      return this.parseModuleDefinition_(load, start);
 
     var specifiers = [this.parseModuleSpecifier_(load)];
     while (this.peek_(TokenType.COMMA)) {
@@ -594,7 +589,7 @@ export class Parser {
    * @private
    */
   peekClassDeclaration_() {
-    return options.classes && this.peek_(TokenType.CLASS) && this.peekId_(1);
+    return options.classes && this.peek_(TokenType.CLASS);
   }
 
   parseClassShared_(constr) {
@@ -778,9 +773,9 @@ export class Parser {
     var formalParameterList = this.parseFormalParameterList_();
     this.eat_(TokenType.CLOSE_PAREN);
     var functionBody = this.parseFunctionBody_(isGenerator);
-    return new FunctionDeclaration(this.getTreeLocation_(start), name,
-                                   isGenerator, formalParameterList,
-                                   functionBody);
+    return new FunctionExpression(this.getTreeLocation_(start), name,
+                                  isGenerator, formalParameterList,
+                                  functionBody);
   }
 
   /**
@@ -1895,7 +1890,7 @@ export class Parser {
            this.peekSpread_() ||
            this.peekAssignmentExpression_()) {
       if (this.peek_(TokenType.COMMA)) {
-        expression = new NullTree();
+        expression = null;
         allowFor = false;
       } else {
         expression = this.parseAssignmentOrSpread_();
@@ -1995,8 +1990,9 @@ export class Parser {
    * @private
    */
   peekPropertyDefinition_() {
-    var index = +this.peek_(TokenType.STAR);
-    return this.peekPropertyName_(index);
+    return this.peekPropertyName_() ||
+        (options.propertyMethods && options.generators &&
+         this.peek_(TokenType.STAR));
   }
 
   /**
@@ -2013,7 +2009,7 @@ export class Parser {
       case TokenType.NUMBER:
         return true;
       default:
-        return Keywords.isKeyword(type);
+        return isKeyword(type);
     }
   }
 
@@ -2109,10 +2105,9 @@ export class Parser {
   }
 
   peekPropertyMethodAssignment_() {
-    var index = +this.peek_(TokenType.STAR);
     return options.propertyMethods &&
-        this.peekPropertyName_(index) &&
-        this.peek_(TokenType.OPEN_PAREN, index + 1);
+        (options.generators && this.peek_(TokenType.STAR) ||
+         this.peekPropertyName_() && this.peek_(TokenType.OPEN_PAREN, 1));
   }
 
   /**
@@ -2305,7 +2300,7 @@ export class Parser {
       case ParseTreeType.OBJECT_LITERAL_EXPRESSION:
         var errorReporter = new MutedErrorReporter();
         var p = new Parser(errorReporter,
-                           this.scanner_.getFile(),
+                           this.scanner_.file,
                            tree.location.start.offset);
         var transformedTree = p.parseAssignmentPattern_();
         if (!errorReporter.hadError())
@@ -3031,7 +3026,7 @@ export class Parser {
   reparseAsFormalsList_(coverFormals) {
     var errorReporter = new MutedErrorReporter();
     var p = new Parser(errorReporter,
-                       this.scanner_.getFile(),
+                       this.scanner_.file,
                        coverFormals.location.start.offset);
     var formals = p.parseFormalsList_();
 
@@ -3619,7 +3614,7 @@ export class Parser {
   eatIdName_() {
     var t = this.nextToken_();
     if (t.type != TokenType.IDENTIFIER) {
-      if (!Keywords.isKeyword(t.type)) {
+      if (!isKeyword(t.type)) {
         this.reportExpectedError_(t, 'identifier');
         return null;
       }
@@ -3712,10 +3707,6 @@ export class Parser {
 
   nextQuasiLiteralPortionToken_() {
     return this.scanner_.nextQuasiLiteralPortionToken();
-  }
-
-  nextQuasiIdentifier_() {
-    return this.scanner_.nextQuasiIdentifier();
   }
 
   nextQuasiSubstitutionToken_() {

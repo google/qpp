@@ -15,11 +15,10 @@
 import FindVisitor from 'FindVisitor.js';
 import {
   FormalParameterList,
-  FunctionDeclaration,
+  FunctionExpression,
   IdentifierExpression,
   LiteralExpression
 } from '../syntax/trees/ParseTrees.js';
-import Keywords from '../syntax/Keywords.js';
 import TempVarTransformer from 'TempVarTransformer.js';
 import TokenType from '../syntax/TokenType.js';
 import {
@@ -171,7 +170,7 @@ export class ObjectLiteralTransformer extends TempVarTransformer {
       case TokenType.IDENTIFIER:
         return createStringLiteral(token.value);
       default:
-        if (Keywords.isKeyword(token.type))
+        if (token.isKeyword())
           return createStringLiteral(token.type);
         return new LiteralExpression(token.location, token);
     }
@@ -280,7 +279,7 @@ export class ObjectLiteralTransformer extends TempVarTransformer {
   }
 
   transformPropertyMethodAssignment(tree) {
-    var func = new FunctionDeclaration(tree.location, null, tree.isGenerator,
+    var func = new FunctionExpression(tree.location, null, tree.isGenerator,
         this.transformAny(tree.formalParameterList),
         this.transformAny(tree.functionBody));
     if (!this.needsAtNameTransform) {
