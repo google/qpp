@@ -21,6 +21,7 @@
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
 
       chrome.experimental.devtools.console.getMessages(function(messages){
+        this._reloadBase = this.project.numberOfReloads + 1;
         messages.forEach(this._onMessageAdded.bind(this));
       }.bind(this));
       return this;
@@ -60,30 +61,30 @@
     },
 
     _reloadRow: function(messageSource) {
-       return {load: messageSource.load, turns: [this._turnRow(messageSource)]}
+       return {load: messageSource.load, turns: ko.observableArray([this._turnRow(messageSource)])}
     },
     
     _turnRow: function(messageSource) {
-      return {turn: messageSource.turn, messages: [messageSource]};
+      return {turn: messageSource.turn, messages: ko.observableArray([messageSource])};
     },
 
     _reformatMessage: function(messageSource) {
       if (messageSource.qp) return;
-      if (typeof messageSource.load === 'undefined') messageSource.load = this.project.numberOfReloads + 1;
+      if (typeof messageSource.load === 'undefined') messageSource.load = this._reloadBase;
       if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
       messageSource.__proto__ = messagePrototype;
       
       if (this.currentReload.load !== messageSource.load) {
         this.currentReload = this._reloadRow(messageSource);
-        this.currentTurn = this.currentReload.turns[0];
+        this.currentTurn = this.currentReload.turns()[0];
         this._logScrubber.loads.push(this.currentReload);
         console.log("_reformat "+this._logScrubber.loads().length);
-      } else if (this.currentTurn.turn !== messageSource.turn) {
+      }  
+      if (this.currentTurn.turn !== messageSource.turn) {
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
-      } else {
-        this.currentTurn.messages.push(messageSource);
-      }
+      } 
+      this.currentTurn.messages.push(messageSource);
     },
     
     extractMessages: function(first, last) {

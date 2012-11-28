@@ -67,7 +67,7 @@
       }
     },
     requestExecution: function() {
-      this._panel.project.reload();
+
       this.isTracing(true);
     },
     reproductionDone: function() {

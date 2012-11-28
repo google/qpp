@@ -3,7 +3,7 @@
 // Copyright 2011 Google Inc. johnjbarton@google.com
 */
 .logScrubber {
-	height: 11px;
+	height: 15px;
 	position: relative;
 }
 
@@ -15,52 +15,68 @@
     */
     
 	background-color: #75715E;
-	line-height: 7px;
 	font-size: 0px; /* prevent whitespace */
+;
+	height: 15px;
+	line-height: normal;
 }
 
-.scrubberBox span {  /* spans to have width and height */
+.scrubberBox span {
   display: inline-block;
+  line-height: normal;
+}
+
+.scrubberBox .messages span {  /* spans to have width and height */
   height: 11px;
   width: 9px;
+  border: 1px solid #75715E;
+}
+
+
+.logScrubber span.loadNumber:before {
+    content: attr(load);
+    font-size: 10px;
+    color: #d0d0d0;
+    background-color: #272822;
+    position: absolute;
+    border: 1px solid #272822;
+    border-radius: 2em;
+    width: 1em;
+    padding-left: 2px;
+    margin-top: 1px;
 }
 
 /* http://colorschemedesigner.com/#1q11T6ieGw0w0 */
-.logScrubber span.loadNumber:nth-child(even) {
-    border: 1px solid #58564B;
+.logScrubber span.turnNumber:nth-child(even) {
+    border: 2px solid #1D1E1B;
 }
-
-.logScrubber span.loadNumber:nth-child(odd) {
-    border: 1px solid #BAB7A6;
-}
-
-.logScubber span.turnNumber:nth-child(even) {
-    border: 1px solid #4c441f;
-}
-.logScubber span.turnNumber:nth-child(odd) {
-    border: 1px solid #BAB59F;
+.logScrubber span.turnNumber:nth-child(odd) {
+    border: 2px solid #919483;
 }
 
 .logScrubber span.turns {
     border: none;
+    margin-left: 15px;
 }
 
 .logScrubber .error {
     background-color: red;
 }
 .logScrubber .warning {
-    background-color: yellow;
+    background-color: rgb(255, 208, 69);
 }
-
-.logScrubber span.scrubberIndicator {
+.logScrubber .log {
+  background-color: #272822;
+}
+.logScrubber:hover span.scrubberIndicator {
 	position: absolute;
-	width: 3ex;
-	height: 11px;
+	width: 30ex;
+	height: 15px;
 	padding: 0px;
 	top: 0px;
-	background-color: purple;
-	opacity: .2;
-	left: 20px;
+	background-color: transparent;
+	border: purple 2px solid;
+	left: 400px;
 }
 .logScrubber span.scrubberIndicator:hover {
   opacity: .8;
@@ -124,6 +140,12 @@
 .logView .messages div {
   background-color: rgb(56, 58, 45);
   color: rgb(141, 141, 134);
+}
+.logView .messages [severity="warning"] {
+  color: rgb(255, 208, 69);
+}
+.logView .messages [severity="error"] {
+  color: rgb(255, 0, 0);
 }
 .logView .messages div[odd="1"] {
   color: rgb(148, 143, 118);

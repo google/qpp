@@ -311,7 +311,8 @@ QuerypointPanel.Panel.prototype = {
     this.document.querySelector('.panelInitialization').style.display = 'none';
     console.log("restore", panelModel);
     this._initEditors(panelModel);
-    this.project.compile(function() {
+    this.project.compile(function(compileResult) {
+      this.project.runInWebPage(compileResult);
       this.commands.selectFile.call(this);  
     }.bind(this));
   },
