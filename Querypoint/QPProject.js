@@ -5,10 +5,16 @@
 
 (function(){
 
+
+  function generateFileName(location) {
+      return location ? location.start.source.name : "internal";
+  };
+
+
   function QPProject(url, loads) {
     RemoteWebPageProject.call(this, url);
-    this.uid = loads;
-    this.numberOfReloads = 0; 
+
+    this.numberOfReloads = loads; 
 
     // FIXME override parent __getter__ for reporter
     this.reporter_ = new QPErrorReporter();
@@ -20,36 +26,19 @@
     console.log(loads + " QPProject created for "+url);
   }
 
-  // Need class level access for bootstrap, see QuerypointDevtools.js
-  QPProject.reload = function(numberOfReloads) {
-    console.assert(typeof numberOfReloads === 'number');
-    function transcode(str) {
-      console.log("transcode saw ", str);
-      return  "// ignored some JavaScript, Hah!";
-    }
-
-    Querypoint.QPRuntime.setReloadCounter(numberOfReloads);
-
-    var reloadOptions = {
-      ignoreCache: true, 
-      injectedScript:  Querypoint.QPRuntime.runtimeSource(), 
-      preprocessingScript: '(' + transcode + ')'
-    };
-    chrome.devtools.inspectedWindow.reload(reloadOptions);
-  }
-
   QPProject.prototype = {
     __proto__: RemoteWebPageProject.prototype,
         
 
     compile: function(onAllCompiled) {
       function onScriptsReady() {
-        this.compiler_.compile(this);
-        onAllCompiled(); 
+        var compileResult = this.compiler_.compile(this);
+        onAllCompiled(compileResult); 
       }
       this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
     },
 
+    // Called by runInWebPage
     generateSourceFromTrees: function(trees) {
       if (!trees)
         return [];
@@ -85,8 +74,8 @@
       chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
     },
 
-    runInWebPage: function(trees) {
-      RemoteWebPageProject.prototype.runInWebPage.call(this, trees);
+    runInWebPage: function(compileResult) {
+      RemoteWebPageProject.prototype.runInWebPage.call(this, compileResult);
       this.startRuntime();
     },
 
@@ -105,9 +94,27 @@
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
       });
         
-      QPProject.reload(++this.numberOfReloads);
+      this._reload(++this.numberOfReloads);
       return this.numberOfReloads;
     },
+    
+    _reload: function(numberOfReloads) {
+     
+      console.assert(typeof numberOfReloads === 'number');
+      function transcode(str) {
+        console.log("transcode saw ", str);
+        return  "// ignored some JavaScript, Hah!";
+      }
+
+      Querypoint.QPRuntime.setReloadCounter(numberOfReloads);
+
+      var reloadOptions = {
+        ignoreCache: true, 
+        injectedScript:  Querypoint.QPRuntime.runtimeSource(), 
+        preprocessingScript: '(' + transcode + ')'
+      };
+      chrome.devtools.inspectedWindow.reload(reloadOptions);
+    }
     
   };
 

@@ -15,8 +15,7 @@ function onLoad() {
   function resetProject(url) {
     model.devtoolsModel = new InspectedPage();  // TODO rename DevtoolsPageModel
     model.project = new Querypoint.QPProject(url, loads);
-    collectScripts(url);
-
+    collectScripts(url);  
   }
   
   function collectScripts(url) {
@@ -57,7 +56,11 @@ chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/Q
   panel.onShown.addListener(function (panel_window) {
     view.window = panel_window;
     if (!model.project) {
-      chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
+      chrome.devtools.inspectedWindow.eval('window.__qp_reloads', function(pastReloads) {
+        // If we reload qpp, the internal count will be out of sync with the web page content.
+        loads = pastReloads || 0;
+        chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
+      });
     } else {
       model.qpPanel.onShown();
     }
