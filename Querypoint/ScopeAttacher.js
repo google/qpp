@@ -132,7 +132,7 @@
         object = Object.getPrototypeOf(object);
       }
 
-      this.visitStatements_(tree.programElements);
+      this.visitList(tree.programElements);
 
       this.pop_(scope);
     },

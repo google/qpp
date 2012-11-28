@@ -90,7 +90,6 @@
         var scopeTree = scope.tree;
         var location = scopeTree.location;
         if (scopeTree.type !== "PROGRAM") {
-
           appendView(location);
         }
         scope = scope.parent;

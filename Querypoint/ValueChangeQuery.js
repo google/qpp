@@ -15,17 +15,11 @@ function unprotect(str) {
 
 var getTreeNameForType = traceur.syntax.trees.getTreeNameForType;
 
-Querypoint.ValueChangeQueryTracerVisitor = {
-  visitSome: function(tree) {
-    var method = 'visit' + getTreeNameForType(tree.type);
-    if (this.hasOwnProperty(method)) {
-      return this[method].call(this, tree);
-    }
-  },
-  visitMemberExpression: function(tree) {
-    return tree.memberName;
+function getValueReferenceIdentifier(tree) {
+  switch(tree.type) {
+    case "MEMBER_EXPRESSION": return tree.memberName;
   }
-};
+}
 
 Querypoint.ValueChangeQuery = function(identifier, tree) {
   this.identifier = identifier; 
@@ -33,7 +27,7 @@ Querypoint.ValueChangeQuery = function(identifier, tree) {
 }
   
 Querypoint.ValueChangeQuery.ifAvailableFor = function(tree) {
-  var identifier = Querypoint.ValueChangeQueryTracerVisitor.visitSome(tree);
+  var identifier = getValueReferenceIdentifier(tree);
   if (identifier) {
     return new Querypoint.ValueChangeQuery(identifier, tree);
   }
