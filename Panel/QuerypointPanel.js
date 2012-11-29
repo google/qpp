@@ -13,7 +13,14 @@
     });
     return target;
   }
-
+  
+  ko.extenders.runPage = function(target, project) {
+    target.subscribe(function(newValue){
+      project.querypoints.tracequeries = newValue;
+      project.run();
+    });
+    return target;
+  }
 /**
  * @param panel {ExtensionPanel} devtools panel
  * @param panel_window {Window} the content window of the extension panel
@@ -37,7 +44,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   ko.applyBindings(this, logElement);
 
   // Active queries are synced back to the project
-  this.tracequeries = ko.observableArray().extend({syncArray: this.project.querypoints.tracequeries});
+  this.tracequeries = ko.observableArray().extend({
+    runPage: this.project
+  });
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
   
