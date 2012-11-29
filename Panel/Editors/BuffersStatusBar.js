@@ -17,6 +17,10 @@
         return panel.logScrubber.turnStarted();
       });
 
+      this.numberOfTracequeries = ko.computed(function(){
+        return panel.tracequeries().length;
+      });
+
       ko.applyBindings(this, document.querySelector(buffersStatusBarSelector));
       return this;
     }

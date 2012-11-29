@@ -46,9 +46,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     var active = !!(panel.logScrubber.turnEnded() - panel.logScrubber.turnStarted());
     return active;
   });
-  this.currentTurnNumber = ko.computed(function() {
-    return panel.logScrubber.turnStarted();
-  });
 
   this.fileViews = document.querySelector('.fileViews');
   this.primaryFileView = this.fileViews.querySelector('.fileView');

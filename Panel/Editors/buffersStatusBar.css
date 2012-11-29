@@ -30,6 +30,10 @@
   cursor: pointer;
 } 
 
+.buffersStatusBar .tracequeries {
+  color: rgb(113, 3, 252);
+}
+
 .buffersStatusBar .unsavedChangedFiles {
 	color: #f92672;
 }

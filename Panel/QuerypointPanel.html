@@ -136,6 +136,11 @@
       </div>
       <div class="counters">
         <span
+          title="Number of active queries"
+          class="tracequeries centeringHack"
+          data-bind="text: 'Q' + numberOfTracequeries()"
+          ></span>
+        <span
           title="Current turn number"
           class="turnNumber centeringHack"
           data-bind="text: '&#x2941' + currentTurnNumber()"
