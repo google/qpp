@@ -11,6 +11,7 @@ window.Querypoint = window.Querypoint || {};
   };
 
 Querypoint.AllExpressionsQuery = function(tree) {
+  Querypoint.Query.call(this);
   this.tree = tree;
 }
 
@@ -18,11 +19,23 @@ Querypoint.AllExpressionsQuery = function(tree) {
 Querypoint.AllExpressionsQuery.filesTraced = {};
 
 Querypoint.AllExpressionsQuery.ifAvailableFor = function(tree) {
-  if(!!tree.location) return new Querypoint.AllExpressionsQuery(tree);
+  if(!!tree.location) {
+    var query = Querypoint.AllExpressionsQuery.prototype.getQueryOnTree(tree, Querypoint.AllExpressionsQuery);
+    return query || new Querypoint.AllExpressionsQuery(tree);
+  }
 }
 
 
 Querypoint.AllExpressionsQuery.prototype = {
+  __proto__: Querypoint.Query.prototype,
+
+  setQueryOnTree: function(tree, query) {
+    Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name] = query;
+  },
+
+  getQueryOnTree: function(tree, queryConstructor) {
+     return Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name];
+  },
 
   buttonName: function() {
     return 'All in File';
@@ -32,10 +45,8 @@ Querypoint.AllExpressionsQuery.prototype = {
     return "Trace all expressions in all functions in this file";
   },
   
-  activateQuery: function(fileViewModel) {
-    Querypoint.AllExpressionsQuery.filesTraced[this.tree.location.start.source.name] = this;
+  activate: function() {
     this._transformer = new Querypoint.LinearizeTransformer(generateFileName);
-    fileViewModel.queryViewModel.issueQuery(this);   
   },
 
   tracePrompt: function() {

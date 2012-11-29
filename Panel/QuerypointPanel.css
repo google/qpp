@@ -261,6 +261,10 @@ pre.traceBackground {
   background-color: #272822;
   color: #75715e;
 }
+.QPOutput .command[data-active="true"] {
+  border-color: blue;
+}
+
 
 .QPOutput .reexecution {
   padding: 1ex;

@@ -6,12 +6,47 @@
   
   var bindings = 0;
   
-  QuerypointPanel.QueryViewModel = function(fileViewModel, panel) {
+  QuerypointPanel.QueryViewModel = function(query, tracequeries) {
+    this.query = query;
+    this.tracequeries = tracequeries;
+
+    this.isActive = ko.computed(function() {
+      var recorded = (this.tracequeries.indexOf(this.query) !== -1);
+      return recorded;
+    }.bind(this));
+
+    this.buttonName = query.buttonName.bind(query);
+    this.toolTip = query.toolTip.bind(query);
+  }
+
+  QuerypointPanel.QueryViewModel.prototype ={
+    attachTracePrompt: function() {
+      var emptyTrace = {
+        load: '_',
+        turn: '_',
+        activation: '_',
+        value: this.query.tracePrompt(),
+        query: this.query,
+      };
+
+      var traces = this.query.tree.location.traces = this.query.tree.location.traces || [];
+      traces.push(emptyTrace);
+    },
+
+    activateQuery: function(fileViewModel) {
+      if (this.isActive()) return;
+
+      this.query.setQueryOnTree(this.query.tree, this.query);
+      this.query.activate();
+      this.attachTracePrompt();
+      this.tracequeries.push(this.query);
+    },
+  };
+
+  QuerypointPanel.QueriesViewModel = function(fileViewModel, panel) {
     this.fileViewModel = fileViewModel;
     this.tokenViewModel = fileViewModel.tokenViewModel;
     this._panel = panel;
-    
-    this.isTracing = ko.observable(false);
         
     this.currentQueries = ko.computed(function() {
       var tree = this.tokenViewModel.tokenTree();
@@ -21,7 +56,7 @@
         project.querypoints.possibleQueries().forEach(function(possibleQuery) {
           var query = possibleQuery.ifAvailableFor(tree);
           if (query) {
-            queries.push(query);
+            queries.push(new QuerypointPanel.QueryViewModel(query, panel.tracequeries));
           }
         });
       }
@@ -31,48 +66,7 @@
     this.hasQueries = ko.computed(function() {
       return (this.currentQueries().length > 0)
     }.bind(this));
-    
-    //ko.applyBindings(this, document.querySelector('.queryView'));
-    console.log("bindings: "+ (++bindings));
   }
   
-  QuerypointPanel.QueryViewModel.prototype = {
-
-    attachTracePrompt: function(tree, tracer) {
-      var trace = {
-        load: '_',
-        turn: '_',
-        activation: '_',
-        value: tracer.tracePrompt(),
-        tracer: tracer,
-      };
-
-      var traces = tree.location.traces = tree.location.traces || [];
-      
-      traces.push(trace);
-    },
-
-    issueQuery: function(tracer) {
-      this.attachTracePrompt(this.fileViewModel.tokenViewModel.tokenTree(), tracer);
-      this._panel.tracequeries.push(tracer);
-      var executer = this._panel.project.executer;
-      if (executer) {
-        if (executer.automatic) {
-          executer();
-        } else {
-          this.offerExecution(executer);
-        }
-      } else {
-        this.requestExecution(executer);
-      }
-    },
-    requestExecution: function() {
-
-      this.isTracing(true);
-    },
-    reproductionDone: function() {
-
-      this.isTracing(false);
-    }
-  };
+  
 }());

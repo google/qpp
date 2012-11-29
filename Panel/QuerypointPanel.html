@@ -113,9 +113,9 @@
               </tbody>
             </table>
             <div class="queryView">
-              <div data-bind="if: queryViewModel.hasQueries">
-                <div class="toolbar" data-bind="foreach: queryViewModel.currentQueries">
-                  <button class="command" data-bind="text: buttonName(), attr: {title: toolTip()}, click: activateQuery.bind($data, $parent)"></button>
+              <div data-bind="if: queriesViewModel.hasQueries">
+                <div class="toolbar" data-bind="foreach: queriesViewModel.currentQueries">
+                  <button class="command" data-bind="text: buttonName(), attr: {title: toolTip(), 'data-active': isActive}, click: activateQuery.bind($data, $parent)"></button>
                 </div>
               </div>
             </div>
@@ -123,7 +123,6 @@
               <p data-bind="if: tokenViewModel.followingTokens()">Selecting Syntax Tree; Focus Editor to Lock</p>
               <p data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Syntax Tree</p>
           </div>
-          <span class="updatedOnTurnNumber" data-bind="text: updatedOnTurnNumber"></span>
           </div>
         </a>
         <div class="fileEditor">

@@ -22,6 +22,7 @@ function getValueReferenceIdentifier(tree) {
 }
 
 Querypoint.ValueChangeQuery = function(identifier, tree) {
+  Querypoint.Query.call(this);
   this.identifier = identifier; 
   this.tree = tree;
 }
@@ -29,12 +30,14 @@ Querypoint.ValueChangeQuery = function(identifier, tree) {
 Querypoint.ValueChangeQuery.ifAvailableFor = function(tree) {
   var identifier = getValueReferenceIdentifier(tree);
   if (identifier) {
-    return new Querypoint.ValueChangeQuery(identifier, tree);
+    var query = Querypoint.ValueChangeQuery.prototype.getQueryOnTree(tree, Querypoint.ValueChangeQuery);
+    return query || new Querypoint.ValueChangeQuery(identifier, tree);
   }
 },
 
 
 Querypoint.ValueChangeQuery.prototype = {
+  __proto__: Querypoint.Query.prototype,
 
   buttonName: function() {
     console.log("ValueChangeQuery buttonName called")
@@ -45,11 +48,8 @@ Querypoint.ValueChangeQuery.prototype = {
     return "Trace the changes to the current expression and report the last one";
   },
   
-  activateQuery: function(fileViewModel) {
-    this.tree.location.query = this;      // mark tree as qp
-    this.queryLocation = this.tree;
+  activate: function() {
     this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
-    fileViewModel.queryViewModel.issueQuery(this);
   },
 
   tracePrompt: function() {
