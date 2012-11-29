@@ -22,6 +22,7 @@
     this.compiler_ = new QPCompiler(this.reporter, {}); // TODO traceur options
         
     this.querypoints = Querypoint.Querypoints.initialize();
+    
     this.runtime = Querypoint.QPRuntime.initialize();
     console.log(loads + " QPProject created for "+url);
   }
@@ -29,24 +30,23 @@
   QPProject.prototype = {
     __proto__: RemoteWebPageProject.prototype,
         
-
     compile: function(onAllCompiled) {
       function onScriptsReady() {
-        var compileResult = this.compiler_.compile(this);
-        onAllCompiled(compileResult); 
+        this.compiler_.compile(this);
+        onAllCompiled(this._parseTrees); 
       }
       this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
     },
 
     // Called by runInWebPage
-    generateSourceFromTrees: function(trees) {
-      if (!trees)
+    generateSourceFromTrees: function(treeObjectMap) {
+      if (!treeObjectMap)
         return [];
 
       Querypoint.QPRuntime.initialize();
 
-      return trees.keys().map(function(file) {
-        var tree = trees.get(file);  
+      return treeObjectMap.keys().map(function(file) {
+        var tree = treeObjectMap.get(file);  
 
         // TODO only trees that the developer *might* debug needs dynamic hooks
         var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
@@ -74,8 +74,8 @@
       chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
     },
 
-    runInWebPage: function(compileResult) {
-      RemoteWebPageProject.prototype.runInWebPage.call(this, compileResult);
+    runInWebPage: function(treeObjectMap) {
+      RemoteWebPageProject.prototype.runInWebPage.call(this, treeObjectMap);
       this.startRuntime();
     },
 

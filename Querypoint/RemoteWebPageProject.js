@@ -27,7 +27,7 @@ RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype)
 // Our page is remote and already loaded.
 //
 RemoteWebPageProject.prototype.run = function() {
-    this.runInWebPage(this.getSourceTrees());  
+    this.runInWebPage(this.parseTrees_);  
 }
 
 // XSS since we are remote to the web page

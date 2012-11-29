@@ -27,12 +27,7 @@ var QPCompiler = (function() {
     compile: function(project) {
       this.parse(project);
       if (!this.reporter_.hadError()) {
-        this.analyze(project);
-        return;
-        if (!this.reporter_.hadError()) {
-           console.log("traceur.options.trapMemberLookup "+traceur.options.trapMemberLookup);
-          return this.transform(project);
-        }
+        return this.analyze(project);
        }
     },
 
@@ -40,6 +35,7 @@ var QPCompiler = (function() {
       project.getSourceFiles().forEach(function (file) {
         project.setParseTree(file, new Parser(this.reporter_, file).parseProgram(true));
       }.bind(this));
+      return project;
     },
 
     analyze: function(project) {
@@ -49,12 +45,8 @@ var QPCompiler = (function() {
         var tree = project.getParseTree(file);
         Querypoint.ScopeAttacher.attachScopes(project.reporter_, tree, Querypoint.globalSymbols);  
       });
+      return project;
     },
-
-    transform: function(project) {
-      return ProgramTransformer.transform(this.reporter_, project);
-    },
-
 
   };
 

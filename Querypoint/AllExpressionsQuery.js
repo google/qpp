@@ -56,7 +56,7 @@ Querypoint.AllExpressionsQuery.prototype = {
   // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
   // 
   transformParseTree: function(tree) {
-    if (Querypoint.AllExpressionsQueryTracer.filesTraced[tree.location.start.source.name]) {
+    if (Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name]) {
       return this._transformer.transformAny(tree);  
     }
   },
