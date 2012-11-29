@@ -35,9 +35,7 @@ function onLoad() {
     loads += 1;
     if (!model.project || model.project.url !== url) {
       resetProject(url);
-    } else {
-      collectScripts(url);
-    }
+    } 
   }
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);

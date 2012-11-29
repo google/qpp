@@ -24,6 +24,10 @@
     this.querypoints = Querypoint.Querypoints.initialize();
     
     this.runtime = Querypoint.QPRuntime.initialize();
+
+    this._onWebPageNavigated = this._onWebPageNavigated.bind(this);
+    this._monitorReloads();
+    
     console.log(loads + " QPProject created for "+url);
   }
 
@@ -48,13 +52,12 @@
       return treeObjectMap.keys().map(function(file) {
         var tree = treeObjectMap.get(file);  
 
-        // TODO only trees that the developer *might* debug needs dynamic hooks
-        var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
-        tree = preambleTransformer.transformAny(tree);
-
         this.querypoints.tracequeries.forEach(function(tq) {
           tree = tq.transformParseTree(tree);
         });
+
+        var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
+        tree = preambleTransformer.transformAny(tree);
 
         file.generatedFileName = file.name + ".js";
         var writer = new QPTreeWriter(file.generatedFileName);
@@ -75,6 +78,7 @@
     },
 
     runInWebPage: function(treeObjectMap) {
+      // inject the tracing source
       RemoteWebPageProject.prototype.runInWebPage.call(this, treeObjectMap);
       this.startRuntime();
     },
@@ -93,13 +97,25 @@
       this.querypoints.tracequeries.forEach(function(tq) {
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
       });
-        
+      
+      this._unmonitorReloads();
+      var onNavigated = function(url) {
+        chrome.devtools.network.onNavigated.removeListener(onNavigated);
+        if (url !== this.url) {
+          console.error("QPProject reload failed: url mismatch: " + url + '!==' + this.url);
+        }
+        this.runInWebPage(this.parseTrees_);
+        this._monitorReloads();
+      }.bind(this);
+          
+      chrome.devtools.network.onNavigated.addListener(onNavigated);
+      
       this._reload(++this.numberOfReloads);
+      
       return this.numberOfReloads;
     },
     
     _reload: function(numberOfReloads) {
-     
       console.assert(typeof numberOfReloads === 'number');
       function transcode(str) {
         console.log("transcode saw ", str);
@@ -114,6 +130,26 @@
         preprocessingScript: '(' + transcode + ')'
       };
       chrome.devtools.inspectedWindow.reload(reloadOptions);
+    },
+    
+    _onWebPageNavigated: function(url) {
+      if (url === this.url) {
+        // a new project will be created by QuerypointDevtools.js
+        return;
+      } else {
+        // User reloaded the page, so we are back to square one. TODO: offer to clear querypoints
+        this.getPageScripts(function() {
+          console.log("rescanned page for scripts");
+        });
+      }
+    },
+    
+    _monitorReloads: function() {
+      chrome.devtools.network.onNavigated.addListener(this._onWebPageNavigated);
+    },
+    
+    _unmonitorReloads: function() {
+      chrome.devtools.network.onNavigated.addListener(this._onWebPageNavigated);
     }
     
   };
