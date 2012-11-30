@@ -54,6 +54,7 @@
 
         this.querypoints.tracequeries.forEach(function(tq) {
           tree = tq.transformParseTree(tree);
+          console.assert(tree);
         });
 
         var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);

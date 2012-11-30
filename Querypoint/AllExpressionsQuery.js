@@ -58,6 +58,8 @@ Querypoint.AllExpressionsQuery.prototype = {
   transformParseTree: function(tree) {
     if (Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name]) {
       return this._transformer.transformAny(tree);  
+    } else {
+      return tree;
     }
   },
 

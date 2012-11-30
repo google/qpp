@@ -39,6 +39,7 @@
     function grabLoadEvent() {
       window.addEventListener('load', function(event) {
         window.__qp.loadEvent = event;
+        console.log("load");
       });
     }
        
@@ -64,8 +65,11 @@
       window.addEventListener = noop;
     }
 
+    // This function will run just before the traced source is compiled in the page.
     function interceptEntryPoints() {  
       window.addEventListener = function(type, listener, useCapture) {
+        console.log("intercept "+type + " it is "+(early ? "early" : "late"));
+        console.trace("intercept "+type);
         window.__qp.intercepts.addEventListener.call(this, type, wrapEntryPoint(listener), useCapture);
         if (early) {
           var handlers = window.__qp.earlyEventHandlers;
@@ -125,7 +129,6 @@
         extractTracepoint:  extractTracepoint, // searches for tracepoints matching a query
       };      
     }
-
      
     initializeHiddenGlobalState();
     // Hacks on global built-ins
