@@ -154,7 +154,8 @@
       console.error("Trace with no location", expressionTree);
     }
   }
-   //---------------------------------------------------------------------------
+  
+  //---------------------------------------------------------------------------
   // Create line-table info for UI showing where trace data may be hiding
   
   QuerypointPanel.LineModelTraceVisitor = function(project, sourceFile) {

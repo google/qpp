@@ -3,8 +3,6 @@
 
 (function() {
   QuerypointPanel.LogScrubber = {
-
-
     
     initialize: function(logElement) {
       this.loads = ko.observableArray();
@@ -45,7 +43,7 @@
           if (Math.abs(dx) > Math.abs(dy)) {
             scrubberIndicator.css({left: (originalPosition.left - dx) + 'px'});;
           } else {
-
+            console.error("TODO implement grab");
           }
           moveEvent.preventDefault();
           moveEvent.stopPropagation();

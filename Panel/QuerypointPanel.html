@@ -93,7 +93,7 @@
                 <span title="Current expression trace values displayed below" data-bind="html: tokenViewModel._currentExpression"></span>
               </div>
             </div>
-            <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel._hasTraceData}">
+            <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && traceViewModel.currentTraces().length}">
               <caption>Trace Data</caption>
               <thead>
               <tr>
@@ -123,6 +123,9 @@
               <p data-bind="if: tokenViewModel.followingTokens()">Selecting Syntax Tree; Focus Editor to Lock</p>
               <p data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Syntax Tree</p>
           </div>
+          <!-- <div class="tracepoints">
+            <p><span data-bind="tokenViewModel.tracepoints().length"></span> tracepoints in this file</p>
+          </div> -->
           </div>
         </a>
         <div class="fileEditor">
@@ -138,12 +141,12 @@
         <span
           title="Number of active queries"
           class="tracequeries centeringHack"
-          data-bind="text: 'Q' + numberOfTracequeries()"
+          data-bind="text: '&#x1D5CA' + numberOfTracequeries()"
           ></span>
         <span
           title="Current turn number"
           class="turnNumber centeringHack"
-          data-bind="text: '&#x2941' + currentTurnNumber()"
+          data-bind="text: '&#x21B1' + currentTurnNumber()"
           ></span>
         <span 
           title="Files changed and not saved" 

@@ -104,8 +104,13 @@
         if (url !== this.url) {
           console.error("QPProject reload failed: url mismatch: " + url + '!==' + this.url);
         }
-        this.runInWebPage(this.parseTrees_);
-        this._monitorReloads();
+        // To minimize the impact of the original JS we recorded and blocked entrypoints.
+        // Now we intercept them to instrument event turns
+        chrome.devtools.inspectedWindow.eval('window.__qp.interceptEntryPoints()', function() {
+          this.runInWebPage(this.parseTrees_);
+          this._monitorReloads();
+        }.bind(this));
+        
       }.bind(this);
           
       chrome.devtools.network.onNavigated.addListener(onNavigated);

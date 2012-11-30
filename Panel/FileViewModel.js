@@ -18,6 +18,13 @@
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
     this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
     this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this, panel);  // wired to token viewed.
+    
+    panel.currentTurnActive.subscribe(function(newValue) {
+      console.log("FileViewModel update on turn "+newValue);
+      if (!newValue) {
+        this.update();
+      }
+    }.bind(this));
   }
   
   QuerypointPanel.FileViewModel.debug = false;
@@ -59,12 +66,12 @@
       this._viewportData = viewportData;
       
       if (this.traceModel) {
-        this.updateViewModel();
+        this.updateLineNumberHighlights();
       }
     },
 
     // Manually update to avoid having ko.observables() all over the tree
-    updateViewModel: function() {
+    updateLineNumberHighlights: function() {
       var i_viewport = 0;
       // Use the viewport to limit our work
       for (var line = this._viewportData.start; line < this._viewportData.end; line++, i_viewport++) {
@@ -94,7 +101,7 @@
       if (traceData) {
         this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
         this.traceModel.visitTrace(this.treeRoot(), traceData);      
-        this.updateViewModel();
+        this.updateLineNumberHighlights();
       }
     },
 
@@ -133,7 +140,7 @@
       traceDataElement.classList.add('traceData');
       traceDataElement.innerHTML = trace; // TODO chop 50
       if (column < 50) { // then position text to the right
-        traceDataElement.classList.add('indicatorLeft');s
+        traceDataElement.classList.add('indicatorLeft');
       } else { // to the left
         traceDataElement.classList.add('indicatorRight');
       }

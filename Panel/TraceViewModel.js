@@ -7,31 +7,32 @@
   
   QuerypointPanel.TraceViewModel = function(fileViewModel, panel) {
 
-    this._hasTraceData = ko.observable('false');
-    this.freshTraceData = ko.computed(function() {
+    // all of the query results for this file
+    this.tracepoints = ko.observableArray();
+    
+    this._tracepoints = ko.computed(function() {
       var additions = false;
       var treeRoot = fileViewModel.treeRoot();
       if (fileViewModel.project && treeRoot) {
         var treeHanger = this.treeHanger(fileViewModel.project, treeRoot);
         panel.tracequeries().forEach(function(tq){
           tq.extractTracepoints(fileViewModel.treeRoot(), function (traceData){
-            var hasTracepoints = traceData && treeHanger.visitTrace(treeRoot, traceData);    
+            // Filling the _tracepoints async...
+            var hasTracepoints = traceData && treeHanger.visitTrace(treeRoot, traceData, this.tracepoints);    
             additions = additions || hasTracepoints;
           });
         }.bind(this));
       }
       return additions;
-    }.bind(this));    
-    
-    this.trace
+    }.bind(this));
 
+    // Query results for the current token in this file.
     this.currentTraces = ko.computed(function() {
         var tree = fileViewModel.tokenViewModel.tokenTree();
 
         if (tree && panel.tracequeries().length) {
           var traces = tree.location.traces;
           if (traces) {
-            this._hasTraceData('true');
             return traces.map(function(trace) {
               var start = tree.location.start;
               var end = tree.location.end;
@@ -47,13 +48,9 @@
                 commandName: '&#x2799;&#x2263;'
               };
             });
-          } else {
-            this._hasTraceData('false');
-          }
+          } 
         }
       }.bind(this));
-
-    // ko.applyBindings(this, document.querySelector('.traceView'));
 
    $(".QPOutput").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
@@ -71,6 +68,6 @@
         this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(project, rootTree);  
       } 
       return this._treeHanger;
-    }
+    },
   };
 }());

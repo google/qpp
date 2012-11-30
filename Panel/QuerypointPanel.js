@@ -335,7 +335,7 @@ QuerypointPanel.Panel.prototype = {
       }
     );
   },
-
+  
 };
 document.addEventListener('focus', function(event) {
   console.log("focus ", event.target);

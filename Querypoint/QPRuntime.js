@@ -16,11 +16,15 @@
         // So far we cannot transcode synchronously so we miss the 'load' event
         early = false;
         var handlers = window.__qp.earlyEventHandlers['load'];
-        handlers.forEach(function(handler){
-          handler(window.__qp.loadEvent);
-        });
-        console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
-        return handlers.length;
+        if (handlers) {
+          handlers.forEach(function(handler){
+            handler(window.__qp.loadEvent);
+          });
+          console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
+          return handlers.length;
+        } else {
+          console.log("Querypoint.runtime: fireLoad no earlyEventHandlers");
+        }
       } catch(exc) {
         console.error("Querypoint.runtime fireLoad fails "+exc, exc.stack);
         return exc.toString();
@@ -30,19 +34,6 @@
     
     function trace(expr) {
       return expr + '';
-    }
-
-    function initializeHiddenGlobalState() {
-      window.__qp = {
-        intercepts: {}, // keys are intercepted function names, values functions
-        earlyEventHandlers: {}, // keys are event types, values are arrays of handlers
-        turns: [],      // stack of {fnc: <function>, args: []}
-        turn: 0,        // turns.length set by wrapEntryPoint
-        functions: {},  // keys filename, values {<function_ids>: [<activations>]}
-        fireLoad: fireLoad,
-        trace: trace,
-        extractTracepoint:  extractTracepoint, // searches for tracepoints matching a query
-      };      
     }
 
     function grabLoadEvent() {
@@ -62,8 +53,18 @@
       }
     }
 
-    function interceptEntryPoints() {
+    function recordEntryPoints() {
       window.__qp.intercepts.addEventListener = window.addEventListener;
+      window.__qp.intercepts.Node = {prototype: {addEventListener: window.Node.prototype.addEventListener}};
+    }
+
+    function blockEntryPoints() {
+      // Hack because we must allow untraced JS to run before our traced JS runs
+      var noop = function(){};
+      window.addEventListener = noop;
+    }
+
+    function interceptEntryPoints() {  
       window.addEventListener = function(type, listener, useCapture) {
         window.__qp.intercepts.addEventListener.call(this, type, wrapEntryPoint(listener), useCapture);
         if (early) {
@@ -75,8 +76,7 @@
           }  
         }         
       }
-
-      window.__qp.intercepts.Node = {prototype: {addEventListener: window.Node.prototype.addEventListener}};
+      
       window.Node.prototype.addEventListener = function(type, listener, useCapture) {
         window.__qp.intercepts.Node.prototype.addEventListener.call(this, type, wrapEntryPoint(listener), useCapture);
       }
@@ -112,9 +112,27 @@
       })[0];  // TODO we should only have one result I think
     }
      
+    function initializeHiddenGlobalState() {
+      window.__qp = {
+        intercepts: {}, // keys are intercepted function names, values functions
+        earlyEventHandlers: {}, // keys are event types, values are arrays of handlers
+        turns: [],      // stack of {fnc: <function>, args: []}
+        turn: 0,        // turns.length set by wrapEntryPoint
+        functions: {},  // keys filename, values {<function_ids>: [<activations>]}
+        interceptEntryPoints: interceptEntryPoints, // call just before we load traced source.
+        fireLoad: fireLoad,
+        trace: trace,
+        extractTracepoint:  extractTracepoint, // searches for tracepoints matching a query
+      };      
+    }
+
+     
     initializeHiddenGlobalState();
+    // Hacks on global built-ins
     grabLoadEvent();
-    interceptEntryPoints();
+    recordEntryPoints();
+    blockEntryPoints();
+
     wrapEntryPoint(function andWeBegin() {
       console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
       console.log("window.__qp: %o", window.__qp);    
@@ -122,7 +140,7 @@
   }; 
 
   Querypoint.QPRuntime = {
-    initialize: function() {
+    initialize: function() { 
       this.runtime =  [define__qp];
       this.source = [];
       this._reloadNumber = 0;
@@ -146,6 +164,5 @@
       this.source.push(scr);
     }
   };
-  Querypoint.QPRuntime.initialize();
    
 }());
