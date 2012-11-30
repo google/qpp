@@ -132,6 +132,11 @@
       var traceViewedLine = document.querySelector('.traceViewedLine');
       this._fileViewModel.editor().removeLineNumberClass(line, 'traceViewedLine');
       
+      if (!traceViewedLine) {
+          console.error("editor out of sync");
+          return;
+      }
+      
       var clone = traceViewedLine.cloneNode(true);
       clone.classList.remove('traceViewedLine');
       return clone;
