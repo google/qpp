@@ -231,7 +231,7 @@ pre.traceBackground {
   display: none;
 }
 
-.QPOutput .traceView[hasTraceData="1"] {
+.QPOutput .traceView[hasTraceData="true"] {
   display: block;
 }
 

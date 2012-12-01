@@ -93,7 +93,7 @@
                 <span title="Current expression trace values displayed below" data-bind="html: tokenViewModel._currentExpression"></span>
               </div>
             </div>
-            <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && traceViewModel.currentTraces().length}">
+            <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && !!traceViewModel.currentTraces().length}">
               <caption>Trace Data</caption>
               <thead>
               <tr>
