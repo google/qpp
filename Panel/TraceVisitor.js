@@ -87,9 +87,10 @@
 
   //--------------------------------------------------------------------------------------------------------------------------------------------------------
   // Attach traceData to the appropriate subtree
-  QuerypointPanel.TreeHangerTraceVisitor = function(project, rootTree) {
+  QuerypointPanel.TreeHangerTraceVisitor = function(project, rootTree, tracepoints) {
     QuerypointPanel.TraceVisitor.call(this, project);
     this._rootTree = rootTree;
+    this._tracepoints = tracepoints;
   }
   
   QuerypointPanel.TreeHangerTraceVisitor.prototype = Object.create(QuerypointPanel.TraceVisitor.prototype);
@@ -145,7 +146,8 @@
             file: result.file,
             functionOffset: result.functionOffset
           };
-          this.appendUnique(trace,traces);
+          this.appendUnique(trace, traces);
+          this.appendUnique(trace, this._tracepoints);
           var endTime = (new Date()).getTime();
           console.log((endTime - startTime) + "ms to query.extractTracepoints"); 
         }.bind(this));

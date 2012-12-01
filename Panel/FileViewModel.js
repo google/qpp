@@ -102,6 +102,7 @@
         this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
         this.traceModel.visitTrace(this.treeRoot(), traceData);      
         this.updateLineNumberHighlights();
+        this.traceViewModel.update();
       }
     },
 

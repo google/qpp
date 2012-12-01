@@ -70,13 +70,14 @@
       window.addEventListener = function(type, listener, useCapture) {
         console.log("intercept "+type + " it is "+(early ? "early" : "late"));
         console.trace("intercept "+type);
-        window.__qp.intercepts.addEventListener.call(this, type, wrapEntryPoint(listener), useCapture);
+        var wrapped = wrapEntryPoint(listener);
+        window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
         if (early) {
           var handlers = window.__qp.earlyEventHandlers;
           if (!handlers[type]) {
-            handlers[type] = [listener];
+            handlers[type] = [wrapped];
           } else {
-            handlers[type].push(listener);
+            handlers[type].push(wrapped);
           }  
         }         
       }
@@ -108,12 +109,11 @@
       var tps = window.__qp[queryName][identifier];
       console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
       return tps.map(function(tp) {
-
         var activation = tp.activations[tp.activationIndex - 1];
         console.log("tp", tp);
         console.log('activation', activation);
         return findMatchingActivation(activation, tp.traceValue);
-      })[0];  // TODO we should only have one result I think
+      });  
     }
      
     function initializeHiddenGlobalState() {

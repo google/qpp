@@ -6,25 +6,11 @@
   window.QuerypointPanel = window.QuerypointPanel || {};
   
   QuerypointPanel.TraceViewModel = function(fileViewModel, panel) {
+    this._fileViewModel = fileViewModel;
+    this._panel = panel;
 
     // all of the query results for this file
     this.tracepoints = ko.observableArray();
-    
-    this._tracepoints = ko.computed(function() {
-      var additions = false;
-      var treeRoot = fileViewModel.treeRoot();
-      if (fileViewModel.project && treeRoot) {
-        var treeHanger = this.treeHanger(fileViewModel.project, treeRoot);
-        panel.tracequeries().forEach(function(tq){
-          tq.extractTracepoints(fileViewModel.treeRoot(), function (traceData){
-            // Filling the _tracepoints async...
-            var hasTracepoints = traceData && treeHanger.visitTrace(treeRoot, traceData, this.tracepoints);    
-            additions = additions || hasTracepoints;
-          });
-        }.bind(this));
-      }
-      return additions;
-    }.bind(this));
 
     // Query results for the current token in this file.
     this.currentTraces = ko.computed(function() {
@@ -65,9 +51,22 @@
   QuerypointPanel.TraceViewModel.prototype = {
     treeHanger: function(project, rootTree) {
       if (!this._treeHanger) {
-        this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(project, rootTree);  
+        this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(project, rootTree, this.tracepoints);  
       } 
       return this._treeHanger;
     },
+    update: function() {
+      var treeRoot = this._fileViewModel.treeRoot();
+      if (treeRoot) {
+        var treeHanger = this.treeHanger(this._fileViewModel.project, treeRoot);
+        this._panel.tracequeries().forEach(function(tq){
+          tq.extractTracepoints(this._fileViewModel.treeRoot(), function (tracepoint){
+            if (tracepoint) {
+              this.tracepoints.push(tracepoint);
+            } // else no data?
+          }.bind(this));
+        }.bind(this));
+      }
+    }
   };
 }());

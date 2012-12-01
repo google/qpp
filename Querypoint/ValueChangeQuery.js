@@ -50,6 +50,7 @@ Querypoint.ValueChangeQuery.prototype = {
   
   activate: function() {
     this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
+    this.tree.location.query = this;
   },
 
   tracePrompt: function() {
@@ -70,8 +71,15 @@ Querypoint.ValueChangeQuery.prototype = {
   // Pull trace results out of the page for this querypoint
   extractTracepoints: function(rootTree, onTracepoint) {
     function onEval(result, isException) {
-       if (!isException) {       
-        onTracepoint(result)
+       if (!isException && result) {
+        var changes = result;
+        changes.forEach(function(change) {
+          debugger;
+          onTracepoint(result)  
+        });       
+        
+      } else {
+        console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
       }
     }
     chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges","prop")', onEval);
