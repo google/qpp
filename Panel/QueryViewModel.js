@@ -19,7 +19,7 @@
     this.toolTip = query.toolTip.bind(query);
   }
 
-  QuerypointPanel.QueryViewModel.prototype ={
+  QuerypointPanel.QueryViewModel.prototype = {
     attachTracePrompt: function() {
       var emptyTrace = {
         load: '_',
@@ -27,18 +27,23 @@
         activation: '_',
         value: this.query.tracePrompt(),
         query: this.query,
+        isPrompt: true,
       };
 
       var traces = this.query.tree.location.traces = this.query.tree.location.traces || [];
       traces.push(emptyTrace);
     },
 
+
     activateQuery: function(fileViewModel) {
       if (this.isActive()) return;
-
+      // tree -> query
       this.query.setQueryOnTree(this.query.tree, this.query);
+      
       this.query.activate();
+      // tree -> trace (empty)
       this.attachTracePrompt();
+      // project -> query
       this.tracequeries.push(this.query);
     },
   };

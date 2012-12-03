@@ -55,6 +55,19 @@
       } 
       return this._treeHanger;
     },
+    swapTracePrompt: function(tracepoint) {
+      var traces = this.query.tree.location.traces;
+      var swap = -1;
+      traces = traces.forEach(function(trace, index) {
+        if (trace.isPrompt && trace.query == tracequery) {
+            swap = index;
+        }
+      });
+      if (swap != -1) {
+        traces[swap] = trace;
+        return true;
+      }
+    },
     update: function() {
       var treeRoot = this._fileViewModel.treeRoot();
       if (treeRoot) {
@@ -62,7 +75,10 @@
         this._panel.tracequeries().forEach(function(tq){
           tq.extractTracepoints(this._fileViewModel.treeRoot(), function (tracepoint){
             if (tracepoint) {
-              this.tracepoints.push(tracepoint);
+              if (!this.swapTracePrompt(tracepoint)) {
+                this.tracepoints.push(tracepoint);
+              }
+
             } // else no data?
           }.bind(this));
         }.bind(this));

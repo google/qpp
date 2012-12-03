@@ -40,7 +40,6 @@ Querypoint.ValueChangeQuery.prototype = {
   __proto__: Querypoint.Query.prototype,
 
   buttonName: function() {
-    console.log("ValueChangeQuery buttonName called")
     return 'lastChange';
   },
   
@@ -74,8 +73,9 @@ Querypoint.ValueChangeQuery.prototype = {
        if (!isException && result) {
         var changes = result;
         changes.forEach(function(change) {
-          debugger;
-          onTracepoint(result)  
+          console.error("format change data into a trace", change);
+          var trace = {};
+          onTracepoint(trace)  
         });       
         
       } else {
