@@ -20,19 +20,19 @@
           var traces = tree.location.traces;
           if (traces) {
             return traces.map(function(trace) {
+              var traceViewModel = {};
+              Object.keys(trace).forEach(function(prop) {
+                traceViewModel[prop] = trace[prop];
+              });
+              // TODO traceViewModel.trace, .tree, then methods.
               var start = tree.location.start;
               var end = tree.location.end;
-              return {
-                load: trace.load,
-                turn: trace.turn,
-                activation: trace.activation,
-                tooltip: start.source.name + ' Line: ' + start.line,
-                url: panel.urlFromLocation(tree.location),
-                startOffset: start.offset,
-                endOffset: end.offset,
-                value: trace.value,
-                commandName: '&#x2799;&#x2263;'
-              };
+              traceViewModel.tooltip = start.source.name + ' Line: ' + start.line;
+              traceViewModel.url = panel.urlFromLocation(tree.location);
+              traceViewModel.startOffset = start.offset;
+              traceViewModel.endOffset = end.offset;
+              traceViewModel.commandName = '&#x2799;&#x2263;';
+              return traceViewModel;
             });
           } 
         }
@@ -56,11 +56,11 @@
       return this._treeHanger;
     },
     swapTracePrompt: function(tracepoint) {
-      var traces = this.query.tree.location.traces;
+      var traces = this.currentTraces();
       var swap = -1;
       traces = traces.forEach(function(trace, index) {
-        if (trace.isPrompt && trace.query == tracequery) {
-            swap = index;
+        if (trace.isPrompt && trace.query == tracepoint.query) {
+           swap = index;
         }
       });
       if (swap != -1) {
@@ -78,7 +78,6 @@
               if (!this.swapTracePrompt(tracepoint)) {
                 this.tracepoints.push(tracepoint);
               }
-
             } // else no data?
           }.bind(this));
         }.bind(this));
