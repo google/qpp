@@ -318,7 +318,7 @@ QuerypointPanel.Panel.prototype = {
     console.log("restore", panelModel);
     this._initEditors(panelModel);
     this.project.compile(function(compileResult) {
-      this.project.runInWebPage(compileResult);
+     // TODO copy the ParseTrees before ... this.project.runInWebPage(compileResult);
       this.commands.selectFile.call(this);  
     }.bind(this));
   },

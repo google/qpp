@@ -37,7 +37,7 @@
     compile: function(onAllCompiled) {
       function onScriptsReady() {
         this.compiler_.compile(this);
-        onAllCompiled(this._parseTrees); 
+        onAllCompiled(this.parseTrees_); 
       }
       this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
     },
@@ -108,8 +108,10 @@
         // To minimize the impact of the original JS we recorded and blocked entrypoints.
         // Now we intercept them to instrument event turns
         chrome.devtools.inspectedWindow.eval('window.__qp.interceptEntryPoints()', function() {
-          this.runInWebPage(this.parseTrees_);
-          this._monitorReloads();
+          this.compile(function(parseTrees) {  // TODO: clone the parse trees rather than reparse
+            this.runInWebPage(parseTrees);
+            this._monitorReloads();
+          }.bind(this));
         }.bind(this));
         
       }.bind(this);
@@ -123,9 +125,9 @@
     
     _reload: function(numberOfReloads) {
       console.assert(typeof numberOfReloads === 'number');
-      function transcode(str) {
+      function transcode(str, name ) {
         console.log("transcode saw ", str);
-        return  "// ignored some JavaScript, Hah!";
+        return  str + "\nconsole.log('finished compiling "+name+ "');";
       }
 
       Querypoint.QPRuntime.setReloadCounter(numberOfReloads);
@@ -135,6 +137,7 @@
         injectedScript:  Querypoint.QPRuntime.runtimeSource(), 
         preprocessingScript: '(' + transcode + ')'
       };
+      console.log("reloadOptions.preprocessingScript ", reloadOptions.preprocessingScript);
       chrome.devtools.inspectedWindow.reload(reloadOptions);
     },
     
