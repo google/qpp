@@ -107,14 +107,7 @@
         alert("Can't save, there is no current editor"); // alerts are bad UX
         return;
       }
-      var request = { 
-        url: currentEditor.getName(), 
-        content: currentEditor.getContent() 
-      };
-      // send directly to devtools-save
-      chrome.extension.sendMessage('jmacddndcaceecmiinjnmkfmccipdphp', request, function maybeSaved(response){
-        console.log("saveFile response ", response);
-        if (response.saved) {
+      function onSave(response) {
           var name = currentEditor.getName();
           var index = editors._viewModel.savedEditors.indexOf(name);
           if (index === -1) {
@@ -122,12 +115,48 @@
           }
           index = editors._viewModel.unsavedEditors.indexOf(name);
           editors._viewModel.unsavedEditors.splice(index, 1);
-        } else {
-          alert("Saved failed: "+response.error);
-        }
-      });
+      }
+      function onError(consoleArgs) {
+        console.error.apply(this, arguments);
+        alert(consoleArgs);
+      }
+      _saveFileThruDAV(url, content, onSave, onError);
       return false;
     },
+
+    _saveFileThruDAV: function(url, content, on) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', url);
+      xhr.addEventListener('load', function(e) {
+        if (xhr.status == 200 || xhr.status == 0)
+          on.success(xhr.responseText);
+      });
+      var onFailure = function (msg) {
+        on.error(msg);
+      };
+      xhr.addEventListener('error', onFailure, false);
+      xhr.addEventListener('abort', onFailure, false);
+      xhr.send(content);
+    }
+      
+    _saveFileThruDevtoolsSave: function(url, content, on) {
+      var request = { 
+        url: currentEditor.getName(), 
+        content: currentEditor.getContent() 
+      };
+            // send directly to devtools-save
+      chrome.extension.sendMessage('jmacddndcaceecmiinjnmkfmccipdphp', request, function maybeSaved(response){
+        console.log("saveFile response ", response);
+        if (on) {
+          if (response.saved) {
+            on.success(url, content);
+          } else {
+            on.error("Save " + url + " failed: "+response.error);
+          }
+        }
+      });
+
+    }
 
     _onResourceUpdate: function(resource, content) {
         if (this._viewModel.unsavedEditors.indexOf(resource.url) !== -1) {
