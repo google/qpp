@@ -12,14 +12,14 @@ chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(function 
     var request = {
       message: 'saveToDAV',
       url: resource.url,
-      content 
+      content: content 
     };
 
     if (debug) {
       console.log("saveToDAV, getContent ", request);
     }
 
-    function responseHander(response) {
+    function responseHandler(response) {
       console.log("saveToDAV ", response);
     }
 

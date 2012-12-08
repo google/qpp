@@ -35,4 +35,4 @@ function listenForSave(request, sender, sendResponse) {
   }
 }
 
-chrome.extension.onRequest.addListener();
+chrome.extension.onRequest.addListener(listenForSave);
