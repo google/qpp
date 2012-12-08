@@ -1,0 +1,20 @@
+{
+  "name": "dev2DAV",
+  "description": "Saves files modified in Chrome DevTools to WebDAV server",
+  "version": "0.1",
+  "manifest_version": 2,
+  "devtools_page": "dev2DAV.html",
+  "permissions": [ 
+    "notifications",
+    "http://*/*",
+    "https://*/*"
+  ],
+   "background" : {
+      "scripts": ["dev2DAVBackground.js"]
+    }, 
+  "web_accessible_resources": [
+    "img/saved-ok.png",
+    "img/error.png",
+    "img/information.png"
+  ]
+}
