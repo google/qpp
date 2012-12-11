@@ -120,7 +120,7 @@
         console.error.apply(this, arguments);
         alert(consoleArgs);
       }
-      _saveFileThruDAV(url, content, onSave, onError);
+      _saveFileThruDevtoolsSave(url, content, onSave, onError);
       return false;
     },
 
@@ -137,7 +137,7 @@
       xhr.addEventListener('error', onFailure, false);
       xhr.addEventListener('abort', onFailure, false);
       xhr.send(content);
-    }
+    },
       
     _saveFileThruDevtoolsSave: function(url, content, on) {
       var request = { 
@@ -155,8 +155,7 @@
           }
         }
       });
-
-    }
+    },
 
     _onResourceUpdate: function(resource, content) {
         if (this._viewModel.unsavedEditors.indexOf(resource.url) !== -1) {
