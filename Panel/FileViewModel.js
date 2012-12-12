@@ -78,10 +78,8 @@
     
     updateModel: function(traceData) {
       console.log("updateModel " + this.editor().name + " traceData: ", traceData);
-      if (traceData) {
-        this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
-        this.traceModel.visitTrace(this.treeRoot(), traceData);      
-        this.updateLineNumberHighlights();
+      if (traceData) {      
+        this.lineNumberViewModel.update(traceData, this.getCurrentViewport());
         this.traceViewModel.update(traceData);
       }
     },

@@ -23,21 +23,26 @@
     },
 
     // Manually update to avoid having ko.observables() all over the tree
-    updateLineNumberHighlights: function(viewportData) {
+    update: function(traceData, viewportData) {
+        this.traceVisitor.visitTrace(this._fileViewModel.treeRoot(), traceData);
+        this.updateLineNumberHighlights(viewportData);
+    },
+    
+    updateLineNumberHighlights: function(viewportData) {      
       var i_viewport = 0;
       // Use the viewport to limit our work
       for (var line = viewportData.start; line < viewportData.end; line++, i_viewport++) {
         var offsets = this.getTracedOffsetByLine(line);
         
-        this.editor().removeLineNumberClass(line);
+        this.editor.removeLineNumberClass(line);
         if (!offsets) {
-          this.editor().setLineNumberClass(line, 'qp-no-activations');
+          this.editor.setLineNumberClass(line, 'qp-no-activations');
         } else {
           if (offsets.functionOffsets) {
-            this.editor().setLineNumberClass(line, 'qp-activations');
+            this.editor.setLineNumberClass(line, 'qp-activations');
           }
           if (offsets.expressionOffsets) { // overwrite function marker
-            this.editor().setLineNumberClass(line, 'qp-traces');
+            this.editor.setLineNumberClass(line, 'qp-traces');
           }
         }
       }
