@@ -1,12 +1,11 @@
  // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// Binds the tracuer SourceFile, Tree, and Editor to interactively
-// update the Tree with trace data as the user explores the source
-// in the editor
 
 (function() {
   window.Querypoint = window.Querypoint || {};
+  
+  // Walks the traceData structure
   
   Querypoint.TraceVisitor = function(project) {
     console.assert(project);
@@ -36,6 +35,7 @@
       }.bind(this));
       return this.isModified;
     },
+    
     visitFunctionTraced: function(functionTree, activations) {
       var turn = 0;
       var activationInThisTurn = 0;
@@ -49,6 +49,7 @@
         this.visitActivationTraced(functionTree, activation, activationInThisTurn);
       }.bind(this));
     },
+    
     _findInTree: function(tree, id) {
       var offsetKey = id.split('_')[1]; // [0] is the revision number (TODO) [2] is the range
       var offset = parseInt(offsetKey, 10);
@@ -69,6 +70,7 @@
       }
       return this._project.treeFinder().findByDistanceFunction(tree, byOffsetKey.bind(this, offset));
     },
+    
     visitActivationTraced: function(functionTree, activation, activationCount) {
       var tracedExpressionIds = Object.keys(activation);
       tracedExpressionIds.forEach(function(id) {
@@ -81,17 +83,18 @@
         this.visitExpressionsTraced(expressionTree, activation.turn, activationCount, trace);
       }.bind(this));
     },
+    
     visitExpressionsTraced: function(expressionTree, turn, activationCount, trace) {
       console.log("Visiting " + traceur.outputgeneration.TreeWriter.write(tree) + ' with trace ' + trace);
     }
   };
 
-  //--------------------------------------------------------------------------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------
   // Attach traceData to the appropriate subtree
-  Querypoint.TreeHangerTraceVisitor = function(project, rootTree, tracepoints) {
+  
+  Querypoint.TreeHangerTraceVisitor = function(project, query) {
     Querypoint.TraceVisitor.call(this, project);
-    this._rootTree = rootTree;
-    this._tracepoints = tracepoints;
+    this._query = query;
   }
   
   Querypoint.TreeHangerTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
@@ -126,6 +129,7 @@
     if (expressionTree.location) {
 
       var trace = {
+        query: this._query,
         load: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
