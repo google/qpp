@@ -68,13 +68,14 @@ Querypoint.ValueChangeQuery.prototype = {
   },
 
   // Pull trace results out of the page for this querypoint
-  extractTracepoints: function(rootTree, onTracepoint) {
+  extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
     function onEval(result, isException) {
        if (!isException && result) {
         var changes = result;
         changes.forEach(function(change) {
           console.error("format change data into a trace", change);
-          var trace = {};
+          var trace = change;
+          trace.query = this;
           onTracepoint(trace)  
         });       
         

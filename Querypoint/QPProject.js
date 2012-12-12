@@ -159,6 +159,15 @@
     
     _unmonitorReloads: function() {
       chrome.devtools.network.onNavigated.addListener(this._onWebPageNavigated);
+    },
+
+    // These functions hide features depending on traceur and running in this window from
+    // functions running in the UI window (Panel)
+    lineModelTraceVisitor: function(sourceFile) {
+      return new Querypoint.LineModelTraceVisitor(this, sourceFile);
+    },
+    treeHangerTraceVisitor: function(treeRoot) {
+      return new Querypoint.TreeHangerTraceVisitor(this, treeRoot);
     }
     
   };

@@ -15,7 +15,7 @@
   QuerypointPanel.LineNumberViewModel.prototype = {
 
     reattach: function(editor, sourceFile) {
-        this.traceVisitor = new QuerypointPanel.LineModelTraceVisitor(this._fileViewModel.project, sourceFile);
+        this.traceVisitor = this._fileViewModel.project.lineModelTraceVisitor(sourceFile);
         if (this.editor) 
            this.editor.removeListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
         this.editor = editor;

@@ -60,13 +60,6 @@
   
   QuerypointPanel.TraceViewModel.prototype = {
     
-    treeHanger: function(project, rootTree) {
-      if (!this._treeHanger) {
-        this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(project, rootTree, this.tracepoints);  
-      } 
-      return this._treeHanger;
-    },
-    
     checkTracePrompts: function(tree) {
       var traces = tree.location.traces;
       if (!traces) {
@@ -93,12 +86,10 @@
     update: function(traceData) {
       var treeRoot = this._fileViewModel.treeRoot();
       if (treeRoot) {
-        var treeHanger = this.treeHanger(this._fileViewModel.project, treeRoot);
         var tree = this._fileViewModel.tokenViewModel.tokenTree();
-        // TODO we should only visit the tree in view, not the entire tree
-        treeHanger.visitTrace(treeRoot, traceData);
+
         this._panel.tracequeries().forEach(function(tq){
-          tq.extractTracepoints(this._fileViewModel.treeRoot(), function (tracepoint){
+          tq.extractTracepoints(this._fileViewModel, tree, function (tracepoint){
             if (tracepoint) {
               this.tracepoints.push(tracepoint);
             } // else no data?

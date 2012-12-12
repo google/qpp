@@ -66,16 +66,29 @@ Querypoint.AllExpressionsQuery.prototype = {
   runtimeSource: function() {
     return "";
   },
+  
+      
+    _treeHanger: function(project, rootTree) {
+      if (!this._treeHangerTraceVisitor) {
+        this._treeHangerTraceVisitor = project.treeHangerTraceVisitor(rootTree);  
+      } 
+      return this._treeHangerTraceVisitor;
+    },
+    
 
   // Pull trace results out of the page for this querypoint
-  extractTracepoints: function(rootTree, onTracepoint) {
-    function onEval(result, isException) {
-       if (!isException) {       
-        onTracepoint(result);
+  extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
+    function onEval(traceData, isException) {
+       if (!isException) {
+        // TODO we should only visit the tree in view, not the entire tree
+        var treeHanger = this._treeHanger(fileViewModel.project, fileViewModel.treeRoot());
+        
+        treeHanger.visitTrace(fileViewModel.treeRoot(), traceData);       
+        onTracepoint();
       }
     }
-    var fileName = rootTree.location.start.source.name;
-    chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', onEval);
+    var fileName = fileViewModel.treeRoot().location.start.source.name;
+    chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', onEval.bind(this));
   },
 };
 
