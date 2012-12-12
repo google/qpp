@@ -18,6 +18,7 @@
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
     this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
     this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this, panel);  // wired to token viewed.
+    this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, panel);
     
     panel.currentTurnActive.subscribe(function(newValue) {
       console.log("FileViewModel update on turn "+newValue);
@@ -44,8 +45,9 @@
       this.tokenViewModel.followTokens(true);
 
       this.updateViewport(editor.getViewport()); // TODO ko
+      this.lineNumberViewModel.reattach(this.editor(), this.sourceFile());
+      
       editor.addListener('onViewportChange', this.updateViewport.bind(this));
-      editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
 
       console.log("FileViewModel.update "+this.editor().name);  
     },
@@ -70,28 +72,6 @@
       }
     },
 
-    // Manually update to avoid having ko.observables() all over the tree
-    updateLineNumberHighlights: function() {
-      var i_viewport = 0;
-      // Use the viewport to limit our work
-      for (var line = this._viewportData.start; line < this._viewportData.end; line++, i_viewport++) {
-        var offsets = this.getTracedOffsetByLine(line);
-        
-        this.editor().removeLineNumberClass(line);
-        if (!offsets) {
-          this.editor().setLineNumberClass(line, 'qp-no-activations');
-        } else {
-          if (offsets.functionOffsets) {
-            this.editor().setLineNumberClass(line, 'qp-activations');
-          }
-          if (offsets.expressionOffsets) { // overwrite function marker
-            this.editor().setLineNumberClass(line, 'qp-traces');
-          }
-        }
-      }
-
-    },
-
     updateTraceData: function(fileName, callback) {
       chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', callback);
     },
@@ -102,57 +82,8 @@
         this.traceModel = new QuerypointPanel.LineModelTraceVisitor(this.project, this.sourceFile());
         this.traceModel.visitTrace(this.treeRoot(), traceData);      
         this.updateLineNumberHighlights();
-        this.traceViewModel.update();
+        this.traceViewModel.update(traceData);
       }
-    },
-
-    getTracedOffsetByLine: function(line) {
-      return this.traceModel.tracedOffsetsByLine[line];
-    },
-
-    getTraceByOffset: function(offset) {
-      return this.traceModel.latestTraceByOffset[offset];
-    },
-
-    showTraceDataForLine: function(clickData) {
-      var line = clickData.line;
-      var offsetOfLine = this.sourceFile().lineNumberTable.offsetOfLine(line);
-      var offsets = this.getTracedOffsetByLine(line);
-      if (offsets) {
-        var expressionOffsets = offsets.expressionOffsets;
-        if (expressionOffsets) {
-          
-          expressionOffsets.forEach(function(offset, index) {
-            var trace = this.getTraceByOffset(offset);
-            if (QuerypointPanel.FileViewModel.debug) 
-              console.log("showTraceDataForLine " + line + " offset " + offset + " = " + trace);
-            var column = parseInt(offset) - offsetOfLine;
-            var element = this.getTraceDataElement(line, column, index, trace);
-            
-            this.editor().insertElement(line, column, element, true);
-
-          }.bind(this));
-        }
-      }
-    },
-
-    getTraceDataElement: function(line, column, index, trace) {
-      var traceDataElement = document.createElement('span');
-      traceDataElement.classList.add('traceData');
-      traceDataElement.innerHTML = trace; // TODO chop 50
-      if (column < 50) { // then position text to the right
-        traceDataElement.classList.add('indicatorLeft');
-      } else { // to the left
-        traceDataElement.classList.add('indicatorRight');
-      }
-      return traceDataElement;
-    },
-
-    getTraceBackground: function(heightInLines) {
-      var element = document.createElement('div');
-      element.style.height = heightInLines + 'em';
-      element.classList.add('traceBackground');
-      return element;
     },
 
   };

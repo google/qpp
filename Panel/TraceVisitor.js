@@ -10,6 +10,7 @@
   
   QuerypointPanel.TraceVisitor = function(project) {
     console.assert(project);
+    // The project gives us access to Querypoint and traceur functions on the devtools iframe window.
     this._project = project;
   }
   

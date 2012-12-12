@@ -18,6 +18,16 @@
 
         if (tree && panel.tracequeries().length) {
           var traces = tree.location.traces;
+          var prompts = tree.location.prompts;
+          
+          if (!traces) {
+            traces = prompts;
+          } else {
+            if (prompts) {
+              traces = traces.concat(prompts);
+            }
+          }
+          
           if (traces) {
             return traces.map(function(trace) {
               var traceViewModel = {};
@@ -49,38 +59,52 @@
   }
   
   QuerypointPanel.TraceViewModel.prototype = {
+    
     treeHanger: function(project, rootTree) {
       if (!this._treeHanger) {
         this._treeHanger = new QuerypointPanel.TreeHangerTraceVisitor(project, rootTree, this.tracepoints);  
       } 
       return this._treeHanger;
     },
-    swapTracePrompt: function(tracepoint) {
-      var traces = this.currentTraces();
-      var swap = -1;
-      traces = traces.forEach(function(trace, index) {
-        if (trace.isPrompt && trace.query == tracepoint.query) {
-           swap = index;
+    
+    checkTracePrompts: function(tree) {
+      var traces = tree.location.traces;
+      if (!traces) {
+        return;
+      }
+      var prompts = tree.location.prompts;
+      if (!prompts) {
+        return;
+      }
+
+      prompts.forEach(function(prompt, promptIndex) {
+        var drop = -1;
+        traces.forEach(function(trace, index) {
+          if (trace.query == prompt.query) {
+            drop = promptIndex;
+          }
+        });
+        if (drop !== -1) {
+          tree.location.prompts.splice(promptIndex, 1); 
         }
       });
-      if (swap != -1) {
-        traces[swap] = trace;
-        return true;
-      }
     },
-    update: function() {
+    
+    update: function(traceData) {
       var treeRoot = this._fileViewModel.treeRoot();
       if (treeRoot) {
         var treeHanger = this.treeHanger(this._fileViewModel.project, treeRoot);
+        var tree = this._fileViewModel.tokenViewModel.tokenTree();
+        // TODO we should only visit the tree in view, not the entire tree
+        treeHanger.visitTrace(treeRoot, traceData);
         this._panel.tracequeries().forEach(function(tq){
           tq.extractTracepoints(this._fileViewModel.treeRoot(), function (tracepoint){
             if (tracepoint) {
-              if (!this.swapTracePrompt(tracepoint)) {
-                this.tracepoints.push(tracepoint);
-              }
+              this.tracepoints.push(tracepoint);
             } // else no data?
           }.bind(this));
         }.bind(this));
+        this.checkTracePrompts(tree);
       }
     }
   };

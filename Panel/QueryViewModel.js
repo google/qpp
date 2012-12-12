@@ -29,9 +29,9 @@
         query: this.query,
         isPrompt: true,
       };
-
-      var traces = this.query.tree.location.traces = this.query.tree.location.traces || [];
-      traces.push(emptyTrace);
+      
+      var prompts = this.query.tree.location.prompts = this.query.tree.location.prompts || [];
+      prompts.push(emptyTrace);  // for update
     },
 
 
