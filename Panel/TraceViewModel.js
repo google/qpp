@@ -9,16 +9,22 @@
     this._fileViewModel = fileViewModel;
     this._panel = panel;
 
-    // all of the query results for this file
-    this.tracepoints = ko.observableArray();
-
-    // Query results for the current token in this file.
-    this.currentTraces = ko.computed(function() {
-        var tree = fileViewModel.tokenViewModel.tokenTree();
-
-        if (tree && panel.tracequeries().length) {
+    this.rootTreeData = ko.computed(function(){
+      var traceData = fileViewModel.traceData();
+      if (traceData) {
+        // TODO we should only visit the tree in view, not the entire tree
+        var treeHanger = this._treeHanger(fileViewModel.project, fileViewModel.treeRoot());
+        treeHanger.visitTrace(fileViewModel.treeRoot(), traceData);
+      }
+      return traceData;
+    }.bind(this));
+    
+    this.treeTraces = ko.computed(function() {
+      if (this.rootTreeData()) {
+         var tree = fileViewModel.tokenViewModel.tokenTree();
+         if (tree) {
           var traces = tree.location.traces;
-          var prompts = tree.location.prompts;
+          var prompts = tree.location.prompts;  // TODO ko prompts
           
           if (!traces) {
             traces = prompts;
@@ -27,7 +33,17 @@
               traces = traces.concat(prompts);
             }
           }
-          
+          return traces;
+         }
+      } 
+    }.bind(this));
+
+    // Query results for the current token in this file.
+    this.currentTraces = ko.computed(function() {
+        var tree = fileViewModel.tokenViewModel.tokenTree();
+
+        if (tree && panel.tracequeries().length) {
+          var traces = this.treeTraces();
           if (traces) {
             return traces.map(function(trace) {
               var traceViewModel = {};
@@ -59,44 +75,14 @@
   }
   
   QuerypointPanel.TraceViewModel.prototype = {
-    
-    checkTracePrompts: function(tree) {
-      var traces = tree.location.traces;
-      if (!traces) {
-        return;
-      }
-      var prompts = tree.location.prompts;
-      if (!prompts) {
-        return;
-      }
-
-      prompts.forEach(function(prompt, promptIndex) {
-        var drop = -1;
-        traces.forEach(function(trace, index) {
-          if (trace.query == prompt.query) {
-            drop = promptIndex;
-          }
-        });
-        if (drop !== -1) {
-          tree.location.prompts.splice(promptIndex, 1); 
-        }
-      });
+          
+    _treeHanger: function(project, rootTree) {
+      if (!this._treeHangerTraceVisitor) {
+        this._treeHangerTraceVisitor = project.treeHangerTraceVisitor(rootTree);  
+      } 
+      return this._treeHangerTraceVisitor;
     },
-    
-    update: function(traceData) {
-      var treeRoot = this._fileViewModel.treeRoot();
-      if (treeRoot) {
-        var tree = this._fileViewModel.tokenViewModel.tokenTree();
 
-        this._panel.tracequeries().forEach(function(tq){
-          tq.extractTracepoints(this._fileViewModel, tree, function (tracepoint){
-            if (tracepoint) {
-              this.tracepoints.push(tracepoint);
-            } // else no data?
-          }.bind(this));
-        }.bind(this));
-        this.checkTracePrompts(tree);
-      }
-    }
+
   };
 }());

@@ -9,21 +9,38 @@
   window.QuerypointPanel = window.QuerypointPanel || {};
 
   QuerypointPanel.FileViewModel = function(element, panel) {
+    this._panel = panel;
+      
     // These will be changed when the file we are viewing changes
+    
     this.editor = ko.observable();
     this.sourceFile = ko.observable();
     this.treeRoot = ko.observable();
     this.project = panel.project;
+        
+    // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
+
+    this.traceData = ko.observable();
     
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
     this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
     this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this, panel);  // wired to token viewed.
     this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, panel);
+
+    // all of the query results for this file
+    this.tracepoints = ko.observableArray();
     
     panel.currentTurnActive.subscribe(function(newValue) {
       console.log("FileViewModel update on turn "+newValue);
-      if (!newValue) {
-        this.update();
+      if (newValue !== 0) {
+        this.update(newValue);
+      }
+    }.bind(this));
+    
+    this.door = ko.computed(function() {      
+      if (this.editor() && this.treeRoot()) {
+        var hoverDoorChannel = document.querySelector('.fileViews .hoverDoorChannel');
+        hoverDoorChannel.classList.remove('closed');
       }
     }.bind(this));
   }
@@ -44,45 +61,47 @@
       this.editor().show();
       this.tokenViewModel.followTokens(true);
 
-      this.updateViewport(editor.getViewport()); // TODO ko
-      this.lineNumberViewModel.reattach(this.editor(), this.sourceFile());
-      
-      editor.addListener('onViewportChange', this.updateViewport.bind(this));
-
       console.log("FileViewModel.update "+this.editor().name);  
     },
 
-    update: function() {
-      if (this.editor() && this.treeRoot()) {
-        this.updateTraceData(this.editor().name, this.updateModel.bind(this));
-        var hoverDoorChannel = document.querySelector('.fileViews .hoverDoorChannel');
-        hoverDoorChannel.classList.remove('closed');
+    checkTracePrompts: function(tree) {
+      var traces = tree.location.traces;
+      if (!traces) {
+        return;
       }
-    },
-
-    getCurrentViewport: function() {
-      return this._viewportData;
-    },
-
-    updateViewport: function(viewportData) {
-      this._viewportData = viewportData;
-      
-      if (this.traceModel) {
-        this.updateLineNumberHighlights();
+      var prompts = tree.location.prompts;
+      if (!prompts) {
+        return;
       }
-    },
 
-    updateTraceData: function(fileName, callback) {
-      chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', callback);
+      prompts.forEach(function(prompt, promptIndex) {
+        var drop = -1;
+        traces.forEach(function(trace, index) {
+          if (trace.query == prompt.query) {
+            drop = promptIndex;
+          }
+        });
+        if (drop !== -1) {
+          tree.location.prompts.splice(promptIndex, 1); 
+        }
+      });
     },
     
-    updateModel: function(traceData) {
-      console.log("updateModel " + this.editor().name + " traceData: ", traceData);
-      if (traceData) {      
-        this.lineNumberViewModel.update(traceData, this.getCurrentViewport());
-        this.traceViewModel.update(traceData);
+    update: function(turn) {
+      var treeRoot = this.treeRoot();
+      if (treeRoot) {
+        var tree = this.tokenViewModel.tokenTree();
+
+        this._panel.tracequeries().forEach(function(tq){
+          tq.extractTracepoints(this, tree, function (tracepoint){
+            if (tracepoint) {
+              this.tracepoints.push(tracepoint);
+            } // else no data?
+          }.bind(this));
+        }.bind(this));
+        this.checkTracePrompts(tree);
       }
-    },
+    }
 
   };
 

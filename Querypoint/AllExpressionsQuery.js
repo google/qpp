@@ -67,23 +67,11 @@ Querypoint.AllExpressionsQuery.prototype = {
     return "";
   },
   
-      
-    _treeHanger: function(project, rootTree) {
-      if (!this._treeHangerTraceVisitor) {
-        this._treeHangerTraceVisitor = project.treeHangerTraceVisitor(rootTree);  
-      } 
-      return this._treeHangerTraceVisitor;
-    },
-    
-
   // Pull trace results out of the page for this querypoint
   extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
     function onEval(traceData, isException) {
-       if (!isException) {
-        // TODO we should only visit the tree in view, not the entire tree
-        var treeHanger = this._treeHanger(fileViewModel.project, fileViewModel.treeRoot());
-        
-        treeHanger.visitTrace(fileViewModel.treeRoot(), traceData);       
+       if (!isException && traceData) {
+        fileViewModel.traceData(traceData); 
         onTracepoint();
       }
     }

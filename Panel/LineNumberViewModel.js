@@ -8,18 +8,63 @@
 
   QuerypointPanel.LineNumberViewModel = function(fileViewModel, panel) {
     this._fileViewModel = fileViewModel;
+    
+    this._viewportData = ko.observable();
+    
+    this.traceVisitor = ko.computed(function() {
+        var editor = this._fileViewModel.editor();
+        if (editor) {  // TODO where is the remove?
+          editor.addListener('onViewportChange', this.updateViewport.bind(this));
+          this.updateViewport(editor.getViewport());
+        }
+        return this._fileViewModel.project.lineModelTraceVisitor(this._fileViewModel.sourceFile());
+    }.bind(this));
+    
+    this.lineModel = ko.computed(function(){
+      var traceData = this._fileViewModel.traceData();
+      if(!traceData)
+        return;
+        
+      var visitor = this.traceVisitor();
+      visitor.visitTrace(this._fileViewModel.treeRoot(), traceData);
+      return {
+        tracedOffsetsByLine: visitor.tracedOffsetsByLine,
+        latestTraceByOffset: visitor.latestTraceByOffset
+      };
+    }.bind(this));
+    
+    this.updateLineNumberHighlights = ko.computed(function() {
+      if (!this.lineModel()) {
+        return;
+      }      
+      var i_viewport = 0;
+      var viewportData = this._viewportData();
+      var editor = this._fileViewModel.editor();
+      // Use the viewport to limit our work
+      for (var line = viewportData.start; line < viewportData.end; line++, i_viewport++) {
+        var offsets = this.getTracedOffsetByLine(line);
+        
+        editor.removeLineNumberClass(line);
+        if (!offsets) {
+          editor.setLineNumberClass(line, 'qp-no-activations');
+        } else {
+          if (offsets.functionOffsets) {
+            editor.setLineNumberClass(line, 'qp-activations');
+          }
+          if (offsets.expressionOffsets) { // overwrite function marker
+            editor.setLineNumberClass(line, 'qp-traces');
+          }
+        }
+      }
+    }.bind(this));
   }
   
   QuerypointPanel.LineNumberViewModel.debug = false;
   
   QuerypointPanel.LineNumberViewModel.prototype = {
-
-    reattach: function(editor, sourceFile) {
-        this.traceVisitor = this._fileViewModel.project.lineModelTraceVisitor(sourceFile);
-        if (this.editor) 
-           this.editor.removeListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
-        this.editor = editor;
-        this.editor.addListener('onClickLineNumber', this.showTraceDataForLine.bind(this));
+      
+    updateViewport: function(viewportData) {
+      this._viewportData(viewportData);
     },
 
     // Manually update to avoid having ko.observables() all over the tree
@@ -27,39 +72,18 @@
         this.traceVisitor.visitTrace(this._fileViewModel.treeRoot(), traceData);
         this.updateLineNumberHighlights(viewportData);
     },
-    
-    updateLineNumberHighlights: function(viewportData) {      
-      var i_viewport = 0;
-      // Use the viewport to limit our work
-      for (var line = viewportData.start; line < viewportData.end; line++, i_viewport++) {
-        var offsets = this.getTracedOffsetByLine(line);
-        
-        this.editor.removeLineNumberClass(line);
-        if (!offsets) {
-          this.editor.setLineNumberClass(line, 'qp-no-activations');
-        } else {
-          if (offsets.functionOffsets) {
-            this.editor.setLineNumberClass(line, 'qp-activations');
-          }
-          if (offsets.expressionOffsets) { // overwrite function marker
-            this.editor.setLineNumberClass(line, 'qp-traces');
-          }
-        }
-      }
-
-    },
 
     getTracedOffsetByLine: function(line) {
-      return this.traceVisitor.tracedOffsetsByLine[line];
+      return this.lineModel().tracedOffsetsByLine[line];
     },
 
     getTraceByOffset: function(offset) {
-      return this.traceVisitor.latestTraceByOffset[offset];
+      return this.lineModel().latestTraceByOffset[offset];
     },
 
     showTraceDataForLine: function(clickData) {
       var line = clickData.line;
-      var offsetOfLine = this.sourceFile.lineNumberTable.offsetOfLine(line);
+      var offsetOfLine = this._fileViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
       var offsets = this.getTracedOffsetByLine(line);
       if (offsets) {
         var expressionOffsets = offsets.expressionOffsets;
@@ -68,7 +92,7 @@
             var trace = this.getTraceByOffset(offset);
             var column = parseInt(offset) - offsetOfLine;
             var element = this.getTraceDataElement(line, column, index, trace);
-            this.editor.insertElement(line, column, element, true);
+            editor.insertElement(line, column, element, true);
           }.bind(this));
         }
       }
