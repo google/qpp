@@ -73,15 +73,6 @@
           } 
         }
       }.bind(this));
-
-   $(".QPOutput").live("click", function(jQueryEvent) {
-      console.log("Click ", jQueryEvent.target);
-      var url = jQueryEvent.target.getAttribute('data-url');
-      if (url) {
-        panel.commands.openChainedEditor(url, editor);
-
-      } // else the user did not click on something interesting.
-    });
   }
   
   QuerypointPanel.TraceViewModel.prototype = {

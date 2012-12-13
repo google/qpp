@@ -111,16 +111,6 @@
       return clone.outerHTML;
     }.bind(this)).extend({throttle: 50 });  // let both location and editor update
   
-    //ko.applyBindings(this, document.querySelector('.tokenView'));
-
-   $(".QPOutput").live("click", function(jQueryEvent) {
-      console.log("Click ", jQueryEvent.target);
-      jQueryEvent.target.focus();
-      var url = jQueryEvent.target.getAttribute('data-url');
-      if (url) {
-        panel.commands.openChainedEditor(url);
-      } // else the user did not click on something interesting.
-    });
   }
 
 
