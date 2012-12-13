@@ -104,11 +104,15 @@
       var location = this._currentLocation();
       if (!location) return "";
       
-      var clone = this._cloneEditorLineByLocation(location)
-      var box = this._fileViewModel.editor().createTokenBox(location);
-      box.style.top = "0px";
-      clone.appendChild(box);
-      return clone.outerHTML;
+      var clone = this._cloneEditorLineByLocation(location);
+      if (clone) {
+        var box = this._fileViewModel.editor().createTokenBox(location);
+        box.style.top = "0px";
+        clone.appendChild(box);
+        return clone.outerHTML;
+      } else {
+        return "";
+      }
     }.bind(this)).extend({throttle: 50 });  // let both location and editor update
   
   }
