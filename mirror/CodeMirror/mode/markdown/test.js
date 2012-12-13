@@ -719,6 +719,20 @@ MT.testMode(
   ]
 );
 
+// Inline link with image
+MT.testMode(
+  'linkImage',
+  '[![foo](http://example.com/)](http://example.com/) bar',
+  [
+    'link', '[',
+    'tag', '![foo]',
+    'string', '(http://example.com/)',
+    'link', ']',
+    'string', '(http://example.com/)',
+    null, ' bar'
+  ]
+);
+
 // Inline link with Em
 MT.testMode(
   'linkEm',
@@ -895,6 +909,17 @@ MT.testMode(
   'labelNoTitle',
   '[foo]: http://example.com/',
   [
+    'link', '[foo]:',
+    null, ' ',
+    'string', 'http://example.com/'
+  ]
+);
+// Indented
+MT.testMode(
+  'labelIndented',
+  '   [foo]: http://example.com/',
+  [
+    null, '   ',
     'link', '[foo]:',
     null, ' ',
     'string', 'http://example.com/'

@@ -334,7 +334,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "variable") return cont(formaybein);
     return cont(forspec2);
   }
-  function formaybein(type, value) {
+  function formaybein(_type, value) {
     if (value == "in") return cont(expression);
     return cont(maybeoperator, forspec2);
   }
@@ -399,7 +399,9 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       else return lexical.indented + (closing ? 0 : indentUnit);
     },
 
-    electricChars: ":{}"
+    electricChars: ":{}",
+
+    jsonMode: jsonMode
   };
 });
 

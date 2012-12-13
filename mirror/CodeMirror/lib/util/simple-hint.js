@@ -14,11 +14,11 @@
 
       // Don't show completions if token has changed and the option is set.
       if (options.closeOnTokenChange && previousToken != null &&
-          (tempToken.start != previousToken.start || tempToken.className != previousToken.className)) {
+          (tempToken.start != previousToken.start || tempToken.type != previousToken.type)) {
         return;
       }
 
-      var result = getHints(editor);
+      var result = getHints(editor, givenOptions);
       if (!result || !result.list.length) return;
       var completions = result.list;
       function insert(str) {
