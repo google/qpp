@@ -119,9 +119,9 @@
                 </div>
               </div>
             </div>
-            <a class="explainTokenPanel"  data-bind="hasfocus: tokenViewModel.followTokens" tabindex="0">
-              <div data-bind="if: tokenViewModel.followingTokens()">Selecting Syntax Tree; Focus Editor to Lock</div>
-              <div data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Syntax Tree</div>
+            <a class="explainTokenPanel"  data-bind="hasfocus: tokenViewModel.followTokens, attr: {'data-active': tokenViewModel.followingTokens()}" tabindex="0">
+              <div data-active="true" data-bind="css: {hide:  !tokenViewModel.followingTokens()}">Selecting Syntax Tree; Focus Editor to Lock</div>
+              <div data-bind="css: {hide:  tokenViewModel.followingTokens()}">Click to Select Another Syntax Tree</div>
           </a>
           <!-- <div class="tracepoints">
             <p><span data-bind="tokenViewModel.tracepoints().length"></span> tracepoints in this file</p>

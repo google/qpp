@@ -146,12 +146,10 @@ body {
   text-align: center;
   margin-top: 1.5ex;
   color: #d0d0d0;
-  border: 1px solid #75715e;
+  border: 2px solid #75715e;
   border-radius: 20px;
   padding: 3px;
 }
-
-
 .fileViews {
   -webkit-flex-grow: 8;
   min-height: 20ex;
@@ -269,9 +267,10 @@ pre.traceBackground {
 
 .QPOutput .command:hover {
   background-color: #272822;
-  color: #75715e;
+  color: #75715e; 
 }
-.QPOutput .command[data-active="true"] {
+
+.QPOutput [data-active="true"] {
   border-color: blue;
 }
 
