@@ -78,7 +78,7 @@
     </div>
     <div class="fileViews" data-bind="foreach: fileViewModels">
       <div class="fileView">
-        <a class="focusBlock"  data-bind="hasfocus: tokenViewModel.followTokens" tabindex="0">
+        <div class="hoverDoorTarget">
           <div class="hoverDoorChannel">
             <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
             <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
@@ -119,15 +119,15 @@
                 </div>
               </div>
             </div>
-            <div class="explainTokenPanel">
-              <p data-bind="if: tokenViewModel.followingTokens()">Selecting Syntax Tree; Focus Editor to Lock</p>
-              <p data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Syntax Tree</p>
-          </div>
+            <a class="explainTokenPanel"  data-bind="hasfocus: tokenViewModel.followTokens" tabindex="0">
+              <div data-bind="if: tokenViewModel.followingTokens()">Selecting Syntax Tree; Focus Editor to Lock</div>
+              <div data-bind="ifnot: tokenViewModel.followingTokens()">Click to Select Another Syntax Tree</div>
+          </a>
           <!-- <div class="tracepoints">
             <p><span data-bind="tokenViewModel.tracepoints().length"></span> tracepoints in this file</p>
           </div> -->
           </div>
-        </a>
+        </div>
         <div class="fileEditor">
            <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
         </div>

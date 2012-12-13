@@ -198,12 +198,8 @@ QuerypointPanel.Panel.prototype = {
 
     // Open an editor to view information selected out of another editor
     // e.g. trace with refs to other files or call stack with refs to older frames
-    openChainedEditor: function(url) {
+    openChainedEditor: function(url, editor) {
       var location = this.locationFromURL(url);
-      var fileViewModel = this.getFileViewModelByName(location.name);
-      if (fileViewModel) 
-        return fileViewModel.editor().showRegion(location.start, location.end);
-      
       var sourceFile = this.project.getFile(location.name);
       if (sourceFile) {
          this._openSourceFile(sourceFile, function() { 
@@ -219,16 +215,6 @@ QuerypointPanel.Panel.prototype = {
     },
   },
 
-  getFileViewModelByName: function(name) {
-    var found;
-    this.fileViewModels().some(function(fileViewModel){
-      if (fileViewModel.editor().name === name) {
-        return found = fileViewModel;
-      }
-    });
-    return found;
-  },
-
   _initKeys: function() {
     this.keybindings = new KeyBindings(this.panel_window);
 
@@ -241,11 +227,10 @@ QuerypointPanel.Panel.prototype = {
 
   _openContextMenu: function(event) {
     console.log("_openContextMenu", event);
-    event.preventDefault();
   },
 
   _onClickPanel: function(event) {
-    if (event.button === 2 || event.ctrlKey || event.metaKey || event.altKey) {
+    if (event.button === 2) {
       this._openContextMenu(event);
     } else {
       if (event.target.classList.contains('QPOutput')) {
@@ -297,7 +282,7 @@ QuerypointPanel.Panel.prototype = {
     this.panel_window.addEventListener('resize', this._onResize.bind(this));
     
     var panel = this;
-    $(".focusBlock .hoverDoor").live("click", function(jQueryEvent) {
+    $(".hoverDoorTarget .hoverDoor").live("click", function(jQueryEvent) {
       console.log("Click ", jQueryEvent.target);
       panel._operateDoor($(this));
     });
