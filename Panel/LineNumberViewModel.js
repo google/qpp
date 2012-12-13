@@ -31,7 +31,7 @@
         tracedOffsetsByLine: visitor.tracedOffsetsByLine,
         latestTraceByOffset: visitor.latestTraceByOffset
       };
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
     
     this.updateLineNumberHighlights = ko.computed(function() {
       if (!this.lineModel()) {
@@ -56,7 +56,7 @@
           }
         }
       }
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
   }
   
   QuerypointPanel.LineNumberViewModel.debug = false;

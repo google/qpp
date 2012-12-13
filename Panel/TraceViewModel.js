@@ -17,7 +17,7 @@
         treeHanger.visitTrace(fileViewModel.treeRoot(), traceData);
       }
       return traceData;
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
     
     this.treeTraces = ko.computed(function() {
       if (this.rootTreeData()) {
@@ -46,7 +46,7 @@
           return traces;
          }
       } 
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
 
     // Query results for the current token in this file.
     this.currentTraces = ko.computed(function() {
@@ -72,7 +72,7 @@
             });
           } 
         }
-      }.bind(this));
+      }.bind(this)).extend({ throttle: 1 });
   }
   
   QuerypointPanel.TraceViewModel.prototype = {

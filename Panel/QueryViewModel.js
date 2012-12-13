@@ -66,7 +66,7 @@
         });
       }
       return queries;
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
     
     this.hasQueries = ko.computed(function() {
       return (this.currentQueries().length > 0)

@@ -15,11 +15,11 @@
       
       this.currentTurnNumber = ko.computed(function() {
         return panel.logScrubber.turnStarted();
-      });
+      }).extend({ throttle: 50 });
 
       this.numberOfTracequeries = ko.computed(function(){
         return panel.tracequeries().length;
-      });
+      }).extend({ throttle: 50 });
 
       ko.applyBindings(this, document.querySelector(buffersStatusBarSelector));
       return this;

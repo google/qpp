@@ -25,7 +25,7 @@
         return false;
       }
 
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
     
     this.tokenTree = ko.computed(function() {
       var tokenEvent = this.tokenEvent();
@@ -56,7 +56,7 @@
         console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
       }
       return tokenTree;
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
 
     this._currentLocation = ko.computed(function() {
       var tree = this.tokenTree(); 
@@ -98,7 +98,7 @@
       scopesView.push({scopeDeclaration: '<div class="fileScope">' + tree.location.start.source.name + '</div>'});
         
       return scopesView.reverse();  
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
     
     this._currentExpression = ko.computed(function() {
       var location = this._currentLocation();
@@ -113,7 +113,7 @@
       } else {
         return "";
       }
-    }.bind(this)).extend({throttle: 50 });  // let both location and editor update
+    }.bind(this)).extend({throttle: 1});  // let both location and editor update
   
   }
 

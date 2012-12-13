@@ -42,7 +42,7 @@
         var hoverDoorChannel = document.querySelector('.fileViews .hoverDoorChannel');
         hoverDoorChannel.classList.remove('closed');
       }
-    }.bind(this));
+    }.bind(this)).extend({ throttle: 1 });
   }
   
   QuerypointPanel.FileViewModel.debug = false;
