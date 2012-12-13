@@ -30,7 +30,17 @@
             traces = prompts;
           } else {
             if (prompts) {
-              traces = traces.concat(prompts);
+              traces.forEach(function(trace, traceIndex) {
+                if (trace.isPrompt) {
+                  prompts.forEach(function(prompt, promptIndex) {
+                    if (prompt.query === trace.query) {
+                      prompts.splice(promptIndex, 1); // we've executed and completed one trace
+                    } else {
+                      traces.push(prompt);
+                    }
+                  });
+                }
+              });
             }
           }
           return traces;
