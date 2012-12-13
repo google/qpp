@@ -198,8 +198,12 @@ QuerypointPanel.Panel.prototype = {
 
     // Open an editor to view information selected out of another editor
     // e.g. trace with refs to other files or call stack with refs to older frames
-    openChainedEditor: function(url, editor) {
+    openChainedEditor: function(url) {
       var location = this.locationFromURL(url);
+      var fileViewModel = this.getFileViewModelByName(location.name);
+      if (fileViewModel) 
+        return fileViewModel.editor().showRegion(location.start, location.end);
+      
       var sourceFile = this.project.getFile(location.name);
       if (sourceFile) {
          this._openSourceFile(sourceFile, function() { 
@@ -213,6 +217,16 @@ QuerypointPanel.Panel.prototype = {
     saveFile: function() {
       return this._editors.saveFile();
     },
+  },
+
+  getFileViewModelByName: function(name) {
+    var found;
+    this.fileViewModels().some(function(fileViewModel){
+      if (fileViewModel.editor().name === name) {
+        return found = fileViewModel;
+      }
+    });
+    return found;
   },
 
   _initKeys: function() {

@@ -118,7 +118,7 @@
       jQueryEvent.target.focus();
       var url = jQueryEvent.target.getAttribute('data-url');
       if (url) {
-        panel.commands.openChainedEditor(url, this._fileViewModel.editor());
+        panel.commands.openChainedEditor(url);
       } // else the user did not click on something interesting.
     });
   }
