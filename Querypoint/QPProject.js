@@ -166,8 +166,8 @@
     lineModelTraceVisitor: function(sourceFile) {
       return new Querypoint.LineModelTraceVisitor(this, sourceFile);
     },
-    treeHangerTraceVisitor: function(treeRoot) {
-      return new Querypoint.TreeHangerTraceVisitor(this, treeRoot);
+    treeHangerTraceVisitor: function() {
+      return new Querypoint.TreeHangerTraceVisitor(this);
     }
     
   };

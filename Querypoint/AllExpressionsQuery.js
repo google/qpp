@@ -37,8 +37,14 @@ Querypoint.AllExpressionsQuery.prototype = {
      return Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name];
   },
 
+  // Initiates query
   buttonName: function() {
     return 'All in File';
+  },
+  
+  // Documents query in trace
+  commandName: function() {
+    return '&#x2799;&#x2263;';
   },
   
   toolTip: function() {
@@ -71,6 +77,7 @@ Querypoint.AllExpressionsQuery.prototype = {
   extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
     function onEval(traceData, isException) {
        if (!isException && traceData) {
+        traceData.query = this;
         fileViewModel.traceData(traceData); 
         onTracepoint();
       }

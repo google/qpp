@@ -13,7 +13,7 @@
       var traceData = fileViewModel.traceData();
       if (traceData) {
         // TODO we should only visit the tree in view, not the entire tree
-        var treeHanger = this._treeHanger(fileViewModel.project, fileViewModel.treeRoot());
+        var treeHanger = this._treeHanger(fileViewModel.project);
         treeHanger.visitTrace(fileViewModel.treeRoot(), traceData);
       }
       return traceData;
@@ -67,7 +67,7 @@
               traceViewModel.url = panel.urlFromLocation(tree.location);
               traceViewModel.startOffset = start.offset;
               traceViewModel.endOffset = end.offset;
-              traceViewModel.commandName = '&#x2799;&#x2263;';
+              traceViewModel.commandName = trace.query.commandName();
               return traceViewModel;
             });
           } 
@@ -77,9 +77,9 @@
   
   QuerypointPanel.TraceViewModel.prototype = {
           
-    _treeHanger: function(project, rootTree) {
+    _treeHanger: function(project) {
       if (!this._treeHangerTraceVisitor) {
-        this._treeHangerTraceVisitor = project.treeHangerTraceVisitor(rootTree);  
+        this._treeHangerTraceVisitor = project.treeHangerTraceVisitor();  
       } 
       return this._treeHangerTraceVisitor;
     },

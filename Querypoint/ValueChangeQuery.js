@@ -43,6 +43,10 @@ Querypoint.ValueChangeQuery.prototype = {
     return 'lastChange';
   },
   
+  commandName: function() {
+    return '&#x1D6AB;';
+  },
+  
   toolTip: function() {
     return "Trace the changes to the current expression and report the last one";
   },
@@ -77,13 +81,13 @@ Querypoint.ValueChangeQuery.prototype = {
           var trace = change;
           trace.query = this;
           onTracepoint(trace)  
-        });       
+        }.bind(this));       
         
       } else {
         console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
       }
     }
-    chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges","prop")', onEval);
+    chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges","prop")', onEval.bind(this));
   },
 };
 

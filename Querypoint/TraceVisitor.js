@@ -15,7 +15,7 @@
   
   Querypoint.TraceVisitor.prototype = {
     visitTrace: function(tree, traceData) {
-      delete this.isModified;
+      this.query = traceData.query;
       var functionDefinitionOffsetKeys = Object.keys(traceData);
       functionDefinitionOffsetKeys.forEach(function(functionDefinitionOffsetKey) {
         var functionDefinitionTree;
@@ -33,7 +33,7 @@
         }
       // else no call comes to visit* functions.
       }.bind(this));
-      return this.isModified;
+      delete this.query;
     },
     
     visitFunctionTraced: function(functionTree, activations) {
@@ -78,6 +78,7 @@
           return;
 
         var trace = activation[id];
+        trace.query = this.query;
         // TODO need to match offsetKey in find() 
         var expressionTree = this._findInTree(functionTree, id);
         this.visitExpressionsTraced(expressionTree, activation.turn, activationCount, trace);
@@ -92,9 +93,8 @@
   //---------------------------------------------------------------------
   // Attach traceData to the appropriate subtree
   
-  Querypoint.TreeHangerTraceVisitor = function(project, query) {
+  Querypoint.TreeHangerTraceVisitor = function(project) {
     Querypoint.TraceVisitor.call(this, project);
-    this._query = query;
   }
   
   Querypoint.TreeHangerTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
@@ -129,7 +129,7 @@
     if (expressionTree.location) {
 
       var trace = {
-        query: this._query,
+        query: this.query,
         load: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
