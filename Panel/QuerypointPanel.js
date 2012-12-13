@@ -241,10 +241,11 @@ QuerypointPanel.Panel.prototype = {
 
   _openContextMenu: function(event) {
     console.log("_openContextMenu", event);
+    event.preventDefault();
   },
 
   _onClickPanel: function(event) {
-    if (event.button === 2) {
+    if (event.button === 2 || event.ctrlKey || event.metaKey || event.altKey) {
       this._openContextMenu(event);
     } else {
       if (event.target.classList.contains('QPOutput')) {
