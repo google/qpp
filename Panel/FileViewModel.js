@@ -15,12 +15,8 @@
     
     this.editor = ko.observable();
     this.sourceFile = ko.observable();
-    this.treeRoot = ko.observable();
+    this.treeRoot = ko.observable({traceData: function(){}});
     this.project = panel.project;
-        
-    // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
-
-    this.traceData = ko.observable();
     
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
     this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
@@ -54,7 +50,12 @@
       if (this.editor()) 
         this.editor().hide();
       
-      this.sourceFile(sourceFile);  
+      this.sourceFile(sourceFile);
+      
+      if (!treeRoot.hasOwnProperty('traceData')) {
+          // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
+          treeRoot.traceData = ko.observable();
+      }
       this.treeRoot(treeRoot);
       this.editor(editor);   // editor last to ensure the new tree is consulted when we clone elements from the editor
          
@@ -87,19 +88,20 @@
       });
     },
     
-    update: function(turn) {
+    update: function() {
       var treeRoot = this.treeRoot();
       if (treeRoot) {
         var tree = this.tokenViewModel.tokenTree();
-
-        this._panel.tracequeries().forEach(function(tq){
-          tq.extractTracepoints(this, tree, function (tracepoint){
-            if (tracepoint) {
-              this.tracepoints.push(tracepoint);
-            } // else no data?
+        if (tree) {
+          this._panel.tracequeries().forEach(function(tq){
+            tq.extractTracepoints(this, tree, function (tracepoint){
+              if (tracepoint) {
+                this.tracepoints.push(tracepoint);
+              } // else no data?
+            }.bind(this));
           }.bind(this));
-        }.bind(this));
-        this.checkTracePrompts(tree);
+          this.checkTracePrompts(tree);
+        }
       }
     }
 

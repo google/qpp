@@ -77,6 +77,7 @@ EditorByCodeMirror.prototype = {
   showRegion: function(startIndex, endIndex) {
     var startPos = this.editorImpl.posFromIndex(startIndex);
     var endPos = this.editorImpl.posFromIndex(endIndex);
+    this._container.classList.add('qp-dim');
     this.editorImpl.markText(startPos, endPos, {className: 'qp-highlight'});
     this.editorImpl.scrollIntoView(startPos);
   },

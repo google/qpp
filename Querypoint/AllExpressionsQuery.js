@@ -78,7 +78,7 @@ Querypoint.AllExpressionsQuery.prototype = {
     function onEval(traceData, isException) {
        if (!isException && traceData) {
         traceData.query = this;
-        fileViewModel.traceData(traceData); 
+        fileViewModel.treeRoot().traceData(traceData); 
         onTracepoint();
       }
     }

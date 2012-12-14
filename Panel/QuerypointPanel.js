@@ -67,6 +67,15 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this._onResize();  // set initial sizes
   
   ko.applyBindings(this, this.fileViews);
+
+   $(".QPOutput").live("click", function(jQueryEvent) {
+        console.log("Click ", jQueryEvent.target);
+        jQueryEvent.target.focus();
+        var url = jQueryEvent.target.getAttribute('data-url');
+        if (url) {
+          panel.commands.openChainedEditor(url);
+        } // else the user did not click on something interesting.   
+    });
 }
 
 QuerypointPanel.Panel.debug = false;
@@ -153,11 +162,11 @@ QuerypointPanel.Panel.prototype = {
     );
   },
   
-  urlFromLocation: function(location) {
+  urlFromTreeLocation: function(location) {
     return location.start.source.name + '?start=' + location.start.offset + '&end=' + location.end.offset + '&';
   },
   
-  locationFromURL: function(url) {
+  linkTargetFromURL: function(url) {
     var parsedURI = parseUri(url);
     if (parsedURI) {
       var name = url.split('?')[0];
@@ -167,7 +176,7 @@ QuerypointPanel.Panel.prototype = {
         end: parseInt(parsedURI.queryKey.end, 10),
       };
     } else {
-      console.error("locationFromURL failed for "+url)
+      console.error("linkTargetFromURL failed for "+url)
     }
   },
 
@@ -198,21 +207,33 @@ QuerypointPanel.Panel.prototype = {
 
     // Open an editor to view information selected out of another editor
     // e.g. trace with refs to other files or call stack with refs to older frames
-    openChainedEditor: function(url, editor) {
-      var location = this.locationFromURL(url);
-      var sourceFile = this.project.getFile(location.name);
-      if (sourceFile) {
-         this._openSourceFile(sourceFile, function() { 
-           console.log("onShowne"); 
-         });
+    openChainedEditor: function(url) {
+      var linkTarget = this.linkTargetFromURL(url);
+      var fileViewModel = this.getFileViewModelByName(linkTarget.name);
+      if (fileViewModel) {
+        fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
       } else {
-        console.error("openChainedEditor but no sourcefile!");
+        var sourceFile = this.project.getFile(linkTarget.name);
+        if (sourceFile) {
+          console.error("onShowne");   
+        } else {
+          console.error("openChainedEditor but no sourcefile!");
+        }
       }
     },
 
     saveFile: function() {
       return this._editors.saveFile();
     },
+  },
+
+  getFileViewModelByName: function(name) {
+    var found; 
+    this.fileViewModels().some(function(fileViewModel) {
+      if(fileViewModel.editor().name === name)
+        return found = fileViewModel;
+    });
+    return found;
   },
 
   _initKeys: function() {

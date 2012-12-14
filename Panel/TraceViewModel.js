@@ -10,7 +10,7 @@
     this._panel = panel;
 
     this.rootTreeData = ko.computed(function(){
-      var traceData = fileViewModel.traceData();
+      var traceData = fileViewModel.treeRoot().traceData();
       if (traceData) {
         // TODO we should only visit the tree in view, not the entire tree
         var treeHanger = this._treeHanger(fileViewModel.project);
@@ -63,8 +63,8 @@
               // TODO traceViewModel.trace, .tree, then methods.
               var start = tree.location.start;
               var end = tree.location.end;
-              traceViewModel.tooltip = start.source.name + ' Line: ' + start.line;
-              traceViewModel.url = panel.urlFromLocation(tree.location);
+              traceViewModel.tooltip = start.source.name + ' Line: ' + (start.line + 1);
+              traceViewModel.url = panel.urlFromTreeLocation(tree.location);
               traceViewModel.startOffset = start.offset;
               traceViewModel.endOffset = end.offset;
               traceViewModel.commandName = trace.query.commandName();
