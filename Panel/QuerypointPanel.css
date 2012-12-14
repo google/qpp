@@ -307,7 +307,9 @@ pre.traceBackground {
 .cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
 .cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
 .cm-s-monokai .qp-highlight {
-    transition: background .5s ease-in-out;
-   -webkit-transition: background .5s ease-in-out;
-   background: #75715e; 
+    transition: all 4s ease-in-out;
+   -webkit-transition: all 4s ease-in-out;
+   border-bottom: 2px solid #d0d0d0;
+   border-top: 2px solid #d0d0d0;
+   font-size: larger;
    }
