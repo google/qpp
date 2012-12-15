@@ -10,6 +10,7 @@
   function define__qp() {
 
     var early = true;
+    var debug = true;
 
     function fireLoad() {
       try {
@@ -17,13 +18,14 @@
         early = false;
         var handlers = window.__qp.earlyEventHandlers['load'];
         if (handlers) {
+          if (debug) console.log("Querypoint.runtime, "+handlers.length+" handlers", handlers.map(function(h){return h.toString()}));
           handlers.forEach(function(handler){
             handler(window.__qp.loadEvent);
           });
-          console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
+          if (debug) console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
           return handlers.length;
         } else {
-          console.log("Querypoint.runtime: fireLoad no earlyEventHandlers");
+          if (debug) console.log("Querypoint.runtime: fireLoad no earlyEventHandlers");
         }
       } catch(exc) {
         console.error("Querypoint.runtime fireLoad fails "+exc, exc.stack);
@@ -39,7 +41,7 @@
     function grabLoadEvent() {
       window.addEventListener('load', function(event) {
         window.__qp.loadEvent = event;
-        console.log("load");
+        if (debug) console.log("load");
       });
     }
        
@@ -48,9 +50,9 @@
         var args = Array.prototype.slice.apply(arguments);
         window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
         window.__qp.turn = window.__qp.turns.length; 
-        console.log("qp| startTurn " + window.__qp.turn); 
+        if (debug) console.log("qp| startTurn " + window.__qp.turn); 
         entryPointFunction.apply(window, args);  // TODO check |this| maybe use null
-        console.log("qp| endTurn " + window.__qp.turn); 
+        if (debug) console.log("qp| endTurn " + window.__qp.turn); 
       }
     }
 
@@ -68,8 +70,7 @@
     // This function will run just before the traced source is compiled in the page.
     function interceptEntryPoints() {  
       window.addEventListener = function(type, listener, useCapture) {
-        console.log("intercept "+type + " it is "+(early ? "early" : "late"));
-        console.trace("intercept "+type);
+        if (debug) console.log("intercepting "+type + " it is "+(early ? "early" : "late"));
         var wrapped = wrapEntryPoint(listener);
         window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
         if (early) {
@@ -107,11 +108,11 @@
     function extractTracepoint(queryName, identifier) {
       // eg window.__qp['propertyChange']['prop']
       var tps = window.__qp[queryName][identifier];
-      console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
+      if (debug) console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
       return tps.map(function(tp) {
         var activation = tp.activations[tp.activationIndex - 1];
-        console.log("tp", tp);
-        console.log('activation', activation);
+        if (debug) console.log("tp", tp);
+        if (debug) console.log('activation', activation);
         return findMatchingActivation(activation, tp.value);
       });  
     }
@@ -137,8 +138,8 @@
     blockEntryPoints();
 
     wrapEntryPoint(function andWeBegin() {
-      console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
-      console.log("window.__qp: %o", window.__qp);    
+      if (debug) console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
+      if (debug) console.log("window.__qp: %o", window.__qp);    
     }());
   }; 
 

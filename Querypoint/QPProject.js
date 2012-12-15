@@ -108,10 +108,8 @@
         // To minimize the impact of the original JS we recorded and blocked entrypoints.
         // Now we intercept them to instrument event turns
         chrome.devtools.inspectedWindow.eval('window.__qp.interceptEntryPoints()', function() {
-          this.compile(function(parseTrees) {  // TODO: clone the parse trees rather than reparse
-            this.runInWebPage(parseTrees);
+            this.runInWebPage(this.parseTrees_);
             this._monitorReloads();
-          }.bind(this));
         }.bind(this));
         
       }.bind(this);
