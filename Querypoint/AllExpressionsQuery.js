@@ -55,7 +55,7 @@ Querypoint.AllExpressionsQuery.prototype = {
     this._transformer = new Querypoint.LinearizeTransformer(generateFileName);
   },
 
-  tracePrompt: function() {
+  tracePromptText: function() {
     return "(awaiting execution)";
   },
   

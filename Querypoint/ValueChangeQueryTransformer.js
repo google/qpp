@@ -59,7 +59,7 @@
                 createPropertyNameAssignment('property', createStringLiteral(this.propertyIdentifier)),
                 createPropertyNameAssignment('activations', createIdentifierExpression('__qp_function')),
                 createPropertyNameAssignment('activationIndex', createMemberExpression('__qp_function', 'length')),
-                createPropertyNameAssignment('traceValue', rhs),
+                createPropertyNameAssignment('value', rhs),
               ])
             )
           )

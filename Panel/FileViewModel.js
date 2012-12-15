@@ -65,29 +65,6 @@
       console.log("FileViewModel.update "+this.editor().name);  
     },
 
-    checkTracePrompts: function(tree) {
-      var traces = tree.location.traces;
-      if (!traces) {
-        return;
-      }
-      var prompts = tree.location.prompts;
-      if (!prompts) {
-        return;
-      }
-
-      prompts.forEach(function(prompt, promptIndex) {
-        var drop = -1;
-        traces.forEach(function(trace, index) {
-          if (trace.query == prompt.query) {
-            drop = promptIndex;
-          }
-        });
-        if (drop !== -1) {
-          tree.location.prompts.splice(promptIndex, 1); 
-        }
-      });
-    },
-    
     update: function() {
       var treeRoot = this.treeRoot();
       if (treeRoot) {
@@ -100,7 +77,6 @@
               } // else no data?
             }.bind(this));
           }.bind(this));
-          this.checkTracePrompts(tree);
         }
       }
     }

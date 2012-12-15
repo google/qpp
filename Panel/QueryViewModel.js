@@ -6,12 +6,13 @@
   
   var bindings = 0;
   
-  QuerypointPanel.QueryViewModel = function(query, tracequeries) {
+  QuerypointPanel.QueryViewModel = function(query, panel) {
     this.query = query;
-    this.tracequeries = tracequeries;
+    this.panel = panel;
 
     this.isActive = ko.computed(function() {
-      var recorded = (this.tracequeries.indexOf(this.query) !== -1);
+      var recorded = (this.panel.tracequeries.indexOf(this.query) !== -1);
+      console.log("this.panel.tracequeries().length: "+this.panel.tracequeries().length + " tree type "+this.query.tree.type+" query: "+this.query.tracePromptText() + " active: "+recorded)
       return recorded;
     }.bind(this));
 
@@ -20,18 +21,16 @@
   }
 
   QuerypointPanel.QueryViewModel.prototype = {
-    attachTracePrompt: function() {
+    tracePrompt: function() {
       var emptyTrace = {
         load: '_',
         turn: '_',
         activation: '_',
-        value: this.query.tracePrompt(),
+        value: this.query.tracePromptText(),
         query: this.query,
         isPrompt: true,
       };
-      
-      var prompts = this.query.tree.location.prompts = this.query.tree.location.prompts || [];
-      prompts.push(emptyTrace);  // for update
+      return emptyTrace;
     },
 
 
@@ -41,10 +40,9 @@
       this.query.setQueryOnTree(this.query.tree, this.query);
       
       this.query.activate();
-      // tree -> trace (empty)
-      this.attachTracePrompt();
+
       // project -> query
-      this.tracequeries.push(this.query);
+      this.panel.tracequeries.push(this.query);
     },
   };
 
@@ -61,7 +59,7 @@
         project.querypoints.possibleQueries().forEach(function(possibleQuery) {
           var query = possibleQuery.ifAvailableFor(tree);
           if (query) {
-            queries.push(new QuerypointPanel.QueryViewModel(query, panel.tracequeries));
+            queries.push(new QuerypointPanel.QueryViewModel(query, panel));
           }
         });
       }

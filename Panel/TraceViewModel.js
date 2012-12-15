@@ -20,32 +20,41 @@
     }.bind(this)).extend({ throttle: 1 });
     
     this.treeTraces = ko.computed(function() {
-      if (this.rootTreeData()) {
          var tree = fileViewModel.tokenViewModel.tokenTree();
          if (tree) {
-          var traces = tree.location.traces;
-          var prompts = tree.location.prompts;  // TODO ko prompts
+          
+          var treeTracepoints = [];
+          this._fileViewModel.tracepoints().reduce(function(treeTracepoints, tracepoint) {
+              if (tracepoint.query.tree === tree) treeTracepoints.push(tracepoint);
+              return treeTracepoints;
+          }, treeTracepoints);  
+          
+          var traces = tree.location.traces || [];
+          traces = traces.concat(treeTracepoints);
+          
+          var prompts = [];
+          this._panel.tracequeries().reduce(function(prompts, query) {
+              if (query.tree === tree) prompts.push(query.tracePrompt());
+              return prompts;
+          }, prompts);
           
           if (!traces) {
             traces = prompts;
           } else {
-            if (prompts) {
+            if (prompts.length) {
+              // Cull any prompts for querys that have completed once
               traces.forEach(function(trace, traceIndex) {
-                if (trace.isPrompt) {
                   prompts.forEach(function(prompt, promptIndex) {
                     if (prompt.query === trace.query) {
-                      prompts.splice(promptIndex, 1); // we've executed and completed one trace
-                    } else {
-                      traces.push(prompt);
+                      prompts.splice(promptIndex, 1);
                     }
                   });
-                }
               });
+              traces = traces.concat(prompts);
             }
           }
           return traces;
          }
-      } 
     }.bind(this)).extend({ throttle: 1 });
 
     // Query results for the current token in this file.

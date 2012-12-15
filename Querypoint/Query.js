@@ -9,6 +9,17 @@ Querypoint.Query = function() {
 }
 
 Querypoint.Query.prototype = {
+  tracePrompt: function() {
+    var emptyTrace = {
+      load: '_',
+      turn: '_',
+      activation: '_',
+      value: this.tracePromptText(),
+      query: this,
+      isPrompt: true,
+    };
+    return emptyTrace;
+  },
 
   // These are class-level function (no this), stored in the prototype table
 

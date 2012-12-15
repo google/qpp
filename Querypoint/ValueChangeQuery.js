@@ -56,7 +56,7 @@ Querypoint.ValueChangeQuery.prototype = {
     this.tree.location.query = this;
   },
 
-  tracePrompt: function() {
+  tracePromptText: function() {
     return "(no changes)";
   }, 
   
@@ -77,10 +77,11 @@ Querypoint.ValueChangeQuery.prototype = {
        if (!isException && result) {
         var changes = result;
         changes.forEach(function(change) {
-          console.error("format change data into a trace", change);
           var trace = change;
           trace.query = this;
-          onTracepoint(trace)  
+          trace.load = fileViewModel.project.numberOfReloads;
+          trace.activation = change.activationCount;
+          onTracepoint(trace);  
         }.bind(this));       
         
       } else {
