@@ -12,7 +12,6 @@
 
     this.isActive = ko.computed(function() {
       var recorded = (this.panel.tracequeries.indexOf(this.query) !== -1);
-      console.log("this.panel.tracequeries().length: "+this.panel.tracequeries().length + " tree type "+this.query.tree.type+" query: "+this.query.tracePromptText() + " active: "+recorded)
       return recorded;
     }.bind(this));
 

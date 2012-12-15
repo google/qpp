@@ -27,7 +27,6 @@
     this.tracepoints = ko.observableArray();
     
     panel.currentTurnActive.subscribe(function(newValue) {
-      console.log("FileViewModel update on turn "+newValue);
       if (newValue !== 0) {
         this.update(newValue);
       }

@@ -69,7 +69,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   ko.applyBindings(this, this.fileViews);
 
    $(".QPOutput").live("click", function(jQueryEvent) {
-        console.log("Click ", jQueryEvent.target);
         jQueryEvent.target.focus();
         var url = jQueryEvent.target.getAttribute('data-url');
         if (url) {
@@ -358,7 +357,5 @@ QuerypointPanel.Panel.prototype = {
   },
   
 };
-document.addEventListener('focus', function(event) {
-  console.log("focus ", event.target);
-}, true);
+
 }());
