@@ -5,12 +5,6 @@
 
 (function(){
 
-
-  function generateFileName(location) {
-      return location ? location.start.source.name : "internal";
-  };
-
-
   function QPProject(url, loads) {
     RemoteWebPageProject.call(this, url);
 
@@ -57,7 +51,7 @@
           console.assert(tree);
         });
 
-        var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(generateFileName);
+        var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(this.generateFileName);
         tree = preambleTransformer.transformAny(tree);
 
         file.generatedFileName = file.name + ".js";
@@ -88,6 +82,10 @@
       return Object.keys(this.sourceFiles_).some(function(key) {
         return (this.sourceFiles_[key].generatedFileName === name);
       }.bind(this));
+    },
+
+    generateFileName: function (location) {
+        return location ? location.start.source.name : "internal";
     },
 
     treeFinder: function() {

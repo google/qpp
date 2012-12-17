@@ -5,12 +5,8 @@
 
 window.Querypoint = window.Querypoint || {};
 
-// TODO this is copy and paste from QPProject
-  function generateFileName(location) {
-      return location ? location.start.source.name : "internal";
-  };
-
-Querypoint.AllExpressionsQuery = function(tree) {
+Querypoint.AllExpressionsQuery = function(tree, project) {
+  this.generateFileName = project.generateFileName;
   Querypoint.Query.call(this);
   this.tree = tree;
 }
@@ -18,10 +14,10 @@ Querypoint.AllExpressionsQuery = function(tree) {
 // global record of which files are traced.
 Querypoint.AllExpressionsQuery.filesTraced = {};
 
-Querypoint.AllExpressionsQuery.ifAvailableFor = function(tree) {
+Querypoint.AllExpressionsQuery.ifAvailableFor = function(tree, project) {
   if(!!tree.location) {
     var query = Querypoint.AllExpressionsQuery.prototype.getQueryOnTree(tree, Querypoint.AllExpressionsQuery);
-    return query || new Querypoint.AllExpressionsQuery(tree);
+    return query || new Querypoint.AllExpressionsQuery(tree, project);
   }
 }
 
@@ -52,7 +48,7 @@ Querypoint.AllExpressionsQuery.prototype = {
   },
   
   activate: function() {
-    this._transformer = new Querypoint.LinearizeTransformer(generateFileName);
+    this._transformer = new Querypoint.LinearizeTransformer(this.generateFileName);
   },
 
   tracePromptText: function() {

@@ -56,7 +56,7 @@
       if (tree) {
         var project = this._panel.project;
         project.querypoints.possibleQueries().forEach(function(possibleQuery) {
-          var query = possibleQuery.ifAvailableFor(tree);
+          var query = possibleQuery.ifAvailableFor(tree, project);
           if (query) {
             queries.push(new QuerypointPanel.QueryViewModel(query, panel));
           }

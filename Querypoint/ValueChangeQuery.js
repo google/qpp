@@ -21,17 +21,18 @@ function getValueReferenceIdentifier(tree) {
   }
 }
 
-Querypoint.ValueChangeQuery = function(identifier, tree) {
+Querypoint.ValueChangeQuery = function(identifier, tree, project) {
   Querypoint.Query.call(this);
   this.identifier = identifier; 
   this.tree = tree;
+  this.generateFileName = project.generateFileName;
 }
   
-Querypoint.ValueChangeQuery.ifAvailableFor = function(tree) {
+Querypoint.ValueChangeQuery.ifAvailableFor = function(tree, project) {
   var identifier = getValueReferenceIdentifier(tree);
   if (identifier) {
     var query = Querypoint.ValueChangeQuery.prototype.getQueryOnTree(tree, Querypoint.ValueChangeQuery);
-    return query || new Querypoint.ValueChangeQuery(identifier, tree);
+    return query || new Querypoint.ValueChangeQuery(identifier, tree, project);
   }
 },
 
@@ -52,7 +53,7 @@ Querypoint.ValueChangeQuery.prototype = {
   },
   
   activate: function() {
-    this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier);
+    this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier, this.generateFileName);
     this.tree.location.query = this;
   },
 

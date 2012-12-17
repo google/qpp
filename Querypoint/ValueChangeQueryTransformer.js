@@ -147,8 +147,8 @@
   };
 
 
-  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier) {
-    Querypoint.InsertingTransformer.call(this);
+  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier, generateFileName) {
+    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
     this.propertyIdentifier = propertyIdentifier;
     this.visitor = new PropertyReferenceVisitor(propertyIdentifier);
   }
@@ -162,7 +162,7 @@
      * @return {ParseTree}
      */
   ValueChangeQueryTransformer.prototype = {
-    __proto__: Querypoint.InsertingTransformer.prototype,
+    __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
     /**
      * obj.prop++ or obj[prop]++  equiv to obj.prop += 1
