@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Lower an ES3 tree to line-oriented statements.
-//   Control flow constructs -> blocks.
-//   Compound expressions -> statements in blocks.
+// Base class for inserting statements in a ParseTree
 
 (function() {
   window.Querypoint = window.Querypoint || {};
@@ -24,61 +22,12 @@
   var debug = true;
 
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
-  var ParseTreeType = traceur.syntax.trees.ParseTreeType;
-  
-  var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
+
   var Trees = traceur.syntax.trees;
   var TokenType = traceur.syntax.TokenType;
   
-  var createTrueLiteral = ParseTreeFactory.createTrueLiteral;
-  var createFalseLiteral = ParseTreeFactory.createFalseLiteral;
-  var createMemberExpression = ParseTreeFactory.createMemberExpression;
-  var createMemberLookupExpression = ParseTreeFactory.createMemberLookupExpression;
-  var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
-  var createCallExpression = ParseTreeFactory.createCallExpression;
-  var createPropertyNameAssignment = ParseTreeFactory.createPropertyNameAssignment;
-  var createArgumentList = ParseTreeFactory.createArgumentList;
-  var createExpressionStatement = ParseTreeFactory.createExpressionStatement;
-  var createStringLiteral = ParseTreeFactory.createStringLiteral;
-  var createAssignmentStatement = ParseTreeFactory.createAssignmentStatement;
-  var createArrayLiteralExpression = ParseTreeFactory.createArrayLiteralExpression;
-  var createUndefinedExpression = ParseTreeFactory.createUndefinedExpression;
-  var createAssignmentExpression = ParseTreeFactory.createAssignmentExpression;
-  var createObjectLiteralExpression = ParseTreeFactory.createObjectLiteralExpression;
-  var createVariableDeclarationList = ParseTreeFactory.createVariableDeclarationList;
-  var createVariableStatement = ParseTreeFactory.createVariableStatement;
-  var createParenExpression = ParseTreeFactory.createParenExpression;
-
-  var VariableStatement = Trees.VariableStatement;
-  var IdentifierExpression = Trees.IdentifierExpression;
-  var BindingIdentifier = Trees.BindingIdentifier;
   var Block = Trees.Block;
-  var WhileStatement = Trees.WhileStatement;
-  var BreakStatement = Trees.BreakStatement;
-  var IfStatement = Trees.IfStatement;
-  var ForInStatement = Trees.ForInStatement;
-  var CaseClause = Trees.CaseClause;
-  var DefaultClause = Trees.DefaultClause;
-  var DoWhileStatement = Trees.DoWhileStatement;
-  var LabelledStatement = Trees.LabelledStatement;
-  var Program = traceur.syntax.trees.Program;
-  var SwitchStatement = Trees.SwitchStatement;
-  var ContinueStatement = Trees.ContinueStatement;
-  var VariableDeclaration = Trees.VariableDeclaration;
-  var VariableDeclarationList = Trees.VariableDeclarationList;
-  var ObjectLiteralExpression = Trees.ObjectLiteralExpression;
-  var MemberExpression = Trees.MemberExpression;
-  var ExpressionStatement = Trees.ExpressionStatement;
-  var CommaExpression = Trees.CommaExpression;
-  var UnaryExpression = Trees.UnaryExpression;
-  var BinaryOperator = Trees.BinaryOperator;
-  var ParenExpression = Trees.ParenExpression;
-  var AssignmentExpression = Trees.AssignmentExpression;
-  var CallExpression = Trees.CallExpression;
-  var ArgumentList = Trees.ArgumentList;
-  var PropertyNameAssignment = Trees.PropertyNameAssignment;
-  var MemberLookupExpression = Trees.MemberLookupExpression;
-  
+ 
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
   
