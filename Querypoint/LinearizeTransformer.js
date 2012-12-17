@@ -90,7 +90,7 @@
    * @constructor
    */
   function LinearizeTransformer(generateFileName) {
-    Querypoint.InsertingTransformer.call(this, generateFileName);
+    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
     this.labelsInScope = [];        // emca 262 12.12
     this.unlabelledBreakLabels = []; // tracks nested loops and switches 
     this.unlabelledContinueLabels = []; // tracks nested loops
@@ -133,14 +133,14 @@
   }
 
   LinearizeTransformer.prototype =  {
-    __proto__: Querypoint.InsertingTransformer.prototype,
+    __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
     
     transformAny: function(tree) {
       var output_tree = 
         ParseTreeTransformer.prototype.transformAny.call(this, tree);
       if (output_tree) {
         if (shouldLinearizeOutput(tree)) {
-          output_tree = this.linearize(output_tree);
+          output_tree = this.insertVariableFor(output_tree);
         }
         if (debug) {  
           ParseTreeValidator.validate(output_tree);
@@ -156,47 +156,6 @@
       }
       // skip linearization of the tree but not its children
       return ParseTreeTransformer.prototype.transformAny.call(this, tree);
-    },
-
-    /* Convert an expression tree into 
-    **    a reference to a VariableStatement and its value.
-    ** Insert the VariableStatement and return a new expression with the same value as the incoming one. 
-    ** expr -> var __qp_XX = expr; (__qp_activation._offset = __qp.trace(__qp_XX), __qp_XX);
-    ** @param {ParseTree} tree
-    ** @return {ParseTree}
-    ** side-effect: this.insertions.length++
-    */
-    linearize: function(tree) {
-      if (!tree.isExpression()) {
-        var msg = 'Attempt to linearize a non-expression tree';
-        console.error(msg, traceur.outputgeneration.TreeWriter.write(tree));
-        throw new Error(msg);
-      }
-      
-      var traceId =  this.generateIdentifier(tree);  // XX in __qp_XX
-      var varId = '__qp' + traceId;
-      
-      var loc = tree.location;
-      loc.traceId = traceId;  // used to match traces to the AST
-      loc.varId = varId;        // used to write new AST nodes
-      // var __qp_XX = expr;
-      var tempVariableStatement = createVariableStatement(
-        createVariableDeclarationList(
-          TokenType.VAR, 
-          varId,
-          tree
-        )
-      );
-      this.insertions.push(tempVariableStatement);
-      // __qp__XX
-      var linearExpression = createIdentifierExpression(varId);
-      linearExpression.traceIdentifier = traceId;     // Signal TreeWriter 
-     
-ParseTreeValidator.validate(linearExpression); 
-      if (debug) {
-        console.log('inserting ' + varId + ' for '+tree.type + ' : ' + traceur.outputgeneration.TreeWriter.write(tree));
-      }
-      return linearExpression;
     },
     
     wrapInLabels: function(labels, tree) {
@@ -257,7 +216,7 @@ ParseTreeValidator.validate(linearExpression);
     **   aLabel:
     **   unique_label:
     **   while(true) {
-    **     linearize(conditionExpr);   
+    **     insertVariableFor(conditionExpr);   
     **     if (condition) {
     **       aLabel_cont:
     **       unique_label_cont:
@@ -272,7 +231,7 @@ ParseTreeValidator.validate(linearExpression);
     **     } else {
     **       break unique_break_label;
     **     }       
-    **     linearize(incrExpression);
+    **     insertVariableFor(incrExpression);
     **   }
     */
     transformWhileStatement: function(tree) {
@@ -333,7 +292,7 @@ ParseTreeValidator.validate(linearExpression);
     **   aLabel_cont:
     **     do {
     **       bodyStatements;
-    **       linearize(conditionExpr);
+    **       insertVariableFor(conditionExpr);
     **     } while(condition);
     */
     transformDoWhileStatement: function(tree) {
@@ -431,7 +390,7 @@ ParseTreeValidator.validate(linearExpression);
           new MemberExpression(tree.location, tree, 'bind'),
           new ArgumentList(tree.location, [tree.operand]) 
           );
-        return this.linearize(boundMemberFunction);
+        return this.insertVariableFor(boundMemberFunction);
       } else {
         return this.transformAny(tree);
       }
@@ -524,7 +483,7 @@ ParseTreeValidator.validate(linearExpression);
         new ExpressionStatement(
           tree.location, 
           // inserts eg var __qp_13 = ++expr;
-          this.linearize(prefixExpresssion) 
+          this.insertVariableFor(prefixExpresssion) 
         )
       );
       return operandValue;  // eg __qp_11;
@@ -557,7 +516,7 @@ ParseTreeValidator.validate(linearExpression);
       if (operand !== tree.operand) {
         tree = new UnaryExpression(tree.location, tree.operator, operand);
       }
-      return this.linearize(tree);
+      return this.insertVariableFor(tree);
     },
 */
     transformVariableDeclarationList: function(tree) {
