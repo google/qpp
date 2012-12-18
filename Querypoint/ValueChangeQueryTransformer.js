@@ -26,7 +26,9 @@
  
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
-  var Program = traceur.syntax.trees.Program;
+  var Trees = traceur.syntax.trees;
+  var Program = Trees.Program;
+  var BinaryOperator = Trees.BinaryOperator;
 
   /*
     Trace expressions that change object property values.
@@ -70,10 +72,10 @@
   }
 
   PropertyReferenceTransformer.prototype = {
-    __proto__: Querypoint.InsertVariableForExpressionTransformer,
+    __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
     transformAny: function(tree) {
-      InsertVariableForExpressionTransformer.prototype.visitAny.call(this, tree);
+      Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
     },
 
     /**
@@ -169,7 +171,7 @@
           right = this.insertVariableFor(tree.right);
       }
       var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyIdentifier, this.generateFileName);
-      var left = propertyReferenceTransformer.visitAny(tree.left);
+      var left = propertyReferenceTransformer.transformAny(tree.left);
       
       // Place the temporary variable statement for the lhs above the binary operator expression.
       this.insertions.push(propertyReferenceTransformer.insertions);
@@ -182,19 +184,6 @@
         return tree;
       }
       return new BinaryOperator(tree.location, left, tree.operator, right);
-    },
-    
-    /**
-     * obj[string]
-     * @param {MemberLookupExpression} tree
-     * @return {ParseTree}
-     */
-    transformMemberLookupExpression: function(tree) {
-       this.propertyChangeTrace = new PropertyChangeTrace(
-         this.propertyIdentifier.value, 
-         tree.operand, 
-         tree.memberExpression
-       );
     },
     
      // Called once per load by QPRuntime
