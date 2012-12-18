@@ -27,7 +27,6 @@
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
   var Program = traceur.syntax.trees.Program;
-  var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
 
   /*
     Trace expressions that change object property values.
@@ -38,16 +37,9 @@
     obj = {prop: value}
   */
 
-  function PropertyChangeTrace(propertyIdentifier, objectExpression, propertyExpression, traceId) {
+  function propertyChangeStatement(propertyIdentifier, objectExpression, rhs) {
     this.propertyIdentifier = propertyIdentifier;
-    this.objectExpression = objectExpression;
-    this.propertyExpression = propertyExpression;
-    this.traceId = traceId; 
-    // TODO just create the trace statement and don't store the expressions
-  }
-
-  PropertyChangeTrace.prototype = {
-    traceStatements: function(rhs) {
+    this.objectExpression = objectExpression; 
       // window.__qp.propertyChanges.<propertyId>.push({obj: <objExpr>, prop: <propExpr>, ...)
       var statement =
         ParseTreeFactory.createExpressionStatement(
@@ -65,46 +57,23 @@
           )
         );
         return statement;         
-    }
   };
 
    /**
      Find trees matching propertyIdentifier. Called when we want to scan the LHS of an assignment.
     */
 
-  function PropertyReferenceVisitor(propertyIdentifier) {
-    ParseTreeVisitor.call(this);
+  function PropertyReferenceTransformer(propertyIdentifier, generateFileName, rhsTransformer) {
+    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
     this.propertyIdentifier = propertyIdentifier;
+    this.rhsTransformer = rhsTransformer;
   }
 
-  PropertyReferenceVisitor.prototype = {
-    __proto__: ParseTreeVisitor.prototype,
+  PropertyReferenceTransformer.prototype = {
+    __proto__: Querypoint.InsertVariableForExpressionTransformer,
 
-    visitAny: function(tree) {
-      delete this.propertyChangeTrace;
-      ParseTreeVisitor.prototype.visitAny.call(this, tree);
-      return this.propertyChangeTrace;  // may be undefined
-    },
-
-    visitObjectLiteralExpression: function(tree) {
-      var propertyNameAndValues = this.transformList(tree.propertyNameAndValues);
-      if (propertyNameAndValues == tree.propertyNameAndValues) {
-        return tree;
-      }
-      return new ObjectLiteralExpression(tree.location, propertyNameAndValues);
-    },
-
-    /**
-     * name: value
-     * @param {PropertyNameAssignment} tree
-     * @return {ParseTree}
-     */
-    visitPropertyNameAssignment: function(tree) {
-      var value = this.transformAny(tree.value);
-      if (value == tree.value) {
-        return tree;
-      }
-      return new PropertyNameAssignment(tree.location, tree.name, value);
+    transformAny: function(tree) {
+      InsertVariableForExpressionTransformer.prototype.visitAny.call(this, tree);
     },
 
     /**
@@ -112,45 +81,49 @@
      * @param {MemberExpression} tree
      * @return {ParseTree}
      */
-    visitMemberExpression: function(tree) {
-      if (tree.memberName.value === this.propertyIdentifier.value) {
-        this.propertyChangeTrace = new PropertyChangeTrace(
-          this.propertyIdentifier.value, 
-          tree.operand, 
-          createIdentifierExpression(tree.memberName),
-          tree.location.traceId
+    transformMemberExpression: function(tree) {
+      // we can test for the traced property name at compile time.
+      if (tree.memberName.value === this.propertyIdentifier.value) { 
+        // simplify the rhs
+        var rhs = this.rhsTransformer(tree.right);
+        var operand = this.insertVariableFor(tree.operand);
+        this.traceStatement = propertyChangeStatement(
+          this.propertyIdentifier.value,   // prop
+          operand,                          // obj
+          rhs
         );
+        return new MemberExpression(tree.location, operand, tree.memberName);
+      } else {
+        return tree;
       }
-      // Since we are called after linearize we don't need to recurse
     },
-
+    
     /**
      * obj[string]
      * @param {MemberLookupExpression} tree
      * @return {ParseTree}
      */
     transformMemberLookupExpression: function(tree) {
-       this.propertyChangeTrace = new PropertyChangeTrace(
-         this.propertyIdentifier.value, 
-         tree.operand, 
-         tree.memberExpression
-       );
+       // we don't know until runtime if this property will be traced.
+       // simplify the components
+       var operand = this.insertVariableFor(tree.operand);
+       var memberExpression = this.insertVariableFor(tree.memberExpression);
+       var rhs = this.rhsTransformer(tree.right);
+       this.traceStatement = propertyChangeStatement(
+          this.propertyIdentifier.value,   // prop
+          operand ,                         // obj
+          rhs
+        );
+       return new MemberLookupExpression(tree.location, operand, memberExpression);
     },
 
-    _createPropertyChangeAccessExpression: function(propertyIdentifier) {
-      // window.__qp.propertyChanges.<propertyIdentifier>
-      return createMemberLookupExpression(
-        createMemberExpression('window', '__qp', 'propertyChanges'),
-        createStringLiteral(propertyIdentifier)
-      );
-    },
   };
 
 
   var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyIdentifier, generateFileName) {
+    this.generateFileName = generateFileName;
     Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
     this.propertyIdentifier = propertyIdentifier;
-    this.visitor = new PropertyReferenceVisitor(propertyIdentifier);
   }
 
   var QP_FUNCTION = '__qp_function';
@@ -166,7 +139,6 @@
 
     /**
      * obj.prop++ or obj[prop]++  equiv to obj.prop += 1
-     * operand contains only linearization temps
      * @param {UnaryExpression} tree
      * @return {ParseTree}
      */
@@ -187,16 +159,42 @@
      * @return {ParseTree}
      */
     transformBinaryOperator: function(tree) {
-      var left = this.transformAny(tree.left);
-      var traceable = this.visitor.visitAny(left);
-      if (traceable) {
-        this.insertions.push(traceable.traceStatements(tree.right));
+      if (!tree.operator.isAssignmentOperator()) {
+        return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator(tree);
       }
-      var right = this.transformAny(tree.right);
+      
+      // create a temp for the RHS so we can reference the temp both in the trace and the binary expression without double calls 
+      var right = tree.right;
+      function createTempIfNeeded(right) {
+          right = this.insertVariableFor(tree.right);
+      }
+      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyIdentifier, this.generateFileName);
+      var left = propertyReferenceTransformer.visitAny(tree.left);
+      
+      // Place the temporary variable statement for the lhs above the binary operator expression.
+      this.insertions.push(propertyReferenceTransformer.insertions);
+      if (propertyReferenceTransformer.tracingStatements) {
+        // finally push the tracing
+        this.insertion.push(propertyReferenceTransformer.tracingStatement); 
+      }
+
       if (left == tree.left && right == tree.right) {
         return tree;
       }
       return new BinaryOperator(tree.location, left, tree.operator, right);
+    },
+    
+    /**
+     * obj[string]
+     * @param {MemberLookupExpression} tree
+     * @return {ParseTree}
+     */
+    transformMemberLookupExpression: function(tree) {
+       this.propertyChangeTrace = new PropertyChangeTrace(
+         this.propertyIdentifier.value, 
+         tree.operand, 
+         tree.memberExpression
+       );
     },
     
      // Called once per load by QPRuntime
