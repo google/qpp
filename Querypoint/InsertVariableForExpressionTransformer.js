@@ -81,7 +81,6 @@
       this.insertions.push(tempVariableStatement);
       // __qp__XX
       var linearExpression = createIdentifierExpression(varId);
-      linearExpression.traceIdentifier = traceId;     // Signal TreeWriter 
      
       if (debug) {
         ParseTreeValidator.validate(linearExpression); 

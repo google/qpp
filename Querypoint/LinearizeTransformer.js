@@ -149,6 +149,12 @@
       return output_tree;
     },
     
+    insertVariableFor: function(tree) {
+      var linearExpression = Querypoint.InsertVariableForExpressionTransformer.prototype.insertVariableFor.call(this, tree);
+      linearExpression.traceIdentifier = traceId;     // Signal TreeWriter
+      return linearExpression; 
+    }, 
+    
     transformAnySkipLinearization: function(tree) {
       // Don't process trees inserted by compiler transformations.
       if (!tree.location) {
@@ -404,19 +410,6 @@
       }
       return new CallExpression(tree.location, operand, args); 
     },
-
-    transformCaseClause: function(tree) {
-      // var insertions here go above the switch statement
-      var expression = this.transformAny(tree.expression);
-      this.pushInsertions();  // insertions in case statements stay there.
-      var statements = this.transformListInsertEach(tree.statements, 
-        this.insertAbove);
-      this.popInsertions();
-      if (expression === tree.expression && statements === tree.statements) {
-        return tree;
-      }
-      return new CaseClause(tree.location, expression, statements);
-    },
     
     createContinueLabel: function(identifier) {
       return identifier + '_cont';
@@ -428,16 +421,7 @@
         this.createContinueLabel(label)
       );
     },
-    
-    transformDefaultClause: function(tree) {
-      var statements =  this.transformListInsertEach(tree.statements, 
-        this.insertAbove);
-      if (statements === tree.statements) {
-        return tree;
-      }
-      return new DefaultClause(tree.location, statements);
-    },
-    
+
     transformIfStatement: function(tree) {
       var condition = this.transformAny(tree.condition);
       var ifClause = this.transformAny(toBlock(tree.ifClause));
@@ -487,12 +471,6 @@
         )
       );
       return operandValue;  // eg __qp_11;
-    },
-
-    transformProgram: function(tree) {
-      var elements = this.transformListInsertEach(tree.programElements, 
-        this.insertAbove);
-      return new Program(tree.location, elements);
     },
 
     transformSwitchStatement: function(tree) {

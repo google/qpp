@@ -22,11 +22,11 @@
   var debug = true;
 
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
-
-  var Trees = traceur.syntax.trees;
   var TokenType = traceur.syntax.TokenType;
-  
+
+  var Trees = traceur.syntax.trees;  
   var Block = Trees.Block;
+  var Program = Trees.Program;
  
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
@@ -93,6 +93,34 @@
         return tree;
       }
       return new Block(tree.location, elements);
+    },
+    
+    transformCaseClause: function(tree) {
+      // var insertions here go above the switch statement
+      var expression = this.transformAny(tree.expression);
+      this.pushInsertions();  // insertions in case statements stay there.
+      var statements = this.transformListInsertEach(tree.statements, 
+        this.insertAbove);
+      this.popInsertions();
+      if (expression === tree.expression && statements === tree.statements) {
+        return tree;
+      }
+      return new CaseClause(tree.location, expression, statements);
+    },
+    
+    transformDefaultClause: function(tree) {
+      var statements =  this.transformListInsertEach(tree.statements, 
+        this.insertAbove);
+      if (statements === tree.statements) {
+        return tree;
+      }
+      return new DefaultClause(tree.location, statements);
+    },
+    
+    transformProgram: function(tree) {
+      var elements = this.transformListInsertEach(tree.programElements, 
+        this.insertAbove);
+      return new Program(tree.location, elements);
     },
 
     // used in transformListInsertEach, the default behavior results

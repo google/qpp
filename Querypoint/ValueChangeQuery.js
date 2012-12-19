@@ -21,18 +21,19 @@ function getValueReferenceIdentifier(tree) {
   }
 }
 
-Querypoint.ValueChangeQuery = function(identifier, tree, project) {
+Querypoint.ValueChangeQuery = function(identifierTree, tree, project) {
   Querypoint.Query.call(this);
-  this.identifier = identifier; 
+  this.identifier = identifierTree.value;
+  console.assert(typeof this.identifier === 'string'); 
   this.tree = tree;
   this.generateFileName = project.generateFileName;
 }
   
 Querypoint.ValueChangeQuery.ifAvailableFor = function(tree, project) {
-  var identifier = getValueReferenceIdentifier(tree);
-  if (identifier) {
+  var identifierTree = getValueReferenceIdentifier(tree);
+  if (identifierTree) {
     var query = Querypoint.ValueChangeQuery.prototype.getQueryOnTree(tree, Querypoint.ValueChangeQuery);
-    return query || new Querypoint.ValueChangeQuery(identifier, tree, project);
+    return query || new Querypoint.ValueChangeQuery(identifierTree, tree, project);
   }
 },
 
@@ -89,7 +90,7 @@ Querypoint.ValueChangeQuery.prototype = {
         console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
       }
     }
-    chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges","prop")', onEval.bind(this));
+    chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges",\"'+this.identifier+'\")', onEval.bind(this));
   },
 };
 
