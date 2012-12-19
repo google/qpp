@@ -10,7 +10,8 @@
     this._panel = panel;
 
     this.rootTreeData = ko.computed(function(){
-      var traceData = fileViewModel.treeRoot().traceData();
+      var treeRoot = fileViewModel.treeRoot();
+      var traceData = treeRoot && treeRoot.traceData();
       if (traceData) {
         // TODO we should only visit the tree in view, not the entire tree
         var treeHanger = this._treeHanger(fileViewModel.project);

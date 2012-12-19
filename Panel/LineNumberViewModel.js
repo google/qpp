@@ -21,7 +21,8 @@
     }.bind(this));
     
     this.lineModel = ko.computed(function(){
-      var traceData = this._fileViewModel.treeRoot().traceData();
+      var treeRoot = this._fileViewModel.treeRoot();
+      var traceData = treeRoot && treeRoot.traceData();
       if(!traceData)
         return;
         

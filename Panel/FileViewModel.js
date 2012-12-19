@@ -51,7 +51,7 @@
       
       this.sourceFile(sourceFile);
       
-      if (!treeRoot.hasOwnProperty('traceData')) {
+      if (treeRoot && !treeRoot.hasOwnProperty('traceData')) {
           // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
           treeRoot.traceData = ko.observable();
       }
@@ -59,7 +59,8 @@
       this.editor(editor);   // editor last to ensure the new tree is consulted when we clone elements from the editor
          
       this.editor().show();
-      this.tokenViewModel.followTokens(true);
+      if (treeRoot) 
+        this.tokenViewModel.followTokens(true);
 
       console.log("FileViewModel.update "+this.editor().name);  
     },
