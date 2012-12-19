@@ -16,7 +16,7 @@ import {
   BINARY_OPERATOR,
   COMMA_EXPRESSION,
   CONDITIONAL_EXPRESSION,
-  QUASI_LITERAL_PORTION
+  TEMPLATE_LITERAL_PORTION
 } from '../syntax/trees/ParseTreeType.js';
 import {
   LiteralExpression,
@@ -29,7 +29,13 @@ import {
   RAW
 } from '../syntax/PredefinedName.js';
 import TempVarTransformer from 'TempVarTransformer.js';
-import TokenType from '../syntax/TokenType.js';
+import {
+  PERCENT,
+  PLUS,
+  SLASH,
+  STAR,
+  STRING
+} from '../syntax/TokenType.js';
 import {
   createArgumentList,
   createArrayLiteralExpression,
@@ -74,14 +80,14 @@ function createCallSiteIdObject(tree) {
 }
 
 /**
- * Adds an empty string at the end if needed. This is needed in case the quasi
- * literal does not end with a literal portion.
+ * Adds an empty string at the end if needed. This is needed in case the
+ * template literal does not end with a literal portion.
  * @param {Array.<ParseTree>} elements
  * @param {Array.<ParseTree>} items This is the array that gets mutated.
  */
 function maybeAddEmptyStringAtEnd(elements, items) {
   var length = elements.length;
-  if (!length || elements[length - 1].type !== QUASI_LITERAL_PORTION)
+  if (!length || elements[length - 1].type !== TEMPLATE_LITERAL_PORTION)
     items.push(createStringLiteral(''));
 }
 
@@ -90,7 +96,7 @@ function createRawStringArray(elements) {
   for (var i = 0; i < elements.length; i += 2) {
     var str = replaceRaw(JSON.stringify(elements[i].value.value));
     var loc = elements[i].location;
-    var expr = new LiteralExpression(loc, new LiteralToken(TokenType.STRING,
+    var expr = new LiteralExpression(loc, new LiteralToken(STRING,
                                                            str, loc));
     items.push(expr);
   }
@@ -101,8 +107,7 @@ function createRawStringArray(elements) {
 function createCookedStringLiteralExpression(tree) {
   var str = cookString(tree.value.value);
   var loc = tree.location;
-  return new LiteralExpression(loc, new LiteralToken(TokenType.STRING,
-                                                     str, loc));
+  return new LiteralExpression(loc, new LiteralToken(STRING, str, loc));
 }
 
 function createCookedStringArray(elements) {
@@ -196,7 +201,7 @@ function cookString(s) {
   return sb.join('');
 }
 
-export class QuasiLiteralTransformer extends TempVarTransformer {
+export class TemplateLiteralTransformer extends TempVarTransformer {
 
   /**
    * Override to not use functions scope for temporary variables since we
@@ -206,9 +211,9 @@ export class QuasiLiteralTransformer extends TempVarTransformer {
     return this.transformBlock(tree);
   }
 
-  transformQuasiLiteralExpression(tree) {
+  transformTemplateLiteralExpression(tree) {
     if (!tree.operand)
-      return this.createDefaultQuasi(tree);
+      return this.createDefaultTemplateLiteral(tree);
 
     var operand = this.transformAny(tree.operand);
     var elements = tree.elements;
@@ -225,16 +230,16 @@ export class QuasiLiteralTransformer extends TempVarTransformer {
     return createCallExpression(operand, createArgumentList(args));
   }
 
-  transformQuasiSubstitution(tree) {
+  transformTemplateSubstitution(tree) {
     var transformedTree = this.transformAny(tree.expression);
     // Wrap in a paren expression if needed.
     switch (transformedTree.type) {
       case BINARY_OPERATOR:
         // Only * / and % have higher priority than +.
         switch (transformedTree.operator.type) {
-          case TokenType.STAR:
-          case TokenType.PERCENT:
-          case TokenType.SLASH:
+          case STAR:
+          case PERCENT:
+          case SLASH:
             return transformedTree;
         }
         // Fall through.
@@ -246,16 +251,16 @@ export class QuasiLiteralTransformer extends TempVarTransformer {
     return transformedTree;
   }
 
-  transformQuasiLiteralPortion(tree) {
+  transformTemplateLiteralPortion(tree) {
     return createCookedStringLiteralExpression(tree);
   }
 
-  createDefaultQuasi(tree) {
+  createDefaultTemplateLiteral(tree) {
     // convert to ("a" + b + "c" + d + "")
     var length = tree.elements.length;
     if (length === 0) {
       var loc = tree.location;
-      return new LiteralExpression(loc, new LiteralToken(TokenType.STRING,
+      return new LiteralExpression(loc, new LiteralToken(STRING,
                                                          '""', loc));
     }
 
@@ -264,10 +269,10 @@ export class QuasiLiteralTransformer extends TempVarTransformer {
     if (length == 1)
       return binaryExpression;
 
-    var plusToken = createOperatorToken(TokenType.PLUS);
+    var plusToken = createOperatorToken(PLUS);
     for (var i = 1; i < length; i++) {
       var element = tree.elements[i];
-      if (element.type === QUASI_LITERAL_PORTION) {
+      if (element.type === TEMPLATE_LITERAL_PORTION) {
         if (element.value.value === '')
           continue;
         else if (firstNonEmpty < 0 && i === 2)
@@ -287,6 +292,6 @@ export class QuasiLiteralTransformer extends TempVarTransformer {
  * @param {ParseTree} tree
  * @return {ParseTree}
  */
-QuasiLiteralTransformer.transformTree = function(identifierGenerator, tree) {
-  return new QuasiLiteralTransformer(identifierGenerator).transformAny(tree);
+TemplateLiteralTransformer.transformTree = function(identifierGenerator, tree) {
+  return new TemplateLiteralTransformer(identifierGenerator).transformAny(tree);
 };

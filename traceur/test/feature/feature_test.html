@@ -84,6 +84,7 @@ goog.require('goog.testing.jsunit');
 <script src="Classes/OptionalParams.js" type="text/traceur"></script>
 <script src="Classes/PropertyAccessors.js" type="text/traceur"></script>
 <script src="Classes/RestParams.js" type="text/traceur"></script>
+<script src="Classes/SemiColon.js" type="text/traceur"></script>
 <script src="Classes/SimpleSuper.js" type="text/traceur"></script>
 <script src="Classes/Skip_DerivedButton.js" type="text/traceur"></script>
 <script src="Classes/Skip_HTMLBlockquoteElement.js" type="text/traceur"></script>
@@ -170,19 +171,6 @@ goog.require('goog.testing.jsunit');
 <script src="PropertyOptionalComma/Error_TooManyCommas.js" type="text/traceur"></script>
 <script src="PropertyOptionalComma/Error_TooManyCommas2.js" type="text/traceur"></script>
 <script src="PropertyOptionalComma/Ok.js" type="text/traceur"></script>
-<script src="QuasiLiterals/CallExpression.js" type="text/traceur"></script>
-<script src="QuasiLiterals/CommaExpression.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Default.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Error_Disabled.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Error_InvalidSubstitution.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Error_InvalidSubstitution2.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Error_NotClosed.js" type="text/traceur"></script>
-<script src="QuasiLiterals/InBlock.js" type="text/traceur"></script>
-<script src="QuasiLiterals/InModule.js" type="text/tracuer"></script>
-<script src="QuasiLiterals/MemberExpression.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Strict.js" type="text/tracuer"></script>
-<script src="QuasiLiterals/StringRaw.js" type="text/traceur"></script>
-<script src="QuasiLiterals/Tag.js" type="text/traceur"></script>
 <script src="Rest/Error_NotLast.js" type="text/traceur"></script>
 <script src="Rest/Error_SetAccessor.js" type="text/traceur"></script>
 <script src="Rest/Simple.js" type="text/traceur"></script>
@@ -260,12 +248,28 @@ goog.require('goog.testing.jsunit');
 <script src="Syntax/Empty.js" type="text/traceur"></script>
 <script src="Syntax/Error_AtNameNotClosed.js" type="text/traceur"></script>
 <script src="Syntax/Error_FunctionParam.js" type="text/traceur"></script>
+<script src="Syntax/Error_NoLineTerminatorPostfix.js" type="text/traceur"></script>
 <script src="Syntax/Error_RegExpNotClosed.js" type="text/traceur"></script>
 <script src="Syntax/Error_UnicodeEscapeSequenceInName.js" type="text/traceur">></script>
 <script src="Syntax/ExpressionValidation.js" type="text/traceur"></script>
+<script src="Syntax/ImplicitSemiColon.js" type="text/traceur"></script>
 <script src="Syntax/UnicodeEscapeSequenceInName.js" type="text/traceur">></script>
 <script src="Syntax/null.js" type="text/traceur"></script>
 <script src="TempVarTransformer/UseStrictDirective.js" type="text/traceur"></script>
+<script src="TemplateLiterals/CallExpression.js" type="text/traceur"></script>
+<script src="TemplateLiterals/CommaExpression.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Default.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Error_Disabled.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Error_InvalidSubstitution.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Error_InvalidSubstitution2.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Error_NotClosed.js" type="text/traceur"></script>
+<script src="TemplateLiterals/InBlock.js" type="text/traceur"></script>
+<script src="TemplateLiterals/InModule.js" type="text/tracuer"></script>
+<script src="TemplateLiterals/MemberExpression.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Strict.js" type="text/tracuer"></script>
+<script src="TemplateLiterals/StringRaw.js" type="text/traceur"></script>
+<script src="TemplateLiterals/Tag.js" type="text/traceur"></script>
+<script src="Types/TypeSyntax.js" type="text/traceur"></script>
 <script src="Yield/Arguments.js" type="text/traceur"></script>
 <script src="Yield/DefaultArguments.js" type="text/traceur"></script>
 <script src="Yield/DoGenerator.js" type="text/traceur"></script>
@@ -366,12 +370,20 @@ function evalScript(scriptElement) {
 
       if (!skip) {
           if (reporter.hadError()) {
-            fail('Error compiling ' + name + '.');
+            fail('Error compiling ' + name + '.\n' + reporter.errors.join('\n'));
             return;
           }
 
         // Script compiled, so run it.
-        ('global', eval)(code);
+        var completed = false;
+        try {
+          ('global', eval)(code);
+          completed = true;
+        } finally {
+          if (!completed) {
+            fail('Error running compiled output for : ' + name);
+          }
+        }
       }
     } finally {
       traceur.options.reset();

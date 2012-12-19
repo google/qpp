@@ -115,7 +115,6 @@ export class WebPageProject extends Project {
     return this.compiler_;
   }
 
-  /* @return {ObjectMap} */
   compile() {
     var trees = this.compiler.compile_();
     if (this.reporter.hadError()) {
@@ -137,15 +136,12 @@ export class WebPageProject extends Project {
   putFiles(files) {
     files.forEach(this.putFile, this);
   }
-  
-  /* @param {ObjectMap} trees */
+
   runInWebPage(trees) {
     var files = this.generateSourceFromTrees(trees);
     this.putFiles(files);
   }
 
-  /* @param {ObjectMap} trees */
-  /* @return {ObjectMap} */
   generateSourceFromTrees(trees) {
     return trees.keys().map((file) => {
         var tree = trees.get(file);

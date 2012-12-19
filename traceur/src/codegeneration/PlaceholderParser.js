@@ -30,7 +30,7 @@ import {
 } from '../syntax/trees/ParseTrees.js';
 import Scanner from '../syntax/Scanner.js';
 import SourceFile from '../syntax/SourceFile.js';
-import TokenType from '../syntax/TokenType.js';
+import IDENTIFIER from '../syntax/TokenType.js';
 import {
   createBindingIdentifier,
   createBooleanLiteral,
@@ -162,10 +162,9 @@ export class PlaceholderParser {
 
     var file = new SourceFile('parse@TemplateParser', source);
     var errorReporter = new MutedErrorReporter();
-    var scanner = new Scanner(errorReporter, file);
-    var parser = new Parser(errorReporter, scanner);
+    var parser = new Parser(errorReporter, file);
     var tree = doParse(parser);
-    if (errorReporter.hadError() || !tree || !scanner.isAtEnd())
+    if (errorReporter.hadError() || !tree || !parser.isAtEnd())
       throw new Error(`Internal error trying to parse:\n\n${source}`);
     return tree;
   }
@@ -195,6 +194,12 @@ function convertValueToExpression(value) {
   }
 
   throw new Error('Not implemented');
+}
+
+function convertValueToIdentifierToken(value) {
+  if (value instanceof IdentifierToken)
+    return value;
+  return createIdentifierToken(value);
 }
 
 /**
@@ -280,11 +285,11 @@ export class PlaceholderTransformer extends ParseTreeTransformer {
   }
 
   transformPropertyMethodAssignment(tree) {
-    if (tree.name.type === TokenType.IDENTIFIER) {
+    if (tree.name.type === IDENTIFIER) {
       var value = this.getValue_(tree.name.value);
       if (value !== NOT_FOUND) {
         return new PropertyMethodAssignment(null,
-            createIdentifierToken(value),
+            convertValueToIdentifierToken(value),
             tree.isGenerator,
             this.transformAny(tree.formalParameterList),
             this.transformAny(tree.functionBody));
@@ -294,11 +299,11 @@ export class PlaceholderTransformer extends ParseTreeTransformer {
   }
 
   transformPropertyNameAssignment(tree) {
-    if (tree.name.type === TokenType.IDENTIFIER) {
+    if (tree.name.type === IDENTIFIER) {
       var value = this.getValue_(tree.name.value);
       if (value !== NOT_FOUND) {
         return new PropertyNameAssignment(null,
-            createIdentifierToken(value),
+            convertValueToIdentifierToken(value),
             this.transformAny(tree.value));
       }
     }
@@ -310,7 +315,8 @@ export class PlaceholderTransformer extends ParseTreeTransformer {
     if (value !== NOT_FOUND) {
       if (value instanceof ParseTree)
         return value;
-      return new PropertyNameShorthand(null, createIdentifierToken(value));
+      return new PropertyNameShorthand(null,
+                                       convertValueToIdentifierToken(value));
     }
     return super.transformPropertyNameShorthand(tree);
   }

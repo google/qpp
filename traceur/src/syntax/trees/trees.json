@@ -242,6 +242,14 @@
       "IdentifierToken"
     ]
   },
+  "CoverFormals": {
+    "location": [
+      "SourceRange"
+    ],
+    "expressions": [
+      "Array.<ParseTree>"
+    ]
+  },
   "DebuggerStatement": {
     "location": [
       "SourceRange"
@@ -675,6 +683,14 @@
       "Token"
     ]
   },
+  "PredefinedType": {
+    "location": [
+      "SourceRange"
+    ],
+    "typeToken": [
+      "Token"
+    ]
+  },
   "Program": {
     "location": [
       "SourceRange"
@@ -717,33 +733,6 @@
     ],
     "name": [
       "IdentifierToken"
-    ]
-  },
-  "QuasiLiteralExpression": {
-    "location": [
-      "SourceRange"
-    ],
-    "operand": [
-      "ParseTree"
-    ],
-    "elements": [
-      "Array.<ParseTree>"
-    ]
-  },
-  "QuasiLiteralPortion": {
-    "location": [
-      "SourceRange"
-    ],
-    "value": [
-      "Token"
-    ]
-  },
-  "QuasiSubstitution": {
-    "location": [
-      "SourceRange"
-    ],
-    "expression": [
-      "ParseTree"
     ]
   },
   "RestParameter": {
@@ -808,6 +797,33 @@
       "Array.<CaseClause|DefaultClause>"
     ]
   },
+  "TemplateLiteralExpression": {
+    "location": [
+      "SourceRange"
+    ],
+    "operand": [
+      "ParseTree"
+    ],
+    "elements": [
+      "Array.<ParseTree>"
+    ]
+  },
+  "TemplateLiteralPortion": {
+    "location": [
+      "SourceRange"
+    ],
+    "value": [
+      "Token"
+    ]
+  },
+  "TemplateSubstitution": {
+    "location": [
+      "SourceRange"
+    ],
+    "expression": [
+      "ParseTree"
+    ]
+  },
   "ThisExpression": {
     "location": [
       "SourceRange"
@@ -835,6 +851,17 @@
       "Finally"
     ]
   },
+  "TypeName": {
+    "location": [
+      "SourceRange"
+    ],
+    "moduleName": [
+      "TypeName"
+    ],
+    "name": [
+      "IdentifierToken"
+    ]
+  },
   "UnaryExpression": {
     "location": [
       "SourceRange"
@@ -851,6 +878,9 @@
       "SourceRange"
     ],
     "lvalue": [
+      "ParseTree"
+    ],
+    "typeAnnotation": [
       "ParseTree"
     ],
     "initializer": [

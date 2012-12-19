@@ -34,9 +34,10 @@ import ParseTreeValidator from '../syntax/ParseTreeValidator.js';
 import PrivateNameSyntaxTransformer from 'PrivateNameSyntaxTransformer.js';
 import PropertyNameShorthandTransformer from
     'PropertyNameShorthandTransformer.js';
-import QuasiLiteralTransformer from 'QuasiLiteralTransformer.js';
+import TemplateLiteralTransformer from 'TemplateLiteralTransformer.js';
 import RestParameterTransformer from 'RestParameterTransformer.js';
 import SpreadTransformer from 'SpreadTransformer.js';
+import TypeTransformer from 'TypeTransformer.js';
 import {options, transformOptions} from '../options.js';
 
 /**
@@ -118,7 +119,10 @@ export class ProgramTransformer {
     // TODO: many of these simple, local transforms could happen in the same
     // tree pass
 
-    chain(transformOptions.quasi, QuasiLiteralTransformer.transformTree,
+    chain(transformOptions.types, TypeTransformer.transformTree);
+
+    chain(transformOptions.templateLiterals,
+          TemplateLiteralTransformer.transformTree,
           identifierGenerator);
 
     chain(transformOptions.modules, this.transformModules_.bind(this), tree,
@@ -156,7 +160,7 @@ export class ProgramTransformer {
 
     // rest parameters must come before generator
     chain(transformOptions.restParameters,
-          RestParameterTransformer.transformTree);
+          RestParameterTransformer.transformTree, identifierGenerator);
 
     // default parameters should come after rest parameter to get the
     // expected order in the transformed code.

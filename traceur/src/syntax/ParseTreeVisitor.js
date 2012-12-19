@@ -537,6 +537,12 @@ export class ParseTreeVisitor {
   }
 
   /**
+   * @param {PredefinedType} tree
+   */
+  visitPredefinedType(tree) {
+  }
+
+  /**
    * @param {Program} tree
    */
   visitProgram(tree) {
@@ -565,23 +571,23 @@ export class ParseTreeVisitor {
   }
 
   /**
-   * @param {QuasiLiteralExpression} tree
+   * @param {TemplateLiteralExpression} tree
    */
-  visitQuasiLiteralExpression(tree) {
+  visitTemplateLiteralExpression(tree) {
     this.visitAny(tree.operand);
     this.visitList(tree.elements);
   }
 
   /**
-   * @param {QuasiLiteralPortion} tree
+   * @param {TemplateLiteralPortion} tree
    */
-  visitQuasiLiteralPortion(tree) {
+  visitTemplateLiteralPortion(tree) {
   }
 
   /**
-   * @param {QuasiSubstitution} tree
+   * @param {TemplateSubstitution} tree
    */
-  visitQuasiSubstitution(tree) {
+  visitTemplateSubstitution(tree) {
     this.visitAny(tree.expression);
   }
 
@@ -665,6 +671,13 @@ export class ParseTreeVisitor {
   }
 
   /**
+   * @param {TypeName} tree
+   */
+  visitTypeName(tree) {
+    this.visitAny(tree.moduleName);
+  }
+
+  /**
    * @param {UnaryExpression} tree
    */
   visitUnaryExpression(tree) {
@@ -676,6 +689,7 @@ export class ParseTreeVisitor {
    */
   visitVariableDeclaration(tree) {
     this.visitAny(tree.lvalue);
+    this.visitAny(tree.typeAnnotation);
     this.visitAny(tree.initializer);
   }
 
