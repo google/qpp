@@ -27,6 +27,7 @@
 
     }.bind(this)).extend({ throttle: 1 });
     
+    
     this.tokenTree = ko.computed(function() {
       var tokenEvent = this.tokenEvent();
       if (!tokenEvent || !this._fileViewModel.sourceFile())
@@ -42,7 +43,7 @@
           var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
           var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
           var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
-          if (QuerypointPanel.FileViewModel.debug) 
+          if (QuerypointPanel.TokenViewModel.debug) 
             console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
         }
 
@@ -117,7 +118,8 @@
   
   }
 
-
+  QuerypointPanel.TokenViewModel.debug = true;
+  
   QuerypointPanel.TokenViewModel.prototype = {
 
     _cloneEditorLineByLocation: function(location) {

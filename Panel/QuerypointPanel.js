@@ -51,9 +51,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
   
   var panel = this;
-  this.currentTurnActive = ko.computed(function() {
-    var active = !!(panel.logScrubber.turnEnded() - panel.logScrubber.turnStarted());
-    return active;
+  this.currentTurn = ko.computed(function() {
+    var turnEnded = panel.logScrubber.turnEnded();
+    return turnEnded;
   });
 
   this.fileViews = document.querySelector('.fileViews');

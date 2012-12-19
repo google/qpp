@@ -84,8 +84,7 @@ Querypoint.ValueChangeQuery.prototype = {
           trace.load = fileViewModel.project.numberOfReloads;
           trace.activation = change.activationCount;
           onTracepoint(trace);  
-        }.bind(this));       
-        
+        }.bind(this));      
       } else {
         console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
       }

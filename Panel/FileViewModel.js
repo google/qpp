@@ -26,7 +26,7 @@
     // all of the query results for this file
     this.tracepoints = ko.observableArray();
     
-    panel.currentTurnActive.subscribe(function(newValue) {
+    panel.currentTurn.subscribe(function(newValue) {
       if (newValue !== 0) {
         this.update(newValue);
       }
@@ -40,7 +40,7 @@
     }.bind(this)).extend({ throttle: 1 });
   }
   
-  QuerypointPanel.FileViewModel.debug = false;
+  QuerypointPanel.FileViewModel.debug = true;
   
   QuerypointPanel.FileViewModel.prototype = {
     
@@ -65,16 +65,18 @@
       console.log("FileViewModel.update "+this.editor().name);  
     },
 
-    update: function() {
+    update: function(turn) {
       var treeRoot = this.treeRoot();
       if (treeRoot) {
         var tree = this.tokenViewModel.tokenTree();
         if (tree) {
+          this.tracepoints.removeAll();
           this._panel.tracequeries().forEach(function(tq){
             tq.extractTracepoints(this, tree, function (tracepoint){
               if (tracepoint) {
                 this.tracepoints.push(tracepoint);
               } // else no data?
+              console.log(this.tracepoints().length + ' tracepoints in turn ' + turn)
             }.bind(this));
           }.bind(this));
         }
