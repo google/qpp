@@ -9,6 +9,9 @@
   window.Querypoint = window.Querypoint || {};
 
 
+  // The algorightm depends upon each branch of the tree enclosing unique nested character regions.
+  // It won't work if a transformation mixes up the tree.location regions.
+
   // @param distanceFunction the smallest return value will be the result
   Querypoint.FindInTree = function(distanceFunction) {
     this._distanceFunction = distanceFunction;
@@ -51,8 +54,10 @@
         distance = this._distanceFunction(tree);
         if (distance < 0)
           return false;
-        if (Querypoint.FindInTree.debug)
-          console.log("FindInTree " + distance + '<' + this._closest + " type " + tree.type + ':' + tree.location.start.offset + '-' + tree.location.end.offset);
+        if (Querypoint.FindInTree.debug) {
+          var range = tree.location ?  tree.location.start.offset + '-' + tree.location.end.offset : "no-location";
+          console.log("FindInTree " + distance + '<' + this._closest + " type " + tree.type + ':' + range);
+        }
         if (distance <= this._closest) {
           this._deepestTree = tree;
           this._closest = distance;
