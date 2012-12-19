@@ -39,7 +39,7 @@
               return prompts;
           }, prompts);
           
-          if (!traces) {
+          if (!traces.length) {
             traces = prompts;
           } else {
             if (prompts.length) {
