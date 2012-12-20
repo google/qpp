@@ -47,7 +47,11 @@
     obj = {prop: value}
   */
 
-  function propertyChangeStatement(objectExpression, tracePropertyKey, valueTree) {
+  function propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation) {
+      // I suppose we may want to point at the obj.prop expression, but let's try the value first
+      var traceStart = traceLocation.start.offset; 
+      var traceEnd = traceLocation.end.offset;
+      var traceFile = traceLocation.start.source.name;
       // window.__qp.propertyChanges.<propertyId>.push({obj: <objExpr>, prop: <propExpr>, ...)
       var statement =
         ParseTreeFactory.createExpressionStatement(
@@ -59,6 +63,9 @@
                 createPropertyNameAssignment('property', createStringLiteral(tracePropertyKey)),
                 createPropertyNameAssignment('activations', createIdentifierExpression('__qp_function')),
                 createPropertyNameAssignment('activationIndex', createMemberExpression('__qp_function', 'length')),
+                createPropertyNameAssignment('startOffset', createStringLiteral(traceStart.toString())),
+                createPropertyNameAssignment('endOffset', createStringLiteral(traceEnd.toString())),
+                createPropertyNameAssignment('file', createStringLiteral(traceFile.toString())),
                 createPropertyNameAssignment('value', valueTree),
               ])
             )
@@ -68,7 +75,7 @@
         return statement;         
   };
   
-  function propertyChangeTrace(objectExpression, memberExpression, tracePropertyKey, valueTree) {
+  function propertyChangeTrace(objectExpression, memberExpression, tracePropertyKey, valueTree, traceLocation) {
       // if (memberExpression === tracePropertyKey) { trace };
       var ifStatement =
         ParseTreeFactory.createIfStatement(
@@ -77,7 +84,7 @@
               createOperatorToken(TokenType.EQUAL_EQUAL_EQUAL), 
               createStringLiteral(tracePropertyKey)
             ),
-            propertyChangeStatement(objectExpression, tracePropertyKey, valueTree)
+            propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation)
         );
       ParseTreeValidator.validate(ifStatement);
       return ifStatement;
@@ -138,8 +145,8 @@
        return new MemberLookupExpression(tree.location, operand, memberExpression);
     },
 
-    trace: function(valueTree) {
-      return propertyChangeTrace(this.reference.base, this.reference.name, this.propertyKey, valueTree);
+    trace: function(valueTree, traceLocation) {
+      return propertyChangeTrace(this.reference.base, this.reference.name, this.propertyKey, valueTree, traceLocation);
     }
 
   };
@@ -184,7 +191,7 @@
         // insert a temporary for the expression so we can trace it without double operations
         unaryExpression = this.insertVariableFor(unaryExpression);
         // Finally insert the tracing statement  
-        this.insertions.push(propertyReferenceTransformer.trace(unaryExpression));
+        this.insertions.push(propertyReferenceTransformer.trace(unaryExpression, tree.location));
         return unaryExpression; 
       } else {
         return tree;  
@@ -220,7 +227,7 @@
         this.insertions = this.insertions.concat(propertyReferenceTransformer.insertions);
         // Create a temp for the RHS to avoid double calls when we trace.
         right = this.insertVariableFor(right);  
-        this.insertions.push(propertyReferenceTransformer.trace(right)); 
+        this.insertions.push(propertyReferenceTransformer.trace(right, tree.right.location)); 
       }
 
       if (left == tree.left && right == tree.right) {

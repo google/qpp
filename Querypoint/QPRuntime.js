@@ -88,7 +88,7 @@
       }
     }
 
-    function findMatchingActivation(activation, value) {
+    function findMatchingActivation(activation, tp) {
       var match;
       // Is it better to store the file/offset for each tracepoint or do this search?
       Object.keys(window.__qp.functions).some(function(file) {
@@ -97,7 +97,10 @@
           var activations = functions[offset];
           var index = activations.indexOf(activation);
           if (index !== -1) {
-            match = {functionOffset: offset, file: file, turn: activation.turn, activationCount: index, value: value};
+            match = tp;
+            match.functionOffset = offset;
+            match.turn = activation.turn;
+            match.activationCount = index;
             return true;
           }
         });
@@ -106,6 +109,7 @@
     }
 
     function extractTracepoint(queryName, identifier) {
+      try {
       // eg window.__qp['propertyChange']['prop']
       var tps = window.__qp[queryName][identifier];
       if (debug) console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
@@ -113,8 +117,11 @@
         var activation = tp.activations[tp.activationIndex - 1];
         if (debug) console.log("tp", tp);
         if (debug) console.log('activation', activation);
-        return findMatchingActivation(activation, tp.value);
-      });  
+        return findMatchingActivation(activation, tp);
+      });
+      } catch (exc) {
+        return exc.toString();
+      }  
     }
      
     function initializeHiddenGlobalState() {

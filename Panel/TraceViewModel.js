@@ -70,14 +70,9 @@
               Object.keys(trace).forEach(function(prop) {
                 traceViewModel[prop] = trace[prop];
               });
-              // TODO traceViewModel.trace, .tree, then methods.
-              var start = tree.location.start;
-              var end = tree.location.end;
-              traceViewModel.tooltip = start.source.name + ' Line: ' + (start.line + 1);
-              traceViewModel.url = panel.urlFromTreeLocation(tree.location);
-              traceViewModel.startOffset = start.offset;
-              traceViewModel.endOffset = end.offset;
-              traceViewModel.commandName = trace.query.commandName();
+              traceViewModel.tooltip = trace.query.iconText() + " found in " + trace.file;
+              traceViewModel.url = trace.file + '?start=' + trace.startOffset + '&end=' + trace.endOffset + '&';
+              traceViewModel.iconText = trace.query.iconText();
               return traceViewModel;
             });
           } 

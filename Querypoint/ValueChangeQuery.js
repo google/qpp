@@ -41,11 +41,15 @@ Querypoint.ValueChangeQuery.ifAvailableFor = function(tree, project) {
 Querypoint.ValueChangeQuery.prototype = {
   __proto__: Querypoint.Query.prototype,
 
+  title: function() { 
+    return 'lastChange';
+  },
+  
   buttonName: function() {
     return 'lastChange';
   },
   
-  commandName: function() {
+  iconText: function() {
     return '&#x1D6AB;';
   },
   
@@ -76,7 +80,7 @@ Querypoint.ValueChangeQuery.prototype = {
   // Pull trace results out of the page for this querypoint
   extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
     function onEval(result, isException) {
-       if (!isException && result) {
+       if (!isException && result && result instanceof Array) {
         var changes = result;
         changes.forEach(function(change) {
           var trace = change;

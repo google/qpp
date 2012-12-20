@@ -32,14 +32,18 @@ Querypoint.AllExpressionsQuery.prototype = {
   getQueryOnTree: function(tree, queryConstructor) {
      return Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name];
   },
-
+  
+  title: function() {
+    return 'All in File';
+  },
+  
   // Initiates query
   buttonName: function() {
     return 'All in File';
   },
   
   // Documents query in trace
-  commandName: function() {
+  iconText: function() {
     return '&#x2799;&#x2263;';
   },
   
