@@ -191,7 +191,8 @@ ParseTreeValidator.validate(pushStatement);
       return new VariableStatement(loc, 
         new VariableDeclarationList(loc, TokenType.VAR, 
           [new VariableDeclaration(loc, 
-               new BindingIdentifier(loc, id), 
+               new BindingIdentifier(loc, id),
+               null, 
                tree
           )]
         )
