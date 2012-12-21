@@ -123,6 +123,20 @@
         return exc.toString();
       }  
     }
+    
+    // For lastChange
+    function reducePropertyChangesToOurObject(ourObj, propertyKey) {
+      if (debug) console.log("reducePropertyChangesToOurObject starts with " + window.__qp.propertyChanges[propertyKey].length);
+      var changes = window.__qp.propertyChanges[propertyKey];
+      window.__qp.propertyChanges[propertyKey] = changes.reduce(
+        function(ours, change) {
+          if (change.obj === ourObj) ours.push(change);
+          return ours; 
+        },
+        []
+      );
+      if (debug) console.log("reducePropertyChangesToOurObject ends with " + window.__qp.propertyChanges[propertyKey].length);
+    }
      
     function initializeHiddenGlobalState() {
       window.__qp = {
@@ -135,6 +149,7 @@
         fireLoad: fireLoad,
         trace: trace,
         extractTracepoint:  extractTracepoint, // searches for tracepoints matching a query
+        reducePropertyChangesToOurObject: reducePropertyChangesToOurObject, // changes limited to ourObj
       };      
     }
      
@@ -166,7 +181,7 @@
         return '(' + fnc + ')();\n';
       });
       var reload = 'window.__qp_reloads = ' + this._reloadNumber + ';\n';  
-      return reload + fncs + '\n' + this.source.join('\n');
+      return reload + fncs + '\n' + this.source.join('\n') + "//@ sourceURL='QPRuntime.js'\n";
     },
     appendFunction: function(fnc) {
       this.runtime.push(fnc);

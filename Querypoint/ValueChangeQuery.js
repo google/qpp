@@ -58,7 +58,7 @@ Querypoint.ValueChangeQuery.prototype = {
   },
   
   activate: function() {
-    this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier, this.generateFileName);
+    this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier, this.generateFileName, this.tree);
     this.tree.location.query = this;
   },
 

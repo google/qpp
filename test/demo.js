@@ -34,6 +34,7 @@ function bar() {
   if (!condition.value) {
     obj.prop = 0;
   }
+  condition.prop = 7;
 }
 
 function onLoad() {

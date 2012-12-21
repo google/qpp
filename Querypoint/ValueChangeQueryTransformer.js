@@ -25,6 +25,7 @@
   var createBlock = ParseTreeFactory.createBlock;
   var createBinaryOperator = ParseTreeFactory.createBinaryOperator;
   var createOperatorToken = ParseTreeFactory.createOperatorToken;
+  var createExpressionStatement = ParseTreeFactory.createExpressionStatement;
  
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
@@ -37,6 +38,7 @@
   
     // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
+  var debug = true;
   
   /*
     Trace expressions that change object property values.
@@ -54,7 +56,7 @@
       var traceFile = traceLocation.start.source.name;
       // window.__qp.propertyChanges.<propertyId>.push({obj: <objExpr>, prop: <propExpr>, ...)
       var statement =
-        ParseTreeFactory.createExpressionStatement(
+        createExpressionStatement(
           createCallExpression( 
             createMemberExpression('window', '__qp','propertyChanges', tracePropertyKey, 'push'),
             createArgumentList(
@@ -71,7 +73,7 @@
             )
           )
         );
-        ParseTreeValidator.validate(statement);
+        if (debug) ParseTreeValidator.validate(statement);
         return statement;         
   };
   
@@ -86,12 +88,12 @@
             ),
             propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation)
         );
-      ParseTreeValidator.validate(ifStatement);
+      if (debug) ParseTreeValidator.validate(ifStatement);
       return ifStatement;
   };
   
    /**
-     Transform property references to use temporary vars and create trace statements.
+     Transform property references to use temporary vars and (optionally) create trace statements.
      References occur on the LHS of assignments.
     */
 
@@ -105,7 +107,7 @@
 
     transformAny: function(tree) {
       var tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
-      ParseTreeValidator.validate(tree);
+      if (debug) ParseTreeValidator.validate(tree);
       return tree;
     },
 
@@ -152,14 +154,14 @@
   };
 
 
-  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName) {
+  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName, tree) {
     this.generateFileName = generateFileName;
     Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
     this.propertyKey = propertyKey;
+    this.objectCheckTree = tree;
   }
 
   var QP_FUNCTION = '__qp_function';
-
 
     /**
      * obj = {name: value}
@@ -168,6 +170,13 @@
      */
   ValueChangeQueryTransformer.prototype = {
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
+
+    transformAny: function(tree) {
+      if (tree === this.objectCheckTree) {
+        tree = this._insertObjectCheck(tree);
+      }
+      return Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
+    },
 
     /**
      * ++obj.prop or ++obj[prop]  equiv to obj.prop = obj.prop + 1 
@@ -212,7 +221,7 @@
      */
     transformBinaryOperator: function(tree) {
       if (!tree.operator.isAssignmentOperator()) {
-        return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator(tree);
+        return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator.call(this, tree);
       }
       var left = this.transformAny(tree.left); // process subexpressions ? Maybe RHS cannot have them 
 
@@ -236,6 +245,30 @@
         return new BinaryOperator(tree.location, left, tree.operator, right);  
       }
     },
+        
+    _insertObjectCheck: function(tree) {
+      // If the rhs of . or [] is an expression, introduce a temporary
+      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyKey, this.generateFileName);
+      var propertyReferenceTree = propertyReferenceTransformer.transformAny(tree);
+      if (propertyReferenceTree !== tree) {
+        this.insertions = this.insertions.concat(propertyReferenceTransformer.insertions);
+      }
+      var ourObjTree = propertyReferenceTree.operand;
+      // window.__qp.reducePropertyChangesToOurObject(ourObj, <propertyKey>);
+      var objectCheck = 
+        createExpressionStatement(
+          createCallExpression(
+            createMemberExpression('window', '__qp', 'reducePropertyChangesToOurObject'),
+            createArgumentList(
+              ourObjTree, 
+              createStringLiteral(this.propertyKey)
+            )
+          )
+        );
+       this.insertions.push(objectCheck);
+       return propertyReferenceTree;
+    },
+
     
      // Called once per load by QPRuntime
     runtimeInitializationStatements: function() {
