@@ -80,9 +80,7 @@ EditorByCodeMirror.prototype = {
     this.editorImpl.scrollIntoView(startPos);
     this._container.classList.add('qp-fade');
     var mark = this.editorImpl.markText(startPos, endPos, {className: 'qp-highlight'});
-    setTimeout(function() {
-      mark.clear();
-    }, 1000);
+    return mark; 
   },
 
   //-------------------------

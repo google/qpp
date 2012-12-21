@@ -72,7 +72,13 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
         jQueryEvent.target.focus();
         var url = jQueryEvent.target.getAttribute('data-url');
         if (url) {
-          panel.commands.openChainedEditor(url);
+          var mark = panel.commands.openChainedEditor(url);
+          if (mark) {
+            jQuery(jQueryEvent.target).mouseOut(function(event) {
+              mark.clear();
+              $(this).unbind(event);
+            });
+          }
         } // else the user did not click on something interesting.   
     });
 }
@@ -210,7 +216,7 @@ QuerypointPanel.Panel.prototype = {
       var linkTarget = this.linkTargetFromURL(url);
       var fileViewModel = this.getFileViewModelByName(linkTarget.name);
       if (fileViewModel) {
-        fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
+        return fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
       } else {
         var sourceFile = this.project.getFile(linkTarget.name);
         if (sourceFile) {
