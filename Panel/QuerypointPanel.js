@@ -210,7 +210,15 @@ QuerypointPanel.Panel.prototype = {
       var linkTarget = this.linkTargetFromURL(url);
       var fileViewModel = this.getFileViewModelByName(linkTarget.name);
       if (fileViewModel) {
-        fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
+        var mark = fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
+        if (mark) {
+          function clearMark(event) {
+            mark.clear();
+            console.log("cleared mark because of mouseout on ", event.target);
+            $(this.document).off('mouseout', clearMark);
+          }
+          $(this.document).on('mouseout', clearMark);
+        }
       } else {
         var sourceFile = this.project.getFile(linkTarget.name);
         if (sourceFile) {

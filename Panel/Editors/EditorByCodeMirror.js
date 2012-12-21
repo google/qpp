@@ -74,15 +74,14 @@ EditorByCodeMirror.prototype = {
     return {name: this.name,start: viewport.from,end: viewport.to};
   },
 
+  // Call .clear() on the return object 
   showRegion: function(startIndex, endIndex) {
     var startPos = this.editorImpl.posFromIndex(startIndex);
     var endPos = this.editorImpl.posFromIndex(endIndex);
     this.editorImpl.scrollIntoView(startPos);
     this._container.classList.add('qp-fade');
     var mark = this.editorImpl.markText(startPos, endPos, {className: 'qp-highlight'});
-    setTimeout(function() {
-      mark.clear();
-    }, 1000);
+    return mark; 
   },
 
   //-------------------------
