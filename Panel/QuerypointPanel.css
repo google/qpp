@@ -210,8 +210,8 @@ a:focus, a:active {
   margin-left: 4px; /* needed to match the padding of <pre> lines */
 }
 
-.currentExpression {
-  margin-left: 0px; /* keep the line number hidden offscreen to the left */
+.currentExpression { /* keep the line number hidden offscreen to the left */
+;
 }
 
 .QPOutput caption {
