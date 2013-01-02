@@ -110,12 +110,30 @@
         var box = this._fileViewModel.editor().createTokenBox(location);
         box.style.top = "0px";
         clone.appendChild(box);
+        clone.style.left = this.expressionViewLeftOffset(this.pxToNumber(box.style.left) + this.pxToNumber(box.style.width)) + 'px';
         return clone.outerHTML;
       } else {
         return "";
       }
     }.bind(this)).extend({throttle: 1});  // let both location and editor update
   
+    this.extraShowRight = 13 * 4;  // px
+    
+    this.pxToNumber = function(cssValue) {
+      var pxIndex = cssValue.length - 2;
+      var numbers = cssValue.substr(0, pxIndex);
+      return parseInt(numbers, 10);
+    } 
+  
+    this.expressionViewLeftOffset = function(boxEnd) {
+      // Shift the token in the expression by leftOffset such that the end of the token
+      // is extraShowRight from the rigth edge of viewWidth
+      // endOffset + extraShowRight = leftOffset + viewWidth
+      var view = document.querySelector('.expressionView');
+      var viewWidth = view.clientWidth || 300;
+      var leftOffset = viewWidth - boxEnd - this.extraShowRight;
+      return leftOffset < 0 ? leftOffset : 0;
+    };
   }
 
   QuerypointPanel.TokenViewModel.debug = true;
@@ -134,6 +152,7 @@
       }
       
       var clone = traceViewedLine.cloneNode(true);
+      this._expressionFontSize = window.getComputedStyle(traceViewedLine).fontSize;
       clone.classList.remove('traceViewedLine');
       return clone;
     }

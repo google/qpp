@@ -72,13 +72,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
         jQueryEvent.target.focus();
         var url = jQueryEvent.target.getAttribute('data-url');
         if (url) {
-          var mark = panel.commands.openChainedEditor(url);
-          if (mark) {
-            jQuery(jQueryEvent.target).mouseOut(function(event) {
-              mark.clear();
-              $(this).unbind(event);
-            });
-          }
+          panel.commands.openChainedEditor(url);
         } // else the user did not click on something interesting.   
     });
 }
@@ -216,7 +210,15 @@ QuerypointPanel.Panel.prototype = {
       var linkTarget = this.linkTargetFromURL(url);
       var fileViewModel = this.getFileViewModelByName(linkTarget.name);
       if (fileViewModel) {
-        return fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
+        var mark = fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
+        if (mark) {
+          function clearMark(event) {
+            mark.clear();
+            console.log("cleared mark because of mouseout on ", event.target);
+            $(this.document).off('mouseout', clearMark);
+          }
+          $(this.document).on('mouseout', clearMark);
+        }
       } else {
         var sourceFile = this.project.getFile(linkTarget.name);
         if (sourceFile) {

@@ -26,6 +26,7 @@
   var createBinaryOperator = ParseTreeFactory.createBinaryOperator;
   var createOperatorToken = ParseTreeFactory.createOperatorToken;
   var createExpressionStatement = ParseTreeFactory.createExpressionStatement;
+  var createTrueLiteral = ParseTreeFactory.createTrueLiteral;
  
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
@@ -79,17 +80,22 @@
   
   function propertyChangeTrace(objectExpression, memberExpression, tracePropertyKey, valueTree, traceLocation) {
       // if (memberExpression === tracePropertyKey) { trace };
-      var ifStatement =
-        ParseTreeFactory.createIfStatement(
+      var traceStatement = propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation);
+      if (memberExpression.literalToken && memberExpression.literalToken.processedValue === tracePropertyKey) {
+        return traceStatement;
+      } else {
+        var ifStatement =
+          ParseTreeFactory.createIfStatement(
             createBinaryOperator(
               memberExpression, 
               createOperatorToken(TokenType.EQUAL_EQUAL_EQUAL), 
               createStringLiteral(tracePropertyKey)
             ),
-            propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation)
-        );
-      if (debug) ParseTreeValidator.validate(ifStatement);
-      return ifStatement;
+            traceStatement
+          );
+        if (debug) ParseTreeValidator.validate(ifStatement);
+        return ifStatement;
+      }
   };
   
    /**

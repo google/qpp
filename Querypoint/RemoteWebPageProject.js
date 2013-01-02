@@ -41,7 +41,7 @@ RemoteWebPageProject.prototype.loadResource = function(url, fncOfContentOrNull) 
   RemoteWebPageProject.requestCreator.request('xhr', [url], function() {
     if (arguments[0] === "Error") {
       var message = arguments[1];
-      console.error("XHR Failed ", message);
+      console.error("XHR Failed for "+url, message);
       fncOfContentOrNull(null)
     } else {
       fncOfContentOrNull(arguments[0]);

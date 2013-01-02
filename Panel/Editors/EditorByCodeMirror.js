@@ -74,6 +74,7 @@ EditorByCodeMirror.prototype = {
     return {name: this.name,start: viewport.from,end: viewport.to};
   },
 
+  // Call .clear() on the return object 
   showRegion: function(startIndex, endIndex) {
     var startPos = this.editorImpl.posFromIndex(startIndex);
     var endPos = this.editorImpl.posFromIndex(endIndex);

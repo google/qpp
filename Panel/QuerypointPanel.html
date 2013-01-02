@@ -89,8 +89,8 @@
               <div class="scopeChain" data-bind="foreach: tokenViewModel.scopes">
                 <div data-bind="html: scopeDeclaration"></div>
               </div>
-              <div class="currentExpression">
-                <span title="Current expression trace values displayed below" data-bind="html: tokenViewModel._currentExpression"></span>
+              <div class="expressionView">
+                <div class="currentExpression" title="Current expression trace values displayed below" data-bind="html: tokenViewModel._currentExpression"></div>
               </div>
             </div>
             <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && !!traceViewModel.currentTraces().length}">
