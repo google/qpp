@@ -43,5 +43,5 @@ See also:
     (fork of http://code.google.com/p/traceur-compiler/)
  devtoolsExtended: https://github.com/google/devtoolsExtended
  ChannelPlate: https://github.com/google/ChannelPlate
- crx2app: https://github.com/johnjbarton/crx2app
+ crx2app: https://github.com/google/crx2app
  
