@@ -29,19 +29,9 @@ goog.require('goog.testing.jsunit');
 </head>
 <body>
 <script>
-
 function testLineNumbers() {
 
-  
   var src = 'function foo() { return 5; }\nvar \nf\n=\n5\n;\n';
-
-  /*
-  function dumpLine(line, number) {
-      console.log( (number +1 ) + ': ' + line);
-  }
-  console.log('original:');
-  src.split('\n').forEach(dumpLine);
-  */
 
   var filename = 'checkLineNumbers.js';
   var sourceFile = new traceur.syntax.SourceFile(name, src);
@@ -54,29 +44,20 @@ function testLineNumbers() {
   for (var line = 0; line <= lastLine; line++) {
     var offset = lineNumberTable.offsetOfLine(line);
     var column = lineNumberTable.getColumn(offset);
-    var line_out = lineNumberTable.getLine(offset);
-    assertEquals(line_out, line);
+    var lineOut = lineNumberTable.getLine(offset);
+    assertEquals(lineOut, line);
     assertEquals(column, 0);  // check non-zero value below
     var nextOffset = lineNumberTable.offsetOfLine(line + 1);
     var maxOffset = sourceFile.contents.length;
-    nextOffset = (nextOffset > maxOffset) ? maxOffset : nextOffset;
+    nextOffset = nextOffset > maxOffset ? maxOffset : nextOffset;
     resource += sourceFile.contents.substring(offset, nextOffset);
   }
 
-  //console.log(resource);
   assertEquals(src, resource);
 
+  // verify one non-zero column
   assertEquals(lineNumberTable.getColumn(31), 2);
-   
-  /*
-  for (var offset = 0; offset < sourceFile.contents.length; offset++) {
-    var column = lineNumberTable.getColumn(offset);
-    var line = lineNumberTable.getLine(offset);
-    console.log(offset + " line: "+line+" column: "+column);
-  }
-  */
 }
-
 </script>
 </body>
 </html>
