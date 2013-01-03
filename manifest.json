@@ -9,7 +9,7 @@
   "description": "Extends Chrome Devtools with Querypoint Debugging",
   //"devtools_page": "QuerypointDevtoolsPage.html",
   "background": {
-      "scripts": ["ChannelPlate/ChannelPlate.js", "QuerypointBackground.js"]
+      "scripts": ["ChannelPlate/ChannelPlate.js", "ChannelPlate/ChannelPlateBackground.js"]
     },
   "permissions" :
     [
