@@ -49,17 +49,20 @@ ChannelPlateBackground.prototype.xhr = function(url, callback, errback) {
   this.request('GET', url, callback, errback);
 };
 
-
-// Cross site XHR WebDAV, xhr(url) -> content 
-//
-ChannelPlateBackground.prototype.PROPFIND = function(url, callback, errback) {
-  this.request('PROPFIND', url, callback, errback);
+ChannelPlateBackground.prototype.GET = function(url, callback, errback) {
+  this.request('GET', url, callback, errback);
 };
 
 // Cross site XHR WebDAV, xhr(url) -> content 
 //
 ChannelPlateBackground.prototype.PUT = function(url, callback, errback) {
   this.request('PUT', url, callback, errback);
+};
+
+// Cross site XHR WebDAV, xhr(url) -> content 
+//
+ChannelPlateBackground.prototype.PROPFIND = function(url, callback, errback) {
+  this.request('PROPFIND', url, callback, errback);
 };
 
 
