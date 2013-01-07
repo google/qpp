@@ -15,7 +15,9 @@ servePathAtPort('../../webdev-examples', 7676);
 
 servePathAtPort('../../traceur-compiler', 7677);
 
-//servePathAtPort(__dirname + "/../../devtoolsExtended/extension/WebInspectorKit", 9696);
+servePathAtPort(__dirname + "/../../devtoolsExtended/extension/WebInspectorKit", 9696);
+servePathAtPort(__dirname + "/..", 8686);
+
 //-----------------------------------------------------------------------
 
 // This DAV server is a workaround for devatools-save failing on linux.
@@ -24,6 +26,7 @@ var jsDAV = require("jsDAV/lib/jsdav"),
     jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
 
 var jsDAV_Server       = require("jsDAV/lib/DAV/server");
+var jsDAV_Util       = require("jsDAV/lib/DAV/util");
 var jsDAV_ServerPlugin = require("jsDAV/lib/DAV/plugin").jsDAV_ServerPlugin;
 
 function jsDAV_CORS_Plugin(handler) {
@@ -104,20 +107,17 @@ jsDAV_CORS_Plugin.prototype = {
 // setting debugMode to TRUE outputs a LOT of information to console
 //jsDAV.debugMode = true;
 
-var plugins = Object.keys(jsDAV_Server.DEFAULT_PLUGINS).reduce(
-  function(plugins, name){
-    plugins[name] = jsDAV_Server.DEFAULT_PLUGINS[name];
-    return plugins;
-  }, 
-  {jsDAV_CORS_Plugin: jsDAV_CORS_Plugin}
-);
-console.log('plugins', plugins);
+/*
 jsDAV.createServer({
     node: __dirname + "/..",
-    locksBackend: new jsDAV_Locks_Backend_FS(__dirname + "/jsDAV_locks_8686")
-}, 8686).plugins.CORS_Plugin = jsDAV_CORS_Plugin;
+    locksBackend: new jsDAV_Locks_Backend_FS(__dirname + "/jsDAV_locks_8686"),
+    plugins: jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
+        "cors": jsDAV_CORS_Plugin
+    })
+}, 8686);
 
 jsDAV.createServer({
     node: __dirname + "/../../devtoolsExtended/extension/WebInspectorKit",
     locksBackend: new jsDAV_Locks_Backend_FS(__dirname + "/jsDAV_locks_9696")
 }, 9696).plugins.CORS_Plugin = jsDAV_CORS_Plugin;
+*/
