@@ -1,4 +1,30 @@
 <html>
 <body>
 <h1>Feature Test lastChange</h1>
+</body>
+<script>
+//---------------------------------------------------------------------------------------------------------
+var testRunner = {
+  callId: 0,
+  _send: function(method, args) {
+    window.parent.postMessage([method].concat(args), '*');
+  },
+  evaluateForTest: function(script) {
+    this._send('evaluateForTest', [this.callId++, script]);
+  },
+};
+window.addEventListener('load', function() {
+  testRunner.evaluateForTest('(' + testScript + ')()');
+});
+//-----------------------------------------------------------------------------
+
+console.log("begin " + window.location);
+
+function test_lastChange() {
+  console.log("test_lastChange begins, using extensionTestAPI:", extensionTestAPI);
+  extensionTestAPI.showPanel('Querypoint');
+}
+
+var testScript = test_lastChange;
+</script>
 </html>
