@@ -229,14 +229,12 @@
       if (!tree.operator.isAssignmentOperator()) {
         return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator.call(this, tree);
       }
-      var left = this.transformAny(tree.left); // process subexpressions ? Maybe RHS cannot have them 
-
-      // create a temp for the RHS so we can reference the temp both in the trace and the binary expression without double calls 
-
-      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyKey, this.generateFileName);
-      var left = propertyReferenceTransformer.transformAny(left);
-      
+      // else assignment, LHS = *= += etc RHS
       var right = this.transformAny(tree.right);
+    
+      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyKey, this.generateFileName);
+      var left = propertyReferenceTransformer.transformAny(tree.left);
+      
       if (left !== tree.left) { // Then we found something we want to trace
         // Place the temporary variable statement for the lhs above the binary operator expression.
         this.insertions = this.insertions.concat(propertyReferenceTransformer.insertions);
