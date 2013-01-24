@@ -3,6 +3,17 @@
 <h1>Feature Test lastChange</h1>
 </body>
 <script>
+//-------------------------------------------------------------------------------------------------------
+var SignalTokens = {
+    COMPLETE: "InspectorTest.testComplete: ",
+    RESULT: "InspectorTest.addResult: ",
+    CLEAR: "InspectorTest.clearResults: ",
+    PATIENT_SELECTOR: "PatientSelectorAPI",
+    DEVTOOLS_WINDOW: "DevtoolsWindowTestAPI",
+    EXTENSION_WINDOW: "ExtensionWindowTestAPI",
+    DEVTOOLS_PATH: 'inspector/front-end/devtools.html'
+};
+
 //---------------------------------------------------------------------------------------------------------
 var testRunner = {
   callId: 0,
@@ -14,15 +25,30 @@ var testRunner = {
   },
 };
 window.addEventListener('load', function() {
-  testRunner.evaluateForTest('(' + testScript + ')()');
+  //testRunner.evaluateForTest('(' + testScript + ')()');
+  testScript();
 });
+        
+        // Test case scripts can use these functions
+        var extensionTestAPI_generator = function(targetWindow) {
+            return {
+                clickSelector: function(selector, textContent) {
+                    // call back to testRunner's ExtensionTestProxy
+                    console.log(SignalTokens.PATIENT_SELECTOR + '@' + targetWindow +'.clickSelector(' + JSON.stringify(arguments) + ')'); 
+                }
+            };
+        }
+        var DevtoolsWindowTestAPI = extensionTestAPI_generator(SignalTokens.DEVTOOLS_WINDOW);
+        var ExtensionWindowTestAPI = extensionTestAPI_generator(SignalTokens.EXTENSION_WINDOW);
 //-----------------------------------------------------------------------------
 
 console.log("begin " + window.location);
 
 function test_lastChange() {
-  console.log("test_lastChange begins, using extensionTestAPI:", extensionTestAPI);
-  extensionTestAPI.showPanel('Querypoint');
+  console.log("test_lastChange begins, using DevtoolsWindowTestAPI:", DevtoolsWindowTestAPI);
+  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint');
+  DevtoolsWindowTestAPI.clickSelector('div.item', 'demo.js');
+  ExtensionWindowTestAPI.clickSelector('span.cm-property', 'prop');
 }
 
 var testScript = test_lastChange;

@@ -16,6 +16,7 @@ servePathAtPort('../../webdev-examples', 7676);
 servePathAtPort('../../traceur-compiler', 7677);
 
 servePathAtPort(__dirname + "/../../devtoolsExtended/extension/WebInspectorKit", 9696);
+servePathAtPort(__dirname + "/../../devtoolsExtended/extension/WebInspectorKit", 8000);
 servePathAtPort(__dirname + "/..", 8686);
 
 //-----------------------------------------------------------------------
