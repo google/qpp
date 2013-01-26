@@ -20,7 +20,7 @@ RemoteWebPageProject.onBackgroundMessage_ = function(message) {
 
 RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
-RemoteWebPageProject.requestCreator = new ChannelPlate.RequestCreator(ChannelPlate.DevtoolsTalker);
+RemoteWebPageProject.xhrFromBackground =  (new RemoteMethodCall.Requestor(XHRInBackground, ChannelPlate.DevtoolsTalker)).serverProxy();
 
 RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype);
 
@@ -38,15 +38,16 @@ RemoteWebPageProject.prototype.loadResource = function(url, fncOfContentOrNull) 
   // Your iframe is running inside the devtools process, so it doesn't get that privilege. 
   //You'll need to use the messaging API to ask the extension's background page to fetch the URL 
   // and send the response back to the iframe.
-  RemoteWebPageProject.requestCreator.request('xhr', [url], function() {
-    if (arguments[0] === "Error") {
-      var message = arguments[1];
-      console.error("XHR Failed for "+url, message);
-      fncOfContentOrNull(null)
-    } else {
-      fncOfContentOrNull(arguments[0]);
+  RemoteWebPageProject.xhrFromBackground.GET(
+    [url], 
+    function(content) {
+      fncOfContentOrNull(content);
+    },
+    function(err) {
+      console.error("XHR Failed for "+url, err);
+      fncOfContentOrNull(null);
     }
-  });
+  );
 }
 
 RemoteWebPageProject.prototype.putFiles = function(files) {

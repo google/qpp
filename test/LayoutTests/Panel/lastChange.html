@@ -2,6 +2,10 @@
 <body>
 <h1>Feature Test lastChange</h1>
 </body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/PatientSelector.js"></script>
+
 <script>
 //-------------------------------------------------------------------------------------------------------
 var SignalTokens = {
@@ -28,27 +32,71 @@ window.addEventListener('load', function() {
   //testRunner.evaluateForTest('(' + testScript + ')()');
   testScript();
 });
+
+
+// The test case iframe is a child of the extension iframe
+var ExtensionWindowTestAPI = (new RemoteMethodCall.Requestor(PatientSelector, ChannelPlate.ChildIframe)).serverProxy();
         
-        // Test case scripts can use these functions
-        var extensionTestAPI_generator = function(targetWindow) {
-            return {
-                clickSelector: function(selector, textContent) {
-                    // call back to testRunner's ExtensionTestProxy
-                    console.log(SignalTokens.PATIENT_SELECTOR + '@' + targetWindow +'.clickSelector(' + JSON.stringify(arguments) + ')'); 
-                }
-            };
-        }
-        var DevtoolsWindowTestAPI = extensionTestAPI_generator(SignalTokens.DEVTOOLS_WINDOW);
-        var ExtensionWindowTestAPI = extensionTestAPI_generator(SignalTokens.EXTENSION_WINDOW);
+
+// The extension iframe is a child of devtools, so the test case iframe is a grandchild
+function GrandChildIframe(onMessage) {
+  ChannelPlate.Talker.call(this, window.parent.parent, onMessage);
+}
+
+GrandChildIframe.prototype = Object.create(ChannelPlate.Talker.prototype);
+
+
+var DevtoolsWindowTestAPI = (new RemoteMethodCall.Requestor(PatientSelector, GrandChildIframe)).serverProxy();
 //-----------------------------------------------------------------------------
 
 console.log("begin " + window.location);
 
+function openQuerypointPanel(then) {
+  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint', then);
+}
+
+function openSourceFile(fileName, then) {
+  DevtoolsWindowTestAPI.clickSelector('div.item', fileName, then);
+}
+
+function searchSource(tokens, then) {
+  return then();
+  ExtensionWindowTestAPI.searchSource(tokens, then)
+}
+
+function runQuery(name, then) {
+  console.log("runQuery " + name);
+  ExtensionWindowTestAPI.clickSelector('span.cm-property', 'prop');
+}
+
+var AsyncMachine = {
+  ops: [],
+  pushOp: function(fnc, opt_args) {
+    var args = Array.prototype.slice.apply(arguments);
+    args.shift();
+    args.push(this.runOp.bind(this));
+    this.ops.push({fnc: fnc, args: args});
+  },
+  runOp: function() {
+    var op = this.ops.shift();
+    if (op) {
+      console.log("Running test operation ", op);
+      op.fnc.apply(this, op.args);
+    } else {
+      console.log("Test Operations Completed")
+    }
+  }
+
+};
+
 function test_lastChange() {
   console.log("test_lastChange begins, using DevtoolsWindowTestAPI:", DevtoolsWindowTestAPI);
-  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint');
-  DevtoolsWindowTestAPI.clickSelector('div.item', 'demo.js');
-  ExtensionWindowTestAPI.clickSelector('span.cm-property', 'prop');
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'demo.js');
+  AsyncMachine.pushOp(searchSource, ['updateButton', 'obj.prop', 'prop']); 
+  AsyncMachine.pushOp(runQuery, 'lastChange');
+
+  AsyncMachine.runOp();
 }
 
 var testScript = test_lastChange;

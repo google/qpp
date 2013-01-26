@@ -175,17 +175,20 @@
       event.returnValue = sure;
       return sure;  
     },
+
   
-    requestCreator: new ChannelPlate.RequestCreator(ChannelPlate.DevtoolsTalker),
+    _xhrFromBackground: (new RemoteMethodCall.Requestor(XHRInBackground, ChannelPlate.DevtoolsTalker)).serverProxy(),
 
     _asyncLoad: function(url, fncOfContent) {
-      this.requestCreator.request('xhr', [url], function() {
-        if (arguments[0] === 'Error') {
-          console.error('XHR failed ' + arguments[1]);
-        } else {
-          fncOfContent(arguments[0]);
+      this._xhrFromBackground.GET(
+        [url], 
+        function(content) {
+          fncOfContent(content);
+        },
+        function(err) {
+          console.error("_asyncLoad failed to GET " + url +': ' + err);
         }
-      });
+      );
     }
   }
 }());
