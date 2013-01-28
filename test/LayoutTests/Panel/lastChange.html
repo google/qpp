@@ -33,20 +33,24 @@ window.addEventListener('load', function() {
   testScript();
 });
 
-
 // The test case iframe is a child of the extension iframe
-var ExtensionWindowTestAPI = (new RemoteMethodCall.Requestor(PatientSelector, ChannelPlate.ChildIframe)).serverProxy();
-        
+var DevtoolsWindowTestAPI = (new RemoteMethodCall.Requestor(PatientSelector, ChannelPlate.ChildIframe)).serverProxy();
 
-// The extension iframe is a child of devtools, so the test case iframe is a grandchild
-function GrandChildIframe(onMessage) {
-  ChannelPlate.Talker.call(this, window.parent.parent, onMessage);
+function reProxy(api, url) {
+  var reAPI = {};
+  Object.keys(api).forEach(function(method) {
+    reAPI[method] = function() {
+      var args = Array.prototype.slice.call(arguments);
+      args.unshift(method);
+      var callback = args.pop();
+      DevtoolsWindowTestAPI.proxyTo(url, args, callback)
+    } 
+  })
+  return reAPI;
 }
+var ExtensionTestAPI = reProxy(PatientSelector, "QuerypointDevtoolsPage.html");        
+var ExtensionPanelTestAPI = reProxy(PatientSelector, "QuerypointPanel.html");        
 
-GrandChildIframe.prototype = Object.create(ChannelPlate.Talker.prototype);
-
-
-var DevtoolsWindowTestAPI = (new RemoteMethodCall.Requestor(PatientSelector, GrandChildIframe)).serverProxy();
 //-----------------------------------------------------------------------------
 
 console.log("begin " + window.location);
@@ -59,14 +63,18 @@ function openSourceFile(fileName, then) {
   DevtoolsWindowTestAPI.clickSelector('div.item', fileName, then);
 }
 
-function searchSource(tokens, then) {
-  return then();
-  ExtensionWindowTestAPI.searchSource(tokens, then)
+function selectTokenInSource(editorTokens, then) {
+  ExtensionPanelTestAPI.selectTokenInSource(editorTokens, then);
 }
-
+function verifyTokenView(textToMatch, then) {
+  ExtensionPanelTestAPI.whenSelectorAll('.currentExpression', textToMatch, then); 
+}
+function clickTokenInSource(editorTokens, then) {
+  ExtensionPanelTestAPI.clickTokenInSource(editorTokens, then);
+}
 function runQuery(name, then) {
   console.log("runQuery " + name);
-  ExtensionWindowTestAPI.clickSelector('span.cm-property', 'prop');
+  
 }
 
 var AsyncMachine = {
@@ -80,7 +88,8 @@ var AsyncMachine = {
   runOp: function() {
     var op = this.ops.shift();
     if (op) {
-      console.log("Running test operation ", op);
+      var fncName = op.fnc.toString().match(/function.*?{/);
+      console.log("Running test operation " + fncName, op);
       op.fnc.apply(this, op.args);
     } else {
       console.log("Test Operations Completed")
@@ -90,11 +99,16 @@ var AsyncMachine = {
 };
 
 function test_lastChange() {
-  console.log("test_lastChange begins, using DevtoolsWindowTestAPI:", DevtoolsWindowTestAPI);
+  console.log("------------test_lastChange begins------------");
+  var objPropSelector = [
+    {type: 'string', text:'\"I\'ve been clicked \"'},
+    {type: 'property', text: 'prop'}
+    ];
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
-  AsyncMachine.pushOp(searchSource, ['updateButton', 'obj.prop', 'prop']); 
-  AsyncMachine.pushOp(runQuery, 'lastChange');
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
+  AsyncMachine.pushOp(clickTokenInSource, objPropSelector);
 
   AsyncMachine.runOp();
 }
