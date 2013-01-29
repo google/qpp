@@ -55,6 +55,10 @@ var ExtensionPanelTestAPI = reProxy(PatientSelector, "QuerypointPanel.html");
 
 console.log("begin " + window.location);
 
+function reloadPage(then) {
+  ExtensionTestAPI.reloadPage(then);
+}
+
 function openQuerypointPanel(then) {
   DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint', then);
 }
@@ -72,9 +76,14 @@ function verifyTokenView(textToMatch, then) {
 function clickTokenInSource(editorTokens, then) {
   ExtensionPanelTestAPI.clickTokenInSource(editorTokens, then);
 }
-function runQuery(name, then) {
-  console.log("runQuery " + name);
-  
+function clickQPOperation(name, then) {
+  ExtensionPanelTestAPI.clickSelector('button.command', name, then);
+}
+function whenSelectorAll(selector, text, then) {
+  ExtensionPanelTestAPI.whenSelectorAll(selector, text, then);
+}
+function evaluateInPage(expr, then) {
+  ExtensionPanelTestAPI.evaluateInPage(expr, then);
 }
 
 var AsyncMachine = {
@@ -100,6 +109,7 @@ var AsyncMachine = {
 
 function test_lastChange() {
   console.log("------------test_lastChange begins------------");
+  AsyncMachine.pushOp(reloadPage);
   var objPropSelector = [
     {type: 'string', text:'\"I\'ve been clicked \"'},
     {type: 'property', text: 'prop'}
@@ -108,7 +118,9 @@ function test_lastChange() {
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
-  AsyncMachine.pushOp(clickTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))')
 
   AsyncMachine.runOp();
 }
