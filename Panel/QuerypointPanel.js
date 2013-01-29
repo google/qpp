@@ -33,12 +33,49 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.page = page;
   this.project = project;
 
+  var panel = this;
   var logElement = document.querySelector('.logView');
   var logScrubberElement = document.querySelector('.logScrubber');
+  var logFloat = document.querySelector('.floaty');
 
   this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement);
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
+
+
+  var getMargin=function(e){
+    var str=e.style.marginLeft;
+    if(!str) str='0px';
+    return parseInt(str.substr(0,str.length-2));
+  }
+  
+  logScrubberElement.onmousewheel=function(event){
+    if(getMargin(logScrubberElement)+event['wheelDelta']/3<0){
+        logScrubberElement.style.marginLeft=((getMargin(logScrubberElement)+event['wheelDelta']).toString()+'px');
+        logFloat.scrollByLines(event['wheelDelta']<0?1:-1);
+    }else{
+        logScrubberElement.style.marginLeft='0px';
+        logFloat.scrollTop=0;
+    }
+  }
+
+  logScrubberElement.onmousedown=function(e){
+    var curX=e.x;
+    var start=getMargin(logScrubberElement);
+    var last=0;
+    e.preventDefault();
+
+    logScrubberElement.onmousemove = function(ev){
+        if(start+(ev.x-curX)<0 ){
+            logScrubberElement.style.marginLeft=((start+(ev.x-curX)).toString()+'px');
+            logFloat.scrollTop+=(start+(ev.x-curX)>last?-2:2);
+            last=start+(ev.x-curX);
+        }
+    }
+  }
+
+  logScrubberElement.onmouseup = function(){ logScrubberElement.onmousemove=null; }
+
 
   ko.applyBindings(this.logScrubber, logScrubberElement);
   ko.applyBindings(this, logElement);
@@ -50,7 +87,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
   
-  var panel = this;
   this.currentTurn = ko.computed(function() {
     var turnEnded = panel.logScrubber.turnEnded();
     return turnEnded;

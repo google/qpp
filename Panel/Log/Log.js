@@ -2,12 +2,27 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
+   
+   var totalLogs=0;
   
-  var messagePrototype = {
-    tooltip: function() {
-      return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
-    }
-  };
+   var messagePrototype = {
+     tooltip: function() {
+       var logFloat = document.querySelector('.floaty');
+       var logScrubber = document.querySelector('.logScrubber');
+       this.scroll = logFloat.scrollTop=logFloat.scrollHeight;
+       totalLogs++;
+       console.log('Total : '+totalLogs);
+       var moveScroll=-totalLogs*9+document.width/2;
+       if(moveScroll>0) moveScroll=0;
+       logScrubber.style.marginLeft=(moveScroll).toString()+'px';
+       return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
+     },
+     focusLog: function(elem){
+       var logFloat = document.querySelector('.floaty');
+       logFloat.scrollTop=elem.scroll;
+     }
+   };
+  
   
   QuerypointPanel.Log = {
 
