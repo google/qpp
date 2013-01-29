@@ -15,6 +15,8 @@
       }.bind(this));
       
       this.lastLoad = 0;
+      this.loadStarted = ko.observable(0);
+      this.loadEnded = ko.observable(0);
       this.turnStarted = ko.observable(0);
       this.turnEnded = ko.observable(0);
 

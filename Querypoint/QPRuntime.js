@@ -23,6 +23,7 @@
             handler(window.__qp.loadEvent);
           });
           if (debug) console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
+          console.log("qp| loadEvent " + window.__qp_reloads);
           return handlers.length;
         } else {
           if (debug) console.log("Querypoint.runtime: fireLoad no earlyEventHandlers");

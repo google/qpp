@@ -13,6 +13,15 @@
       // at start up we assume the web page has reloaded since our last edit....
       this.savedEditors = ko.observableArray();
       
+      this.currentLoadNumber = ko.computed(function() {
+        var started = panel.logScrubber.loadStarted();
+        var ended = panel.logScrubber.loadEnded();
+        if (started === ended)
+          return started;
+        else
+          return '_';
+      });  // don't throttle load, needed for testing 
+
       this.currentTurnNumber = ko.computed(function() {
         return panel.logScrubber.turnStarted();
       }).extend({ throttle: 50 });

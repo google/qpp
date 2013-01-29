@@ -40,8 +40,12 @@
         var segments = messageSource.text.split(' ');
         var keyword = segments[1];
         switch(keyword) {
+          case 'loadEvent':
+            this._logScrubber.loadEnded(parseInt(segments[2], 10))
+            break;
           case 'reload': 
             this._reloadCount = parseInt(segments[2], 10);
+            this._logScrubber.loadStarted(this._reloadCount);
             break;
           case 'startTurn': 
             this._turn = parseInt(segments[2], 10);

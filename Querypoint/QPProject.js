@@ -65,6 +65,7 @@
     startRuntime: function() {
       function startRuntime() {  // runs in web page
         window.__qp.fireLoad();
+        return window.__qp_reloads;
       }
       function onRuntimeStarted(results) {
         console.log("QP runtime called fireLoad() got "+results);
