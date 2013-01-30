@@ -85,6 +85,10 @@ function whenSelectorAll(selector, text, then) {
 function evaluateInPage(expr, then) {
   ExtensionPanelTestAPI.evaluateInPage(expr, then);
 }
+function extractText(selector, then) {
+  ExtensionPanelTestAPI.extractText(selector, then);
+}
+
 
 var AsyncMachine = {
   ops: [],
@@ -99,6 +103,14 @@ var AsyncMachine = {
     if (op) {
       var fncName = op.fnc.toString().match(/function.*?{/);
       console.log("Running test operation " + fncName, op);
+      function callback(result) {
+        console.log("test operation result "+result);
+      }
+      function errback(err) {
+        console.error("test operation error  ", error);
+      }
+      op.args.push(callback);
+      op.args.push(callback);
       op.fnc.apply(this, op.args);
     } else {
       console.log("Test Operations Completed")
@@ -121,6 +133,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))')
+  AsyncMachine.pushOp(extractText, 'td.traceValue')
 
   AsyncMachine.runOp();
 }
