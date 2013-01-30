@@ -31,6 +31,47 @@
 
       this._initMouse();
 
+      var panel =  document.querySelector('.panel');
+      var logScrubberElement = document.querySelector('.logScrubber');
+      var logFloat = document.querySelector('.floaty');
+
+      function getMargin(elem){
+        var str = elem.style.marginLeft;
+        if(!str) str = '0px';
+        return parseInt(str.substr(0,str.length - 2));
+      }
+      
+      logScrubberElement.onmousewheel = function(event){
+        var newPosition = getMargin(logScrubberElement) + event['wheelDelta'];
+        if(newPosition < 0){
+            logScrubberElement.style.marginLeft= newPosition.toString() + 'px';
+            //TODO: Adjust the scroll on log with scroll on scrubberBox
+            logFloat.scrollByLines(event['wheelDelta'] < 0 ? 1 : -1);
+        }else{
+            logScrubberElement.style.marginLeft = '0px';
+            logFloat.scrollTop = 0;
+        }
+      }
+
+      logScrubberElement.onmousedown = function(event){
+        var curX = event.x;
+        var start = getMargin(logScrubberElement);
+        var lastPosition = 0;
+        event.preventDefault();
+
+        panel.onmousemove = function(event){
+            var newPosition = start + (event.x - curX);
+            if (newPosition < 0) {
+                logScrubberElement.style.marginLeft = (newPosition).toString() + 'px';
+                //TODO: Adjust scroll on log with scrubberBox
+                logFloat.scrollTop+= (newPosition > lastPosition ? -2 : 2);
+                lastPosition = newPosition;
+            }
+        }
+      }
+
+      panel.onmouseup = function(){ panel.onmousemove = null; }
+
       return this;
     },
     
