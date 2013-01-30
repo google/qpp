@@ -5,119 +5,14 @@
 <script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
 <script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
 <script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/PatientSelector.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/panel-test.js"></script>
 
 <script>
-//-------------------------------------------------------------------------------------------------------
-var SignalTokens = {
-    COMPLETE: "InspectorTest.testComplete: ",
-    RESULT: "InspectorTest.addResult: ",
-    CLEAR: "InspectorTest.clearResults: ",
-    PATIENT_SELECTOR: "PatientSelectorAPI",
-    DEVTOOLS_WINDOW: "DevtoolsWindowTestAPI",
-    EXTENSION_WINDOW: "ExtensionWindowTestAPI",
-    DEVTOOLS_PATH: 'inspector/front-end/devtools.html'
-};
 
-//---------------------------------------------------------------------------------------------------------
-var testRunner = {
-  callId: 0,
-  _send: function(method, args) {
-    window.parent.postMessage([method].concat(args), '*');
-  },
-  evaluateForTest: function(script) {
-    this._send('evaluateForTest', [this.callId++, script]);
-  },
-};
 window.addEventListener('load', function() {
-  //testRunner.evaluateForTest('(' + testScript + ')()');
   testScript();
 });
-
-// The test case iframe is a child of the extension iframe
-var DevtoolsWindowTestAPI = (new RemoteMethodCall.Requestor(PatientSelector, ChannelPlate.ChildIframe)).serverProxy();
-
-function reProxy(api, url) {
-  var reAPI = {};
-  Object.keys(api).forEach(function(method) {
-    reAPI[method] = function() {
-      var args = Array.prototype.slice.call(arguments);
-      args.unshift(method);
-      var callback = args.pop();
-      DevtoolsWindowTestAPI.proxyTo(url, args, callback)
-    } 
-  })
-  return reAPI;
-}
-var ExtensionTestAPI = reProxy(PatientSelector, "QuerypointDevtoolsPage.html");        
-var ExtensionPanelTestAPI = reProxy(PatientSelector, "QuerypointPanel.html");        
-
-//-----------------------------------------------------------------------------
-
-console.log("begin " + window.location);
-
-function reloadPage(then) {
-  ExtensionTestAPI.reloadPage(then);
-}
-
-function openQuerypointPanel(then) {
-  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint', then);
-}
-
-function openSourceFile(fileName, then) {
-  DevtoolsWindowTestAPI.clickSelector('div.item', fileName, then);
-}
-
-function selectTokenInSource(editorTokens, then) {
-  ExtensionPanelTestAPI.selectTokenInSource(editorTokens, then);
-}
-function verifyTokenView(textToMatch, then) {
-  ExtensionPanelTestAPI.whenSelectorAll('.currentExpression', textToMatch, then); 
-}
-function clickTokenInSource(editorTokens, then) {
-  ExtensionPanelTestAPI.clickTokenInSource(editorTokens, then);
-}
-function clickQPOperation(name, then) {
-  ExtensionPanelTestAPI.clickSelector('button.command', name, then);
-}
-function whenSelectorAll(selector, text, then) {
-  ExtensionPanelTestAPI.whenSelectorAll(selector, text, then);
-}
-function evaluateInPage(expr, then) {
-  ExtensionPanelTestAPI.evaluateInPage(expr, then);
-}
-function extractText(selector, then) {
-  ExtensionPanelTestAPI.extractText(selector, then);
-}
-
-
-var AsyncMachine = {
-  ops: [],
-  pushOp: function(fnc, opt_args) {
-    var args = Array.prototype.slice.apply(arguments);
-    args.shift();
-    args.push(this.runOp.bind(this));
-    this.ops.push({fnc: fnc, args: args});
-  },
-  runOp: function() {
-    var op = this.ops.shift();
-    if (op) {
-      var fncName = op.fnc.toString().match(/function.*?{/);
-      console.log("Running test operation " + fncName, op);
-      function callback(result) {
-        console.log("test operation result "+result);
-      }
-      function errback(err) {
-        console.error("test operation error  ", error);
-      }
-      op.args.push(callback);
-      op.args.push(callback);
-      op.fnc.apply(this, op.args);
-    } else {
-      console.log("Test Operations Completed")
-    }
-  }
-
-};
 
 function test_lastChange() {
   console.log("------------test_lastChange begins------------");
