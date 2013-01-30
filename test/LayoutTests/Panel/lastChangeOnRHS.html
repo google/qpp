@@ -1,0 +1,41 @@
+<html>
+<body>
+<h1>Feature Test lastChange2</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/PatientSelector.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/panel-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function test_lastChange() {
+  console.log("------------test_lastChange begins------------");
+  AsyncMachine.pushOp(reloadPage);
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'demo.js');
+    var objPropSelector = [
+      {type: 'variable', text:'bar'},  // call in onClick
+      {type: 'variable', text:'bar'},  // func decl
+      {type: 'property', text: 'prop'},  // obj.prop = 0
+      {type: 'property', text: 'prop'}   // prop in obj.prop = 0
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+    AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', '0');
+  AsyncMachine.pushOp(extractText, 'td.traceValue');
+
+  AsyncMachine.runOp();
+}
+
+var testScript = test_lastChange;
+</script>
+</html>

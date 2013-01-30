@@ -117,45 +117,6 @@
       return tree;
     },
 
-    /**
-     * obj.prop
-     * @param {MemberExpression} tree
-     * @return {ParseTree}
-     */
-    transformMemberExpression: function(tree) {
-      // we can test for the traced property name at compile time.
-      if (tree.memberName.value === this.propertyKey) { 
-        var operand = this.insertVariableFor(tree.operand);
-        this.reference = {
-          base: operand,
-          name: createStringLiteral(this.propertyKey)
-        };
-        return new MemberExpression(tree.location, operand, tree.memberName);
-      } else {
-        return tree;
-      }
-    },
-    
-    /**
-     * obj[string]
-     * @param {MemberLookupExpression} tree
-     * @return {ParseTree}
-     */
-    transformMemberLookupExpression: function(tree) {
-       // we don't know until runtime if this property will be traced.
-       // simplify the components
-       var operand = this.insertVariableFor(tree.operand);
-       var memberExpression = this.insertVariableFor(tree.memberExpression);
-       this.reference = {
-          base: operand,
-          name: memberExpression
-        };
-       return new MemberLookupExpression(tree.location, operand, memberExpression);
-    },
-
-    trace: function(valueTree, traceLocation) {
-      return propertyChangeTrace(this.reference.base, this.reference.name, this.propertyKey, valueTree, traceLocation);
-    }
 
   };
 
@@ -178,10 +139,10 @@
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
     transformAny: function(tree) {
-      if (tree === this.objectCheckTree) {
-        tree = this._insertObjectCheck(tree);
-      }
-      return Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
+      this.isObjectCheckTree = (tree === this.objectCheckTree);
+      tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
+      this.isObjectCheckTree = false;
+      return tree;
     },
 
     /**
@@ -194,19 +155,18 @@
       if (tree.operator.type !== TokenType.PLUS_PLUS && tree.operator.type !== TokenType.MINUS_MINUS) {
         return tree;
       }
-      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyKey, this.generateFileName);
+      this.isReferenceTree = true;
       var operand = this.transformAny(tree.operand);
-      operand = propertyReferenceTransformer.transformAny(operand);
+      this.isReferenceTree = false;
+      
       if (operand !== tree.operand) { // then the operand had a property access
         // We have operand as tmp1[tmp2]
-        // insert the temporaries for the property access operation
-        this.insertions = this.insertions.concat(propertyReferenceTransformer.insertions);
         // Use the temporary vars in a new expression, eg ++tmp1[tmp2]
         var unaryExpression = new UnaryExpression(tree.location, tree.operator, operand);
         // insert a temporary for the expression so we can trace it without double operations
         unaryExpression = this.insertVariableFor(unaryExpression);
         // Finally insert the tracing statement  
-        this.insertions.push(propertyReferenceTransformer.trace(unaryExpression, tree.location));
+        this.insertions.push(this.trace(unaryExpression, tree.location));
         return unaryExpression; 
       } else {
         return tree;  
@@ -232,15 +192,14 @@
       // else assignment, LHS = *= += etc RHS
       var right = this.transformAny(tree.right);
     
-      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyKey, this.generateFileName);
-      var left = propertyReferenceTransformer.transformAny(tree.left);
+      this.isReferenceTree = true;
+      var left = this.transformAny(tree.left);
+      this.isReferenceTree = false;
       
       if (left !== tree.left) { // Then we found something we want to trace
-        // Place the temporary variable statement for the lhs above the binary operator expression.
-        this.insertions = this.insertions.concat(propertyReferenceTransformer.insertions);
         // Create a temp for the RHS to avoid double calls when we trace.
         right = this.insertVariableFor(right);  
-        this.insertions.push(propertyReferenceTransformer.trace(right, tree.right.location)); 
+        this.insertions.push(this.trace(right, tree.right.location)); 
       }
 
       if (left == tree.left && right == tree.right) {
@@ -251,26 +210,79 @@
     },
         
     _insertObjectCheck: function(tree) {
-      // If the rhs of . or [] is an expression, introduce a temporary
-      var propertyReferenceTransformer = new PropertyReferenceTransformer(this.propertyKey, this.generateFileName);
-      var propertyReferenceTree = propertyReferenceTransformer.transformAny(tree);
-      if (propertyReferenceTree !== tree) {
-        this.insertions = this.insertions.concat(propertyReferenceTransformer.insertions);
+      // We are at the object reference tree where we need to check if other traces for
+      // the property used the required object.
+      // If the tree is a complex expression, we need a temp to avoid
+      // double execution of the expression.
+      tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
+      
+      if (tree.type !== 'IDENTIFIER_EXPRESSION') {
+        tree = this.insertVariableFor(tree);
       }
-      var ourObjTree = propertyReferenceTree.operand;
+      
       // window.__qp.reducePropertyChangesToOurObject(ourObj, <propertyKey>);
       var objectCheck = 
         createExpressionStatement(
           createCallExpression(
             createMemberExpression('window', '__qp', 'reducePropertyChangesToOurObject'),
             createArgumentList(
-              ourObjTree, 
+              tree, 
               createStringLiteral(this.propertyKey)
             )
           )
         );
        this.insertions.push(objectCheck);
-       return propertyReferenceTree;
+       return tree;
+    },
+
+    transformMemberExpression: function(tree) {
+      if (this.isReferenceTree) {  
+        // we can test for the traced property name at compile time.
+        if (tree.memberName.value === this.propertyKey) { 
+          var operand = this.insertVariableFor(tree.operand);
+          this.reference = {
+            base: operand,
+            name: createStringLiteral(this.propertyKey)
+          };
+          tree = new MemberExpression(tree.location, operand, tree.memberName);
+        }  // else we aren't tracing this property
+      } // else this member expr does not appear on the RHS of assignment
+       
+      if (this.isObjectCheckTree) {
+        var operand = this._insertObjectCheck(tree.operand);
+        tree = new MemberExpression(tree.location, operand, tree.memberName);
+      }
+
+      return tree;
+    },
+    
+    /**
+     * obj[string]
+     * @param {MemberLookupExpression} tree
+     * @return {ParseTree}
+     */
+    transformMemberLookupExpression: function(tree) {
+      if (this.isReferenceTree) {
+         // we don't know until runtime if this property will be traced.
+         // simplify the components
+         var operand = this.insertVariableFor(tree.operand);
+         var memberExpression = this.insertVariableFor(tree.memberExpression);
+         this.reference = {
+            base: operand,
+            name: memberExpression
+          };
+         tree = new MemberLookupExpression(tree.location, operand, memberExpression);
+      }
+      if (this.isObjectCheckTree) {
+        var operand = this._insertObjectCheck(tree.operand);
+        tree = new MemberLookupExpression(tree.location, operand, tree.memberExpression);
+      }
+        
+      return tree;
+    },
+
+    trace: function(valueTree, traceLocation) {
+      return propertyChangeTrace(this.reference.base, this.reference.name, this.propertyKey, valueTree, traceLocation);
     },
 
     
