@@ -170,18 +170,14 @@
     initialize: function() { 
       this.runtime =  [define__qp];
       this.source = [];
-      this._reloadNumber = 0;
       return this;
     },
-    setReloadCounter: function(reloadNumber) {
-      console.assert(typeof reloadNumber === 'number');
-      this._reloadNumber = reloadNumber;
-    },
-    runtimeSource: function() {
+    runtimeSource: function(numberOfReloads) {
+      console.log("QPRuntime creating runtime for load#" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
         return '(' + fnc + ')();\n';
       });
-      var reload = 'window.__qp_reloads = ' + this._reloadNumber + ';\n';  
+      var reload = 'window.__qp_reloads = ' + numberOfReloads + ';\n';  
       return reload + fncs + '\n' + this.source.join('\n') + "//@ sourceURL='QPRuntime.js'\n";
     },
     appendFunction: function(fnc) {

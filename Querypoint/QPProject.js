@@ -93,6 +93,10 @@
       return Querypoint.FindInTree;
     },
 
+    addScript: function(url) {
+      console.log("QPProject got new script " + url);
+    },
+
     reload: function() {    
       this.querypoints.tracequeries.forEach(function(tq) {
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
@@ -122,16 +126,17 @@
     
     _reload: function(numberOfReloads) {
       console.assert(typeof numberOfReloads === 'number');
+      // We write a line that is parsed by Log.js calling back at this.addScript()
       function transcode(str, name ) {
-        console.log("transcode saw ", str);
-        return  str + "\nconsole.log('finished compiling "+name+ "');";
+        if (name && name.indexOf('.js.js') === -1)
+          return  "console.log('qp| script " + name + "');";
+        else
+          return str; // evals, esp. our own evals!
       }
-
-      Querypoint.QPRuntime.setReloadCounter(numberOfReloads);
 
       var reloadOptions = {
         ignoreCache: true, 
-        injectedScript:  Querypoint.QPRuntime.runtimeSource(), 
+        injectedScript:  Querypoint.QPRuntime.runtimeSource(numberOfReloads), 
         preprocessingScript: '(' + transcode + ')'
       };
       console.log("reloadOptions.preprocessingScript ", reloadOptions.preprocessingScript);

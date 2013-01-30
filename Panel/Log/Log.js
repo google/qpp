@@ -19,13 +19,14 @@
       this._logScrubber = logScrubber;
 
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
-
+      this._reloadBase = this.project.numberOfReloads + 1;
+      /* ignore the stored messages for now, they are confusing the load# counting
       chrome.experimental.devtools.console.getMessages(function(messages){
-        this._reloadBase = this.project.numberOfReloads + 1;
+        
         messages.forEach(this._onMessageAdded.bind(this));
       }.bind(this));
       return this;
-
+      */
       return this;
     },
     
@@ -41,7 +42,7 @@
         var keyword = segments[1];
         switch(keyword) {
           case 'loadEvent':
-            this._logScrubber.loadEnded(parseInt(segments[2], 10))
+            this._logScrubber.loadEnded(parseInt(segments[2], 10));
             break;
           case 'reload': 
             this._reloadCount = parseInt(segments[2], 10);
@@ -53,7 +54,10 @@
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
-            break;  
+            break; 
+          case 'script':
+            this.project.addScript(segments[2]);
+            break; 
           default: 
             console.error("unknown keyword: "+messageSource.text);
             break;
