@@ -3,23 +3,28 @@
 
 (function() {
    
-   var totalLogs=0;
+   var totalLogs = 0;
   
    var messagePrototype = {
      tooltip: function() {
        var logFloat = document.querySelector('.floaty');
        var logScrubber = document.querySelector('.logScrubber');
-       this.scroll = logFloat.scrollTop=logFloat.scrollHeight;
+       this.scroll = logFloat.scrollTop = logFloat.scrollHeight;
        totalLogs++;
-       console.log('Total : '+totalLogs);
-       var moveScroll=-totalLogs*9+document.width/2;
-       if(moveScroll>0) moveScroll=0;
-       logScrubber.style.marginLeft=(moveScroll).toString()+'px';
+       console.log('Message.tooltip: total logs : '+totalLogs);
+
+       // To have the scrubberBox focus on the last event the margin property is 
+       // set to the position of that event. This is done keeping track of how
+       // many events there's been and knowing the width of each event.
+       // TODO: Still needs adjustment to align scrubberBox to the right
+       var moveScroll = -totalLogs * 9 + document.width / 2;
+       if (moveScroll > 0) moveScroll = 0;
+       logScrubber.style.marginLeft = (moveScroll).toString() + 'px';
        return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
      },
-     focusLog: function(elem){
+     focusLog: function (elem) {
        var logFloat = document.querySelector('.floaty');
-       logFloat.scrollTop=elem.scroll;
+       logFloat.scrollTop = elem.scroll;
      }
    };
   
