@@ -57,6 +57,9 @@
     ** side-effect: this.insertions.length++
     */
     insertVariableFor: function(tree) {
+      if (tree.doNotTransform)
+        return tree;
+      
       if (!tree.isExpression()) {
         var msg = 'Attempt to insertVariableFor a non-expression tree';
         console.error(msg, traceur.outputgeneration.TreeWriter.write(tree));
@@ -69,19 +72,22 @@
       var loc = tree.location;
       loc.traceId = traceId;  // used to match traces to the AST
       loc.varId = varId;        // used to write new AST nodes
-
-      // var __qp_XX = expr;
-      var tempVariableStatement = createVariableStatement(
-        createVariableDeclarationList(
+      
+      var variableDeclList = createVariableDeclarationList(
           TokenType.VAR, 
           varId,
           tree
-        )
-      );
+        );
+      
+      variableDeclList.declarations[0].lvalue.doNotTransform = true;
+
+      // var __qp_XX = expr;
+      var tempVariableStatement = createVariableStatement(variableDeclList);
       this.insertions.push(tempVariableStatement);
       // __qp__XX
       var linearExpression = createIdentifierExpression(varId);
-     
+      linearExpression.doNotTransform = true;
+
       if (debug) {
         ParseTreeValidator.validate(linearExpression); 
         console.log('inserting ' + varId + ' for '+tree.type + ' : ' + traceur.outputgeneration.TreeWriter.write(tree));

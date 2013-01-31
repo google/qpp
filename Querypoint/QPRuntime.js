@@ -115,6 +115,7 @@
         var tps = window.__qp[queryName][identifier];
         if (debug) console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
         return tps.map(function(tp) {
+          tp.valueType = typeof tp.value; // JSON will not transmit undefined values correctly.
           var activation = tp.activations[tp.activationIndex - 1];
           if (debug) console.log("tp", tp);
           if (debug) console.log('activation', activation);
@@ -133,6 +134,7 @@
       var object = changes.objectTraced;
       window.__qp.propertyChanges[propertyKey] = changes.reduce(
         function(ours, change) {
+          console.log("reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
           if (change.obj === object) ours.push(change);
           return ours; 
         },
