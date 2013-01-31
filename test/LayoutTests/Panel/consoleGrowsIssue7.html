@@ -16,26 +16,11 @@ window.addEventListener('load', function() {
 
 function test_lastChange() {
   console.log("------------test begins------------");
-  AsyncMachine.pushOp(reloadPage);
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/consoleTest.html"');
 
   AsyncMachine.pushOp(openQuerypointPanel);
-  AsyncMachine.pushOp(openSourceFile, 'demo.js');
-    var objPropSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'property', text: 'prop'}
-    ];
-  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
-  AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
-  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
-  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(openSourceFile, 'consoleTest.html');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleAction").dispatchEvent(new MouseEvent("click"))');
   
   AsyncMachine.runOp();
 }
