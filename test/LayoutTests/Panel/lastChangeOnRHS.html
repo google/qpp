@@ -16,7 +16,7 @@ window.addEventListener('load', function() {
 
 function test_lastChange() {
   console.log("------------test_lastChange begins------------");
-  AsyncMachine.pushOp(reloadPage);
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
     var objPropSelector = [
