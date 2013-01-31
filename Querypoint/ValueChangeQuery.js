@@ -73,8 +73,11 @@ Querypoint.ValueChangeQuery.prototype = {
   },
 
   runtimeSource: function() {
-    var tree = this._transformer.runtimeInitializationStatements();
-    return traceur.outputgeneration.TreeWriter.write(tree);
+    var src = '';
+    this._transformer.runtimeInitializationStatements().forEach(function(tree){
+      src += traceur.outputgeneration.TreeWriter.write(tree) + '\n';
+    });
+    return src;
   },
 
   // Pull trace results out of the page for this querypoint
@@ -84,6 +87,8 @@ Querypoint.ValueChangeQuery.prototype = {
         var changes = result;
         changes.forEach(function(change) {
           var trace = change;
+          if (trace.valueType === 'undefined')
+            trace.value = 'undefined';
           trace.query = this;
           trace.load = fileViewModel.project.numberOfReloads;
           trace.activation = change.activationCount;

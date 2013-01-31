@@ -74,6 +74,8 @@
             )
           )
         );
+        statement.doNotTransform = true;
+        statement.doNotTrace = true;
         if (debug) ParseTreeValidator.validate(statement);
         return statement;         
   };
@@ -81,6 +83,8 @@
   function propertyChangeTrace(objectExpression, memberExpression, tracePropertyKey, valueTree, traceLocation) {
       // if (memberExpression === tracePropertyKey) { trace };
       var traceStatement = propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation);
+      traceStatement.doNotTrace = true;
+      traceStatement.doNotTransform = true;
       if (memberExpression.literalToken && memberExpression.literalToken.processedValue === tracePropertyKey) {
         return traceStatement;
       } else {
@@ -93,33 +97,12 @@
             ),
             traceStatement
           );
+        ifStatement.doNotTransform = true;
+        ifStatement.doNotTrace = true;
         if (debug) ParseTreeValidator.validate(ifStatement);
         return ifStatement;
       }
   };
-  
-   /**
-     Transform property references to use temporary vars and (optionally) create trace statements.
-     References occur on the LHS of assignments.
-    */
-
-  function PropertyReferenceTransformer(propertyKey, generateFileName) {
-    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
-    this.propertyKey = propertyKey;
-  }
-
-  PropertyReferenceTransformer.prototype = {
-    __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
-
-    transformAny: function(tree) {
-      var tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
-      if (debug) ParseTreeValidator.validate(tree);
-      return tree;
-    },
-
-
-  };
-
 
   var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName, tree) {
     this.generateFileName = generateFileName;
@@ -139,9 +122,13 @@
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
     transformAny: function(tree) {
-      this.isObjectCheckTree = (tree === this.objectCheckTree);
+      if (!tree || tree.doNotTransform)
+        return tree;
+      if (tree === this.objectCheckTree) {
+        var operand = this._insertObjectCheck(tree.operand);
+        tree = new MemberExpression(tree.location, operand, tree.memberName);
+      }
       tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
-      this.isObjectCheckTree = false;
       return tree;
     },
 
@@ -153,7 +140,7 @@
      */
     transformUnaryExpression: function(tree) {
       if (tree.operator.type !== TokenType.PLUS_PLUS && tree.operator.type !== TokenType.MINUS_MINUS) {
-        return tree;
+        return Querypoint.InsertVariableForExpressionTransformer.prototype.transformUnaryExpression.call(this, tree);
       }
       this.isReferenceTree = true;
       var operand = this.transformAny(tree.operand);
@@ -197,9 +184,11 @@
       this.isReferenceTree = false;
       
       if (left !== tree.left) { // Then we found something we want to trace
-        // Create a temp for the RHS to avoid double calls when we trace.
-        right = this.insertVariableFor(right);  
-        this.insertions.push(this.trace(right, tree.right.location)); 
+        if (!right.doNotTransform && !right.doNotTrace) {
+          // Create a temp for the RHS to avoid double calls when we trace.
+          right = this.insertVariableFor(right);  
+          this.insertions.push(this.trace(right, tree.right.location));   
+        }
       }
 
       if (left == tree.left && right == tree.right) {
@@ -231,6 +220,7 @@
             )
           )
         );
+        objectCheck.doNotTransform = true;
        this.insertions.push(objectCheck);
        return tree;
     },
@@ -288,18 +278,29 @@
     
      // Called once per load by QPRuntime
     runtimeInitializationStatements: function() {
-      // window.__qp.propertyChanges = { <propertyKey>: [] };
-      var statement = 
+      // window.__qp.propertyChanges = window.__qp.propertyChanges || {};
+      var propertyChangesInitialization = 
         createAssignmentStatement(
           createMemberExpression('window', '__qp', 'propertyChanges'),
-          createObjectLiteralExpression(
-            createPropertyNameAssignment(
-             this.propertyKey, 
-             createArrayLiteralExpression([])
-           )
-         )
+          createBinaryOperator(
+            createMemberExpression('window', '__qp', 'propertyChanges'),
+            createOperatorToken(TokenType.OR), 
+            createObjectLiteralExpression([])
+          )
        );
-      return statement;
+      propertyChangesInitialization.doNotTrace = true;
+      propertyChangesInitialization.doNotTransform = true;
+      
+      // window.__qp.propertyChanges.<propertyKey> = [];
+      var propertyChangesMemberInitialization = 
+        createAssignmentStatement(
+          createMemberExpression('window', '__qp', 'propertyChanges', this.propertyKey),
+          createArrayLiteralExpression([])
+         );
+      propertyChangesMemberInitialization.doNotTrace = true;
+      propertyChangesMemberInitialization.doNotTransform = true;
+
+      return [propertyChangesInitialization, propertyChangesMemberInitialization];
     },
 
   };
