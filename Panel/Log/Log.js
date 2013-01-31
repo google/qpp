@@ -16,8 +16,8 @@
        // To have the scrubberBox focus on the last event the margin property is 
        // set to the position of that event. This is done keeping track of how
        // many events there's been and knowing the width of each event.
-       // TODO: Still needs adjustment to align scrubberBox to the right
-       var moveScroll = -totalLogs * 9 + document.width / 2;
+       // TODO: Needs test with multiple loads 
+       var moveScroll = -totalLogs * 9 - this.load * 15 - this.turn * 4 + logFloat.offsetWidth;
        if (moveScroll > 0) moveScroll = 0;
        logScrubber.style.marginLeft = (moveScroll).toString() + 'px';
        return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
