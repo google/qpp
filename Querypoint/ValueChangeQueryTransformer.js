@@ -220,11 +220,11 @@
         tree = this.insertVariableFor(tree);
       }
       
-      // window.__qp.reducePropertyChangesToOurObject(ourObj, <propertyKey>);
+      // window.__qp.setTracedPropertyObject(ourObj, <propertyKey>);
       var objectCheck = 
         createExpressionStatement(
           createCallExpression(
-            createMemberExpression('window', '__qp', 'reducePropertyChangesToOurObject'),
+            createMemberExpression('window', '__qp', 'setTracedPropertyObject'),
             createArgumentList(
               tree, 
               createStringLiteral(this.propertyKey)

@@ -93,7 +93,7 @@ Querypoint.ValueChangeQuery.prototype = {
         console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
       }
     }
-    chrome.devtools.inspectedWindow.eval('window.__qp.extractTracepoint("propertyChanges",\"'+this.identifier+'\")', onEval.bind(this));
+    chrome.devtools.inspectedWindow.eval('window.__qp.reducePropertyChangesToTracedObject(\"'+this.identifier+'\")', onEval.bind(this));
   },
 };
 
