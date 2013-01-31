@@ -9,7 +9,7 @@
      tooltip: function() {
        var logFloat = document.querySelector('.floaty');
        var logScrubber = document.querySelector('.logScrubber');
-       this.scroll = logFloat.scrollTop = logFloat.scrollHeight;
+       this.scroll = logFloat.scrollHeight;
        totalLogs++;
        console.log('Message.tooltip: total logs : '+totalLogs);
 
@@ -24,7 +24,9 @@
      },
      focusLog: function (elem) {
        var logFloat = document.querySelector('.floaty');
-       logFloat.scrollTop = elem.scroll;
+       // TODO scrollByLines not working as expected
+       // hardcoding height of a line to show at the top
+       logFloat.scrollTop = elem.scroll - 20;
      }
    };
   
@@ -93,7 +95,13 @@
     },
     
     _turnRow: function(messageSource) {
-      return {turn: messageSource.turn, messages: ko.observableArray([messageSource])};
+      function setScroll (node,index,elem) {
+          var logFloat = document.querySelector('.floaty');
+          elem.scroll = logFloat.scrollHeight;
+          if (parseInt(elem.scroll,10) < 210) elem.scroll = '0px';
+          logFloat.scrollTop = logFloat.scrollHeight;
+      }
+      return {turn: messageSource.turn, setScroll: setScroll, messages: ko.observableArray([messageSource])};
     },
 
     _reformatMessage: function(messageSource) {

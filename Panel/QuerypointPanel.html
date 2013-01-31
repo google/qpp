@@ -60,7 +60,7 @@
                 <tbody class='turns' data-bind="foreach: turns">
                   <tr>
                     <td class="turnNumber" title="Event turn number" data-bind="text: turn"></td>
-                    <td class="messages" title="console output" data-bind="foreach: messages">
+                    <td class="messages" title="console output" data-bind="foreach: {data: messages, afterAdd: setScroll}">
                           <div data-bind="text: text, attr:{severity: severity}"></div>
                     </td>
                   </tr>
