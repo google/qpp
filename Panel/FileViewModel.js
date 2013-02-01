@@ -68,11 +68,11 @@
     update: function(turn) {
       var treeRoot = this.treeRoot();
       if (treeRoot) {
-        var tree = this.tokenViewModel.tokenTree();
-        if (tree) {
+        var treeInView = this.tokenViewModel.tokenTree();
+        if (treeInView) {
           this.tracepoints.removeAll();
           this._panel.tracequeries().forEach(function(tq){
-            tq.extractTracepoints(this, tree, function (tracepoint){
+            tq.extractTracepoints(this, treeInView, function (tracepoint){
               if (tracepoint) {
                 this.tracepoints.push(tracepoint);
               } // else no data?

@@ -103,11 +103,9 @@
       return match;
     }
 
-    function extractTracepoint(queryName, identifier) {
+    function extractTracepoints(tps) {
       try {
-        // eg window.__qp['propertyChange']['prop']
-        var tps = window.__qp[queryName][identifier];
-        if (debug) console.log("extractTracepoint("+queryName+"," + identifier +")->", tps);
+        if (debug) console.log("extractTracepoints", tps);
         return tps.map(function(tp) {
           tp.valueType = typeof tp.value; // JSON will not transmit undefined values correctly.
           var activation = tp.activations[tp.activationIndex - 1];
@@ -116,17 +114,23 @@
           return findMatchingActivation(activation, tp);
         });
       } catch (exc) {
-        console.error('extractTracepoint(' + queryName + ', ' + identifier + ') failed '+exc, exc);
+        console.error('extractTracepoints failed '+exc, exc);
         return exc.toString();
       }  
     }
     
     // For lastChange
-    function reducePropertyChangesToTracedObject(propertyKey) {
+    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectOffset) {
       if (debug) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
       var changes = window.__qp.propertyChanges[propertyKey];
-      var object = changes.objectTraced;
-      window.__qp.propertyChanges[propertyKey] = changes.reduce(
+      if (!changes) {
+        console.error("QPRuntime.reducePropertyChangesToTracedObject No chanages for " + propertyKey + ' at ' + tracedObjectOffset);
+      }
+      if (!changes.objectTraced) {
+        console.error("QPRuntime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectOffset);
+      }
+      var object = changes.objectTraced[tracedObjectOffset];
+      var rawTracepoints = changes.reduce(
         function(ours, change) {
           console.log("reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
           if (change.obj === object) ours.push(change);
@@ -135,14 +139,15 @@
         []
       );
       if (debug) console.log("reducePropertyChangesToTracedObject ends with " + window.__qp.propertyChanges[propertyKey].length);
-      return extractTracepoint('propertyChanges', propertyKey);
+      return extractTracepoints(rawTracepoints);
     }
 
         // For lastChange
-    function setTracedPropertyObject(object, propertyKey) {
-      if (debug) console.log("setTracedPropertyObject setting" + propertyKey, object);
+    function setTracedPropertyObject(object, propertyKey, tracedObjectOffset) {
       // We are setting a property on an array here.
-      window.__qp.propertyChanges[propertyKey].objectTraced = object;
+      window.__qp.propertyChanges[propertyKey].objectTraced = window.__qp.propertyChanges[propertyKey].objectTraced || {};
+      window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectOffset] = object;
+      if (debug) console.log("setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
      
     function initializeHiddenGlobalState() {
@@ -155,7 +160,6 @@
         interceptEntryPoints: interceptEntryPoints, // call just before we load traced source.
         fireLoad: fireLoad,
         trace: trace,
-        extractTracepoint:  extractTracepoint, // searches for tracepoints matching a query
         setTracedPropertyObject: setTracedPropertyObject, // store the traced object by property
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object
       };      
