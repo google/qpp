@@ -111,7 +111,7 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
         eval(content);
         result.compiled.push(script.src);
       } catch (exc) {          
-        result.errors.push({message: exc.toString(), content: content});
+        result.errors.push({message: exc.toString(), content: content, stack: exc.stack});
       }
     });
     return result;

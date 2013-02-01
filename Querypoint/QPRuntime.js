@@ -9,14 +9,14 @@
    */
   function define__qp() {
 
-    var early = true;
+    var beforeArtificalLoadEvent = true;
     var debug = true;
 
     function fireLoad() {
       try {
         // So far we cannot transcode synchronously so we miss the 'load' event
-        early = false;
-        var handlers = window.__qp.earlyEventHandlers['load'];
+        beforeArtificalLoadEvent = false;
+        var handlers = window.__qp.beforeArtificalLoadEventEventHandlers['load'];
         if (handlers) {
           if (debug) console.log("Querypoint.runtime, "+handlers.length+" handlers", handlers.map(function(h){return h.toString()}));
           handlers.forEach(function(handler){
@@ -26,7 +26,7 @@
           console.log("qp| loadEvent " + window.__qp_reloads);
           return handlers.length;
         } else {
-          if (debug) console.log("Querypoint.runtime: fireLoad no earlyEventHandlers");
+          if (debug) console.log("Querypoint.runtime: fireLoad no beforeArtificalLoadEventEventHandlers");
         }
       } catch(exc) {
         console.error("Querypoint.runtime fireLoad fails "+exc, exc.stack);
@@ -42,7 +42,7 @@
     function grabLoadEvent() {
       window.addEventListener('load', function(event) {
         window.__qp.loadEvent = event;
-        if (debug) console.log("load");
+        if (debug) console.log("Querypoint.runtime load event stored");
       });
     }
        
@@ -62,20 +62,14 @@
       window.__qp.intercepts.Node = {prototype: {addEventListener: window.Node.prototype.addEventListener}};
     }
 
-    function blockEntryPoints() {
-      // Hack because we must allow untraced JS to run before our traced JS runs
-      var noop = function(){};
-      window.addEventListener = noop;
-    }
-
     // This function will run just before the traced source is compiled in the page.
     function interceptEntryPoints() {  
       window.addEventListener = function(type, listener, useCapture) {
-        if (debug) console.log("intercepting "+type + " it is "+(early ? "early" : "late"));
+        if (debug) console.log("intercepting "+type + " it is "+(beforeArtificalLoadEvent ? "beforeArtificalLoadEvent" : "late"));
         var wrapped = wrapEntryPoint(listener);
         window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
-        if (early) {
-          var handlers = window.__qp.earlyEventHandlers;
+        if (beforeArtificalLoadEvent) {
+          var handlers = window.__qp.beforeArtificalLoadEventEventHandlers;
           if (!handlers[type]) {
             handlers[type] = [wrapped];
           } else {
@@ -154,7 +148,7 @@
     function initializeHiddenGlobalState() {
       window.__qp = {
         intercepts: {}, // keys are intercepted function names, values functions
-        earlyEventHandlers: {}, // keys are event types, values are arrays of handlers
+        beforeArtificalLoadEventEventHandlers: {}, // keys are event types, values are arrays of handlers
         turns: [],      // stack of {fnc: <function>, args: []}
         turn: 0,        // turns.length set by wrapEntryPoint
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
@@ -171,8 +165,8 @@
     // Hacks on global built-ins
     grabLoadEvent();
     recordEntryPoints();
-    blockEntryPoints();
-
+    interceptEntryPoints();
+    
     wrapEntryPoint(function andWeBegin() {
       if (debug) console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
       if (debug) console.log("window.__qp: %o", window.__qp);    
