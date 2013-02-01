@@ -24,7 +24,7 @@
     var visitor = new Querypoint.FindInTree(fncOfTree);
     visitor.visit(tree);
     if (Querypoint.FindInTree.debug)
-      console.log("FindInTree closest "+visitor._closest,traceur.outputgeneration.TreeWriter.write(tree)); 
+      console.log("FindInTree closest "+visitor._closest,traceur.outputgeneration.TreeWriter.write(visitor.getMatchedTree())); 
     return visitor.getMatchedTree();
   }
   
@@ -50,7 +50,7 @@
     },
     visitAny: function(tree) {
       var distance;
-      if (tree) {
+      if (tree && tree.location && !tree.doNotTransform && !tree.doNotTrace) {
         distance = this._distanceFunction(tree);
         if (distance < 0)
           return false;

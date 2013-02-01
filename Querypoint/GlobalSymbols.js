@@ -20,6 +20,16 @@
     object = Object.getPrototypeOf(object);
   }
 
-  window.Querypoint = {globalSymbols: globalSymbols};
+  function markDoNot(statement){
+    statement.doNotTransform = true;
+    statement.doNotTrace = true;
+    return statement;
+  }
+
+  window.Querypoint = {
+    globalSymbols: globalSymbols,
+    markDoNot: markDoNot,
+    activationId: '__qp_activation',
+  };
 
 }());

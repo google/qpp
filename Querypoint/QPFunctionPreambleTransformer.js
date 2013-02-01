@@ -115,8 +115,8 @@
   QPFunctionPreambleTransformer.prototype.transformFunctionBody = function(tree) {
     // We'll use these to build __qp.functions objects in _createInitializationStatements
     this.functionLocations.push(tree.location);
-
-    tree.statements = this._createPreambleStatements(tree).concat(tree.statements);
+    var preamble = this._createPreambleStatements(tree).map(Querypoint.markDoNot);
+    tree.statements = preamble.concat(tree.statements);
     return tree;
   }
 
@@ -129,6 +129,7 @@
     var elements = this.transformList(tree.programElements);
     var prefix = [this._createFileNameStatement(tree)].concat(this._createInitializationStatements(tree));
     prefix.push(this._createVarFunctionStatement(fileFunctionLocation));
+    prefix = prefix.map(Querypoint.markDoNot);
     elements = prefix.concat(elements);
     return new Program(tree.location, elements);
   }

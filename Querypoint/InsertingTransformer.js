@@ -32,7 +32,7 @@
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
   
   // Constant
-  var activationId = '__qp_activation';
+  var activationId = Querypoint.activationId;
   var generatedIdentifierBase = 1;
 
   /**

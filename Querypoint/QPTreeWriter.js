@@ -49,8 +49,8 @@ var QPTreeWriter = (function() {
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
 
   // Constant
-  var activationId = '__qp_activation';
-
+var activationId = Querypoint.activationId;
+  
     /**
    * Converts a ParseTree to text and a source Map
    * @param {ParseTree} highlighted
@@ -178,7 +178,8 @@ ParseTreeValidator.validate(activationStatement);
       // We need to suppress the return value of the push() 
       var pushStatement = this._postPendComma(tree.location, pushExpression);
 ParseTreeValidator.validate(pushStatement);
-      return [activationStatement, pushStatement];
+
+      return [activationStatement, pushStatement].map(Querypoint.markDoNot);
     },
     
     _postPendComma: function(loc, tree, value) {
