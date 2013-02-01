@@ -4,6 +4,7 @@
 (function(){
 
   window.Querypoint = window.Querypoint || {};
+  var debug = true;
   /** 
    * A function that runs in the debuggee web page before any other JavaScript
    */
@@ -22,8 +23,10 @@
           handlers.forEach(function(handler){
             handler(window.__qp.loadEvent);
           });
-          if (debug) console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
-          console.log("qp| loadEvent " + window.__qp_reloads);
+          if (debug) {
+            console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
+            console.log("qp| loadEvent " + window.__qp_reloads);
+          }
           return handlers.length;
         } else {
           if (debug) console.log("Querypoint.runtime: fireLoad no beforeArtificalLoadEventEventHandlers");
@@ -109,8 +112,10 @@
         return tps.map(function(tp) {
           tp.valueType = typeof tp.value; // JSON will not transmit undefined values correctly.
           var activation = tp.activations[tp.activationIndex - 1];
-          if (debug) console.log("tp", tp);
-          if (debug) console.log('activation', activation);
+          if (debug) {
+            console.log("tp", tp);
+            console.log('activation', activation);
+          }
           return findMatchingActivation(activation, tp);
         });
       } catch (exc) {
@@ -123,16 +128,18 @@
     function reducePropertyChangesToTracedObject(propertyKey, tracedObjectOffset) {
       if (debug) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
       var changes = window.__qp.propertyChanges[propertyKey];
-      if (!changes) {
-        console.error("QPRuntime.reducePropertyChangesToTracedObject No chanages for " + propertyKey + ' at ' + tracedObjectOffset);
+      if (!changes || !changes.length) {
+        if (debug) console.error("QPRuntime.reducePropertyChangesToTracedObject No chanages for " + propertyKey + ' at ' + tracedObjectOffset);
+        return [];
       }
       if (!changes.objectTraced) {
-        console.error("QPRuntime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectOffset);
+        if (debug) console.error("QPRuntime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectOffset);
+        return [];
       }
       var object = changes.objectTraced[tracedObjectOffset];
       var rawTracepoints = changes.reduce(
         function(ours, change) {
-          console.log("reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
+          if (debug) console.log("reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
           if (change.obj === object) ours.push(change);
           return ours; 
         },
@@ -172,7 +179,7 @@
     interceptEntryPoints();
     
     wrapEntryPoint(function andWeBegin() {
-      if (debug) console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
+      console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
       if (debug) console.log("window.__qp: %o", window.__qp);    
     }());
   }; 
@@ -184,7 +191,7 @@
       return this;
     },
     runtimeSource: function(numberOfReloads) {
-      console.log("QPRuntime creating runtime for load#" + numberOfReloads);
+      if (debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
         return '(' + fnc + ')();\n';
       });
