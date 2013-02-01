@@ -111,6 +111,7 @@ window.PatientSelector = (function(){
                 return;
             }
             added.forEach(function(element) {
+                this._textChangeObservers = this._textChangeObservers || [];
                 this._textChangeObservers.push(this._createTextChangeObserver(textToMatch, element));
             }.bind(this));
         },
@@ -120,12 +121,15 @@ window.PatientSelector = (function(){
                     console.log("....PatientSelector.whenSelectorAll waiting for " + selector + " with text "+textToMatch + ' in ' + doc());
 
                 this._disconnectOnFind = function() {
-                    this._addedSelectionObserver.disconnect();
+                    if (this._addedSelectionObserver)
+                        this._addedSelectionObserver.disconnect();
                     if (this._textChangeObservers) {
                         this._textChangeObservers.forEach(function(observer){
                             observer.disconnect();
                         });
                     }
+                    delete this._addedSelectionObserver;
+                    delete this._textChangeObservers;
                     if (DEBUG)
                         console.log("....PatientSelector.whenSelectorAll found "+PatientSelector.hits.length +" for " + selector + " with text "+textToMatch);
                     callback();
