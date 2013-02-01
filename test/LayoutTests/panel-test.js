@@ -60,4 +60,6 @@ function evaluateInPage(expr, then) {
 function extractText(selector, then) {
   ExtensionPanelTestAPI.extractText(selector, then);
 }
-
+function getBoundingClientRect(selector, textToMatch, then) {
+  ExtensionPanelTestAPI.getBoundingClientRect(selector, textToMatch, then);
+}

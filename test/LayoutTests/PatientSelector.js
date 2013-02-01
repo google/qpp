@@ -251,6 +251,18 @@ window.PatientSelector = (function(){
             callback(text);
         },
 
+        getBoundingClientRect: function(selector, textToMatch, callback) {
+            var rects = PatientSelector._querySelectorAll(selector, textToMatch).map(function(node){
+                var rect = node.getBoundingClientRect();
+                var obj = {};
+                Object.keys(rect).forEach(function(prop){
+                    obj[prop] = rect[prop];
+                });
+                return obj;
+            });
+            callback(rects);
+        },
+
         //------------------------------------------------------------------------------------
         // For addressing command to extension iframes
 
