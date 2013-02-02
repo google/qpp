@@ -100,6 +100,17 @@
           upEvent.stopPropagation();
         });
       });
+    },
+    collapseTurns: function(node, event){
+        if(arguments.length == 2){
+            node = event.currentTarget;
+        }
+        var allTurns = document.querySelectorAll('.turnNumber');
+        var currentLoad = node.querySelectorAll('.turnNumber');
+        for(var i = 0 ; i < allTurns.length ; i++){
+            if(Array.prototype.indexOf.call(currentLoad, allTurns[i]) != -1) allTurns[i].classList.remove('hiddenTurn');
+            else allTurns[i].classList.add('hiddenTurn');
+        }
     }
 
   };
