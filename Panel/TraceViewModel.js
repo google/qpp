@@ -19,6 +19,17 @@
       }
       return traceData;
     }.bind(this)).extend({ throttle: 1 });
+
+    this.currentTreeTrace = ko.computed(function(){
+      var currentTree =  fileViewModel.tokenViewModel.tokenTree();
+      if (currentTree) {
+        var rootTreeData = this.rootTreeData();
+        if (rootTreeData) {
+          return currentTree.location.traces || [];
+        }
+      }
+      return [];
+    }.bind(this));
     
     this.treeTraces = ko.computed(function() {
          var tree = fileViewModel.tokenViewModel.tokenTree();
@@ -30,7 +41,7 @@
               return treeTracepoints;
           }, treeTracepoints);  
           
-          var traces = tree.location.traces || [];
+          var traces = this.currentTreeTrace();
           traces = traces.concat(treeTracepoints);
           
           var prompts = [];

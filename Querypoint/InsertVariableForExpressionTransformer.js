@@ -70,7 +70,6 @@
       var varId = '__qp' + traceId;
       
       var loc = tree.location;
-      loc.traceId = traceId;  // used to match traces to the AST
       loc.varId = varId;        // used to write new AST nodes
       
       var variableDeclList = createVariableDeclarationList(
@@ -86,6 +85,7 @@
       this.insertions.push(tempVariableStatement);
       // __qp__XX
       var linearExpression = createIdentifierExpression(varId);
+      linearExpression.traceId = traceId; // signal QPTreeWriter to trace this expression
       linearExpression.doNotTransform = true;
 
       if (debug) {

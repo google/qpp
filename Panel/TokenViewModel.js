@@ -136,7 +136,7 @@
     };
   }
 
-  QuerypointPanel.TokenViewModel.debug = true;
+  QuerypointPanel.TokenViewModel.debug = false;
   
   QuerypointPanel.TokenViewModel.prototype = {
 

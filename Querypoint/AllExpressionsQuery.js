@@ -5,6 +5,8 @@
 
 window.Querypoint = window.Querypoint || {};
 
+var debug = false;
+
 Querypoint.AllExpressionsQuery = function(tree, project) {
   this.generateFileName = project.generateFileName;
   Querypoint.Query.call(this);
@@ -75,14 +77,16 @@ Querypoint.AllExpressionsQuery.prototype = {
   
   // Pull trace results out of the page for this querypoint
   extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
+    var fileName = fileViewModel.treeRoot().location.start.source.name;
     function onEval(traceData, isException) {
-       if (!isException && traceData) {
+      if (debug)
+        console.log("AllExpressionsQuery.extractTracepoints from " + fileName);
+      if (!isException && traceData) {
         traceData.query = this;
-        fileViewModel.treeRoot().traceData(traceData); 
-        onTracepoint();
+        fileViewModel.treeRoot().traceData(traceData);
+        onTracepoint();  // We don't have trace data from another tree (unlike lastChange)
       }
     }
-    var fileName = fileViewModel.treeRoot().location.start.source.name;
     chrome.devtools.inspectedWindow.eval('window.__qp.functions[\"' + fileName + '\"]', onEval.bind(this));
   },
 };

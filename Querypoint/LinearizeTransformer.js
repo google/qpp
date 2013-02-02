@@ -129,7 +129,7 @@
               (tree.type !== ParseTreeType.POSTFIX_EXPRESSION) && // already linearized below
               (tree.type !== ParseTreeType.MEMBER_LOOKUP_EXPRESSION) && 
               tree.location && 
-              !tree.location.varId;
+              !tree.doNotTrace;
   }
 
   LinearizeTransformer.prototype =  {
@@ -151,7 +151,6 @@
     
     insertVariableFor: function(tree) {
       var linearExpression = Querypoint.InsertVariableForExpressionTransformer.prototype.insertVariableFor.call(this, tree);
-      linearExpression.traceIdentifier = traceId;     // Signal TreeWriter
       return linearExpression; 
     }, 
     

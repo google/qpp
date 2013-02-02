@@ -32,6 +32,7 @@ var QPTreeWriter = (function() {
   var createObjectLiteralExpression = ParseTreeFactory.createObjectLiteralExpression;
   var createPropertyNameAssignment = ParseTreeFactory.createPropertyNameAssignment;
   var createUndefinedExpression = ParseTreeFactory.createUndefinedExpression;
+  var createStringLiteral = ParseTreeFactory.createStringLiteral;
 
   var Trees = traceur.syntax.trees;
   var CommaExpression = Trees.CommaExpression;
@@ -80,11 +81,20 @@ var activationId = Querypoint.activationId;
     
     visitIdentifierExpression: function(tree) {
       // Linearizer has marked the expressions we need to trace with .trace
-      if (tree.traceIdentifier) {
-        tree = this._traceIdentifierExpression(tree);
-        return ParseTreeMapWriter.prototype.visitParenExpression.call(this, tree);
-      } 
-      return ParseTreeMapWriter.prototype.visitIdentifierExpression.call(this, tree);
+      var traceId = tree.traceId;
+      if (traceId) {
+        if (debug)
+          console.log('tracing ' + traceId + ' for '+tree.type + ' : ' + traceur.outputgeneration.TreeWriter.write(tree));
+        // To avoid recursion we remove the mark while writing out the tracing expression
+        delete tree.traceId;
+        // Now we will bury the identifier tree in a tracing expression
+        var tracingTree = this._traceIdentifierExpression(tree, traceId);
+        ParseTreeMapWriter.prototype.visitParenExpression.call(this, tracingTree);
+        tree.traceId = traceId;
+      } else {
+        ParseTreeMapWriter.prototype.visitIdentifierExpression.call(this, tree);  
+      }
+      
     },
 
     visitFunctionDeclaration: function(tree) {
@@ -108,18 +118,11 @@ var activationId = Querypoint.activationId;
       }
     },
 
-    _traceIdentifierExpression: function(tree) {
-      
-      var traceId = tree.traceIdentifier;
-      delete tree.traceIdentifier;
-      
-      // (__qp_activation._offset = window.__qp.trace(__qp_XX))
+    _traceIdentifierExpression: function(tree, traceId) {
+      // (__qp_activation._<offset> = window.__qp.trace(__qp_XX))
       var traceExpression = createParenExpression(
         createAssignmentExpression(
-          createMemberExpression(
-            createIdentifierExpression(activationId),
-            traceId
-          ),
+          createMemberExpression(activationId, traceId),
           createCallExpression(
             createMemberExpression('window', '__qp','trace'),
             createArgumentList(
@@ -129,9 +132,9 @@ var activationId = Querypoint.activationId;
         )
       );
       
-      // (__qp_activation.<offset> = window.__qp.trace(__qp_XX)), __qp_XX
+      // ((__qp_activation._<offset> = window.__qp.trace(__qp_XX)), __qp_XX)
       
-      var traceExpression = createParenExpression(
+      var tracedExpressionValue = createParenExpression(
         new CommaExpression(
           tree.location,
           [
@@ -141,12 +144,12 @@ var activationId = Querypoint.activationId;
         )
       );
      
-ParseTreeValidator.validate(traceExpression); 
-      return traceExpression;
+ParseTreeValidator.validate(tracedExpressionValue); 
+      return tracedExpressionValue;
     },
 
     _createActivationStatements: function(tree) {
-      // var activation = {turn: window.__qp.turn};   // used to store traces by offset
+      // var __qp_activation = {turn: window.__qp.turn};   // used to store traces by offset
 
       var activationStatement =
         this._varDecl(
@@ -163,7 +166,7 @@ ParseTreeValidator.validate(traceExpression);
         );
 ParseTreeValidator.validate(activationStatement);
 
-      // __qp_function.push(activation),; 
+      // __qp_function.push(__qp_activation),; 
       var pushExpression = 
         createCallExpression(
           createMemberExpression(

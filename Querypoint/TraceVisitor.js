@@ -5,6 +5,8 @@
 (function() {
   window.Querypoint = window.Querypoint || {};
   
+  var debug = false;
+
   // Walks the traceData structure
   
   Querypoint.TraceVisitor = function(project) {
@@ -51,15 +53,17 @@
     },
     
     _findInTree: function(tree, id) {
-      var offsetKey = id.split('_')[1]; // [0] is the revision number (TODO) [2] is the range
-      var offset = parseInt(offsetKey, 10);
-      function byOffsetKey(offset, tree){
+      var segments = id.split('_'); // [0] is the revision number (TODO), [1] offset [2]  range
+      var range = parseInt(segments[2], 10)
+      var offset = parseInt(segments[1], 10);
+      function byOffsetKey(offset, range, tree){
         var loc = tree.location;
         if (loc) {
           var startOffset = loc.start.offset;
           var endOffset = loc.end.offset - 1;
+          var tokenRange = endOffset - startOffset + 1;
           if (startOffset <= offset && offset <= endOffset) {
-            if (loc.traceId === id) 
+            if (tokenRange === range) 
               return 0;
             else 
               return Math.max(Math.abs(endOffset - offset), Math.abs(startOffset - offset));
@@ -68,7 +72,7 @@
           }
         }
       }
-      return this._project.treeFinder().findByDistanceFunction(tree, byOffsetKey.bind(this, offset));
+      return this._project.treeFinder().findByDistanceFunction(tree, byOffsetKey.bind(this, offset, range));
     },
     
     visitActivationTraced: function(functionTree, activation, activationCount) {
@@ -79,14 +83,20 @@
 
         var trace = activation[id];
         trace.query = this.query;
-        // TODO need to match offsetKey in find() 
+
         var expressionTree = this._findInTree(functionTree, id);
+        if (debug) {
+          var treeAsString = traceur.outputgeneration.TreeWriter.write(expressionTree);
+          var treeLoc = expressionTree.location.start.offset + '-' + expressionTree.location.end.offset;
+          console.log("TreeHangerTraceVisitor.visitActivationTraced " + id + " @"+treeLoc + ": " + treeAsString);
+        }
+        
         this.visitExpressionsTraced(expressionTree, activation.turn, activationCount, trace);
       }.bind(this));
     },
     
     visitExpressionsTraced: function(expressionTree, turn, activationCount, trace) {
-      console.log("Visiting " + traceur.outputgeneration.TreeWriter.write(tree) + ' with trace ' + trace);
+      console.error("No override while bisiting " + traceur.outputgeneration.TreeWriter.write(tree) + ' with trace ' + trace);
     }
   };
 
@@ -135,7 +145,6 @@
         activation: activationCount,
         value: trace
       };
-
       var traces = expressionTree.location.traces = expressionTree.location.traces || [];
       this.appendUnique(trace,traces);
     }
@@ -158,6 +167,8 @@
   }
   Querypoint.LineModelTraceVisitor.prototype.visitActivationTraced = function(functionTree, activation) {
     var functionDefinitionOffset = functionTree.location.start.offset;
+    if (functionDefinitionOffset < 0)
+      throw new Error("LineModelTraceVisitor.visitActivationTraced invalid functionTree offset " + functionDefinitionOffset);
     var line = this._sourceFile.lineNumberTable.getLine(functionDefinitionOffset);
     this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
     
@@ -167,7 +178,10 @@
   }
   Querypoint.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, index, trace) {
     var offset = expressionTree.location.end.offset - 1;  // last char of the expression
-    offset -= trace.length;  // backup to align with the end of the expression
+    
+    if (offset < 0)
+      throw new Error("LineModelTraceVisitor.visitExpressionsTraced invalid offset " + offset);
+
     var line = this._sourceFile.lineNumberTable.getLine(offset);
     this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
     this.tracedOffsetsByLine[line].expressionOffsets = this.tracedOffsetsByLine[line].expressionOffsets || [];
