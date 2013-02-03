@@ -82,56 +82,6 @@ traceur.runtime = (function(global) {
     writable: true
   });
 
-  function getDescriptor(proto, name) {
-    if (!proto)
-      throw new TypeError('super is null');
-    return $getPropertyDescriptor(proto, name);
-  }
-
-  function superCall(self, proto, name, args) {
-    var descriptor = getDescriptor(proto, name);
-    if (descriptor) {
-      if ('value' in descriptor)
-        return descriptor.value.apply(self, args);
-      if (descriptor.get)
-        return descriptor.get.call(self).apply(self, args);
-    }
-    throw new TypeError("Object has no method '" + name + "'.");
-  }
-
-  function superGet(self, proto, name) {
-    var descriptor = getDescriptor(proto, name);
-    if (descriptor) {
-      if (descriptor.get)
-        return descriptor.get.call(self);
-      else if ('value' in descriptor)
-        return descriptor.value;
-    }
-    return undefined;
-  }
-
-  function superSet(self, proto, name, value) {
-    var descriptor = getDescriptor(proto, name);
-    if (descriptor && descriptor.set) {
-      descriptor.set.call(self, value);
-      return;
-    }
-    throw new TypeError("Object has no setter '" + name + "'.");
-  }
-
-  /**
-   * Marks properties as non enumerable.
-   * @param {Object} object
-   * @param {Array.<string>} names
-   * @return {Object}
-   */
-  function markMethods(object, names) {
-    names.forEach((name) => {
-      $defineProperty(object, name, {enumerable: false});
-    });
-    return object;
-  }
-
   var counter = 0;
 
   /**
@@ -357,12 +307,6 @@ traceur.runtime = (function(global) {
   // Iterators.
   var iteratorName = new Name('iterator');
 
-  /**
-   * This is used to tag the return value from a generator.
-   * @type Name
-   */
-  var generatorName = new Name('generator');
-
   var IterModule = {
     get iterator() {
       return iteratorName;
@@ -372,15 +316,16 @@ traceur.runtime = (function(global) {
   };
 
   function getIterator(collection) {
-    // TODO: Keep an eye on the future spec to see whether this should
-    // do "duck typing"?
-    if (getProperty(collection, generatorName))
-      return collection;
     return getProperty(collection, iteratorName).call(collection);
   }
 
-  function markAsGenerator(object) {
-    setProperty(object, generatorName, true);
+  function returnThis() {
+    return this;
+  }
+
+  function addIterator(object) {
+    // Generator instances are iterable.
+    setProperty(object, iteratorName, returnThis);
   }
 
   // Make arrays iterable.
@@ -502,6 +447,7 @@ traceur.runtime = (function(global) {
   // Return the runtime namespace.
   return {
     Deferred: Deferred,
+    addIterator: addIterator,
     assertName: assertName,
     createName: NameModule.Name,
     deleteProperty: deleteProperty,
@@ -511,15 +457,10 @@ traceur.runtime = (function(global) {
     elementSet: elementSet,
     getIterator: getIterator,
     getProperty: getProperty,
+    setProperty: setProperty,
     has: has,
     is: is,
     isnt: isnt,
-    markAsGenerator: markAsGenerator,
-    markMethods: markMethods,
     modules: modules,
-    setProperty: setProperty,
-    superCall: superCall,
-    superGet: superGet,
-    superSet: superSet,
   };
 })(this);
