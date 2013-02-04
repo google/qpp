@@ -33,7 +33,7 @@ function openQuerypointPanel(then) {
 }
 
 function openSourceFile(fileName, then) {
-  DevtoolsWindowTestAPI.clickSelector('div.item', fileName, then);
+  DevtoolsWindowTestAPI.clickSelector('div.filtered-item-list-dialog-item', fileName, then);
 }
 
 function selectTokenInSource(editorTokens, then) {
