@@ -27,6 +27,7 @@ KeyBindings.prototype = {
     this.win.key.filter = function() { return true; }
     // name of QP command -> keymaster string
     return {
+      openChainedEditor: 'shift+ctrl+o',
       selectFile: 'ctrl+o',
       saveFile: 'ctrl+s',
     }

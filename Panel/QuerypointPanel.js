@@ -199,10 +199,6 @@ QuerypointPanel.Panel.prototype = {
       uriItems.selectItem();
       return false;
     },
-    
-    show: function(url) {
-      console.error("TODO");
-    },
 
     // Open an editor to view information selected out of another editor
     // e.g. trace with refs to other files or call stack with refs to older frames
