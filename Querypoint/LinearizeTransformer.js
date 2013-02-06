@@ -127,7 +127,8 @@
     return tree.isExpression() && 
               (tree.type !== ParseTreeType.FUNCTION_DECLARATION) &&  // TODO function expression
               (tree.type !== ParseTreeType.POSTFIX_EXPRESSION) && // already linearized below
-              (tree.type !== ParseTreeType.MEMBER_LOOKUP_EXPRESSION) && 
+              (tree.type !== ParseTreeType.MEMBER_LOOKUP_EXPRESSION) &&
+              (tree.type !== ParseTreeType.LITERAL_EXPRESSION) && 
               tree.location && 
               !tree.doNotTrace;
   }
@@ -139,7 +140,7 @@
       var output_tree = 
         ParseTreeTransformer.prototype.transformAny.call(this, tree);
       if (output_tree) {
-        if (shouldLinearizeOutput(tree)) {
+        if (shouldLinearizeOutput(output_tree)) {
           output_tree = this.insertVariableFor(output_tree);
         }
         if (debug) {  
@@ -361,19 +362,36 @@
       return this.transformWhileStatement(tree);
     },
 
-    transformBinaryOperator: function(tree) {
-      var left;
-      if (tree.operator.isAssignmentOperator()) {
-                // skip linearization of the left hand side of assignments
-        left = this.transformAnySkipLinearization(tree.left);
-      } else {
-        left = this.transformAny(tree.left);
-      }
+    _transformBinaryAssignmentOperator: function(tree) {
+      // We can't simply linearize the lhs of the assignment because we can't express
+      // the reference. For example, we cannot substitute a temp for obj.prop in
+      // obj.prop = 5;
+      // Another issue is that assignment is not like other binary  operators that 
+      // create values. For c*(a+b), the sum is value that we want to trace.
+      // For c.b = a, the value we want to trace is c.b, the LHS after the assignment.
+      // So we want c.b = a to be emitted, then
+      // __qp_558_14 = c.b; trace __qp_558_14.
+      // What about c.b = a = 5; ?
+      // a = 5;   // emit assignment statement
+      // __qp_xx = a;  // emit temp for LHS
+      // c.b = (trace __qp_xx, _qp_xx)  // return temp, next call: emit assignment statement
+      // __qp_yy = c.b;    //  emit temp for LHS
+      // (trace __qp_yy, _qp_yy)  // return temp
+      // Thus we want to return the linearExpression (eg __qp_xx) and let it get traced.
+      var left = this.transformAnySkipLinearization(tree.left);
       var right = this.transformAny(tree.right);
-      if (left !== tree.left || right !== tree.right) {
-        tree = new BinaryOperator(tree.location, left, tree.operator, right);
+      var assignmentExpression = new BinaryOperator(tree.location, left, tree.operator, right);
+      var assigmentStatement = createExpressionStatement(assignmentExpression);
+      this.insertions.push(Querypoint.markDoNot(assigmentStatement));
+      return this.insertVariableFor(left);
+    },
+
+    transformBinaryOperator: function(tree) {
+      if (tree.operator.isAssignmentOperator()) {
+        return this._transformBinaryAssignmentOperator(tree);
+      } else {
+        return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator.call(this, tree);
       }
-      return tree;
     },
 
     transformBreakStatement: function(tree) {
