@@ -17,9 +17,7 @@ var QPTreeWriter = (function() {
   
   var debug = false;
 
-  var ParseTreeMapWriter = traceur.outputgeneration.ParseTreeMapWriter;
-  var SourceMapGenerator = traceur.outputgeneration.SourceMapGenerator;
-
+  var ParseTreeWriter = traceur.outputgeneration.ParseTreeWriter;
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
   var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
   var createMemberExpression = ParseTreeFactory.createMemberExpression;
@@ -53,28 +51,20 @@ var QPTreeWriter = (function() {
 var activationId = Querypoint.activationId;
   
     /**
-   * Converts a ParseTree to text and a source Map
-   * @param {ParseTree} highlighted
-   * @param {boolean} showLineNumbers
-   * @param { {SourceMapGenerator} sourceMapGenerator
    * @constructor
    */
-  function QPTreeWriter(generatedSourceName) {
-    var config = {file: generatedSourceName};
-    this.sourceMapGenerator = new SourceMapGenerator(config);
-    ParseTreeMapWriter.call(this, false, false, this.sourceMapGenerator);
+  function QPTreeWriter() {
+    ParseTreeWriter.call(this, false, false);
   }
 
 
   QPTreeWriter.prototype = {
-    __proto__: ParseTreeMapWriter.prototype, 
+    __proto__: ParseTreeWriter.prototype, 
     generateSource: function(file, tree) {
       this.visitAny(tree);
       if (this.currentLine_.length > 0) {
         this.writeln_();
       }
-      // TODO looks like this is a method of sourceFile
-      file.sourceMap = this.sourceMapGenerator.toString();
       file.generatedSource = this.result_.toString();
       return file;
     },
@@ -89,10 +79,10 @@ var activationId = Querypoint.activationId;
         delete tree.traceId;
         // Now we will bury the identifier tree in a tracing expression
         var tracingTree = this._traceIdentifierExpression(tree, traceId);
-        ParseTreeMapWriter.prototype.visitParenExpression.call(this, tracingTree);
+        ParseTreeWriter.prototype.visitParenExpression.call(this, tracingTree);
         tree.traceId = traceId;
       } else {
-        ParseTreeMapWriter.prototype.visitIdentifierExpression.call(this, tree);  
+        ParseTreeWriter.prototype.visitIdentifierExpression.call(this, tree);  
       }
       
     },
@@ -100,7 +90,7 @@ var activationId = Querypoint.activationId;
     visitFunctionDeclaration: function(tree) {
       // insert the new activation record statements after the function preamble
       this._insertArrayInArray(tree.functionBody.statements, 2, this._createActivationStatements(tree));
-      ParseTreeMapWriter.prototype.visitFunctionDeclaration.call(this, tree);
+      ParseTreeWriter.prototype.visitFunctionDeclaration.call(this, tree);
     },
 
     visitProgram: function(tree) {
@@ -109,7 +99,7 @@ var activationId = Querypoint.activationId;
         if (tree.programElements[i].type === ParseTreeType.VARIABLE_STATEMENT) break;
       }
       this._insertArrayInArray(tree.programElements, i+1, this._createActivationStatements(tree));
-      ParseTreeMapWriter.prototype.visitProgram.call(this, tree);
+      ParseTreeWriter.prototype.visitProgram.call(this, tree);
     },
 
     _insertArrayInArray: function(container, index, ary) {
