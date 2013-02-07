@@ -242,6 +242,10 @@ window.PatientSelector = (function(){
             chrome.devtools.inspectedWindow.eval(expr, callback);
         },
 
+        evaluate: function(expr, callback) {
+            callback(eval(expr));
+        },
+
         reloadPage: function(callback) {
             chrome.devtools.inspectedWindow.reload();
             callback();
