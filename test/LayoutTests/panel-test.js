@@ -29,7 +29,21 @@ function reloadPage(then) {
 }
 
 function openQuerypointPanel(then) {
-  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint', then);
+  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', 'Querypoint', function awaitReady(){
+    // We need to know that the panel is open and ready for interaction
+    var intervalId; 
+    function poll() {
+      console.log("panel-test.openQuerypointPanel.poll ")
+      ExtensionPanelTestAPI.evaluate('document && document.readyState', function checkReady(result) {
+        if (result === 'complete') {
+          clearInterval(intervalId);
+          console.log("panel-test.openQuerypointPanel.checkReady " + result);
+          then();  
+        }
+      });
+    } 
+    intervalId = setInterval(poll, 100);
+  });
 }
 
 function openSourceFile(fileName, then) {
@@ -65,4 +79,8 @@ function extractText(selector, then) {
 }
 function getBoundingClientRect(selector, textToMatch, then) {
   ExtensionPanelTestAPI.getBoundingClientRect(selector, textToMatch, then);
+}
+
+function passthru(then) {
+  then();
 }

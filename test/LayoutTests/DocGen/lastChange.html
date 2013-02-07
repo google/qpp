@@ -1,0 +1,99 @@
+<html>
+<body>
+<h1>Feature Test lastChange</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../panel-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function asyncScreenShot(){
+    AsyncMachine.blocked = true;
+    function command(frameURL, resultNumber) {
+       TestRunner.commands.screenshot(resultNumber, "<img src=\"screenshot\" title=\"Screenshot\">", function() {
+        TestRunner.commands.unblock(frameURL);
+       });
+    }
+    return command + "";
+  }
+
+function test_lastChange() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"', function(text) {
+    var title = "Querypoint Debugger lastChange Demo Walkthru";
+    var h1 = '<html><head><title>' + title + '</title></head><body><h1>' + title + '</h1>';
+    var intro = '<h2>The Querypoint Panel, First Look</h2>';
+    intro += '<p>Click the Querypoint Tab to Open the Querypoint Panel.'; 
+    intro += ' The first time you open the panel, a file selection dialog comes up.';
+    intro +=' To select files later, use <code>control + o</code></p>';
+    intro += '<p>Select demo.js by clicking on it, typing it in to the filter, or using arrow keys plus enter.</p>';
+    return h1 + intro;
+  });
+  AsyncMachine.pushOp(openQuerypointPanel);
+
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'div.filtered-item-list-dialog-item', "demo.js", asyncScreenShot);
+
+  AsyncMachine.pushOp(openSourceFile, 'demo.js', function() {
+    var h1 = '<h2>Viewing source file demo.js</h2>';
+    var intro = '<p>The source for demo.js appears on the right hand side; ';
+    intro += 'mouse over the source to see the left-hand-side token information change.</p>';
+    intro += '<p> Find the function <code>updateButton()</code> and click on <code>prop</code> in <code>obj.prop</code></p>';
+    return h1 + intro;
+  });
+  AsyncMachine.pushOp(whenSelectorAll, '.CodeMirror', '', asyncScreenShot);
+  
+  var objPropSelector = [
+    {type: 'string', text:'\"I\'ve been clicked \"'},
+    {type: 'property', text: 'prop'}
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector, function() {
+    var h1 = '<h2>Selecting <code>lastChange</code> for an object property</h2>';
+    var intro = '<p>Now the mouse-over action stops and the left-hand-side panel locks on <code>obj.prop</code>';
+    intro += '</p>';
+    intro += '<p> Click on the <code>lastChange</code> button for <code>obj.prop</code></p>';
+    return h1 + intro;
+  });
+  AsyncMachine.pushOp(verifyTokenView, 'obj.prop', asyncScreenShot);
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange', function() {
+    var h1 = '<h2>Execising the Bug</h2>';
+    var intro = '<p>The Querypoint is loaded into the page and the left-hand-side panel shows that the query is ready.';
+    intro += '</p>';
+    intro += '<p> Click on the <code>try me</code> button in the Web page we are debugging</p>';
+    return h1 + intro;
+  });
+  AsyncMachine.pushOp(passthru, asyncScreenShot);
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(){});
+  AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', '0', function() {
+    var h1 = '<h2><code>lastChange</code> Result</h2>';
+    var intro = '<p>The trace results for the <code>lastChange</code> appear as soon as the click event turn ends. ';
+    intro += ' The delta (&#x1D6AB;) icons indicate last change results with the load number, turn number and file-activation counts preceding the value.</p>';
+    intro += '<p> Click on the &#x1D6AB; button, you should see the location of the lastChange highlighted in the page</p>';
+    return h1 + intro;
+  });
+  AsyncMachine.pushOp(extractText, 'td.traceValue', asyncScreenShot);
+
+  AsyncMachine.pushOp(passthru, function() {
+    AsyncMachine.blocked = true;
+    function command(frameURL, resultNumber) {
+      var outputURL = frameURL.replace('.html','-walkthru.html')
+        TestRunner.commands.output(outputURL, function() {
+          TestRunner.commands.unblock(frameURL);
+       });
+    }
+    return command + "";
+  });
+
+  AsyncMachine.runOp();
+}
+
+var testScript = test_lastChange;
+</script>
+</html>

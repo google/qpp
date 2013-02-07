@@ -18,6 +18,7 @@ servePathAtPort('../../traceur-compiler', 7677);
 servePathAtPort(__dirname + "/../../devtoolsExtended/extension/", 9696);
 servePathAtPort(__dirname + "/../../devtoolsExtended/extension/WebInspectorKit", 8000);
 servePathAtPort(__dirname + "/..", 8686);
+servePathAtPort(__dirname + "/../../qpp-gh-pages", 8687);
 
 //-----------------------------------------------------------------------
 
