@@ -17,10 +17,10 @@ window.addEventListener('load', function() {
 function test_lastChange() {
   console.log("------------test begins------------");
   AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
-  AsyncMachine.pushOp(openQuerypointPanel, function() {
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'demo.js', function() {
     return "command: screenshot";
   });
-  AsyncMachine.pushOp(openSourceFile, 'demo.js');
   
   var objPropSelector = [
     {type: 'string', text:'\"I\'ve been clicked \"'},
