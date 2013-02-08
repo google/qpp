@@ -19,7 +19,13 @@ function test_lastChange() {
   AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js', function() {
-    return "command: screenshot";
+    AsyncMachine.blocked = true;
+    function command(frameURL, resultNumber) {
+       TestRunner.commands.screenshot(resultNumber, "<img src=\"screenshot\" title=\"Screenshot\">", function() {
+        TestRunner.commands.unblock(frameURL);
+       });
+    }
+    return command + "";
   });
   
   var objPropSelector = [
