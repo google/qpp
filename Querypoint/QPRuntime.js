@@ -4,14 +4,14 @@
 (function(){
 
   window.Querypoint = window.Querypoint || {};
-  var debug = true;
+
   /** 
    * A function that runs in the debuggee web page before any other JavaScript
    */
   function define__qp() {
 
     var beforeArtificalLoadEvent = true;
-    var debug = true;
+    var debug_in_page = false;
 
     function fireLoad() {
       try {
@@ -19,20 +19,20 @@
         beforeArtificalLoadEvent = false;
         var handlers = window.__qp.beforeArtificalLoadEventEventHandlers['load'];
         if (handlers) {
-          if (debug) console.log("Querypoint.runtime, "+handlers.length+" handlers", handlers.map(function(h){return h.toString()}));
+          if (debug_in_page) console.log("__qp_runtime.fireLoad, "+handlers.length+" handlers", handlers.map(function(h){return h.toString()}));
           handlers.forEach(function(handler){
             handler(window.__qp.loadEvent);
           });
-          if (debug) {
-            console.log("Querypoint.runtime: fireLoad complete, fired "+handlers.length+" handlers");
-            console.log("qp| loadEvent " + window.__qp_reloads);
+          if (debug_in_page) {
+            console.log("__qp_runtime.fireLoad complete, fired "+handlers.length+" handlers");
           }
+          console.log("qp| loadEvent " + window.__qp_reloads);
           return handlers.length;
         } else {
-          if (debug) console.log("Querypoint.runtime: fireLoad no beforeArtificalLoadEventEventHandlers");
+          if (debug_in_page) console.log("__qp_runtime.fireLoad no beforeArtificalLoadEventEventHandlers");
         }
       } catch(exc) {
-        console.error("Querypoint.runtime fireLoad fails "+exc, exc.stack);
+        console.error("__qp_runtime.fireLoad fails "+exc, exc.stack);
         return exc.toString();
       }
 
@@ -45,7 +45,7 @@
     function grabLoadEvent() {
       window.addEventListener('load', function(event) {
         window.__qp.loadEvent = event;
-        if (debug) console.log("Querypoint.runtime load event stored");
+        if (debug_in_page) console.log("__qp_runtime. grabLoadEvent event stored");
       });
     }
        
@@ -54,9 +54,9 @@
         var args = Array.prototype.slice.apply(arguments);
         window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
         window.__qp.turn = window.__qp.turns.length; 
-        if (debug) console.log("qp| startTurn " + window.__qp.turn); 
+        console.log("qp| startTurn " + window.__qp.turn); 
         entryPointFunction.apply(window, args);  // TODO check |this| maybe use null
-        if (debug) console.log("qp| endTurn " + window.__qp.turn); 
+        console.log("qp| endTurn " + window.__qp.turn); 
       }
     }
 
@@ -68,7 +68,7 @@
     // This function will run just before the traced source is compiled in the page.
     function interceptEntryPoints() {  
       window.addEventListener = function(type, listener, useCapture) {
-        if (debug) console.log("intercepting "+type + " it is "+(beforeArtificalLoadEvent ? "beforeArtificalLoadEvent" : "late"));
+        if (debug_in_page) console.log("__qp_runtime.interceptEntryPoints "+type + " it is "+(beforeArtificalLoadEvent ? "beforeArtificalLoadEvent" : "late"));
         var wrapped = wrapEntryPoint(listener);
         window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
         if (beforeArtificalLoadEvent) {
@@ -108,44 +108,44 @@
 
     function extractTracepoints(tps) {
       try {
-        if (debug) console.log("extractTracepoints", tps);
+        if (debug_in_page) console.log("__qp_runtime.extractTracepoints", tps);
         return tps.map(function(tp) {
           tp.valueType = typeof tp.value; // JSON will not transmit undefined values correctly.
           var activation = tp.activations[tp.activationIndex - 1];
-          if (debug) {
-            console.log("tp", tp);
-            console.log('activation', activation);
+          if (debug_in_page) {
+            console.log("__qp_runtime.extractTracepoints tp", tp);
+            console.log('__qp_runtime.extractTracepoints activation', activation);
           }
           return findMatchingActivation(activation, tp);
         });
       } catch (exc) {
-        console.error('extractTracepoints failed '+exc, exc);
+        console.error('__qp_runtime.extractTracepoints failed '+exc, exc);
         return exc.toString();
       }  
     }
     
     // For lastChange
     function reducePropertyChangesToTracedObject(propertyKey, tracedObjectOffset) {
-      if (debug) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
+      if (debug_in_page) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
       var changes = window.__qp.propertyChanges[propertyKey];
       if (!changes || !changes.length) {
-        if (debug) console.error("QPRuntime.reducePropertyChangesToTracedObject No chanages for " + propertyKey + ' at ' + tracedObjectOffset);
+        if (debug_in_page) console.error("__qp_runtime.reducePropertyChangesToTracedObject No chanages for " + propertyKey + ' at ' + tracedObjectOffset);
         return [];
       }
       if (!changes.objectTraced) {
-        if (debug) console.error("QPRuntime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectOffset);
+        if (debug_in_page) console.error("__qp_runtime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectOffset);
         return [];
       }
       var object = changes.objectTraced[tracedObjectOffset];
       var rawTracepoints = changes.reduce(
         function(ours, change) {
-          if (debug) console.log("reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
+          if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
           if (change.obj === object) ours.push(change);
           return ours; 
         },
         []
       );
-      if (debug) console.log("reducePropertyChangesToTracedObject ends with " + window.__qp.propertyChanges[propertyKey].length);
+      if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject ends with " + window.__qp.propertyChanges[propertyKey].length);
       return extractTracepoints(rawTracepoints);
     }
 
@@ -154,7 +154,7 @@
       // We are setting a property on an array here.
       window.__qp.propertyChanges[propertyKey].objectTraced = window.__qp.propertyChanges[propertyKey].objectTraced || {};
       window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectOffset] = object;
-      if (debug) console.log("setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
+      if (debug_in_page) console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
      
     function initializeHiddenGlobalState() {
@@ -180,18 +180,20 @@
     
     wrapEntryPoint(function andWeBegin() {
       console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
-      if (debug) console.log("window.__qp: %o", window.__qp);    
+      if (debug_in_page) console.log("__qp_runtime.wrapEntryPoint: window.__qp: %o", window.__qp);    
     }());
   }; 
 
   Querypoint.QPRuntime = {
+    debug: false,
+
     initialize: function() { 
       this.runtime =  [define__qp];
       this.source = [];
       return this;
     },
     runtimeSource: function(numberOfReloads) {
-      if (debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
+      if (Querypoint.QPRuntime.debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
         return '(' + fnc + ')();\n';
       });
