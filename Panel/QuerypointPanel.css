@@ -192,6 +192,7 @@ a:focus, a:active {
   left: 0;
   overflow: hidden;
   right: 0;
+  margin-left: 15px;
 }
 
 .traceView {

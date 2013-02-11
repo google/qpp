@@ -35,14 +35,104 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
 
   var panel = this;
   var logElement = document.querySelector('.logView');
-  var logScrubberElement = document.querySelector('.logScrubber');
+  var logScrubberElement = document.querySelector('.overviewLog');
+  var loadElement = document.querySelector('.loadList');
 
   this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement);
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
-  ko.applyBindings(this.logScrubber, logScrubberElement);
+  this.allMessages = ko.computed( function(){
+    var currentLoad = panel.logScrubber.showLoad();
+    var joinMessages = currentLoad.messages || [];
+    var maxMessages = document.querySelector('.logScrubber').offsetWidth-30;
+
+    if (currentLoad.load == '-') return joinMessages;
+    if(joinMessages.length < maxMessages){
+        var borderWidth = maxMessages / joinMessages.length;
+        if(borderWidth > 10) borderWidth = 10;
+        borderWidth = borderWidth + 'px';
+        setTimeout(function(){
+            var events = document.querySelectorAll('.eventIndicator');
+            for(var i = 0; i < events.length; i++){
+                events[i].style.borderWidth = borderWidth;
+            }
+        },10);
+        return joinMessages;
+    }
+
+    var perPixel = joinMessages.length / maxMessages;
+    var last = 0, next = 0;
+    var showMessages=[];
+    var hasError, hasTurn, hasWarn, lastTurn;
+
+    while(next != joinMessages.length){
+        if(!hasTurn){
+            hasError = hasTurn = hasWarn = false;
+        }else{
+            hasTurn = false;
+        }
+        if(last + perPixel > joinMessages.length) last = joinMessages.length; else last = last + perPixel;
+        for(; next < last;next++){
+            var severity = joinMessages[next].severity;
+            if(severity == 'turn') hasTurn = true;
+            if(severity == 'warn') hasWarn = true;
+            if(severity == 'error') hasError = true;
+        }
+        lastTurn = joinMessages[next-1].turn;
+        showMessages.push({severity: hasTurn ? 'turn' : hasWarn ? 'warn' : hasError ? 'error' : 'log', turn:lastTurn, scroll: joinMessages[next-1].scroll });
+    }
+
+    return showMessages;
+  }).extend({throttle: 30});
+
+  ko.applyBindings(this.logScrubber, loadElement);
+  ko.applyBindings(this, logScrubberElement);
   ko.applyBindings(this, logElement);
+
+  var currentLoad = document.querySelector('.currentLoad');
+  var nextLoad = document.querySelector('.nextLoad');
+  var dropDown = document.querySelector('.dropDown');
+
+  this.showLoad = ko.computed( function(){
+      return panel.logScrubber.showLoad().load;
+  });
+  this.showNext = ko.computed( function(){
+      if (panel.logScrubber.showLoad().load == '-' || panel.logScrubber.showLoad().load == panel._log.currentReload.load){
+          nextLoad.onmousedown = null;
+          return '-';
+      }else{
+          nextLoad.onmousedown = function(){
+              var next = panel.logScrubber.showLoad().next;
+              panel.logScrubber.showLoad(next);
+          };
+          return panel.logScrubber.showLoad().load+1;
+      }
+  });
+
+  dropDown.onmouseout = function(){
+      dropDown.style.display = 'none';
+  }
+
+  ko.applyBindings(this, currentLoad);
+  ko.applyBindings(this, nextLoad);
+
+  currentLoad.onmouseover = function(){
+      dropDown.style.display = 'none';
+      loadElement.style.display = 'block';
+  }
+
+  loadElement.onmouseout = function(event){
+      var e = event.toElement || event.relatedTarget;
+      while(e && e.parentNode && e.parentNode != window) {
+        if (e.parentNode == this ||  e==this) {
+            if(e.preventDefault) e.preventDefault();
+            return false;
+        }
+        e = e.parentNode;
+      }
+      loadElement.style.display = 'none';
+  }
 
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({
@@ -359,6 +449,32 @@ QuerypointPanel.Panel.prototype = {
       }
     );
   },
+
+  setScroll: function(node,index,elem) {
+      var logFloat = document.querySelector('.floaty');
+      elem.scroll = logFloat.scrollHeight;
+      if (parseInt(elem.scroll,10) < 210) elem.scroll = '0px';
+      logFloat.scrollTop = logFloat.scrollHeight;
+  },
+
+  focusLog: function (elem) {
+    if(!elem.scroll) return;
+    var logFloat = document.querySelector('.floaty');
+    logFloat.scrollTop = elem.scroll - logFloat.offsetHeight/2;
+  },
+
+  turnInfo: function(){
+      console.log(arguments);
+      var dropDown = document.querySelector('.dropDown');
+      var loadElement = document.querySelector('.loadList');
+      dropDown.style.display = 'block';
+      loadElement.style.display = 'none';
+  },
+  notShown: function(){
+      var a=1;
+      console.error(arguments);
+      return false;
+  }
   
 };
 

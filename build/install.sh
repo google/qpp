@@ -20,7 +20,7 @@ cd ../..
 
 mkdir $EXTENSIONDIR
 cp -r $REPODIR/devtoolsExtended/extension/* $EXTENSIONDIR
-cp -r $REPODIR/qpp/* $EXTENSIONDIR
+cp -r $REPODIR/qpp/[^b]* $EXTENSIONDIR
 cp -r $REPODIR/johnjbarton-devtools-save/extension/* $EXTENSIONDIR
 
 cp $SRCDIR/*{js,json,html} $EXTENSIONDIR

@@ -61,7 +61,7 @@
                 <tbody class='turns' data-bind="foreach: turns">
                   <tr>
                     <td class="turnNumber" title="Event turn number" data-bind="text: turn"></td>
-                    <td class="messages" title="console output" data-bind="foreach: {data: messages, afterAdd: setScroll}">
+                    <td class="messages" title="console output" data-bind="foreach: {data: messages, afterAdd: $root.setScroll}">
                           <div data-bind="text: text, attr:{severity: severity}"></div>
                     </td>
                   </tr>
@@ -73,11 +73,39 @@
         </table>
      </div>
     </div>
-    <div class="logScrubber">
+    <div class="logScrubber scrubberBox">
+        <div class="loadList" data-bind="foreach: loads">
+            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
+            </div>
+        </div>
+        <div class="dropDown">
+        </div>
+        <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoad}"></div>
+        <div class="overviewLog" data-bind="foreach: allMessages">
+            <div class="eventIndicator" data-bind="attr:{severity:severity, turn:turn}, event:{mousedown: $root.focusLog}"> </div>
+        </div>
+        <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
+        <!--
       <span class="helpInfo">
         Log Scrubber: click or drag to change log viewport 
-      </span><!-- http://robertnyman.com/2010/02/24/css-display-inline-block-why-it-rocks-and-why-it-sucks/ -->
-      <div class="scrubberBox" data-bind="foreach: {data: loads, afterAdd: collapseTurns}"><span class="loadNumber" title="Reload number" data-bind="attr:{load: load}, event:{mousedown: $parent.collapseTurns}"><span class="turns" data-bind="foreach: turns"><span class="turnNumber" title="Event turn number" data-bind="attr:{turn: turn}"><span class="messages" title="console output" data-bind="foreach: messages"><span class="message" data-bind="attr: {class: severity, title: tooltip()}, event:{mousedown: focusLog}">x</span></span></span></span></span></div>
+      </span>< http://robertnyman.com/2010/02/24/css-display-inline-block-why-it-rocks-and-why-it-sucks/ >
+      <div class="scrubberBox" data-bind="foreach: loads">
+          <span class="loadNumber" title="Reload number" data-bind="attr:{load: load}, event:{mousedown: $parent.collapseTurns}">
+              <div class="turnContainer">
+                <span class="turns" data-bind="foreach: {data: turns, afterAdd:$parent.collapseTurns}">
+                  <span class="turnNumber" title="Event turn number" data-bind="attr:{turn: turn}">
+                      <span class="messages" title="console output" data-bind="foreach: messages">
+                          <span class="message" data-bind="attr: {severity: severity, title: tooltip()}, event:{mousedown: focusLog}">x</span>
+                      </span>
+                  </span>
+              </span>
+              </div>
+              <div class="turnInformation">
+                  <p>1 warning</p>
+              </div>
+          </span>
+      </div>
+      -->
       <!-- <span class="scrubberIndicator" title="TODO slide sideways to select visible log entries, up/down to resize log view"></span> -->
     </div>
     <div class="fileViews" data-bind="foreach: fileViewModels">

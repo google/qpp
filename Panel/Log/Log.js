@@ -24,12 +24,6 @@
        // if (moveScroll > 0) moveScroll = 0;
        // logScrubber.style.marginLeft = (moveScroll).toString() + 'px';
        return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
-     },
-     focusLog: function (elem) {
-       var logFloat = document.querySelector('.floaty');
-       // TODO scrollByLines not working as expected
-       // hardcoding height of a line to show at the top
-       logFloat.scrollTop = elem.scroll - 20;
      }
    };
   
@@ -42,6 +36,7 @@
     initialize: function(project, logScrubber) {
       this.project = project;
       this._logScrubber = logScrubber;
+      this.loads = ko.observableArray();
 
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
@@ -52,6 +47,7 @@
       }.bind(this));
       return this;
       */
+      this.currentReload.messages = [];
       return this;
     },
     
@@ -94,19 +90,12 @@
     },
 
     _reloadRow: function(messageSource) {
-       return {load: messageSource.load, turns: ko.observableArray([this._turnRow(messageSource)])}
+       return {load: messageSource.load, turns: ko.observableArray([this._turnRow(messageSource)]), messages: []}
     },
     
     _turnRow: function(messageSource) {
-      function setScroll (node,index,elem) {
-          var logFloat = document.querySelector('.floaty');
-          elem.scroll = logFloat.scrollHeight;
-          if (parseInt(elem.scroll,10) < 210) elem.scroll = '0px';
-          logFloat.scrollTop = logFloat.scrollHeight;
-      }
       return {
         turn: messageSource.turn, 
-        setScroll: setScroll, 
         messages: ko.observableArray()
       };
     },
@@ -120,6 +109,9 @@
       if (this.currentReload.load !== messageSource.load) {
         this.currentReload = this._reloadRow(messageSource);
         this.currentTurn = this.currentReload.turns()[0];
+        this.loads.push(this.currentReload);
+        this._logScrubber.showLoad().next = this.currentReload;
+        this._logScrubber.showLoad(this.currentReload);
         this._logScrubber.loads.push(this.currentReload);
         if (DEBUG){
            console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.loads().length);
@@ -128,11 +120,14 @@
       if (this.currentTurn.turn !== messageSource.turn) {
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
+        this._logScrubber.showLoad(this.currentReload);
+        this.currentReload.messages.push({severity: 'turn', turn: this.currentTurn.turn});
         if (DEBUG){
            console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }
       } 
       this.currentTurn.messages.push(messageSource);
+      this.currentReload.messages.push(messageSource);
       if (DEBUG){
            console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }
