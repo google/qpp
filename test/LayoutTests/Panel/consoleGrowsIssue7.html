@@ -20,6 +20,9 @@ function test_lastChange() {
 
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'consoleTest.html');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleFirst").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.messages', 'log');
+  AsyncMachine.pushOp(extractText, 'td.messages', function(text) { return text.trim();});
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleAction").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'div[severity="error"]', 'Error 29');
   AsyncMachine.pushOp(getBoundingClientRect, '.floaty', '', function (rects) {

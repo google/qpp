@@ -2,8 +2,11 @@
 <head>
   <title>Querypoint Test Page for Console</title>
   <script>
+  function consoleFirst() {
+    console.log("log one");
+ }
  function consoleAction() {
-   for(var i = 0; i < 30; i++) {
+   for(var i = 1; i < 30; i++) {
     console.log("log " + i);
     console.warn("Warning " + i);
     console.error("Error " + i);
@@ -13,6 +16,7 @@
 </head>
 <body>
   <h1>Querypoint Test Page for Console</h1>
+  <button class='consoleFirst' onclick='consoleFirst();'>Show One Console Message</button>
   <button class='consoleAction' onclick='consoleAction();'>Show Console Messages</button>
   <p>Dumps 30 log, warning and error messages in the the console.</p>
 </body>

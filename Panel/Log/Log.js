@@ -3,6 +3,8 @@
 
 (function() {
    
+  var DEBUG = false;
+
    var totalLogs = 0;
   
    var messagePrototype = {
@@ -11,7 +13,8 @@
        var logScrubber = document.querySelector('.logScrubber');
        this.scroll = logFloat.scrollHeight;
        totalLogs++;
-       console.log('Message.tooltip: total logs : '+totalLogs);
+       if (DEBUG)
+        console.log('Message.tooltip: total logs : '+totalLogs);
 
        // To have the scrubberBox focus on the last event the margin property is 
        // set to the position of that event. This is done keeping track of how
@@ -81,7 +84,7 @@
             this.project.addScript(segments[2]);
             break; 
           default: 
-            console.error("unknown keyword: "+messageSource.text);
+            console.error('unknown keyword: '+messageSource.text);
             break;
         }
       }
@@ -101,7 +104,11 @@
           if (parseInt(elem.scroll,10) < 210) elem.scroll = '0px';
           logFloat.scrollTop = logFloat.scrollHeight;
       }
-      return {turn: messageSource.turn, setScroll: setScroll, messages: ko.observableArray([messageSource])};
+      return {
+        turn: messageSource.turn, 
+        setScroll: setScroll, 
+        messages: ko.observableArray()
+      };
     },
 
     _reformatMessage: function(messageSource) {
@@ -114,13 +121,21 @@
         this.currentReload = this._reloadRow(messageSource);
         this.currentTurn = this.currentReload.turns()[0];
         this._logScrubber.loads.push(this.currentReload);
-        console.log("_reformat "+this._logScrubber.loads().length);
+        if (DEBUG){
+           console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.loads().length);
+        }
       }  
       if (this.currentTurn.turn !== messageSource.turn) {
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
+        if (DEBUG){
+           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
+        }
       } 
       this.currentTurn.messages.push(messageSource);
+      if (DEBUG){
+           console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
+      }
     },
     
     extractMessages: function(first, last) {
