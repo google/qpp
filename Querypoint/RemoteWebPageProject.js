@@ -21,6 +21,7 @@ RemoteWebPageProject.onBackgroundMessage_ = function(message) {
 RemoteWebPageProject.postId = 1;
 RemoteWebPageProject.postCallbacks = {};
 RemoteWebPageProject.xhrFromBackground =  (new RemoteMethodCall.Requestor(XHRInBackground, ChannelPlate.DevtoolsTalker)).serverProxy();
+RemoteWebPageProject.debug = true;
 
 RemoteWebPageProject.prototype = Object.create(traceur.WebPageProject.prototype);
 
@@ -53,10 +54,12 @@ RemoteWebPageProject.prototype.loadResource = function(url, fncOfContentOrNull) 
 RemoteWebPageProject.prototype.putFiles = function(files) {
   var scripts = files.map(function(file){
     var source = file.generatedSource + "\n//@ sourceURL=" + file.name + '.js';  // .js.js for transcoded files
-    return {content: source};
+    return {content: source, originalName: file.name};
   });
   this.putPageScripts(scripts, function(result) {
-    console.log("Put " + scripts.length + " transcoded scripts", scripts);
+    if (RemoteWebPageProject.debug) {
+      console.log("RemoteWebPageProject compiled " + result.compiled.length + " transcoded scripts", result.compiled);
+    }
     result.errors.forEach(function(error) {
       // As far as I can tell the eval does not provide meaningful line numbers for errors.
       var partialContent = error.content.substring(0, 300);
@@ -83,7 +86,6 @@ RemoteWebPageProject.prototype.getPageScripts = function(callback) {
     var scripts = [];
     for(var i = 0; i < scriptElements.length; i++) {
       var elt = scriptElements[i];
-      //console.log("scripts["+i+"/"+scriptElements.length+"] "+elt.src);
       scripts.push({
         src: elt.src,
         textContent: elt.textContent
@@ -95,7 +97,9 @@ RemoteWebPageProject.prototype.getPageScripts = function(callback) {
 
   function onScripts(remoteScripts) { // runs here
     this.remoteScripts = remoteScripts;
-    console.log("RemoteWebPageProject found "+this.remoteScripts.length+" scripts");
+    if (RemoteWebPageProject.debug) {
+      console.log("RemoteWebPageProject found "+this.remoteScripts.length+" scripts");
+    }
     callback();
   }
 
@@ -109,7 +113,10 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
       var content = script.content;
       try {
         eval(content);
-        result.compiled.push(script.src);
+        result.compiled.push(script.originalName);
+        if (RemoteWebPageProject.debug) {
+          console.log("RemoteWebPageProject.putScripts eval succeeded " + script.originalName);
+        } 
       } catch (exc) {          
         result.errors.push({message: exc.toString(), content: content, stack: exc.stack});
       }

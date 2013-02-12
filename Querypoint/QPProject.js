@@ -5,6 +5,9 @@
 
 (function(){
 
+  var COMMAND_LINE_PREFIX = 'with ((window && window.console && window.console._commandLineAPI) || {})';
+          
+
   function QPProject(url, loads) {
     RemoteWebPageProject.call(this, url);
 
@@ -124,10 +127,21 @@
       console.assert(typeof numberOfReloads === 'number');
       // We write a line that is parsed by Log.js calling back at this.addScript()
       function transcode(str, name ) {
-        if (name && name.indexOf('.js.js') === -1)
-          return  "console.log('qp| script " + name + "');";
-        else
-          return str; // evals, esp. our own evals!
+        if (name) {
+          if(name.indexOf('.js.js') === -1) {
+            // a file we need to transcode
+            return  "console.log('qp| script " + name + "');";
+          } else {
+            // one of our transcodings, pass it thru
+            return str;
+          }
+        } else {  // unnamed
+          if (str.indexOf(COMMAND_LINE_PREFIX) === 0) { // command line evaluation, maybe ours
+            return str;
+          }
+          var echoStr = escape(str.substring(0,100));
+          return "console.log('transcode ' + \'" + echoStr +"\');" + str; // evals, esp. our own evals!
+        }
       }
 
       var reloadOptions = {
