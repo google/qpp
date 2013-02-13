@@ -49,8 +49,8 @@ var RemoteMethodCall = (function() {
         this.channelPlate.postMessage([postId, method, ERROR, "Exception"].concat(args));
       };
 
-      this.start = function() {
-        this.channelPlate.start.apply(this.channelPlate, arguments);
+      this.accept = function(port) {
+        this.channelPlate.accept.apply(this.channelPlate, [port, this.onMessage.bind(this)]);
       }
 
       this.channelPlate = new ChannelPlate.Base(rawPort, this.onMessage.bind(this));

@@ -165,7 +165,7 @@ function Listener(clientWebOriginOrURL, onConnect) {
 
   function onChannelPlate(event) {
     if (DEBUG) {
-      console.log('ChannelPlate.Listener.onChannelPlate ', event.data, event.origin);
+      console.log("ChannelPlate.Listener.onChannelPlate for targetOrigin " + targetOrigin);
     }
     if (!event.data || !event.data[0] || event.data[0] !== 'ChannelPlate') {
       // We are a port-creator for ChannelPlate, nothing else.
@@ -176,11 +176,15 @@ function Listener(clientWebOriginOrURL, onConnect) {
       // The event.origin was either unexpected or unset.
       return;
     }
+
+    var iframeURL = event.data[1];
+    onConnect(event.ports[0], iframeURL);
+
+    window.removeEventListener('message', onChannelPlate);
+
     if (DEBUG) {
-      console.log('ChannelPlate.Listener.onChannelPlate CONNECT ' + window.location.href);
+      console.log('ChannelPlate.Listener.onChannelPlate CONNECT and remove listener in ' + window.location.href);
     }
-    
-    onConnect(event.ports[0], event.data[1]);
   }
 
   if (DEBUG) {
@@ -278,7 +282,7 @@ var ProxyBasePrototype = {
       }.bind(this));
     }
     
-    console.log("connect "+connectionId+" to "+port);
+    if (DEBUG) console.log("connect "+connectionId+" to "+port);
   }, 
 
   proxyMessage: function(tabId, outgoingPorts, message) {
@@ -287,7 +291,7 @@ var ProxyBasePrototype = {
       port = outgoingPorts[tabId] = new Base();
     }    
     port.postMessage(message);
-    console.log("proxyMessage to %o: %o", port, message);
+    if (DEBUG) console.log("proxyMessage to %o: %o", port, message);
   },
 }
 
