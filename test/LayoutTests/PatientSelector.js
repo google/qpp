@@ -278,33 +278,36 @@ window.PatientSelector = (function(){
         postId: 0,
         proxyHandlers: [],
 
-        _createProxy: function(url, onMessage) {
-            var frames = document.querySelectorAll('iframe');
-            for(var i = 0; i < frames.length; i++) {
-                console.log("....PatientSelector._createProxy checking " + url + " against " + frames[i].src);
-                if (frames[i].src.indexOf(url) !== -1) {
-                    return new ChannelPlate.Talker(frames[i].contentWindow, onMessage);        
-                }
+        createProxy: function(port, iframeURL) { // onConnect from extension iframe
+
+          function onMessage(message) {
+            console.log("....PatientSelector.proxyTo.onMessage ", message);
+            var payload = message;
+            var postId = payload.shift();
+            var method = payload.shift();
+            var status = payload.shift();
+            var handlers = this.proxyHandlers[postId];
+            if (status === 'Error')
+                handlers.onError(payload);
+            else 
+                handlers.onResponse(payload);
             }
+
+            this.proxies[iframeURL] = new ChannelPlate.Base(port, onMessage.bind(this));
+            console.log("....PatientSelector.createProxy for " + iframeURL); 
         },
 
         proxyTo: function(url, proxied, callback, errback) {
             console.log("....PatientSelector.proxyTo " + url, proxied);
             this.proxyHandlers[++this.postId] = {url: url, onResponse: callback, onError: errback};
-        
-            function onMessage(message) {
-                console.log("....PatientSelector.proxyTo.onMessage ", message.data);
-                var payload = message.data;
-                var postId = payload.shift();
-                var method = payload.shift();
-                var status = payload.shift();
-                var handlers = this.proxyHandlers[postId];
-                if (status === 'Error')
-                    handlers.onError(payload);
-                else 
-                    handlers.onResponse(payload);
-            }
-            var proxy = this.proxies[url] = this.proxies[url] || this._createProxy(url, onMessage.bind(this));
+
+            var proxy;
+            Object.keys(this.proxies).some(function(iframeURL) {
+                if (iframeURL.indexOf(url) !== -1) {
+                    return proxy = this.proxies[iframeURL];
+                }
+            }.bind(this));
+
             if (proxy) {
                 console.log("....PatientSelector.proxyTo.postMessage", proxied);
                 proxy.postMessage([this.postId].concat(proxied));
