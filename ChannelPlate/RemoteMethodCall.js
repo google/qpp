@@ -6,7 +6,7 @@
 var RemoteMethodCall = (function() {
 
   "use strict";
-  var DEBUG = false;
+  var DEBUG = true;
   var RESPONSE = 'Response';
   var ERROR = 'Error';
 

@@ -1,0 +1,114 @@
+<html>
+<body>
+<h1>Feature Test Resize Events issue #27</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../panel-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function test_lastChange() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'demo.js');
+  
+  var objPropSelector = [
+    {type: 'string', text:'\"I\'ve been clicked \"'},
+    {type: 'property', text: 'prop'}
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱2');
+  //AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱3');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱4');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱5');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱6');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱7');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱8');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱9');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱10');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱11');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱12');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱13');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱14');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱15');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱16');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱17');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱18');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱19');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+ AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱20');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱21');
+ AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱22');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱23');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱24');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱25');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱26');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱27');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱28');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱29');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱29');
+//  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱30');
+//  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱32');
+//  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱33');
+//  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱36');
+//  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+//  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+//  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱37');
+//  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+
+  AsyncMachine.runOp();
+}
+
+var testScript = test_lastChange;
+</script>
+</html>

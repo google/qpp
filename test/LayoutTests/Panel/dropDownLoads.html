@@ -1,0 +1,62 @@
+<html>
+<body>
+<h1>Feature Test Drop Down Loads issue #27</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../panel-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function test_lastChange() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'demo.js');
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  var objPropSelector = [
+    {type: 'string', text:'\"I\'ve been clicked \"'},
+    {type: 'property', text: 'prop'}
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
+
+    var conditionValueSelector = [
+      {type: 'variable', text:'bar'},  // call in onClick
+      {type: 'variable', text:'bar'},  // func decl
+      {type: 'property', text: 'value'},  // (!condition.value)
+      {type: 'property', text: 'value'}   // value  in condition.value
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, conditionValueSelector);
+  AsyncMachine.pushOp(verifyTokenView, 'condition.value');
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');  
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '2');
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.loadNumber").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoad").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.runOp();
+}
+
+var testScript = test_lastChange;
+</script>
+</html>
