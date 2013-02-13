@@ -49,7 +49,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
 
     if (currentLoad.load == '-') return joinMessages;
     if(joinMessages.length < maxMessages){
-        var borderWidth = maxMessages / joinMessages.length;
+        var borderWidth = Math.floor(maxMessages / joinMessages.length);
         if(borderWidth > 10) borderWidth = 10;
         borderWidth = borderWidth + 'px';
         setTimeout(function(){
