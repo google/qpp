@@ -208,7 +208,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _openURL: function(url) {
-    var foundResource = this.page.resources.some(function(resource){
+    var foundResource = this.page.getResources().some(function(resource){
         if (resource.url) this._openResourceAndRefresh(resource);
     }.bind(this));
     if (!foundResource) {
@@ -282,7 +282,7 @@ QuerypointPanel.Panel.prototype = {
         names[sourceFile.name] = sourceFile;
         uriItems.appendItem('open: '+sourceFile.name, this.openPrimaryFileView.bind(this, sourceFile));
       }.bind(this));
-      this.page.resources.forEach(function(resource, index) {
+      this.page.getResources().forEach(function(resource, index) {
         if (!names.hasOwnProperty(resource.url))
           uriItems.appendItem('open: '+resource.url, this._openResourceAndRefresh.bind(this, resource));
       }.bind(this));

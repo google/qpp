@@ -8,8 +8,8 @@
   var COMMAND_LINE_PREFIX = 'with ((window && window.console && window.console._commandLineAPI) || {})';
           
 
-  function QPProject(url, loads) {
-    RemoteWebPageProject.call(this, url);
+  function QPProject(url, loads, devtoolsModel) {
+    RemoteWebPageProject.call(this, url, devtoolsModel);
 
     this.numberOfReloads = loads; 
 

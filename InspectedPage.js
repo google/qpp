@@ -15,7 +15,7 @@ InspectedPage.debug = false;
 InspectedPage.prototype = {
 
   onNavigated: function(url) {
-    this.resources = []; // API, Array<chrome.devtools.inspectedWindow.Resource>
+    this.resources = {}; // API, chrome.devtools.inspectedWindow.Resource by URL
     this.url = url;
     if (url) {
       console.log("onNavigated " + url + '----------------------------');
@@ -31,8 +31,18 @@ InspectedPage.prototype = {
   },
 
   addResource: function(resource) {
-    if (InspectedPage.debug) console.log("addResource " + resource.url + ' to ' + this.resources.length + " resources");
-    this.resources.push(resource);
+    if (InspectedPage.debug) console.log("addResource " + resource.url + ' to ' + Object.keys(this.resources).length + " resources");
+    this.resources[resource.url] = resource;
+  },
+
+  getResources: function() {
+    return Object.keys(this.resources).map(function(key) { 
+      return this.resources[key];
+    }.bind(this));
+  },
+
+  getResourceByURL: function(url) {
+    return this.resources[url];
   },
 
   monitorNetwork: function() {

@@ -14,7 +14,7 @@ function onLoad() {
 
   function resetProject(url) {
     model.devtoolsModel = new InspectedPage();  // TODO rename DevtoolsPageModel
-    model.project = new Querypoint.QPProject(url, loads);
+    model.project = new Querypoint.QPProject(url, loads, model.devtoolsModel);
     collectScripts(url);  
   }
   

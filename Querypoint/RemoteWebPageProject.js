@@ -4,8 +4,9 @@
 // A traceur WebPageProject that delegates XHR to chrome extension background and
 // extracts scripts via chrome.inspectedWindow.eval
 
-function RemoteWebPageProject(remoteURL) {
+function RemoteWebPageProject(remoteURL, devtoolsModel) {
   traceur.WebPageProject.call(this, remoteURL);
+  this.devtoolsModel = devtoolsModel;
   RemoteWebPageProject.currentProject = this;
   console.log("RemoteWebPageProject created for "+remoteURL);
 }
@@ -34,6 +35,12 @@ RemoteWebPageProject.prototype.run = function() {
 // XSS since we are remote to the web page
 //
 RemoteWebPageProject.prototype.loadResource = function(url, fncOfContentOrNull) {
+  var resource = this.devtoolsModel.getResourceByURL(url);
+  if (resource) {
+    resource.getContent(fncOfContentOrNull);
+    return;
+  }
+
   // mihaip@chromium.org on https://groups.google.com/a/chromium.org/d/msg/chromium-extensions/-/U33r217_Px8J
   // The whitelisting for cross-origin XHRs only happens when running in an extension process. 
   // Your iframe is running inside the devtools process, so it doesn't get that privilege. 
@@ -62,7 +69,7 @@ RemoteWebPageProject.prototype.putFiles = function(files) {
     }
     result.errors.forEach(function(error) {
       // As far as I can tell the eval does not provide meaningful line numbers for errors.
-      var partialContent = error.content.substring(0, 300);
+      var partialContent = error.content;
       console.error(error.message, partialContent);
     });
   });
@@ -107,15 +114,16 @@ RemoteWebPageProject.prototype.getPageScripts = function(callback) {
 };
 
 RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
-  function putScripts(scripts) { // runs in web page
+  
+  function putScripts(scripts, debug) { // runs in web page
     var result = {compiled: [], errors: []};
     scripts.forEach(function(script) {
       var content = script.content;
       try {
-        eval(content);
+        eval.call(window, content);  // http://perfectionkills.com/global-eval-what-are-the-options/
         result.compiled.push(script.originalName);
-        if (RemoteWebPageProject.debug) {
-          console.log("RemoteWebPageProject.putScripts eval succeeded " + script.originalName);
+        if (debug) {
+          console.log("RemoteWebPageProject.putScripts global eval succeeded " + script.originalName);
         } 
       } catch (exc) {          
         result.errors.push({message: exc.toString(), content: content, stack: exc.stack});
@@ -123,5 +131,5 @@ RemoteWebPageProject.prototype.putPageScripts = function(scripts, callback) {
     });
     return result;
   }
-  return chrome.devtools.inspectedWindow.eval(this.evalStringify(putScripts, scripts), callback);
+  return chrome.devtools.inspectedWindow.eval(this.evalStringify(putScripts, scripts, RemoteWebPageProject.debug), callback);
 }
