@@ -63,9 +63,11 @@ Base.prototype = {
   postMessage: function(message) {
     if (this.port) {
       this.port.postMessage(message);
+      return true;
     } else {
       this.queue = this.queue || [];
       this.queue.push(message);
+      return false;
     }
   },
 
@@ -162,6 +164,9 @@ function Listener(clientWebOriginOrURL, onConnect) {
   var targetOrigin = getWebOrigin(clientWebOriginOrURL) || getWebOrigin(window.location.toString());
 
   function onChannelPlate(event) {
+    if (DEBUG) {
+      console.log('ChannelPlate.Listener.onChannelPlate ', event.data, event.origin);
+    }
     if (!event.data || !event.data[0] || event.data[0] !== 'ChannelPlate') {
       // We are a port-creator for ChannelPlate, nothing else.
       return;
@@ -171,12 +176,15 @@ function Listener(clientWebOriginOrURL, onConnect) {
       // The event.origin was either unexpected or unset.
       return;
     }
-
+    if (DEBUG) {
+      console.log('ChannelPlate.Listener.onChannelPlate CONNECT ' + window.location.href);
+    }
+    
     onConnect(event.ports[0], event.data[1]);
   }
 
   if (DEBUG) {
-    console.log('start listening in ' + window.location.href);
+    console.log('ChannelPlate.Listener start listening for ChannelPlate connect in ' + window.location.href);
   }
 
   window.addEventListener('message', onChannelPlate);

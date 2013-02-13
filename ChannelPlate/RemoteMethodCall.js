@@ -6,7 +6,7 @@
 var RemoteMethodCall = (function() {
 
   "use strict";
-  var DEBUG = true;
+  var DEBUG = false;
   var RESPONSE = 'Response';
   var ERROR = 'Error';
 
@@ -29,7 +29,8 @@ var RemoteMethodCall = (function() {
           try {
             this.serverMethods[method].apply(this.serverMethods, args); 
           } catch (exc) {
-            this.onException(postId, method, [exc]);
+            var jsonableExc = {message: exc.message, stack: exc.stack};
+            this.onException(postId, method, [jsonableExc]);
           }
         } else {
           this.onException(postId, method, ['No Such Method']);
@@ -79,7 +80,7 @@ var RemoteMethodCall = (function() {
         this.responseHandlers[++this.postId] = {method: method, onResponse: onResponse, onError: onError};
         this.channelPlate.postMessage([this.postId, method].concat(args));
         if (DEBUG) {
-          console.log("Requestor "+ this.instance + " sent " + method, args);
+          console.log("Requestor "+ this.instance + " sent " + this.postId + ': ' + method, args);
         }
       },
 
@@ -90,9 +91,11 @@ var RemoteMethodCall = (function() {
         var responseHandler = this.responseHandlers[postId];
         if (!responseHandler) {
           console.error("Requestor "+ this.instance + " _onMessage failed, no responseHandler for postId " + postId, this.responseHandlers);
+          return;
         }
         if (method !== responseHandler.method) {
           console.error("Requestor "+ this.instance + " protocol error, remote method does not match local method");
+          return;
         }
         var args = payloadArray;
         var status = args.shift();
@@ -103,6 +106,9 @@ var RemoteMethodCall = (function() {
             callback.apply(this, args);
           } else if (errback && status === ERROR) {
             errback.apply(this, args);
+          }
+          if (DEBUG) {
+            console.log("RemoteMethodCall.Requestor._onMessage " + postId + ": " + method + ": " + status, args);
           }  
         } catch(exc) {
           console.error("Requestor "+ this.instance + " callback failed: "+(exc.stack ?"\n %o":exc), exc.stack);
