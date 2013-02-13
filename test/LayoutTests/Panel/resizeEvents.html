@@ -1,0 +1,57 @@
+<html>
+<body>
+<h1>Feature Test Resize Events issue #27</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../panel-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function test_resizeEvents10() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'demo.js');
+  
+  var objPropSelector = [
+    {type: 'string', text:'\"I\'ve been clicked \"'},
+    {type: 'property', text: 'prop'}
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+
+  var passed = 0;
+  function functionchange(current){
+      var ans = '((function (){ var change = (document.querySelector(".logScrubber").offsetWidth-30-';
+          ans+= (current * 3).toString(); 
+          ans+= ')/';
+          ans+= (current * 3).toString();
+          ans+= ';';
+          ans+= 'change = Math.round( change - ' + passed +') ;';
+          ans+= 'for(var i = 0; i < change ; i++)';
+          ans+= 'chrome.devtools.inspectedWindow.eval(\'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))\');' 
+          ans+= 'return change;';
+          ans+= '})())'
+          return ans;
+  }
+
+  AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ passed+=ans; });
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+ // AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱'+i);
+  AsyncMachine.runOp();
+}
+
+var testScript = test_resizeEvents10;
+</script>
+</html>

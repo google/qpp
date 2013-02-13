@@ -301,6 +301,14 @@ window.PatientSelector = (function(){
             callback(text);
         },
 
+        extractAttr: function(selector, attr, callback) {
+            var text = PatientSelector._querySelectorAll(selector).map(function(node){
+                return node.getAttribute(attr);
+            }).join('|');
+            console.log("testResult "+text);
+            callback(text);
+        },
+
         getBoundingClientRect: function(selector, textToMatch, callback) {
             var rects = PatientSelector._querySelectorAll(selector, textToMatch).map(function(node){
                 var rect = node.getBoundingClientRect();
