@@ -8,7 +8,7 @@ window.PatientSelector = (function(){
     var DEBUG = true;
     
     function doc() {
-        return document.location.href.split('/').pop();
+        return document.location.pathname.split('/').pop();
     }
 
     // http://www.kirupa.com/html5/get_element_position_using_javascript.htm
@@ -87,19 +87,35 @@ window.PatientSelector = (function(){
         },
 
         _textChanges: function(textToMatch, callback, mutationSummary) {
-            console.log("....PatientSelector._textChanges mutationSummary ", mutationSummary[0]);
+            if (this.poisoned) {  // hack because disconnect() does not seem to work.
+                console.warn("....PatientSelector._textChanges poisoned " + textToMatch);
+                return;
+            }
+            console.log("....PatientSelector._textChanges mutationSummary for " + textToMatch, mutationSummary[0]);
             var target = mutationSummary[0].target;
-            this.hits = this._textSelectorAll([target], textToMatch);
-            if (this.hits.length)
+            this.patientSelector.hits = this.patientSelector._textSelectorAll([target], textToMatch);
+            if (this.patientSelector.hits.length)
                 callback();
         },
 
-        _createTextChangeObserver: function(textToMatch, selection) {
-            return new MutationSummary({
-                callback: this._textChanges.bind(this, textToMatch, this._disconnectOnFind),
+        _totalTextChangeObservers: 0,
+
+        _createTextChangeObserver: function(textToMatch, element) {
+            this._totalTextChangeObservers++;
+            console.log('....PatientSelector._createTextChangeObserver _totalTextChangeObservers ' + this._totalTextChangeObservers, this);
+            var pill = {
+                poisoned: false,
+                patientSelector: this
+            };
+            pill.handler = this._textChanges.bind(pill, textToMatch, this._disconnectOnFind.bind(this));
+            var summary = new MutationSummary({
+                callback: pill.handler,
                 queries:[{characterData: true}],
-                rootNode: selection
+                rootNode: element
             });
+            summary._textToMatch = textToMatch;
+            summary._changeProcessor = pill;
+            return summary;
         },
 
         _whenSelectorHits: function(textToMatch, callback, mutationSummary) {
@@ -123,26 +139,35 @@ window.PatientSelector = (function(){
                 if (this._textChangeObservers) {
                     this._textChangeObservers.forEach(function(observer){
                         observer.disconnect();
-                    });
+                        observer._changeProcessor.poisoned = true;
+                        console.log('....PatientSelector._setMutationObservers disconnect  ' + observer._textToMatch, observer);
+                    }.bind(this));
+                    this._totalTextChangeObservers -= this._textChangeObservers.length;
+                    console.log('....PatientSelector._setMutationObservers _totalTextChangeObservers ' + this._totalTextChangeObservers, this);
                 }
                 delete this._addedSelectionObserver;
                 delete this._textChangeObservers;
                 if (DEBUG)
                     console.log("....PatientSelector.whenSelectorAll found "+PatientSelector.hits.length +" for " + selector + " with text "+textToMatch);
                 callback();
-            }.bind(this);
+            }
 
             if (this._selected.length) {
+                if (this._textChangeObservers) {
+                    console.error('....PatientSelector._setMutationObservers unexpected _textChangeObservers ', this._textChangeObservers);
+                }
                 this._textChangeObservers = this._selected.map(this._createTextChangeObserver.bind(this, textToMatch));
+                console.log('....PatientSelector._setMutationObservers initial _totalTextChangeObservers ' + this._totalTextChangeObservers, this);
             } 
             this._addedSelectionObserver = new MutationSummary({
-                callback: this._whenSelectorHits.bind(this, textToMatch, this._disconnectOnFind),
+                callback: this._whenSelectorHits.bind(this, textToMatch, this._disconnectOnFind.bind(this)),
                 queries: [
                     {element: selector}
                 ]
             });
             if (DEBUG) {
                 console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());
+                /*
                 this._textChangeObservers = this._textChangeObservers || [];
                 this._textChangeObservers.push(new MutationSummary({
                     queries:[{all:true}],
@@ -150,7 +175,8 @@ window.PatientSelector = (function(){
                       console.log('....PatientSelector.whenSelectorAll querySelectorAll ' + selector, document.querySelectorAll(selector))
                       console.log('....PatientSelector.whenSelectorAll debug all from ' + selector + '/' + textToMatch, summary);    
                     }
-                }));                
+                }));
+                */                
             }
         },
 
@@ -300,17 +326,22 @@ window.PatientSelector = (function(){
 
         createProxy: function(port, iframeURL) { // onConnect from extension iframe
 
-          function onMessage(message) {
-            console.log("....PatientSelector.proxyTo.onMessage ", message);
-            var payload = message;
-            var postId = payload.shift();
-            var method = payload.shift();
-            var status = payload.shift();
-            var handlers = this.proxyHandlers[postId];
-            if (status === 'Error')
-                handlers.onError(payload);
-            else 
-                handlers.onResponse(payload);
+            function onMessage(message) {
+                console.log("....PatientSelector.proxyTo.onMessage ", message);
+                var payload = message;
+                var postId = payload.shift();
+                var method = payload.shift();
+                var status = payload.shift();
+                var handler = this.proxyHandlers[postId];
+                if (handler) {
+                    if (status === 'Error')
+                        handler.onError(payload);
+                    else 
+                        handler.onResponse(payload);
+                    delete this.proxyHandlers[postId];                    
+                } else {
+                    console.error("....PatientSelector.createProxy.onMessage no handler for " + postId + ' in ' + doc(), message);
+                }
             }
 
             var proxy = this.proxies[iframeURL] = new ChannelPlate.Base(port, onMessage.bind(this));
