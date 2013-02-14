@@ -117,33 +117,41 @@ window.PatientSelector = (function(){
         },
 
         _setMutationObservers: function(selector, textToMatch, callback) {
-                if (DEBUG)
-                    console.log("....PatientSelector.whenSelectorAll waiting for " + selector + " with text "+textToMatch + ' in ' + doc());
-
-                this._disconnectOnFind = function() {
-                    if (this._addedSelectionObserver)
-                        this._addedSelectionObserver.disconnect();
-                    if (this._textChangeObservers) {
-                        this._textChangeObservers.forEach(function(observer){
-                            observer.disconnect();
-                        });
-                    }
-                    delete this._addedSelectionObserver;
-                    delete this._textChangeObservers;
-                    if (DEBUG)
-                        console.log("....PatientSelector.whenSelectorAll found "+PatientSelector.hits.length +" for " + selector + " with text "+textToMatch);
-                    callback();
-                }.bind(this);
-
-                if (this._selected.length) {
-                    this._textChangeObservers = this._selected.map(this._createTextChangeObserver.bind(this, textToMatch));
+            this._disconnectOnFind = function() {
+                if (this._addedSelectionObserver)
+                    this._addedSelectionObserver.disconnect();
+                if (this._textChangeObservers) {
+                    this._textChangeObservers.forEach(function(observer){
+                        observer.disconnect();
+                    });
                 }
-                this._addedSelectionObserver = new MutationSummary({
-                    callback: this._whenSelectorHits.bind(this, textToMatch, this._disconnectOnFind),
-                    queries: [
-                        {element: selector}
-                    ]
-                });
+                delete this._addedSelectionObserver;
+                delete this._textChangeObservers;
+                if (DEBUG)
+                    console.log("....PatientSelector.whenSelectorAll found "+PatientSelector.hits.length +" for " + selector + " with text "+textToMatch);
+                callback();
+            }.bind(this);
+
+            if (this._selected.length) {
+                this._textChangeObservers = this._selected.map(this._createTextChangeObserver.bind(this, textToMatch));
+            } 
+            this._addedSelectionObserver = new MutationSummary({
+                callback: this._whenSelectorHits.bind(this, textToMatch, this._disconnectOnFind),
+                queries: [
+                    {element: selector}
+                ]
+            });
+            if (DEBUG) {
+                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());
+                this._textChangeObservers = this._textChangeObservers || [];
+                this._textChangeObservers.push(new MutationSummary({
+                    queries:[{all:true}],
+                    callback: function(summary) {
+                      console.log('....PatientSelector.whenSelectorAll querySelectorAll ' + selector, document.querySelectorAll(selector))
+                      console.log('....PatientSelector.whenSelectorAll debug all from ' + selector + '/' + textToMatch, summary);    
+                    }
+                }));                
+            }
         },
 
         whenSelectorAll: function(selector, textToMatch, callback) {
@@ -271,6 +279,18 @@ window.PatientSelector = (function(){
             callback(rects);
         },
 
+        getStyle: function(selector, textToMatch, callback) {
+            var styles = PatientSelector._querySelectorAll(selector, textToMatch).map(function(node){
+                var style = node.style;
+                var obj = {};
+                Object.keys(style).forEach(function(prop){
+                    obj[prop] = rect[prop];
+                });
+                return obj;
+            });
+            callback(styles);
+        },
+
         //------------------------------------------------------------------------------------
         // For addressing command to extension iframes
 
@@ -293,13 +313,24 @@ window.PatientSelector = (function(){
                 handlers.onResponse(payload);
             }
 
-            this.proxies[iframeURL] = new ChannelPlate.Base(port, onMessage.bind(this));
-            console.log("....PatientSelector.createProxy for " + iframeURL); 
+            var proxy = this.proxies[iframeURL] = new ChannelPlate.Base(port, onMessage.bind(this));
+            console.log("....PatientSelector.createProxy for " + iframeURL);
+            // The frame just contacted us, maybe we have a message waiting to send it.
+            this._postToProxy(proxy);
+        },
+
+        _postToProxy: function(proxy) {
+            var handler = this.proxyHandlers[this.postId];
+            if (handler && !handler.sent) {
+                handler.sent = proxy.postMessage(handler.args);
+                console.log("....PatientSelector.proxyTo.postMessage sent: " + handler.sent + " to " + handler.url, handler.args);                
+            }
         },
 
         proxyTo: function(url, proxied, callback, errback) {
             console.log("....PatientSelector.proxyTo " + url, proxied);
-            this.proxyHandlers[++this.postId] = {url: url, onResponse: callback, onError: errback};
+            var postId = ++this.postId;
+            this.proxyHandlers[postId] = {url: url, onResponse: callback, onError: errback, args: [postId].concat(proxied)};
 
             var proxy;
             Object.keys(this.proxies).some(function(iframeURL) {
@@ -309,10 +340,9 @@ window.PatientSelector = (function(){
             }.bind(this));
 
             if (proxy) {
-                console.log("....PatientSelector.proxyTo.postMessage", proxied);
-                proxy.postMessage([this.postId].concat(proxied));
+                this._postToProxy(proxy);
             } else {
-                console.error("PatientSelector.proxyTo no frame matches " + url);
+                console.log("....PatientSelector.proxyTo waiting for " + url);
             }
         }
     };
