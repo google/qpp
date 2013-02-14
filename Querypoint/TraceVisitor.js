@@ -137,13 +137,16 @@
       
   Querypoint.TreeHangerTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, activationCount, trace) {
     if (expressionTree.location) {
-
+      var loc = expressionTree.location;
       var trace = {
         query: this.query,
         load: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
-        value: trace
+        value: trace,
+        file: loc.start.source.name,
+        startOffset: loc.start.offset,
+        endOffset: loc.end.offset
       };
       var traces = expressionTree.location.traces = expressionTree.location.traces || [];
       this.appendUnique(trace,traces);

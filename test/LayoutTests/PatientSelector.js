@@ -123,7 +123,7 @@ window.PatientSelector = (function(){
             var added = mutationSummary[0].added;
             this.hits = this._textSelectorAll(added, textToMatch);
             if (this.hits.length) {
-                this._disconnectOnFind();
+                callback(this.hits);
                 return;
             }
             added.forEach(function(element) {
@@ -288,6 +288,14 @@ window.PatientSelector = (function(){
         extractText: function(selector, callback) {
             var text = PatientSelector._querySelectorAll(selector).map(function(node){
                 return node.textContent;
+            }).join('|');
+            console.log("testResult "+text);
+            callback(text);
+        },
+
+        extractFromSelection: function(selector, property, callback) {
+            var text = PatientSelector._querySelectorAll(selector).map(function(node){
+                return node[property];
             }).join('|');
             console.log("testResult "+text);
             callback(text);

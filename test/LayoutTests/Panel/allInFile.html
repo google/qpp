@@ -32,6 +32,14 @@ function test_lastChange() {
   AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', '0');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
 
+  // Test link to line traced
+  AsyncMachine.pushOp(extractFromSelection, 'span.command', 'outerHTML', function(outerHTML){
+    var m = /title="([^"]*)"/.exec(outerHTML);
+    return m[1];
+  });
+  AsyncMachine.pushOp(clickSelector, 'span.command', '');
+  AsyncMachine.pushOp(extractText, '.qp-highlight');
+
   AsyncMachine.runOp();
 }
 

@@ -81,7 +81,7 @@
               Object.keys(trace).forEach(function(prop) {
                 traceViewModel[prop] = trace[prop];
               });
-              traceViewModel.tooltip = trace.query.iconText() + " found in " + trace.file;
+              traceViewModel.tooltip = trace.query.title() + " found in " + trace.file;
               traceViewModel.url = trace.file + '?start=' + trace.startOffset + '&end=' + trace.endOffset + '&';
               traceViewModel.iconText = trace.query.iconText();
               return traceViewModel;

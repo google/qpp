@@ -65,6 +65,9 @@ function evaluateInPanel(expr, then) {
 function extractText(selector, then) {
   ExtensionPanelTestAPI.extractText(selector, then);
 }
+function extractFromSelection(selector, property, then) {
+  ExtensionPanelTestAPI.extractFromSelection(selector, property, then);
+}
 function getBoundingClientRect(selector, textToMatch, then) {
   ExtensionPanelTestAPI.getBoundingClientRect(selector, textToMatch, then);
 }
