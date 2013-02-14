@@ -61,10 +61,4 @@
     );
   };
 
-  if (QuerypointPanel.addEventFunctions.test()) {
-    console.log("QuerypointPanel.addEventFunctions.test()");
-  } else {
-    console.error("QuerypointPanel.addEventFunctions.test()");
-  }
-
 }());
