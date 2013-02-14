@@ -180,10 +180,8 @@ function Listener(clientWebOriginOrURL, onConnect) {
     var iframeURL = event.data[1];
     onConnect(event.ports[0], iframeURL);
 
-    window.removeEventListener('message', onChannelPlate);
-
     if (DEBUG) {
-      console.log('ChannelPlate.Listener.onChannelPlate CONNECT and remove listener in ' + window.location.href);
+      console.log('ChannelPlate.Listener.onChannelPlate CONNECT ' + window.location.href);
     }
   }
 
