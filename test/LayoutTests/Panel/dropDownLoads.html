@@ -47,11 +47,11 @@ function test_dropDown() {
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
   AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
   
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.loadNumber").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.loadNumber").dispatchEvent(new MouseEvent("mousedown"))', function(text){} );
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
   AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoad").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoad").dispatchEvent(new MouseEvent("mousedown"))', function(text){} );
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
   AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
   AsyncMachine.runOp();

@@ -46,7 +46,7 @@ function test_resizeEvents10() {
 
   AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ passed+=ans; });
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){ return "";} );
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
  // AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱'+i);
   AsyncMachine.runOp();
