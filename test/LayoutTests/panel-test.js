@@ -78,3 +78,7 @@ function getBoundingClientRect(selector, textToMatch, then) {
 function passthru(then) {
   then();
 }
+
+function click(selector) {
+  return 'document.querySelector(\"' + selector + '\").dispatchEvent(new MouseEvent("click", {bubbles: true}))';
+}

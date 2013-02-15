@@ -273,11 +273,22 @@ window.PatientSelector = (function(){
         },
 
         evaluateInPage: function(expr, callback) {
-            chrome.devtools.inspectedWindow.eval(expr, callback);
+            function checkException(result, isException) {
+                if (isException) {
+                    console.error("....PatientSelector.evaluateInPage(" + expr + ") exception", result);
+                } else {
+                    callback(result);
+                }
+            }
+            chrome.devtools.inspectedWindow.eval(expr, checkException);
         },
 
         evaluate: function(expr, callback) {
-            callback(eval(expr));
+            try {
+                callback(eval(expr));  
+            } catch (exc) {
+                console.error("....PatientSelector.evaluate(" + expr + ") exception " + exc, exc);
+            }
         },
 
         reloadPage: function(callback) {

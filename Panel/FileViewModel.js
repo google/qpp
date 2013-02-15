@@ -76,7 +76,7 @@
               if (tracepoint) {
                 this.tracepoints.push(tracepoint);
               } // else no data?
-              console.log(this.tracepoints().length + ' tracepoints in turn ' + turn)
+              //console.log(this.tracepoints().length + ' tracepoints in turn ' + turn)
             }.bind(this));
           }.bind(this));
         }

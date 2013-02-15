@@ -30,6 +30,32 @@ body {
   display: -webkit-flex;
 }
 
+.onPanelOpen {
+    padding: 1em;
+}
+
+.onPanelOpen .hint {
+    float: right;
+}
+
+.onPanelOpen .initialOptions {
+    padding-left: 1em;
+}
+
+.onPanelOpen button {
+    border-radius: 999px;
+    border-color: #75715e;
+}
+
+.onPanelOpen .noticeThis {
+    font-size: x-large;
+}
+
+.showHelp .onPanelOpen .hint_overview {
+    color: #75715e;
+    background-color: #272822;
+}
+
 .splitter {
   border-color: #75715e;
   border-style: solid;
@@ -128,10 +154,11 @@ body {
     display: inline;
     color: #d0d0d0;
     background-color: #75715e;
-    left: 4em;
-    padding-left: 1ex;
-    padding-right: 1ex;
+    padding: 1em;
+    margin: 1em;
     border-radius: 999px; /* any value larger than the radius of the object gives a circle */
+;
+    width: 200px;
 } 
 
 .fileEditor {

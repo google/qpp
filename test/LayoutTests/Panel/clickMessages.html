@@ -19,7 +19,8 @@ function test_clickMessage() {
   AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
-  
+  AsyncMachine.pushOp(evaluateInPanel, click('.initialOptions_noReload'), function(text){});
+
   var objPropSelector = [
     {type: 'string', text:'\"I\'ve been clicked \"'},
     {type: 'property', text: 'prop'}
@@ -31,10 +32,22 @@ function test_clickMessage() {
 
   for(var i=0;i<30;i++) AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){} );
   AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱31');
+
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.eventIndicator[severity=error][turn=\'10\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "";} );
-  AsyncMachine.pushOp(evaluateInPanel, '((document.querySelectorAll("td.turnNumber")[10].offsetTop - document.querySelector(".floaty").scrollTop < document.querySelector(".floaty").offsetHeight) && (document.querySelectorAll("td.turnNumber")[10].offsetTop - document.querySelector(".floaty").scrollTop > 0)).toString()');
+
+  function checkTurnNumber(turnNumber) {
+    var turnNumberOffsetTop = document.querySelectorAll("td.turnNumber")[turnNumber].offsetTop;
+    var scrollTop = document.querySelector(".floaty").scrollTop;
+    var offsetHeight = document.querySelector(".floaty").offsetHeight;
+    var delta  = turnNumberOffsetTop -  scrollTop;
+    console.log("checkTurnNumber turnNumberOffsetTop " + turnNumberOffsetTop + " scrollTop " + scrollTop);
+    console.log("checkTurnNumber delta " + delta + " offsetHeight " + offsetHeight);
+    return ( ( delta < offsetHeight)  && ( delta > 0 ) ).toString();
+  }
+
+  AsyncMachine.pushOp(evaluateInPanel, '(' + checkTurnNumber + '(10))');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.eventIndicator[severity=error][turn=\'20\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "";} );
-  AsyncMachine.pushOp(evaluateInPanel, '((document.querySelectorAll("td.turnNumber")[20].offsetTop - document.querySelector(".floaty").scrollTop < document.querySelector(".floaty").offsetHeight) && (document.querySelectorAll("td.turnNumber")[20].offsetTop - document.querySelector(".floaty").scrollTop > 0)).toString()');
+  AsyncMachine.pushOp(evaluateInPanel, '(' + checkTurnNumber + '(20))');
 
   AsyncMachine.runOp();
 }
