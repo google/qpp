@@ -450,7 +450,7 @@ QuerypointPanel.Panel.prototype = {
     );
   },
 
-  setScroll: function(node,index,elem) {
+  setScroll: function(node,elem) {
       var logFloat = document.querySelector('.floaty');
       elem.scroll = logFloat.scrollHeight;
       if (parseInt(elem.scroll,10) < 210) elem.scroll = '0px';
