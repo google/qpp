@@ -40,49 +40,49 @@ window.PatientSelector = (function(){
             var m = /^\| (.*)/.exec(selector);
             if (m) {
                 selector = m[1];
-                targets = this.hits;
+                targets = PatientSelector.hits;
             } else {
                 targets = [document];
             }
            
             try {
-                var nodes = this._selected = [];
+                var nodes = PatientSelector._selected = [];
                 var nodeList;
                 targets.forEach(function(target) {
                     nodeList = target.querySelectorAll(selector);
                     for (var i = 0; i < nodeList.length; i++) {
-                        this._selected.push(nodeList[i]);
+                        PatientSelector._selected.push(nodeList[i]);
                     }    
-                }.bind(this));
+                }.bind(PatientSelector));
             } catch (exc) {
                 console.error("....PatientSelector._querySelectorAll query failed for " + selector + ": " + exc, targets);
             }
 
             if (DEBUG) 
-                console.log("....PatientSelector._querySelectorAll finds "+this._selected.length+" matches for "+selector);
+                console.log("....PatientSelector._querySelectorAll finds "+PatientSelector._selected.length+" matches for "+selector);
 
             if (textToMatch) {
-                nodes = this._textSelectorAll(nodes, textToMatch);
+                nodes = PatientSelector._textSelectorAll(nodes, textToMatch);
                 if (DEBUG)
                     console.log("....PatientSelector._querySelectorAll finds "+nodes.length+" matches for "+selector+" with text "+textToMatch);
             } 
-            return this.hits = nodes;
+            return PatientSelector.hits = nodes;
         },
 
         ancestor: function(selector, callback) {
-            var hit = this.hits[0];
+            var hit = PatientSelector.hits[0];
             var parent = hit.parentElement;
             while (parent) {
                 var hit = parent.querySelector(selector);
                 console.log("....PatientSelector.ancestor(" + selector + ")  %o " + (hit ? "hit" : "miss"), parent);
                 if (hit) {
-                    this.hits[0] = hit;
+                    PatientSelector.hits[0] = hit;
                     callback();
                     return;
                 }
                 parent = parent.parentElement;
             }
-            this.hits = [];
+            PatientSelector.hits = [];
             callback();
         },
 
@@ -101,13 +101,13 @@ window.PatientSelector = (function(){
         _totalTextChangeObservers: 0,
 
         _createTextChangeObserver: function(textToMatch, element) {
-            this._totalTextChangeObservers++;
-            console.log('....PatientSelector._createTextChangeObserver _totalTextChangeObservers ' + this._totalTextChangeObservers, this);
+            PatientSelector._totalTextChangeObservers++;
+            console.log('....PatientSelector._createTextChangeObserver _totalTextChangeObservers ' + PatientSelector._totalTextChangeObservers, PatientSelector);
             var pill = {
                 poisoned: false,
-                patientSelector: this
+                patientSelector: PatientSelector
             };
-            pill.handler = this._textChanges.bind(pill, textToMatch, this._disconnectOnFind.bind(this));
+            pill.handler = PatientSelector._textChanges.bind(pill, textToMatch, PatientSelector._disconnectOnFind.bind(PatientSelector));
             var summary = new MutationSummary({
                 callback: pill.handler,
                 queries:[{characterData: true}],
@@ -119,48 +119,48 @@ window.PatientSelector = (function(){
         },
 
         _whenSelectorHits: function(textToMatch, callback, mutationSummary) {
-            console.log("....PatientSelector._whenSelectorHits mutationSummary ", mutationSummary[0]);
+            console.log("....PatientSelector._whenSelectorHits mutationSummary for " + textToMatch, mutationSummary[0]);
             var added = mutationSummary[0].added;
-            this.hits = this._textSelectorAll(added, textToMatch);
-            if (this.hits.length) {
-                callback(this.hits);
+            PatientSelector.hits = PatientSelector._textSelectorAll(added, textToMatch);
+            if (PatientSelector.hits.length) {
+                callback(PatientSelector.hits);
                 return;
             }
             added.forEach(function(element) {
-                this._textChangeObservers = this._textChangeObservers || [];
-                this._textChangeObservers.push(this._createTextChangeObserver(textToMatch, element));
-            }.bind(this));
+                PatientSelector._textChangeObservers = PatientSelector._textChangeObservers || [];
+                PatientSelector._textChangeObservers.push(PatientSelector._createTextChangeObserver(textToMatch, element));
+            }.bind(PatientSelector));
         },
 
         _setMutationObservers: function(selector, textToMatch, callback) {
-            this._disconnectOnFind = function() {
-                if (this._addedSelectionObserver)
-                    this._addedSelectionObserver.disconnect();
-                if (this._textChangeObservers) {
-                    this._textChangeObservers.forEach(function(observer){
+            PatientSelector._disconnectOnFind = function() {
+                if (PatientSelector._addedSelectionObserver)
+                    PatientSelector._addedSelectionObserver.disconnect();
+                if (PatientSelector._textChangeObservers) {
+                    PatientSelector._textChangeObservers.forEach(function(observer){
                         observer.disconnect();
                         observer._changeProcessor.poisoned = true;
                         console.log('....PatientSelector._setMutationObservers disconnect  ' + observer._textToMatch, observer);
-                    }.bind(this));
-                    this._totalTextChangeObservers -= this._textChangeObservers.length;
-                    console.log('....PatientSelector._setMutationObservers _totalTextChangeObservers ' + this._totalTextChangeObservers, this);
+                    }.bind(PatientSelector));
+                    PatientSelector._totalTextChangeObservers -= PatientSelector._textChangeObservers.length;
+                    console.log('....PatientSelector._setMutationObservers _totalTextChangeObservers ' + PatientSelector._totalTextChangeObservers, PatientSelector);
                 }
-                delete this._addedSelectionObserver;
-                delete this._textChangeObservers;
+                delete PatientSelector._addedSelectionObserver;
+                delete PatientSelector._textChangeObservers;
                 if (DEBUG)
                     console.log("....PatientSelector.whenSelectorAll found "+PatientSelector.hits.length +" for " + selector + " with text "+textToMatch);
                 callback();
             }
 
-            if (this._selected.length) {
-                if (this._textChangeObservers) {
-                    console.error('....PatientSelector._setMutationObservers unexpected _textChangeObservers ', this._textChangeObservers);
+            if (PatientSelector._selected.length) {
+                if (PatientSelector._textChangeObservers) {
+                    console.error('....PatientSelector._setMutationObservers unexpected _textChangeObservers ', PatientSelector._textChangeObservers);
                 }
-                this._textChangeObservers = this._selected.map(this._createTextChangeObserver.bind(this, textToMatch));
-                console.log('....PatientSelector._setMutationObservers initial _totalTextChangeObservers ' + this._totalTextChangeObservers, this);
+                PatientSelector._textChangeObservers = PatientSelector._selected.map(PatientSelector._createTextChangeObserver.bind(PatientSelector, textToMatch));
+                console.log('....PatientSelector._setMutationObservers initial _totalTextChangeObservers ' + PatientSelector._totalTextChangeObservers, PatientSelector);
             } 
-            this._addedSelectionObserver = new MutationSummary({
-                callback: this._whenSelectorHits.bind(this, textToMatch, this._disconnectOnFind.bind(this)),
+            PatientSelector._addedSelectionObserver = new MutationSummary({
+                callback: PatientSelector._whenSelectorHits.bind(PatientSelector, textToMatch, PatientSelector._disconnectOnFind.bind(PatientSelector)),
                 queries: [
                     {element: selector}
                 ]
@@ -168,8 +168,8 @@ window.PatientSelector = (function(){
             if (DEBUG) {
                 console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());
                 /*
-                this._textChangeObservers = this._textChangeObservers || [];
-                this._textChangeObservers.push(new MutationSummary({
+                PatientSelector._textChangeObservers = PatientSelector._textChangeObservers || [];
+                PatientSelector._textChangeObservers.push(new MutationSummary({
                     queries:[{all:true}],
                     callback: function(summary) {
                       console.log('....PatientSelector.whenSelectorAll querySelectorAll ' + selector, document.querySelectorAll(selector))
@@ -181,12 +181,12 @@ window.PatientSelector = (function(){
         },
 
         whenSelectorAll: function(selector, textToMatch, callback) {
-            this.hits = this._querySelectorAll(selector, textToMatch);
-            if (this.hits.length) {
+            PatientSelector.hits = PatientSelector._querySelectorAll(selector, textToMatch);
+            if (PatientSelector.hits.length) {
                 callback();
             } else {
                 try {
-                    this._setMutationObservers(selector, textToMatch, callback);
+                    PatientSelector._setMutationObservers(selector, textToMatch, callback);
                 } catch (exc) {
                     console.error("....PatientSelector._setMutationObservers FAIL "+exc, exc);
                 }
@@ -203,17 +203,17 @@ window.PatientSelector = (function(){
 
         clickSelector: function(selector, textToMatch, callback) {
             console.log("....PatientSelector.clickSelector(" + selector + ', ' + textToMatch + ')');
-            this.whenSelectorAll(selector, textToMatch, function() {
-                this._click(PatientSelector.hits[0], callback);
+            PatientSelector.whenSelectorAll(selector, textToMatch, function() {
+                PatientSelector._click(PatientSelector.hits[0], callback);
                 if (DEBUG) 
                     console.log("....PatientSelector.clickSelector hit ", PatientSelector.hits[0])
-            }.bind(this));
+            }.bind(PatientSelector));
         },
 
         selectTokenInSource: function(editorTokens, callback) {
             console.log("....PatientSelector.selectTokenInSource(" + editorTokens.length + " editorTokens) ", editorTokens);
-            var visibleSourceElement = this._querySelectorAll('.CodeMirror-lines');
-            var visibleSourceLines = this._querySelectorAll('| pre');
+            var visibleSourceElement = PatientSelector._querySelectorAll('.CodeMirror-lines');
+            var visibleSourceLines = PatientSelector._querySelectorAll('| pre');
             var mark = 0;
             function next() {
                 var token = editorTokens.shift();
@@ -359,26 +359,26 @@ window.PatientSelector = (function(){
                 var postId = payload.shift();
                 var method = payload.shift();
                 var status = payload.shift();
-                var handler = this.proxyHandlers[postId];
+                var handler = PatientSelector.proxyHandlers[postId];
                 if (handler) {
                     if (status === 'Error')
                         handler.onError(payload);
                     else 
                         handler.onResponse(payload);
-                    delete this.proxyHandlers[postId];                    
+                    delete PatientSelector.proxyHandlers[postId];                    
                 } else {
                     console.error("....PatientSelector.createProxy.onMessage no handler for " + postId + ' in ' + doc(), message);
                 }
             }
 
-            var proxy = this.proxies[iframeURL] = new ChannelPlate.Base(port, onMessage.bind(this));
+            var proxy = PatientSelector.proxies[iframeURL] = new ChannelPlate.Base(port, onMessage.bind(PatientSelector));
             console.log("....PatientSelector.createProxy for " + iframeURL);
             // The frame just contacted us, maybe we have a message waiting to send it.
-            this._postToProxy(proxy);
+            PatientSelector._postToProxy(proxy);
         },
 
         _postToProxy: function(proxy) {
-            var handler = this.proxyHandlers[this.postId];
+            var handler = PatientSelector.proxyHandlers[PatientSelector.postId];
             if (handler && !handler.sent) {
                 handler.sent = proxy.postMessage(handler.args);
                 console.log("....PatientSelector.proxyTo.postMessage sent: " + handler.sent + " to " + handler.url, handler.args);                
@@ -387,18 +387,18 @@ window.PatientSelector = (function(){
 
         proxyTo: function(url, proxied, callback, errback) {
             console.log("....PatientSelector.proxyTo " + url, proxied);
-            var postId = ++this.postId;
-            this.proxyHandlers[postId] = {url: url, onResponse: callback, onError: errback, args: [postId].concat(proxied)};
+            var postId = ++PatientSelector.postId;
+            PatientSelector.proxyHandlers[postId] = {url: url, onResponse: callback, onError: errback, args: [postId].concat(proxied)};
 
             var proxy;
-            Object.keys(this.proxies).some(function(iframeURL) {
+            Object.keys(PatientSelector.proxies).some(function(iframeURL) {
                 if (iframeURL.indexOf(url) !== -1) {
-                    return proxy = this.proxies[iframeURL];
+                    return proxy = PatientSelector.proxies[iframeURL];
                 }
-            }.bind(this));
+            }.bind(PatientSelector));
 
             if (proxy) {
-                this._postToProxy(proxy);
+                PatientSelector._postToProxy(proxy);
             } else {
                 console.log("....PatientSelector.proxyTo waiting for " + url);
             }
