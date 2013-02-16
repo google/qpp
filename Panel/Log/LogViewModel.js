@@ -3,7 +3,7 @@
 
 (function() {
   
-  window.QuerypointPanel = window.QuerypointPanel || {};
+  'use strict';
 
   QuerypointPanel.LogViewModel = {
 
@@ -24,6 +24,6 @@
       
       return this;
     },
-
   };
+  
 }());

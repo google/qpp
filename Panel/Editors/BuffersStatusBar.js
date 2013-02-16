@@ -3,6 +3,8 @@
 
 (function() {
 
+  "use strict";
+
   var buffersStatusBarSelector = ".buffersStatusBar";
   
   QuerypointPanel.BuffersStatusBar = {

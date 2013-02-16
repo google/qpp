@@ -2,6 +2,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
+
+  'use strict';
+
   QuerypointPanel.LogScrubber = {
     
     initialize: function(logElement) {
@@ -106,32 +109,33 @@
         });
       });
     },
+    
     collapseTurns: function(node, event){
-        if(arguments.length == 2){
-            node = event.currentTarget;
-        }else{
-            node = arguments[0].parentElement;
-        }
+      if(arguments.length == 2){
+          node = event.currentTarget;
+      }else{
+          node = arguments[0].parentElement;
+      }
 
-        var allTurns = document.querySelectorAll('span.turns');
-        var currentLoad = node.querySelector('span.turns');
-        
-        while(!currentLoad){
-            node = node.parentElement;
-            currentLoad = node.querySelector('span.turns');
-        }
-        
-        for(var i = 0 ; i < allTurns.length ; i++){
-            allTurns[i].classList.add('hiddenTurn');
-        }
-        
-        currentLoad.classList.remove('hiddenTurn');
+      var allTurns = document.querySelectorAll('span.turns');
+      var currentLoad = node.querySelector('span.turns');
+      
+      while(!currentLoad){
+          node = node.parentElement;
+          currentLoad = node.querySelector('span.turns');
+      }
+      
+      for(var i = 0 ; i < allTurns.length ; i++){
+          allTurns[i].classList.add('hiddenTurn');
+      }
+      
+      currentLoad.classList.remove('hiddenTurn');
 
-        // There's an issue where elements in scrubberBox are displayed in wrong order
-        // Redrawing scrubberbox fixes this. There should be a better solution.
-        // TODO: Avoid redrawing scrubberbox
-        document.querySelector('.logScrubber').style.display = 'none';
-        setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
+      // There's an issue where elements in scrubberBox are displayed in wrong order
+      // Redrawing scrubberbox fixes this. There should be a better solution.
+      // TODO: Avoid redrawing scrubberbox
+      document.querySelector('.logScrubber').style.display = 'none';
+      setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
     }
 
   };

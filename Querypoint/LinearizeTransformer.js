@@ -17,8 +17,7 @@
 //   Compound expressions -> statements in blocks.
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
-
+  
   'use strict';
 
   var debug = false;

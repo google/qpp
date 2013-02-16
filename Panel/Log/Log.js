@@ -2,31 +2,32 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-   
+
+  'use strict';   
+
   var DEBUG = false;
 
-   var totalLogs = 0;
+  var totalLogs = 0;
   
-   var messagePrototype = {
-     tooltip: function() {
-       var logFloat = document.querySelector('.floaty');
-       var logScrubber = document.querySelector('.logScrubber');
-       this.scroll = logFloat.scrollHeight;
-       totalLogs++;
-       if (DEBUG)
-        console.log('Message.tooltip: total logs : '+totalLogs);
+  var messagePrototype = {
+    tooltip: function() {
+     var logFloat = document.querySelector('.floaty');
+     var logScrubber = document.querySelector('.logScrubber');
+     this.scroll = logFloat.scrollHeight;
+     totalLogs++;
+     if (DEBUG)
+      console.log('Message.tooltip: total logs : '+totalLogs);
 
-       // To have the scrubberBox focus on the last event the margin property is 
-       // set to the position of that event. This is done keeping track of how
-       // many events there's been and knowing the width of each event.
-       // TODO: Needs test with multiple loads 
-       // var moveScroll = -totalLogs * 9 - this.load * 15 - this.turn * 4 + logFloat.offsetWidth;
-       // if (moveScroll > 0) moveScroll = 0;
-       // logScrubber.style.marginLeft = (moveScroll).toString() + 'px';
-       return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
-     }
-   };
-  
+     // To have the scrubberBox focus on the last event the margin property is 
+     // set to the position of that event. This is done keeping track of how
+     // many events there's been and knowing the width of each event.
+     // TODO: Needs test with multiple loads 
+     // var moveScroll = -totalLogs * 9 - this.load * 15 - this.turn * 4 + logFloat.offsetWidth;
+     // if (moveScroll > 0) moveScroll = 0;
+     // logScrubber.style.marginLeft = (moveScroll).toString() + 'px';
+     return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
+    }
+  };
   
   QuerypointPanel.Log = {
 
@@ -90,7 +91,11 @@
     },
 
     _reloadRow: function(messageSource) {
-       return {load: messageSource.load, turns: ko.observableArray([this._turnRow(messageSource)]), messages: []}
+      return {
+        load: messageSource.load, 
+        turns: ko.observableArray([this._turnRow(messageSource)]), 
+        messages: []
+      };
     },
     
     _turnRow: function(messageSource) {
@@ -114,7 +119,7 @@
         this._logScrubber.showLoad(this.currentReload);
         this._logScrubber.loads.push(this.currentReload);
         if (DEBUG){
-           console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.loads().length);
+          console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.loads().length);
         }
       }  
       if (this.currentTurn.turn !== messageSource.turn) {
@@ -123,13 +128,13 @@
         this._logScrubber.showLoad(this.currentReload);
         this.currentReload.messages.push({severity: 'turn', turn: this.currentTurn.turn});
         if (DEBUG){
-           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
+          console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }
       } 
       this.currentTurn.messages.push(messageSource);
       this.currentReload.messages.push(messageSource);
       if (DEBUG){
-           console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
+        console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }
     },
     
@@ -138,6 +143,6 @@
       //messageSource.odd = (--visibleLines) % 2;
       return this._logScrubber.loads();
     }
-
   };
+
 }());

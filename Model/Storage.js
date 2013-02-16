@@ -3,9 +3,11 @@
 
 // Backing data for QuerypointModel Panel, save/restore object
 
-window.QuerypointModel = window.QuerypointModel || {};
 
-( function() {
+(function() {
+ 
+  'use strict';
+  
   var Storage = QuerypointModel.Storage = function Storage() {
     this.key = "QuerypointModel.PanelModel";
   }

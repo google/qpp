@@ -3,7 +3,9 @@
 
 (function(){
 
-  window.Querypoint = window.Querypoint || {};
+  'use strict';
+
+  var __qp_tps;
 
   function protect(expr) {
       return "eval(" + expr + ")"; // unwrapped by Querypoints

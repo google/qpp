@@ -2,8 +2,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.QuerypointPanel = window.QuerypointPanel || {};
   
+  "use strict";
+
   var bindings = 0;
   
   QuerypointPanel.QueryViewModel = function(query, panel) {
@@ -69,6 +70,5 @@
       return (this.currentQueries().length > 0)
     }.bind(this));
   }
-  
   
 }());

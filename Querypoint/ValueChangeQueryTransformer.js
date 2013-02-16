@@ -3,7 +3,7 @@
 
 (function(){
   
-  window.Querypoint = window.Querypoint || {};
+  'use strict';
   
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
@@ -120,6 +120,7 @@
      * @return {ParseTree}
      */
   ValueChangeQueryTransformer.prototype = {
+
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
     transformAny: function(tree) {
@@ -276,9 +277,8 @@
     trace: function(valueTree, traceLocation) {
       return propertyChangeTrace(this.reference.base, this.reference.name, this.propertyKey, valueTree, traceLocation);
     },
-
     
-     // Called once per load by QPRuntime
+    // Called once per load by QPRuntime
     runtimeInitializationStatements: function() {
       // window.__qp.propertyChanges = window.__qp.propertyChanges || {};
       var propertyChangesInitialization = 

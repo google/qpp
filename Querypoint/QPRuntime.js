@@ -3,7 +3,7 @@
 
 (function(){
 
-  window.Querypoint = window.Querypoint || {};
+  'use strict';
 
   /** 
    * A function that runs in the debuggee web page before any other JavaScript

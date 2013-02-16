@@ -5,6 +5,10 @@
 
 (function(){
 
+  'use strict';
+
+  var RemoteWebPageProject = Querypoint.RemoteWebPageProject;
+
   function QPProject(url, loads) {
     RemoteWebPageProject.call(this, url);
 

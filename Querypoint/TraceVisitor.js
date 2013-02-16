@@ -3,8 +3,9 @@
 
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
   
+  'use strict';
+
   var debug = false;
 
   // Walks the traceData structure
@@ -164,10 +165,12 @@
   }
   
   Querypoint.LineModelTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
+  
   Querypoint.LineModelTraceVisitor.prototype.visitFunctionTraced = function(functionTree, activations) {
     // latest only
     this.visitActivationTraced(functionTree, activations[activations.length - 1]);
   }
+
   Querypoint.LineModelTraceVisitor.prototype.visitActivationTraced = function(functionTree, activation) {
     var functionDefinitionOffset = functionTree.location.start.offset;
     if (functionDefinitionOffset < 0)

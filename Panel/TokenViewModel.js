@@ -3,7 +3,7 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.QuerypointPanel = window.QuerypointPanel || {};
+  "use strict";
   
   QuerypointPanel.TokenViewModel = function(fileViewModel, panel) {
     this._fileViewModel = fileViewModel;

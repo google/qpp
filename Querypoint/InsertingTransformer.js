@@ -15,8 +15,7 @@
 // Base class for inserting statements in a ParseTree
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
-
+  
   'use strict';
 
   var debug = true;
@@ -153,7 +152,9 @@
 
         var transformed = element !== transformedElement;
         if (builder || transformed || this.insertions.length) {
-ParseTreeValidator.validate(transformedElement);
+          if (debug) {
+            ParseTreeValidator.validate(transformedElement);
+          } 
           if (!builder) {
             builder = list.slice(0, index);
           }
@@ -169,4 +170,3 @@ ParseTreeValidator.validate(transformedElement);
   Querypoint.InsertingTransformer = InsertingTransformer;
 
 }());
-

@@ -6,8 +6,6 @@
 
   var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
 
-  window.Querypoint = window.Querypoint || {};
-
 
   // The algorightm depends upon each branch of the tree enclosing unique nested character regions.
   // It won't work if a transformation mixes up the tree.location regions.
@@ -44,10 +42,13 @@
   }
 
   Querypoint.FindInTree.prototype = {
-    __proto__: ParseTreeVisitor.prototype, 
+
+    __proto__: ParseTreeVisitor.prototype,
+
     getMatchedTree: function() {
       return this._deepestTree;
     },
+
     visitAny: function(tree) {
       var distance;
       if (tree && tree.location && !tree.doNotTransform && !tree.doNotTrace) {
@@ -71,6 +72,7 @@
         return false;
       }
     },
+
     visitList: function(list) {
       for (var i = 0; i < list.length; i++) {
         // List items don't over lap, so once we hit we are done.
@@ -79,4 +81,5 @@
       return true;
     },
   };
+  
 }());

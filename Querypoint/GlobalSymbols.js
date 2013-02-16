@@ -8,6 +8,8 @@
 
 (function() {
 
+  'use strict';
+
   var global = ('global', eval)('this');
 
   var globalSymbols = {};

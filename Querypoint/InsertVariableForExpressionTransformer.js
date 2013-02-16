@@ -15,8 +15,7 @@
 // Derived classes call .insertVariableFor(tree)
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
-
+  
   'use strict';
 
   var debug = false;
@@ -43,7 +42,6 @@
   function InsertVariableForExpressionTransformer(generateFileName) {
     Querypoint.InsertingTransformer.call(this, generateFileName);
   }
-
 
   InsertVariableForExpressionTransformer.prototype =  {
     __proto__: Querypoint.InsertingTransformer.prototype,

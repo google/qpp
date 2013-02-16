@@ -5,6 +5,8 @@
 //  
 
 (function(){
+
+  "use strict";
   
   ko.extenders.syncArray = function(target, array) {
     target.subscribe(function(newValue){
@@ -276,7 +278,7 @@ QuerypointPanel.Panel.prototype = {
     //
     selectFile: function() {
       console.log("selectFile");
-      var uriItems = new URISelector(this.extensionPanel);
+      var uriItems = new QuerypointPanel.URISelector(this.extensionPanel);
       var names = {};
       this.project.getSourceFiles().forEach(function(sourceFile){
         names[sourceFile.name] = sourceFile;
@@ -298,7 +300,7 @@ QuerypointPanel.Panel.prototype = {
       if (fileViewModel) {
         var mark = fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
         if (mark) {
-          function clearMark(event) {
+          var clearMark = function(event) {
             mark.clear();
             console.log("cleared mark because of mouseout on ", event.target);
             $(this.document).off('mouseout', clearMark);

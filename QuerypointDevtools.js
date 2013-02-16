@@ -13,7 +13,7 @@ function onLoad() {
   var loads = 0;
 
   function resetProject(url) {
-    model.devtoolsModel = new InspectedPage();  // TODO rename DevtoolsPageModel
+    model.devtoolsModel = new Querypoint.InspectedPage();  // TODO rename DevtoolsPageModel
     model.project = new Querypoint.QPProject(url, loads);
     collectScripts(url);  
   }

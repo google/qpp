@@ -3,9 +3,12 @@
 
 // Backing data for QuerypointModel Panel, save/restore object
 
-window.QuerypointModel = window.QuerypointModel || {};
+(function() {
 
-( function() {
+  'use strict';
+
+  var QuerypointModel = window.QuerypointModel = {};
+
   /**
    @param string url, no search or hash part
    */

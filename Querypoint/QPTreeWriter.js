@@ -48,7 +48,7 @@ var QPTreeWriter = (function() {
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
 
   // Constant
-var activationId = Querypoint.activationId;
+  var activationId = Querypoint.activationId;
   
     /**
    * @constructor
@@ -59,7 +59,9 @@ var activationId = Querypoint.activationId;
 
 
   QPTreeWriter.prototype = {
-    __proto__: ParseTreeWriter.prototype, 
+
+    __proto__: ParseTreeWriter.prototype,
+
     generateSource: function(file, tree) {
       this.visitAny(tree);
       if (this.currentLine_.length > 0) {
@@ -134,7 +136,9 @@ var activationId = Querypoint.activationId;
         )
       );
      
-ParseTreeValidator.validate(tracedExpressionValue); 
+      if (debug) {
+        ParseTreeValidator.validate(tracedExpressionValue); 
+      }
       return tracedExpressionValue;
     },
 
@@ -154,7 +158,9 @@ ParseTreeValidator.validate(tracedExpressionValue);
             ]
           )
         );
-ParseTreeValidator.validate(activationStatement);
+        if (debug) {
+          ParseTreeValidator.validate(activationStatement);          
+        }
 
       // __qp_function.push(__qp_activation),; 
       var pushExpression = 
@@ -170,7 +176,9 @@ ParseTreeValidator.validate(activationStatement);
       
       // We need to suppress the return value of the push() 
       var pushStatement = this._postPendComma(tree.location, pushExpression);
-ParseTreeValidator.validate(pushStatement);
+      if (debug) {
+        ParseTreeValidator.validate(pushStatement);
+      }
 
       return [activationStatement, pushStatement].map(Querypoint.markDoNot);
     },

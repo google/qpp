@@ -13,15 +13,13 @@
 // limitations under the License.
 
 (function() {
-  window.Querypoint = window.Querypoint || {};
-
+  
   'use strict';
 
   var FreeVariableChecker = traceur.semantics.FreeVariableChecker;
   var IdentifierToken = traceur.syntax.IdentifierToken;
   var IdentifierExpression = traceur.syntax.trees.IdentifierExpression;
   var BindingIdentifier = traceur.syntax.trees.BindingIdentifier;
-
 
   /**
    * Attachs a scope to each variable declaration tree
@@ -82,7 +80,6 @@
     this.references = Object.create(null);
     this.declarations = Object.create(null);
   }
-
 
   Querypoint.ScopeAttacher.prototype = {
     __proto__: FreeVariableChecker.prototype,
@@ -186,7 +183,6 @@
 
       this.pop_(scope);
     },
-
 
   };
 

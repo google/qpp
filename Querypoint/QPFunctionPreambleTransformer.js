@@ -3,7 +3,7 @@
 
 (function(){
   
-  window.Querypoint = window.Querypoint || {};
+  'use strict';
   
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
   var createMemberExpression = ParseTreeFactory.createMemberExpression;
@@ -133,6 +133,5 @@
     elements = prefix.concat(elements);
     return new Program(tree.location, elements);
   }
-
 
 }());

@@ -2,6 +2,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function(){
+
+  "use strict";
+
   QuerypointPanel.Editors = {
     initialize: function(buffers, editorsViewModel, commands) {
       console.assert(buffers);
@@ -75,7 +78,7 @@
 
     createEditor: function(fileEditorView, name, content, callback) {
       this._viewModel.openURLs.push(name);
-      var editor = new EditorByCodeMirror(fileEditorView, name, content);
+      var editor = new QuerypointPanel.EditorByCodeMirror(fileEditorView, name, content);
       editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
       this._editors.push(editor);
