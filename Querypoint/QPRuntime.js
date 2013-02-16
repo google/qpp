@@ -10,9 +10,11 @@
    */
   function define__qp() {
 
-    var beforeArtificalLoadEvent = true;
     var debug_in_page = false;
 
+    var fireLoadTrigger = null;
+    var beforeArtificalLoadEvent = true;
+    
     function fireLoad() {
       try {
         // So far we cannot transcode synchronously so we miss the 'load' event
@@ -35,7 +37,14 @@
         console.error("__qp_runtime.fireLoad fails "+exc, exc.stack);
         return exc.toString();
       }
+    }
 
+    function fireLoadAfterRealLoad() {
+      if (debug_in_page) console.log("__qp_runtime.fireLoadAfterRealLoad fireLoadTrigger " + fireLoadTrigger);
+      if (fireLoadTrigger) 
+        return fireLoadTrigger.call();
+      else 
+        fireLoadTrigger = fireLoad;
     }
     
     function trace(expr) {
@@ -45,7 +54,12 @@
     function grabLoadEvent() {
       window.addEventListener('load', function(event) {
         window.__qp.loadEvent = event;
-        if (debug_in_page) console.log("__qp_runtime. grabLoadEvent event stored");
+        if (debug_in_page) console.log("__qp_runtime. grabLoadEvent load event, stored; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent);
+        fireLoadAfterRealLoad();
+      });
+      window.addEventListener('DOMContentLoaded', function(event) {
+        window.__qp.DOMContentLoaded = event;
+        if (debug_in_page) console.log("__qp_runtime. grabLoadEvent DOMContentLoaded event, stored");
       });
     }
        
@@ -165,7 +179,7 @@
         turn: 0,        // turns.length set by wrapEntryPoint
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
         interceptEntryPoints: interceptEntryPoints, // call just before we load traced source.
-        fireLoad: fireLoad,
+        fireLoad: fireLoadAfterRealLoad,
         trace: trace,
         setTracedPropertyObject: setTracedPropertyObject, // store the traced object by property
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object

@@ -64,11 +64,18 @@
 
     startRuntime: function() {
       function startRuntime() {  // runs in web page
-        window.__qp.fireLoad();
-        return window.__qp_reloads;
+        try {
+          window.__qp.fireLoad();
+          return window.__qp_reloads;
+        } catch(exc) {
+          return exc.toString();
+        }
       }
-      function onRuntimeStarted(results) {
-        console.log("QP runtime called fireLoad() got "+results);
+      function onRuntimeStarted(results, isException) {
+        if (isException) 
+          console.error("startRuntime FAILS");
+        else
+          console.log("QP runtime called fireLoad() got "+results);
       }
       chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
     },
