@@ -6,8 +6,10 @@
   
   'use strict';
 
-  var debug = false;
-
+  var debug = DebugLogger.register('TraceVisitor', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+  
   // Walks the traceData structure
   
   Querypoint.TraceVisitor = function(project) {

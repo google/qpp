@@ -5,7 +5,9 @@
 
   'use strict';
 
-  var debug = false;
+  var debug = DebugLogger.register('AllExpressionsQuery', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  })
 
   Querypoint.AllExpressionsQuery = function(tree, project) {
     this.generateFileName = project.generateFileName;

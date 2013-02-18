@@ -5,10 +5,14 @@
 
   'use strict';
 
+  var debug = DebugLogger.register('QPRuntime', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  })
+
   /** 
    * A function that runs in the debuggee web page before any other JavaScript
    */
-  function define__qp() {
+  function define__qp(debug_in_page) {
 
     var debug_in_page = false;
 
@@ -199,7 +203,6 @@
   }; 
 
   Querypoint.QPRuntime = {
-    debug: false,
 
     initialize: function() { 
       this.runtime =  [define__qp];
@@ -207,9 +210,9 @@
       return this;
     },
     runtimeSource: function(numberOfReloads) {
-      if (Querypoint.QPRuntime.debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
+      if (debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
-        return '(' + fnc + ')();\n';
+        return '(' + fnc + ')(' + debug + ');\n';
       });
       var reload = 'window.__qp_reloads = ' + numberOfReloads + ';\n';  
       return reload + fncs + '\n' + this.source.join('\n') + "//@ sourceURL='QPRuntime.js'\n";

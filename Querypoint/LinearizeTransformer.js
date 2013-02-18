@@ -20,7 +20,9 @@
   
   'use strict';
 
-  var debug = false;
+  var debug = DebugLogger.register('LinearizeTransformer', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
 
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;

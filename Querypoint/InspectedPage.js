@@ -6,14 +6,16 @@
 (function(){
   'use strict';
 
+  var debug = DebugLogger.register('InspectedPage', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  })
+
   function InspectedPage() {
     chrome.devtools.network.onNavigated.addListener(this.onNavigated.bind(this));
     this.onNavigated();
     this.monitorResources();
     this.monitorNetwork();
   }
-
-  InspectedPage.debug = false;
 
   InspectedPage.prototype = {
 
@@ -28,26 +30,26 @@
     monitorResources: function() {
       chrome.devtools.inspectedWindow.onResourceAdded.addListener(this.addResource.bind(this));
       chrome.devtools.inspectedWindow.getResources(function onResources(resources){
-        if (InspectedPage.debug) console.log("getResources", resources.map(function(resource){return resource.url}));
+        if (debug) console.log("getResources", resources.map(function(resource){return resource.url}));
         resources.forEach(this.addResource.bind(this));
       }.bind(this));
     },
 
     addResource: function(resource) {
-      if (InspectedPage.debug) console.log("addResource " + resource.url + ' to ' + this.resources.length + " resources");
+      if (debug) console.log("addResource " + resource.url + ' to ' + this.resources.length + " resources");
       this.resources.push(resource);
     },
 
     monitorNetwork: function() {
       this.refreshHAR();
       chrome.devtools.network.onRequestFinished.addListener(function onRequestFinished(harEntry){
-        if (InspectedPage.debug) console.log("onRequestFinished", harEntry);
+        if (debug) console.log("onRequestFinished", harEntry);
       }.bind(this));
     },
 
     refreshHAR: function() {
       chrome.devtools.network.getHAR(function onHAR(harLog) {
-        if (InspectedPage.debug) console.log("onHAR", harLog);
+        if (debug) console.log("onHAR", harLog);
       }.bind(this));
     }
   };

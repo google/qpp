@@ -40,7 +40,10 @@
   
     // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
-  var debug = true;
+
+  var debug = DebugLogger.register('ValueChangeQueryTransformer', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  })
   
   /*
     Trace expressions that change object property values.

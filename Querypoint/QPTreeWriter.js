@@ -15,7 +15,9 @@
 var QPTreeWriter = (function() {
   'use strict';
   
-  var debug = false;
+  var debug = DebugLogger.register('QPTreeWriter', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
 
   var ParseTreeWriter = traceur.outputgeneration.ParseTreeWriter;
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;

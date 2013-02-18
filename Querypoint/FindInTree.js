@@ -4,6 +4,10 @@
 (function(){
   'use strict';
 
+  var debug = DebugLogger.register('FindInTree', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  })
+
   var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
 
 
@@ -16,12 +20,10 @@
     this._closest = Number.MAX_VALUE;
   }
   
-  Querypoint.FindInTree.debug = false;
-  
   Querypoint.FindInTree.findByDistanceFunction = function(tree, fncOfTree) {
     var visitor = new Querypoint.FindInTree(fncOfTree);
     visitor.visit(tree);
-    if (Querypoint.FindInTree.debug)
+    if (debug)
       console.log("FindInTree closest "+visitor._closest, traceur.outputgeneration.TreeWriter.write(visitor.getMatchedTree())); 
     return visitor.getMatchedTree();
   }
@@ -55,7 +57,7 @@
         distance = this._distanceFunction(tree);
         if (distance < 0)
           return false;
-        if (Querypoint.FindInTree.debug) {
+        if (debug) {
           var range = tree.location ?  tree.location.start.offset + '-' + tree.location.end.offset : "no-location";
           console.log("FindInTree " + distance + '<' + this._closest + " type " + tree.type + ':' + range);
         }

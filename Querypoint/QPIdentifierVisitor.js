@@ -4,7 +4,9 @@
 var QPIdentifierVisitor = (function() {
   'use strict';
 
-  var debug = true;
+  var debug = DebugLogger.register('QPIdentifierVisitor', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
 
   var ParseTreeVisitor = traceur.syntax.ParseTreeVisitor;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;
