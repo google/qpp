@@ -8,11 +8,15 @@
 <script src="../../../DebugLogger.js"></script>
 <script src="../PatientSelector.js"></script>
 <script src="../panel-test.js"></script>
-
+{ 
 <script>
 
 window.addEventListener('load', function() {
-  testScript();
+  try {
+      testScript();
+  } catch(err) {
+      alert("ERROR");
+  }
 });
 
 function test_resizeEvents10() {
@@ -31,24 +35,28 @@ function test_resizeEvents10() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
+
+  var strClick = ' && document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))';
   var passed = 0;
   function functionchange(current){
-      var ans = '((function (){ var change = (document.querySelector(".logScrubber").offsetWidth-30-';
-          ans+= (current * 3).toString(); 
-          ans+= ')/';
-          ans+= (current * 3).toString();
-          ans+= ';';
-          ans+= 'change = Math.round( change - ' + passed +') ;';
-          ans+= 'for(var i = 0; i < change ; i++)';
-          ans+= 'chrome.devtools.inspectedWindow.eval(\'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))\');' 
+      var ans = '((function (){ var change = (document.querySelector(".logScrubber").offsetWidth - 30 - ';
+          ans+= (current * 3).toString() + ') / ' + (current * 3).toString() + ';';
+          ans+= 'if(change>40) return 0;';
+          ans+= 'var clicks = \'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))\';';
+          ans+= 'change = Math.floor( change - ' + passed +') ;';
+          ans+= 'for(var i = 1; i < change ; i++) clicks+=\'' + strClick +'\';';
+          ans+= 'chrome.devtools.inspectedWindow.eval(clicks);'; 
           ans+= 'return change;';
           ans+= '})())'
           return ans;
   }
 
-  AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ passed+=ans; });
+  AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ if(ans=='0'){ AsyncMachine.ops=[]; return "Window too wide to run test case" ;} passed+=ans; });
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱1');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){ return "";} );
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("span.turnNumber").textContent = 100', function(text){ return "";} );
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '100');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
  // AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱'+i);
   AsyncMachine.runOp();
