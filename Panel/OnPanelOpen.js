@@ -29,13 +29,18 @@
       onPanelOpen.style.display = 'none';
     },
 
+    open: function() {
+      var onPanelOpen = document.querySelector('div.onPanelOpen');
+      onPanelOpen.style.display = 'none';
+    },
+
     // Functions wired to eg hint_overview
     hint: {
       overview: function() {
         this.panel.toggleHelp();
       },
       documentation: function() {
-        window.open("http://google.github.com/qpp/"); // TODO proper page
+        window.open("http://google.github.com/qpp/documentation.html");
       },
       feedback: function() {
         window.open("https://github.com/google/qpp/issues/new");
