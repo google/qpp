@@ -72,7 +72,22 @@
         var args = Array.prototype.slice.apply(arguments);
         window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
         window.__qp.turn = window.__qp.turns.length; 
-        console.log("qp| startTurn " + window.__qp.turn); 
+        var eventObject = window.__qp.turns[window.__qp.turn-1].args[0];
+        /*var event = '';
+        for(var key in eventObject){
+            switch(typeof(eventObject[key])){
+                case 'function':
+                    event+= key + ':' + eventObject[key].name +'(),';
+                    break;
+                case 'object':
+                    if(eventObject[key]) event+= key + ':[' + eventObject[key].constructor.name + '],';
+                    else event+= key + ':null,';
+                    break;
+                default:
+                    event+= key + ':' + eventObject[key]+',';
+            }
+        */
+        console.log("qp| startTurn " + window.__qp.turn + ' ' + window.__qp.turns[window.__qp.turn-1].fnc.name + ' ' + eventObject.constructor.name +  ' ' + (eventObject.target.localName ? ( eventObject.target.localName + (eventObject.target.id ? "#" + eventObject.target.id : '')) : eventObject.target.nodeName) ); 
         entryPointFunction.apply(window, args);  // TODO check |this| maybe use null
         console.log("qp| endTurn " + window.__qp.turn); 
       }

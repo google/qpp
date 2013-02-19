@@ -94,11 +94,13 @@
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
             </div>
         </div>
-        <div class="dropDown">
+        <div class="dropDown" >
+            <p data-bind="text: $root.turnInformation()"> </p>
+            <p data-bind="text: $root.eventInformation()"> </p>
         </div>
         <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoad}"></div>
         <div class="overviewLog" data-bind="foreach: allMessages">
-            <div class="eventIndicator" data-bind="attr:{severity:severity, turn:turn}, event:{mousedown: $root.focusLog}"> </div>
+            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn, title: $root.tooltip(turn)}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
         </div>
         <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
         <!--

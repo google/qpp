@@ -21,12 +21,28 @@
         return this.loads().length;
       }.bind(this));
       
+      var self = this;
       this.lastLoad = 0;
       this.loadStarted = ko.observable(0);
       this.loadEnded = ko.observable(0);
       this.turnStarted = ko.observable(0);
       this.turnEnded = ko.observable(0);
       this.showLoad = ko.observable({load: '-'});
+      this.showTurn = ko.observable(0);
+
+      this.turnInformation = ko.computed(function(){
+        return 'Turn ' + self.showTurn() + ' on load ' + self.showLoad().load + '.';
+      });
+
+      this.eventInformation = ko.computed(function(){
+        try{
+            var eventInfo = self.showLoad().turns()[self.showTurn()].event.split('|');
+            var str = 'Function ' + eventInfo[0] + ' triggered by ' + eventInfo[1] + ' on target ' + eventInfo[2];
+            return str;
+        }catch(err){
+            return 'Undefined event';
+        }
+      });
 
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){
@@ -36,7 +52,6 @@
         return lines;
       }.bind(this));
 
-      var self = this;
       this.displayLoad = function(object){
         self.showLoad(object);
       }
@@ -140,7 +155,7 @@
       // TODO: Avoid redrawing scrubberbox
       document.querySelector('.logScrubber').style.display = 'none';
       setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
-    }
+    },
 
   };
 }());

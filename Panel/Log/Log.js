@@ -37,7 +37,6 @@
     initialize: function(project, logScrubber) {
       this.project = project;
       this._logScrubber = logScrubber;
-      this.loads = ko.observableArray();
 
       chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
@@ -73,6 +72,8 @@
           case 'startTurn': 
             this._turn = parseInt(segments[2], 10);
             this._logScrubber.turnStarted(this._turn);
+            this._event = segments[3]+'|'+segments[4];
+            if(segments[5]!='null' && segments[5] != 'undefined') this._event+= '|' + segments[5];
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
@@ -87,6 +88,7 @@
       }
       messageSource.load = this._reloadCount;
       messageSource.turn = this._turn;
+      messageSource.event = this._event;
       return messageSource; 
     },
 
@@ -101,7 +103,8 @@
     _turnRow: function(messageSource) {
       return {
         turn: messageSource.turn, 
-        messages: ko.observableArray()
+        messages: ko.observableArray(),
+        event: messageSource.event
       };
     },
 
@@ -114,7 +117,6 @@
       if (this.currentReload.load !== messageSource.load) {
         this.currentReload = this._reloadRow(messageSource);
         this.currentTurn = this.currentReload.turns()[0];
-        this.loads.push(this.currentReload);
         this._logScrubber.showLoad().next = this.currentReload;
         this._logScrubber.showLoad(this.currentReload);
         this._logScrubber.loads.push(this.currentReload);

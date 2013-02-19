@@ -63,7 +63,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
             for(var i = 0; i < events.length; i++){
                 events[i].style.borderWidth = borderWidth;
             }
-        },10);
+        },5);
         return joinMessages;
     }
 
@@ -91,14 +91,15 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
 
     return showMessages;
   }).extend({throttle: 30});
+  var dropDown = document.querySelector('.dropDown');
 
+  ko.applyBindings(this.logScrubber, dropDown);
   ko.applyBindings(this.logScrubber, loadElement);
   ko.applyBindings(this, logScrubberElement);
   ko.applyBindings(this, logElement);
 
   var currentLoad = document.querySelector('.currentLoad');
   var nextLoad = document.querySelector('.nextLoad');
-  var dropDown = document.querySelector('.dropDown');
 
   this.showLoad = ko.computed( function(){
       return panel.logScrubber.showLoad().load;
@@ -139,6 +140,12 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       }
       loadElement.style.display = 'none';
   }
+
+  logElement.onmouseout = function(){
+      dropDown.style.display = 'none';
+      loadElement.style.display = 'none';
+  };
+
 
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({
@@ -476,16 +483,20 @@ QuerypointPanel.Panel.prototype = {
   },
 
   turnInfo: function(){
-      if (deubg) console.log('QuerypointPanel.turnInfo: ', arguments);
+      if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
       var dropDown = document.querySelector('.dropDown');
       var loadElement = document.querySelector('.loadList');
       dropDown.style.display = 'block';
       loadElement.style.display = 'none';
+      QuerypointPanel.LogScrubber.showTurn(this.turn);
   },
   notShown: function(){
       var a=1;
       console.error(arguments);
       return false;
+  },
+  tooltip: function(turn){
+    return this._log.currentTurn.event;
   }
   
 };
