@@ -36,6 +36,9 @@
       },
       documentation: function() {
         window.open("http://google.github.com/qpp/"); // TODO proper page
+      },
+      feedback: function() {
+        window.open("https://github.com/google/qpp/issues/new");
       }
     },
     initialOptions: {
