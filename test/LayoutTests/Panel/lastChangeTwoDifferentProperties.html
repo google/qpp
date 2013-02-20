@@ -28,6 +28,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
 
@@ -40,8 +41,8 @@ function test_lastChange() {
   AsyncMachine.pushOp(selectTokenInSource, conditionValueSelector);
   AsyncMachine.pushOp(verifyTokenView, 'condition.value');
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');  
-
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '2');
+  
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', 'undefined');
   AsyncMachine.pushOp(extractText, 'td.traceValue');

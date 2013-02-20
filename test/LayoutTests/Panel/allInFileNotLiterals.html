@@ -38,10 +38,15 @@ function test_lastChange() {
 
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
   var sevenSelector = [
+    {type: 'string', text:'\"I\'ve been clicked \"'},
+    {type: 'variable', text:'bar'},
+    {type: 'variable', text:'obj'},
+    {type: 'variable', text:'condition'},
     {type: 'number', text:'7'},
     ];
   AsyncMachine.pushOp(selectTokenInSource, sevenSelector);
   AsyncMachine.pushOp(verifyTokenView, '7');
+  // This should give no result, since we don't trace literals
   AsyncMachine.pushOp(extractText, 'td.traceValue');
 
   AsyncMachine.runOp();

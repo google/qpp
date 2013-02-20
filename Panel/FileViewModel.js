@@ -17,11 +17,21 @@
     this.sourceFile = ko.observable();
     this.treeRoot = ko.observable({traceData: function(){}});
     this.project = panel.project;
-    
+
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
     this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
     this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this, panel);  // wired to token viewed.
     this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, panel);
+
+    this.currentLocation = ko.computed(function() {
+      var tokenViewLocation = this.tokenViewModel.currentLocation();
+      if (!this.traceViewModel.currentTraces())
+        return tokenViewLocation;
+
+      var traceViewLocation = this.traceViewModel.currentLocation();
+      if (traceViewLocation === tokenViewLocation) 
+        return traceViewLocation;
+    }.bind(this));
 
     // all of the query results for this file
     this.tracepoints = ko.observableArray();
@@ -38,12 +48,13 @@
         hoverDoorChannel.classList.remove('closed');
       }
     }.bind(this)).extend({ throttle: 1 });
+
+    this.tokenViewModel.initialize();
   }
   
   QuerypointPanel.FileViewModel.debug = true;
   
   QuerypointPanel.FileViewModel.prototype = {
-    
     setModel: function(editor, sourceFile, treeRoot) {
       this.tokenViewModel.followTokens(false);
       if (this.editor()) 

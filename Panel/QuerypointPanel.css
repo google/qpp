@@ -177,6 +177,7 @@ body {
   border-radius: 20px;
   padding: 3px;
 }
+
 .fileViews {
   -webkit-flex-grow: 8;
   min-height: 20ex;
@@ -310,6 +311,11 @@ pre.traceBackground {
 
 .updatedOnTurnNumber {
     visibility: hidden;
+}
+
+.fileViewModel_syncState {
+    text-align: center;
+    color: #75715e;
 }
 
 /* Editors */

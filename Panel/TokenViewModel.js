@@ -25,7 +25,7 @@
         return false;
       }
 
-    }.bind(this)).extend({ throttle: 1 });
+    }.bind(this));  // do not throttle
     
     
     this.tokenTree = ko.computed(function() {
@@ -59,10 +59,10 @@
       return tokenTree;
     }.bind(this)).extend({ throttle: 1 });
 
-    this._currentLocation = ko.computed(function() {
+    this.currentLocation = ko.computed(function() {
       var tree = this.tokenTree(); 
-      if (!tree) return;
-      return tree.location;
+      if (tree) 
+        return tree.location;
     }.bind(this));
     
     this.scopes = ko.computed(function() {
@@ -100,22 +100,6 @@
         
       return scopesView.reverse();  
     }.bind(this)).extend({ throttle: 1 });
-    
-    this._currentExpression = ko.computed(function() {
-      var location = this._currentLocation();
-      if (!location) return "";
-      
-      var clone = this._cloneEditorLineByLocation(location);
-      if (clone) {
-        var box = this._fileViewModel.editor().createTokenBox(location);
-        box.style.top = "0px";
-        clone.appendChild(box);
-        clone.style.left = this.expressionViewLeftOffset(this.pxToNumber(box.style.left) + this.pxToNumber(box.style.width)) + 'px';
-        return clone.outerHTML;
-      } else {
-        return "";
-      }
-    }.bind(this)).extend({throttle: 1});  // let both location and editor update
   
     this.extraShowRight = 13 * 4;  // px
     
@@ -139,6 +123,29 @@
   QuerypointPanel.TokenViewModel.debug = false;
   
   QuerypointPanel.TokenViewModel.prototype = {
+
+    initialize: function() {
+      // The FileViewModel constructs the TokenViewModel; we use the fileViewModel 
+      // in computing currentExpression. Thus we cannot create the currentExpression
+      // function in the TokenViewModel constructor, we have to wait until the 
+      // fileViewModel is constructed.
+      this.currentExpression = ko.computed(function() {
+        // only write the current expression once the entire view is synchronized.
+        var location = this._fileViewModel.currentLocation(); 
+        if (!location) return "";
+        
+        var clone = this._cloneEditorLineByLocation(location);
+        if (clone) {
+          var box = this._fileViewModel.editor().createTokenBox(location);
+          box.style.top = "0px";
+          clone.appendChild(box);
+          clone.style.left = this.expressionViewLeftOffset(this.pxToNumber(box.style.left) + this.pxToNumber(box.style.width)) + 'px';
+          return clone.outerHTML;
+        } else {
+          return "";
+        }
+      }.bind(this)).extend({throttle: 1});  // let both location and editor update
+    },
 
     _cloneEditorLineByLocation: function(location) {
       var line = location.start.line;

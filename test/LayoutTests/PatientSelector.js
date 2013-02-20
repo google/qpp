@@ -192,35 +192,61 @@ window.PatientSelector = (function(){
             }.bind(PatientSelector));
         },
 
+        _moveLineNumber: function(lineNumber, visibleSourceLines, selector, text) {
+            while (lineNumber < visibleSourceLines.length) {
+                PatientSelector.hits = [visibleSourceLines[lineNumber]];
+                // select in line
+                var hits = PatientSelector._querySelectorAll('| '+selector, text);
+                if (hits.length) {
+                    if (debug) console.log('....PatientSelector.selectTokenInSource ' + selector + '&' + text + ' match ' + visibleSourceLines[lineNumber].textContent); 
+                    lineNumber++;  
+                    break;                            
+                } else {
+                    lineNumber++;
+                }
+            }
+            if (lineNumber === visibleSourceLines.length - 1) {
+                console.error("...PatientSelector.selectTokenInSource no source line matchs " + selector + ' & ' + text, visibleSourceLines);
+            } else {
+                return lineNumber;
+            }
+        },
+
+        _fireMouseMove: function(tokenElt, callback) {
+            function onMouseMove(event) {
+                tokenElt.removeEventListener('mousemove', onMouseMove);
+                var target = event.target;
+                PatientSelector.hits = [tokenElt];
+                callback(target.textContent + ' in ' + target.parentElement.textContent);
+            }
+            tokenElt.addEventListener('mousemove', onMouseMove);
+            var xy = getPosition(tokenElt);
+            xy.x = xy.x + Math.round(tokenElt.offsetWidth/2);
+            xy.y = xy.y + Math.round(tokenElt.offsetHeight/2);
+            var mousemove = document.createEvent("MouseEvent");
+            mousemove.initMouseEvent('mousemove', true, true, window, 0, 
+                0, 0, xy.x, xy.y, 
+                false, false, false, false, 0, null);
+            tokenElt.dispatchEvent(mousemove);
+            if (debug) console.log('....PatientSelector._fireMouseMove mousemove(' + xy.x + ',' + xy.y + ') sent to %o', tokenElt);
+        },
+
         selectTokenInSource: function(editorTokens, callback) {
             if (debug) console.log("....PatientSelector.selectTokenInSource(" + editorTokens.length + " editorTokens) ", editorTokens);
             var visibleSourceElement = PatientSelector._querySelectorAll('.CodeMirror-lines');
             var visibleSourceLines = PatientSelector._querySelectorAll('| pre');
-            var mark = 0;
-            function next() {
+
+            function next(lineNumber) {
                 var token = editorTokens.shift();
                 var selector = 'span.cm-' + token.type;
                 var text = token.text;
                     
                 if (editorTokens.length) {
-                    while (mark < visibleSourceLines.length) {
-                        PatientSelector.hits = [visibleSourceLines[mark]];
-                        var hits = PatientSelector._querySelectorAll('| '+selector, text);
-                        if (hits.length) {
-                            if (debug) console.log('....PatientSelector.selectTokenInSource ' + selector + '&' + text + ' match ' + visibleSourceLines[mark].textContent); 
-                            mark++;  
-                            break;                            
-                        } else {
-                            mark++;
-                        }
-                    }
-                    if (mark === visibleSourceLines.length - 1) {
-                        console.error("...PatientSelector.selectTokenInSource no source line matchs " + selector + ' & ' + text, visibleSourceLines);
+                    lineNumber = PatientSelector._moveLineNumber(lineNumber, visibleSourceLines, selector, text);
+                    if (lineNumber)
+                        next(lineNumber);
+                    else 
                         callback('err');
-                    } else {
-                        next();
-                    }
-
                 } else {
                     if (debug) console.log('....PatientSelector.selectTokenInSource seeking pre ancestor of ', PatientSelector.hits);
                     PatientSelector.ancestor('pre', function() {
@@ -230,22 +256,11 @@ window.PatientSelector = (function(){
                         }
                         // select within the previous hit
                         var tokenElt = PatientSelector._querySelectorAll('| ' + selector, text)[0];
-
-                        var xy = getPosition(tokenElt);
-                        xy.x = xy.x + Math.round(tokenElt.offsetWidth/2);
-                        xy.y = xy.y + Math.round(tokenElt.offsetHeight/2);
-                        var mousemove = document.createEvent("MouseEvent");
-                        mousemove.initMouseEvent('mousemove', true, true, window, 0, 
-                            0, 0, xy.x, xy.y, 
-                            false, false, false, false, 0, null);
-                        tokenElt.dispatchEvent(mousemove);
-                        if (debug) console.log('....PatientSelector.selectTokenInSource mousemove(' + xy.x + ',' + xy.y + ') sent to %o', tokenElt);
-                        PatientSelector.hits = [tokenElt];
-                        callback(); 
+                        PatientSelector._fireMouseMove(tokenElt, callback);
                     });
                 }
             }
-            next();
+            next(0);
         },
 
         clickTokenInSource: function(editorTokens, callback) {

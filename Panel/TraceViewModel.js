@@ -69,14 +69,16 @@
          }
     }.bind(this)).extend({ throttle: 1 });
 
+    this.currentLocation = ko.observable(); // used to ensure that the UI is in sync during testing
+
     // Query results for the current token in this file.
     this.currentTraces = ko.computed(function() {
         var tree = fileViewModel.tokenViewModel.tokenTree();
 
         if (tree && panel.tracequeries().length) {
           var traces = this.treeTraces();
-          if (traces) {
-            return traces.map(function(trace) {
+          if (traces && traces.length) {
+            var traceViewModels = traces.map(function(trace) {
               var traceViewModel = {};
               Object.keys(trace).forEach(function(prop) {
                 traceViewModel[prop] = trace[prop];
@@ -86,7 +88,9 @@
               traceViewModel.iconText = trace.query.iconText();
               return traceViewModel;
             });
-          } 
+            this.currentLocation(tree.location);
+            return traceViewModels;
+          }  
         }
       }.bind(this)).extend({ throttle: 1 });
   }
