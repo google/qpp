@@ -448,9 +448,7 @@ QuerypointPanel.Panel.prototype = {
       this.commands.selectFile.call(this);  
     }.bind(this));
     window.onbeforeunload = function(event) {
-      QuerypointModel.Storage.store(panelModel, function(){
-        window.alert("stored "+panelModel);
-      });
+      QuerypointModel.Storage.store(panelModel);
       return undefined;
     };
   },
