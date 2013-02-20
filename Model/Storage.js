@@ -12,7 +12,6 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  
   var Storage = QuerypointModel.Storage = function Storage() {
     this.key = "QuerypointModel.PanelModel";
   }
@@ -23,14 +22,22 @@
     @param function onError
   */
   Storage.store = function(model, onSuccess, onError) {
-    localStorage.setItem(this.key, model);
-    onSuccess(model);
+    var JSONized = JSON.stringify(model);
+    localStorage.setItem(this.key, JSONized);
+    if (onSuccess)
+      onSuccess(model);
   }
 
   Storage.recall = function(onSuccess, onError) {
-    var model = localStorage.getItem(this.key);
-    if (debug) console.log("Storage.recall "+this.key,model); 
-    model ? onSuccess(model) : onError();
+    var model;
+    try {
+      var modelJSON = localStorage.getItem(this.key);
+      model = JSON.parse(modelJSON || '');
+      if (debug) console.log("Storage.recall "+this.key,model);   
+      model ? onSuccess(model) : onError("No model from " + modelJSON);
+    } catch(exc) {
+      onError(exc);
+    }
   } 
 
 }());

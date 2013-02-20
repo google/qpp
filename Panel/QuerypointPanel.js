@@ -440,6 +440,12 @@ QuerypointPanel.Panel.prototype = {
      // TODO copy the ParseTrees before ... this.project.runInWebPage(compileResult);
       this.commands.selectFile.call(this);  
     }.bind(this));
+    window.onbeforeunload = function(event) {
+      QuerypointModel.Storage.store(panelModel, function(){
+        window.alert("stored "+panelModel);
+      });
+      return undefined;
+    };
   },
 
   _initModel: function() {
@@ -449,7 +455,8 @@ QuerypointPanel.Panel.prototype = {
       function onSuccess(model) {
         panel._restore(model);
       },
-      function onError() {
+      function onError(exc) {
+        console.error("QuerypointModel recall failed " + exc, exc);
         panel._restore(new QuerypointModel.PanelModel(panel.project.url));
       }
     );
