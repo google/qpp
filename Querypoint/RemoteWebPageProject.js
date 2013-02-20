@@ -8,17 +8,21 @@
 
   'use strict';
 
+  var debug = DebugLogger.register('RemoteWebPageProject', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   function RemoteWebPageProject(remoteURL) {
     traceur.WebPageProject.call(this, remoteURL);
     RemoteWebPageProject.currentProject = this;
-    console.log("RemoteWebPageProject created for "+remoteURL);
+    if (debug) console.log("RemoteWebPageProject created for "+remoteURL);
   }
 
   RemoteWebPageProject.onBackgroundMessage_ = function(message) {
     if (this.currentProject) {
       this.currentProject.onBackgroundMessage_(message);
     } else {
-      console.log("background message but no current project ", this);  
+      console.error("background message but no current project ", this);  
     }
   }.bind(RemoteWebPageProject);
 
@@ -60,7 +64,7 @@
       return {content: source};
     });
     this.putPageScripts(scripts, function(result) {
-      console.log("Put " + scripts.length + " transcoded scripts", scripts);
+      if (debug) console.log("Put " + scripts.length + " transcoded scripts", scripts);
       result.errors.forEach(function(error) {
         // As far as I can tell the eval does not provide meaningful line numbers for errors.
         var partialContent = error.content.substring(0, 300);
@@ -87,7 +91,6 @@
       var scripts = [];
       for(var i = 0; i < scriptElements.length; i++) {
         var elt = scriptElements[i];
-        //console.log("scripts["+i+"/"+scriptElements.length+"] "+elt.src);
         scripts.push({
           src: elt.src,
           textContent: elt.textContent
@@ -99,7 +102,7 @@
 
     function onScripts(remoteScripts) { // runs here
       this.remoteScripts = remoteScripts;
-      console.log("RemoteWebPageProject found "+this.remoteScripts.length+" scripts");
+      if (debug) console.log("RemoteWebPageProject found "+this.remoteScripts.length+" scripts");
       callback();
     }
 

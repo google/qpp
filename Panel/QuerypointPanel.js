@@ -7,10 +7,14 @@
 (function(){
 
   "use strict";
+
+  var debug = DebugLogger.register('QuerypointPanel', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
   
   ko.extenders.syncArray = function(target, array) {
     target.subscribe(function(newValue){
-      console.log("syncArray ", newValue);
+      if (debug) console.log("QuerypointPanel syncArray ", newValue);
       array = newValue;
     });
     return target;
@@ -169,8 +173,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     });
 }
 
-QuerypointPanel.Panel.debug = false;
-
 QuerypointPanel.Panel.prototype = {
   onShown: function() {
     this._isShowing = true;
@@ -277,7 +279,7 @@ QuerypointPanel.Panel.prototype = {
     // Open a dialog filled with file names for user selection
     //
     selectFile: function() {
-      console.log("selectFile");
+      if (debug) console.log("QuerypointPanel.selectFile");
       var uriItems = new QuerypointPanel.URISelector(this.extensionPanel);
       var names = {};
       this.project.getSourceFiles().forEach(function(sourceFile){
@@ -302,7 +304,7 @@ QuerypointPanel.Panel.prototype = {
         if (mark) {
           var clearMark = function(event) {
             mark.clear();
-            console.log("cleared mark because of mouseout on ", event.target);
+            if (debug) console.log("cleared mark because of mouseout on ", event.target);
             $(this.document).off('mouseout', clearMark);
           }
           $(this.document).on('mouseout', clearMark);
@@ -310,9 +312,9 @@ QuerypointPanel.Panel.prototype = {
       } else {
         var sourceFile = this.project.getFile(linkTarget.name);
         if (sourceFile) {
-          console.error("onShowne");   
+          console.error("QuerypointPanel.onShown");   
         } else {
-          console.error("openChainedEditor but no sourcefile!");
+          console.error("QuerypointPanel.openChainedEditor but no sourcefile!");
         }
       }
     },
@@ -342,7 +344,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _openContextMenu: function(event) {
-    console.log("_openContextMenu", event);
+    console.error("_openContextMenu", event);
   },
 
   _onClickPanel: function(event) {
@@ -380,7 +382,7 @@ QuerypointPanel.Panel.prototype = {
       var row = rows[i];
       if (row.classList.contains('fileViews'))
         continue;
-      if (QuerypointPanel.Panel.debug)
+      if (debug)
         console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
       availableHeight = availableHeight - row.offsetHeight;
     }
@@ -399,7 +401,7 @@ QuerypointPanel.Panel.prototype = {
     
     var panel = this;
     $(".hoverDoorTarget .hoverDoor").live("click", function(jQueryEvent) {
-      console.log("Click ", jQueryEvent.target);
+      if (debug) console.log("Click ", jQueryEvent.target);
       panel._operateDoor($(this));
     });
     /*$(".hoverDoor span").mouseover(function(jQueryEvent){
@@ -431,7 +433,7 @@ QuerypointPanel.Panel.prototype = {
     this._initKeys();
     this._initMouse();
     this.document.querySelector('.panelInitialization').style.display = 'none';
-    console.log("restore", panelModel);
+    if (debug) console.log("restore", panelModel);
     this._initEditors(panelModel);
     QuerypointPanel.OnPanelOpen.initialize(this);
     this.project.compile(function(compileResult) {
@@ -467,7 +469,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   turnInfo: function(){
-      console.log(arguments);
+      if (deubg) console.log('QuerypointPanel.turnInfo: ', arguments);
       var dropDown = document.querySelector('.dropDown');
       var loadElement = document.querySelector('.loadList');
       dropDown.style.display = 'block';

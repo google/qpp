@@ -308,7 +308,7 @@ window.PatientSelector = (function(){
             var text = PatientSelector._querySelectorAll(selector).map(function(node){
                 return node.textContent;
             }).join('|');
-            console.log("testResult "+text);
+            if (debug) console.log("testResult "+text);
             callback(text);
         },
 
@@ -316,7 +316,7 @@ window.PatientSelector = (function(){
             var text = PatientSelector._querySelectorAll(selector).map(function(node){
                 return node[property];
             }).join('|');
-            console.log("testResult "+text);
+            if (debug) console.log("testResult "+text);
             callback(text);
         },
 
@@ -324,7 +324,7 @@ window.PatientSelector = (function(){
             var text = PatientSelector._querySelectorAll(selector).map(function(node){
                 return node.getAttribute(attr);
             }).join('|');
-            console.log("testResult "+text);
+            if (debug) console.log("testResult "+text);
             callback(text);
         },
 

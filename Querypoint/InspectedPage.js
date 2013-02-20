@@ -23,7 +23,7 @@
       this.resources = []; // API, Array<chrome.devtools.inspectedWindow.Resource>
       this.url = url;
       if (url) {
-        console.log("onNavigated " + url + '----------------------------');
+        if (debug) console.log("onNavigated " + url + '----------------------------');
       }
     },
 

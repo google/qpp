@@ -7,6 +7,11 @@
 (function() {
  
   'use strict';
+
+  var debug = DebugLogger.register('Storage', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   
   var Storage = QuerypointModel.Storage = function Storage() {
     this.key = "QuerypointModel.PanelModel";
@@ -24,7 +29,7 @@
 
   Storage.recall = function(onSuccess, onError) {
     var model = localStorage.getItem(this.key);
-    console.log("Storage.recall "+this.key,model); 
+    if (debug) console.log("Storage.recall "+this.key,model); 
     model ? onSuccess(model) : onError();
   } 
 

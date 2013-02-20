@@ -6,6 +6,11 @@
 
   'use strict';
 
+  var debug = DebugLogger.register('EditorByCodeMirror', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+  
+
   function EditorByCodeMirror(containerElement, name, initialContent) {
     this.name = name;
     this.editorImpl = CodeMirror(containerElement, {
@@ -104,7 +109,7 @@
     },
 
     _onViewportChange: function(editor, from, to) {
-      console.log("EditorByCodeMirror onViewportChange" + this.name + ':' + from + ',' + to);
+      if (debug) console.log("EditorByCodeMirror onViewportChange" + this.name + ':' + from + ',' + to);
       this.dispatch('onViewportChange', {name: this.name,start: from,end: to});
     },
 

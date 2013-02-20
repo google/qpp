@@ -7,6 +7,10 @@
 
   'use strict';
 
+  var debug = DebugLogger.register('QPProject', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   var RemoteWebPageProject = Querypoint.RemoteWebPageProject;
 
   function QPProject(url, loads) {
@@ -26,7 +30,7 @@
     this._onWebPageNavigated = this._onWebPageNavigated.bind(this);
     this._monitorReloads();
     
-    console.log(loads + " QPProject created for "+url);
+    if (debug) console.log(loads + " QPProject created for "+url);
   }
 
   QPProject.prototype = {
@@ -76,10 +80,11 @@
         }
       }
       function onRuntimeStarted(results, isException) {
-        if (isException) 
+        if (isException) {
           console.error("startRuntime FAILS");
-        else
-          console.log("QP runtime called fireLoad() got "+results);
+        } else {
+          if (debug) console.log("QP runtime called fireLoad() got "+results);
+        }
       }
       chrome.devtools.inspectedWindow.eval(this.evalStringify(startRuntime, []), onRuntimeStarted);
     },
@@ -87,7 +92,6 @@
     runInWebPage: function(treeObjectMap) {
       // inject the tracing source
       RemoteWebPageProject.prototype.runInWebPage.call(this, treeObjectMap);
-      console.trace("runInWebPage");
       this.startRuntime();
     },
 
@@ -106,7 +110,7 @@
     },
 
     addScript: function(url) {
-      console.log("QPProject got new script " + url);
+      if (debug) console.log("QPProject got new script " + url);
     },
 
     reload: function() {    
@@ -146,7 +150,7 @@
         injectedScript:  Querypoint.QPRuntime.runtimeSource(numberOfReloads), 
         preprocessingScript: '(' + transcode + ')'
       };
-      console.log("reloadOptions.preprocessingScript ", reloadOptions.preprocessingScript);
+      if (debug) console.log("reloadOptions.preprocessingScript ", reloadOptions.preprocessingScript);
       chrome.devtools.inspectedWindow.reload(reloadOptions);
     },
     
@@ -157,7 +161,7 @@
       } else {
         // User reloaded the page, so we are back to square one. TODO: offer to clear querypoints
         this.getPageScripts(function() {
-          console.log("rescanned page for scripts");
+          if (debug) console.log("rescanned page for scripts");
         });
       }
     },

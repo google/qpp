@@ -5,6 +5,10 @@
 
   'use strict';
 
+  var debug = DebugLogger.register('LogScrubber', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   QuerypointPanel.LogScrubber = {
     
     initialize: function(logElement) {
@@ -13,7 +17,7 @@
       this.trackLatestMessage = ko.observable(true);
       
       this.lastShown = ko.computed(function() {
-        console.log(this.loads().length + " loads");
+        if (debug) console.log('LogScrubber.lastShown ' + this.loads().length + " loads");
         return this.loads().length;
       }.bind(this));
       

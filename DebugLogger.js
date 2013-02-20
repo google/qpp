@@ -3,17 +3,23 @@
 
 (function(){
 
-  var global = this;
+  var global = this;  // don't use strict in this file.
+
+  var debug = window.DebugLogger; // activate this service.
 
   global.DebugLogger = {
     debuggables: {},
 
     register: function(name, callback) {
       this.debuggables[name] = callback;
-      console.log("InspectorTest.info: " + name + ' ' + callback());
+      if (debug) console.log("InspectorTest.info: " + name + ' ' + callback());
+      return false;
     },
 
     set: function(name, bool) {
+      if (bool && !debug && name !== 'DebugLogger') 
+        console.error('DebugLogger: DebugLogger must be set to debug before any flags');
+
       if (this.debuggables.hasOwnProperty(name)) {
         this.debuggables[name].call(this, bool);  
       } else {

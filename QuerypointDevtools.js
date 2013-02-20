@@ -1,6 +1,7 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2011 Google Inc. johnjbarton@google.com
-console.log("QuerypointDevtools begins %o", chrome);
+
+//console.log("QuerypointDevtools begins %o", chrome);
 
 var model = {};  // composite model devtools + traceur
 

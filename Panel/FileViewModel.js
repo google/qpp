@@ -6,7 +6,12 @@
 // in the editor
 
 (function() {
-  window.QuerypointPanel = window.QuerypointPanel || {};
+  'use strict';
+
+  var debug = DebugLogger.register('FileViewModel', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
 
   QuerypointPanel.FileViewModel = function(element, panel) {
     this._panel = panel;
@@ -73,7 +78,7 @@
       if (treeRoot) 
         this.tokenViewModel.followTokens(true);
 
-      console.log("FileViewModel.update "+this.editor().name);  
+      if (debug) console.log("FileViewModel.update "+this.editor().name);  
     },
 
     update: function(turn) {
@@ -87,7 +92,6 @@
               if (tracepoint) {
                 this.tracepoints.push(tracepoint);
               } // else no data?
-              //console.log(this.tracepoints().length + ' tracepoints in turn ' + turn)
             }.bind(this));
           }.bind(this));
         }
