@@ -73,14 +73,13 @@ window.PatientSelector = (function(){
         },
 
         ancestor: function(selector, callback) {
-            var hit = PatientSelector.hits[0];
-            var parent = hit.parentElement;
+            var parent = PatientSelector.hits[0].parentElement;
             while (parent) {
                 var hit = parent.querySelector(selector);
                 if (debug) console.log("....PatientSelector.ancestor(" + selector + ")  %o " + (hit ? "hit" : "miss"), parent);
                 if (hit) {
                     PatientSelector.hits[0] = hit;
-                    callback();
+                    callback(hit);
                     return;
                 }
                 parent = parent.parentElement;
@@ -90,14 +89,10 @@ window.PatientSelector = (function(){
         },
 
         _textChanges: function(textToMatch, callback, mutationSummary) {
-            if (this.poisoned) {  // hack because disconnect() does not seem to work.
-                console.warn("....PatientSelector._textChanges poisoned " + textToMatch);
-                return;
-            }
             if (debug) console.log("....PatientSelector._textChanges mutationSummary for " + textToMatch, mutationSummary[0]);
             var target = mutationSummary[0].target;
-            this.patientSelector.hits = this.patientSelector._textSelectorAll([target], textToMatch);
-            if (this.patientSelector.hits.length)
+            this.hits = this._textSelectorAll([target], textToMatch);
+            if (this.hits.length)
                 callback();
         },
 
@@ -106,18 +101,13 @@ window.PatientSelector = (function(){
         _createTextChangeObserver: function(textToMatch, element) {
             PatientSelector._totalTextChangeObservers++;
             if (debug) console.log('....PatientSelector._createTextChangeObserver _totalTextChangeObservers ' + PatientSelector._totalTextChangeObservers, PatientSelector);
-            var pill = {
-                poisoned: false,
-                patientSelector: PatientSelector
-            };
-            pill.handler = PatientSelector._textChanges.bind(pill, textToMatch, PatientSelector._disconnectOnFind.bind(PatientSelector));
+            var handler = PatientSelector._textChanges.bind(PatientSelector, textToMatch, PatientSelector._disconnectOnFind.bind(PatientSelector));
             var summary = new MutationSummary({
-                callback: pill.handler,
+                callback: handler,
                 queries:[{characterData: true}],
                 rootNode: element
             });
             summary._textToMatch = textToMatch;
-            summary._changeProcessor = pill;
             return summary;
         },
 
@@ -142,7 +132,6 @@ window.PatientSelector = (function(){
                 if (PatientSelector._textChangeObservers) {
                     PatientSelector._textChangeObservers.forEach(function(observer){
                         observer.disconnect();
-                        observer._changeProcessor.poisoned = true;
                         if (debug) console.log('....PatientSelector._setMutationObservers disconnect  ' + observer._textToMatch, observer);
                     }.bind(PatientSelector));
                     PatientSelector._totalTextChangeObservers -= PatientSelector._textChangeObservers.length;
@@ -169,17 +158,7 @@ window.PatientSelector = (function(){
                 ]
             });
             if (debug) {
-                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());
-                /*
-                PatientSelector._textChangeObservers = PatientSelector._textChangeObservers || [];
-                PatientSelector._textChangeObservers.push(new MutationSummary({
-                    queries:[{all:true}],
-                    callback: function(summary) {
-                      console.log('....PatientSelector.whenSelectorAll querySelectorAll ' + selector, document.querySelectorAll(selector))
-                      console.log('....PatientSelector.whenSelectorAll debug all from ' + selector + '/' + textToMatch, summary);    
-                    }
-                }));
-                */                
+                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());              
             }
         },
 
