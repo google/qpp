@@ -28,6 +28,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
 
