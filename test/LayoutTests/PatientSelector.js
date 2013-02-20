@@ -176,11 +176,19 @@ window.PatientSelector = (function(){
         },
 
         _click: function(elt, callback) {
+            function onClick(event) {
+                elt.removeEventListener('click', onClick);
+                if (callback) {  
+                    // allow the click handler to fire before next test step
+                    setTimeout(function() {  
+                        callback();
+                    });    
+                }
+            }
+            elt.addEventListener('click', onClick);
             var event = document.createEvent("MouseEvent");
             event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             elt.dispatchEvent(event);
-            if (callback)
-                callback();
         },
 
         clickSelector: function(selector, textToMatch, callback) {
@@ -217,7 +225,10 @@ window.PatientSelector = (function(){
                 tokenElt.removeEventListener('mousemove', onMouseMove);
                 var target = event.target;
                 PatientSelector.hits = [tokenElt];
-                callback(target.textContent + ' in ' + target.parentElement.textContent);
+                // Allow the mousemove handler to fire before the next test step
+                setTimeout(function(){
+                    callback(target.textContent + ' in ' + target.parentElement.textContent);    
+                });
             }
             tokenElt.addEventListener('mousemove', onMouseMove);
             var xy = getPosition(tokenElt);
