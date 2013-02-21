@@ -5,8 +5,10 @@
 
   var global = this;  // don't use strict in this file.
 
-  if (window.DebugLogger.hasOwnProperty('register'))
+  if (window.DebugLogger && window.DebugLogger.hasOwnProperty('register'))
     return;  // our work is done here
+
+  window.DebugLogger = window.DebugLogger || [];
 
   var debugFlags = window.DebugLogger.slice(0);
   var debugging = !!debugFlags.length; // activate this service.
