@@ -151,7 +151,7 @@
                 <th title="Expression value during specific activation">Value</th>
               </tr>
             </thead> 
-            <tbody  data-bind="foreach: traceViewModel.currentTraces">
+            <tbody class="traceBody" data-bind="foreach: {data: traceViewModel.currentTraces, afterRender: function(){ document.querySelector('.traceBody').scrollTop = 9999;}}">
               <tr >
                 <td class="activation">
                   <span class="command" data-bind="html: iconText, attr: {title: tooltip, 'data-url': url}"></span>

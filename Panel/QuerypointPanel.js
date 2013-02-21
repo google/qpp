@@ -146,6 +146,23 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       loadElement.style.display = 'none';
   };
 
+  // Set max height of trace trable depend on window height
+  var traceBody = document.querySelector('.traceBody');
+  traceBody.style.maxHeight = traceBodySpace() + 'px';
+
+  function traceBodySpace(){
+      var hoverDoorTarget = document.querySelector('.hoverDoorTarget');
+      var tokenView = 110; // size depends on selected token
+      var explainTokenPanel = document.querySelector('.explainTokenPanel');
+      var queryView = document.querySelector('.queryView');
+      return hoverDoorTarget.offsetHeight - tokenView - explainTokenPanel.offsetHeight - queryView.offsetHeight;
+  }
+
+  window.onresize = function(){
+    var traceBody = document.querySelector('.traceBody');
+    traceBody.style.maxHeight = traceBodySpace() + 'px';
+    panel.logScrubber.showLoad.valueHasMutated();
+  }
 
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({
