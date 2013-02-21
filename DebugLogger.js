@@ -5,25 +5,33 @@
 
   var global = this;  // don't use strict in this file.
 
-  var debug = window.DebugLogger; // activate this service.
+  if (window.DebugLogger.hasOwnProperty('register'))
+    return;  // our work is done here
+
+  var debugFlags = window.DebugLogger.slice(0);
+  var debugging = !!debugFlags.length; // activate this service.
 
   global.DebugLogger = {
     debuggables: {},
+    flags: {},
 
     register: function(name, callback) {
       this.debuggables[name] = callback;
-      if (debug) console.log("InspectorTest.info: " + name + ' ' + callback());
-      return false;
+      var flag = false;
+      if (this.flags.hasOwnProperty(name)) {
+        flag = this.flags[name];
+        callback(flag);
+        delete this.flags[name];
+      }
+      if (debugging) console.log("InspectorTest.info: " + name + ' ' + callback());
+      return flag;
     },
 
     set: function(name, bool) {
-      if (bool && !debug && name !== 'DebugLogger') 
-        console.error('DebugLogger: DebugLogger must be set to debug before any flags');
-
       if (this.debuggables.hasOwnProperty(name)) {
         this.debuggables[name].call(this, bool);  
       } else {
-        console.warn("DebugLogger.set, no registration at " + name + " in " + window.location.pathname);
+        this.flags[name] = bool;
       }
     },
 
@@ -35,6 +43,10 @@
         }
       }.bind(this));
     }
-  }
+  };
+
+  debugFlags.forEach(function(name){
+    DebugLogger.set(name, true);  
+  });
 
 }());
