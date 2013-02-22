@@ -200,6 +200,23 @@ window.PatientSelector = (function(){
             }.bind(PatientSelector));
         },
 
+        _key: function(keyDescriptor, elt, callback) {
+            elt.addEventListener('keyup', function(event) {
+                console.log("....PatientSelector._key " + keyDescriptor, event);
+                callback();
+            });
+            key(keyDescriptor, elt);
+        },
+
+        keySelector: function(selector, textToMatch, keyDescriptor, callback) {
+            if (debug) console.log("....PatientSelector.keySelector(" + selector + ', ' + keyDescriptor + ')');
+            PatientSelector.whenSelectorAll(selector, textToMatch, function() {
+                PatientSelector._key(keyDescriptor, PatientSelector.hits[0], callback);
+                if (debug) 
+                    console.log("....PatientSelector.keySelector hit ", PatientSelector.hits[0])
+            }.bind(PatientSelector));
+        },
+
         _moveLineNumber: function(lineNumber, visibleSourceLines, selector, text) {
             while (lineNumber < visibleSourceLines.length) {
                 PatientSelector.hits = [visibleSourceLines[lineNumber]];
