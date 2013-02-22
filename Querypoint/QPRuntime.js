@@ -21,6 +21,7 @@
       try {
         // So far we cannot transcode synchronously so we miss the 'load' event
         beforeArtificalLoadEvent = false;
+        console.log("qp| loadEvent " + window.__qp_reloads);
         var handlers = window.__qp.beforeArtificalLoadEventEventHandlers['load'];
         if (handlers) {
           if (debug_in_page) {
@@ -34,7 +35,6 @@
           if (debug_in_page) {
             console.log("__qp_runtime.fireLoad complete, fired "+handlers.length+" handlers");
           }
-          console.log("qp| loadEvent " + window.__qp_reloads);
           return handlers.length;
         } else {
           if (debug_in_page) 
