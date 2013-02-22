@@ -32,7 +32,7 @@ function test_clickMessage() {
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
   for(var i=0;i<30;i++) AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){} );
-  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱32');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱35');
 
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.eventIndicator[severity=error][turn=\'10\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "";} );
 
@@ -40,7 +40,8 @@ function test_clickMessage() {
     var turnNumberOffsetTop = document.querySelectorAll("td.turnNumber")[turnNumber].offsetTop;
     var scrollTop = document.querySelector(".floaty").scrollTop;
     var offsetHeight = document.querySelector(".floaty").offsetHeight;
-    var delta  = turnNumberOffsetTop -  scrollTop;
+    var offsetTop = document.querySelector(".messagesByLoadNumber").offsetTop;
+    var delta  = turnNumberOffsetTop -  scrollTop + offsetTop;
     console.log("checkTurnNumber turnNumberOffsetTop " + turnNumberOffsetTop + " scrollTop " + scrollTop);
     console.log("checkTurnNumber delta " + delta + " offsetHeight " + offsetHeight);
     return ( ( delta < offsetHeight)  && ( delta > 0 ) ).toString();

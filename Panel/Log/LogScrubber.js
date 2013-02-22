@@ -32,8 +32,8 @@
       this.showMessage = ko.observable(0);
 
       this.turnMessages = ko.computed(function(){
-          if(!self.showLoad().turns || self.showLoad().turns().length<=self.showTurn()) return [];
-          return self.showLoad().turns()[self.showTurn()].messages();
+          if(!self.showLoad().turns ||  !self.showLoad().turns()[self.showTurn() - 1]) return [];
+          return self.showLoad().turns()[self.showTurn() - 1].messages();
       });
 
       this.turnInformation = ko.computed(function(){
@@ -42,7 +42,7 @@
 
       this.eventInformation = ko.computed(function(){
         try{
-            var eventInfo = self.showLoad().turns()[self.showTurn()].event.split('|');
+            var eventInfo = self.showLoad().turns()[self.showTurn() - 1].event.split('|');
             var str = 'Function ' + eventInfo[0] + ' triggered by ' + eventInfo[1] + ' on target ' + eventInfo[2];
             return str;
         }catch(err){

@@ -503,10 +503,11 @@ QuerypointPanel.Panel.prototype = {
         // Clicked on Turn Indicator
         // Focus on some element of the turn or ignore?
         // What if no messages appeared in this turn?
+        document.querySelector().scrollIntoView(false);
     }else{
       elem.scroll.scrollIntoView(false);
       var logFloat = document.querySelector('.floaty');
-      if(logFloat.scrollTop > logFloat.offsetHeight) logFloat.scrollTop += logFloat.offsetHeight / 2 ;
+      logFloat.scrollTop += logFloat.offsetHeight / 2 ;
     }
   },
 
