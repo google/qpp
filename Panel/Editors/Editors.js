@@ -165,7 +165,9 @@
           this.commands.show(resource.url);
           alert("This editor has changes and the file has changes");
         } else {
-          editor.resetContent(content);
+          var editor = this._getEditorByName(resource.url);
+          if (editor)
+            editor.resetContent(content);
         }
     },
   
