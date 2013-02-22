@@ -120,14 +120,18 @@
        if (debug_in_page) 
           console.log("__qp_runtime.addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         var wrapped = wrapEntryPoint(listener);
-        window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
         if (beforeArtificalLoadEvent) {
           var handlers = window.__qp.beforeArtificalLoadEventEventHandlers;
           if (!handlers[type]) {
             handlers[type] = [wrapped];
           } else {
             handlers[type].push(wrapped);
-          }  
+          }
+          if (type !== 'load')
+            console.error('__qp_runtime.interceptEntryPoints not a load event, we fail!', type);  
+        } else {
+          // We've already passed the artifical load event, so don't delay the add call
+          window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
         }         
       }
       
