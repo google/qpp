@@ -221,6 +221,7 @@
 }
 
 .dropDown{
+    line-height: 15px;
     position: absolute;
     top: 15px;
     background-color: #101010;
@@ -229,9 +230,47 @@
     z-index: 50;
     border-radius: 10px;
     display: none;
-    margin-top: 3px;
+    margin-top: 30px;
     color: #f8f8f2;
     font-size: 12px;
-    padding-left: 10px;
+    padding: 8px;
+}
 
+.dropDown .messages{
+    max-height: 150px;
+    overflow-y: scroll;
+}
+
+.dropDown p.message{
+  margin: 0;
+  color: rgb(141, 141, 134);
+  font-size: small;
+}
+
+.dropDown p.message[severity="error"] {
+  color: rgb(255, 0, 0);
+}
+
+.dropDown p.message[severity="warning"] {
+  color: rgb(255, 208, 69);
+}
+
+.dropDown .messages::-webkit-scrollbar{
+    width: 8px;
+    height: 16px;
+}
+
+.dropDown .messages::-webkit-scrollbar-thumb{
+    background-color: rgba(255,255,255,0.5);
+    -webkit-box-shadow: inset 1px 1px 0 rgba(0,0,0,0.10),inset 0 -1px 0 rgba(0,0,0,0.07);
+}
+
+.dropDown .messages::-webkit-scrollbar-button{
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.dropDown .messages::-webkit-scrollbar-corner{
+    background-color: rgba(255,255,255,0.2);
 }

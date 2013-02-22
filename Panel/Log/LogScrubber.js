@@ -29,6 +29,12 @@
       this.turnEnded = ko.observable(0);
       this.showLoad = ko.observable({load: '-'});
       this.showTurn = ko.observable(0);
+      this.showMessage = ko.observable(0);
+
+      this.turnMessages = ko.computed(function(){
+          if(!self.showLoad().turns || self.showLoad().turns().length==0) return [];
+          return self.showLoad().turns()[self.showTurn()].messages();
+      });
 
       this.turnInformation = ko.computed(function(){
         return 'Turn ' + self.showTurn() + ' on load ' + self.showLoad().load + '.';

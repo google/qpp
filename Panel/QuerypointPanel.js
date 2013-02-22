@@ -90,7 +90,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     }
 
     return showMessages;
-  }).extend({throttle: 30});
+  });
   var dropDown = document.querySelector('.dropDown');
 
   ko.applyBindings(this.logScrubber, dropDown);
@@ -117,7 +117,15 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       }
   });
 
-  dropDown.onmouseout = function(){
+  dropDown.onmouseout = function(event){
+      var e = event.toElement || event.relatedTarget;
+      while(e && e.parentNode && e.parentNode != window) {
+        if (e.parentNode == this ||  e==this) {
+            if(e.preventDefault) e.preventDefault();
+            return false;
+        }
+        e = e.parentNode;
+      }
       dropDown.style.display = 'none';
   }
 
@@ -504,12 +512,11 @@ QuerypointPanel.Panel.prototype = {
       dropDown.style.display = 'block';
       loadElement.style.display = 'none';
       QuerypointPanel.LogScrubber.showTurn(this.turn);
+      QuerypointPanel.LogScrubber.showMessage(this.position);
+      var messages = document.querySelector('.dropDown .messages');
+      messages.scrollTop = 15 * this.position;
   },
-  notShown: function(){
-      var a=1;
-      console.error(arguments);
-      return false;
-  },
+
   tooltip: function(turn){
     return this._log.currentTurn.event;
   }

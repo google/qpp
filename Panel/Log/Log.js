@@ -77,6 +77,7 @@
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
+            QuerypointPanel.OnPanelOpen.panel.logScrubber.showLoad.valueHasMutated();
             break; 
           case 'script':
             this.project.addScript(segments[2]);
@@ -133,6 +134,7 @@
           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }
       } 
+      messageSource.position = this.currentTurn.messages().length;
       this.currentTurn.messages.push(messageSource);
       this.currentReload.messages.push(messageSource);
       if (DEBUG){
