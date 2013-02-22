@@ -14,8 +14,6 @@
    */
   function define__qp(debug_in_page) {
 
-    var debug_in_page = false;
-
     var fireLoadTrigger = null;
     var beforeArtificalLoadEvent = true;
     
@@ -25,8 +23,12 @@
         beforeArtificalLoadEvent = false;
         var handlers = window.__qp.beforeArtificalLoadEventEventHandlers['load'];
         if (handlers) {
-          if (debug_in_page) console.log("__qp_runtime.fireLoad, "+handlers.length+" handlers", handlers.map(function(h){return h.toString()}));
-          handlers.forEach(function(handler){
+          if (debug_in_page) {
+            var loadInfo = 'loaded: ' + !!window.__qp.loadEvent;
+            var handlerInfo = handlers.length + ' handlers';
+            console.log('__qp_runtime.fireLoad,  ' + handlerInfo,  handlers.map(function(h){return h.toString()}));
+          }
+          handlers.forEach(function fireOne(handler){
             handler(window.__qp.loadEvent);
           });
           if (debug_in_page) {
@@ -35,7 +37,8 @@
           console.log("qp| loadEvent " + window.__qp_reloads);
           return handlers.length;
         } else {
-          if (debug_in_page) console.log("__qp_runtime.fireLoad no beforeArtificalLoadEventEventHandlers");
+          if (debug_in_page) 
+            console.log("__qp_runtime.fireLoad no beforeArtificalLoadEventEventHandlers");
         }
       } catch(exc) {
         console.error("__qp_runtime.fireLoad fails "+exc, exc.stack);
@@ -44,7 +47,8 @@
     }
 
     function fireLoadAfterRealLoad() {
-      if (debug_in_page) console.log("__qp_runtime.fireLoadAfterRealLoad fireLoadTrigger " + fireLoadTrigger);
+      if (debug_in_page) 
+        console.log("__qp_runtime.fireLoadAfterRealLoad fireLoadTrigger " + !!fireLoadTrigger);
       if (fireLoadTrigger) 
         return fireLoadTrigger.call();
       else 
@@ -56,9 +60,10 @@
     }
 
     function grabLoadEvent() {
-      window.addEventListener('load', function(event) {
+      window.addEventListener('load', function grabbedLoadEvent(event) {
         window.__qp.loadEvent = event;
-        if (debug_in_page) console.log("__qp_runtime. grabLoadEvent load event, stored; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent);
+        if (debug_in_page) 
+          console.log("__qp_runtime. grabLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         fireLoadAfterRealLoad();
       });
       window.addEventListener('DOMContentLoaded', function(event) {
@@ -68,11 +73,14 @@
     }
        
     function wrapEntryPoint(entryPointFunction) {
-      return function() {
+      if (!entryPointFunction)
+        return function noop(){};
+      //entryPointFunction.wrappedAt = (new Date()).getTime();
+      return function wrapperOnEntryPoint() {
         var args = Array.prototype.slice.apply(arguments);
         window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
-        window.__qp.turn = window.__qp.turns.length; 
-        var eventObject = window.__qp.turns[window.__qp.turn-1].args[0];
+        var turn = window.__qp.turn = window.__qp.turns.length; 
+        var eventObject = args[0];
         /*var event = '';
         for(var key in eventObject){
             switch(typeof(eventObject[key])){
@@ -87,8 +95,16 @@
                     event+= key + ':' + eventObject[key]+',';
             }
         */
-        console.log("qp| startTurn " + window.__qp.turn + ' ' + window.__qp.turns[window.__qp.turn-1].fnc.name + ' ' + eventObject.constructor.name +  ' ' + (eventObject.target.localName ? ( eventObject.target.localName + (eventObject.target.id ? "#" + eventObject.target.id : '')) : eventObject.target.nodeName) ); 
-        entryPointFunction.apply(window, args);  // TODO check |this| maybe use null
+        var turnInfo = turn + ' ' + entryPointFunction.name;
+        var targetInfo = '';
+        if (eventObject.target) {
+           var localName = eventObject.target.localName;
+           var id = eventObject.target.id;
+           targetInfo = (localName ? (localName + (id ? "#" + id : '')) : eventObject.target.nodeName);
+        }
+        var eventInfo = eventObject.type || eventObject.constructor.name;
+        console.log("qp| startTurn " + turnInfo + ' ' + eventInfo +  ' ' + targetInfo) ; 
+        entryPointFunction.apply(null, args);  // TODO check |this| maybe use null
         console.log("qp| endTurn " + window.__qp.turn); 
       }
     }
@@ -99,9 +115,10 @@
     }
 
     // This function will run just before the traced source is compiled in the page.
-    function interceptEntryPoints() {  
+    function interceptEntryPoints() {
       window.addEventListener = function(type, listener, useCapture) {
-        if (debug_in_page) console.log("__qp_runtime.interceptEntryPoints "+type + " it is "+(beforeArtificalLoadEvent ? "beforeArtificalLoadEvent" : "late"));
+       if (debug_in_page) 
+          console.log("__qp_runtime.addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         var wrapped = wrapEntryPoint(listener);
         window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
         if (beforeArtificalLoadEvent) {
@@ -211,10 +228,13 @@
     recordEntryPoints();
     interceptEntryPoints();
     
-    wrapEntryPoint(function andWeBegin() {
+    function andWeBegin() {
       console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
       if (debug_in_page) console.log("__qp_runtime.wrapEntryPoint: window.__qp: %o", window.__qp);    
-    }());
+    }
+
+    var beginWrapped = wrapEntryPoint(andWeBegin);
+    beginWrapped(new CustomEvent('BeginLoading'));
   }; 
 
   Querypoint.QPRuntime = {
@@ -227,7 +247,7 @@
     runtimeSource: function(numberOfReloads) {
       if (debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
-        return '(' + fnc + ')(' + debug + ');\n';
+        return '(' + fnc + '(' + debug + '));\n';
       });
       var reload = 'window.__qp_reloads = ' + numberOfReloads + ';\n';  
       return reload + fncs + '\n' + this.source.join('\n') + "//@ sourceURL='QPRuntime.js'\n";
