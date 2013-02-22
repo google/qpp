@@ -72,40 +72,38 @@
       });
     }
        
+    function startTurn(entryPointFunction, args) {
+      if (typeof entryPointFunction === 'string') 
+        entryPointFunction = function ScriptBody(){};
+      
+      window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
+      var turn = window.__qp.turn = window.__qp.turns.length; 
+      var turnInfo = turn + ' ' + entryPointFunction.name;
+      var eventObject = args[0];    
+      var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
+      var targetInfo = '';
+      if (eventObject.target) {
+         var localName = eventObject.target.localName;
+         var id = eventObject.target.id;
+         targetInfo = (localName ? (localName + (id ? "#" + id : '')) : eventObject.target.nodeName);
+      }
+      console.log("qp| startTurn " + turnInfo + ' ' + eventInfo +  ' ' + targetInfo);
+      return turn;
+    }
+
+    function endTurn(turn) {
+      console.log("qp| endTurn " + turn); 
+    }
+
     function wrapEntryPoint(entryPointFunction) {
       if (!entryPointFunction)
         return function noop(){};
       //entryPointFunction.wrappedAt = (new Date()).getTime();
       return function wrapperOnEntryPoint() {
         var args = Array.prototype.slice.apply(arguments);
-        window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
-        var turn = window.__qp.turn = window.__qp.turns.length; 
-        var eventObject = args[0];
-        /*var event = '';
-        for(var key in eventObject){
-            switch(typeof(eventObject[key])){
-                case 'function':
-                    event+= key + ':' + eventObject[key].name +'(),';
-                    break;
-                case 'object':
-                    if(eventObject[key]) event+= key + ':[' + eventObject[key].constructor.name + '],';
-                    else event+= key + ':null,';
-                    break;
-                default:
-                    event+= key + ':' + eventObject[key]+',';
-            }
-        */
-        var turnInfo = turn + ' ' + entryPointFunction.name;
-        var targetInfo = '';
-        if (eventObject.target) {
-           var localName = eventObject.target.localName;
-           var id = eventObject.target.id;
-           targetInfo = (localName ? (localName + (id ? "#" + id : '')) : eventObject.target.nodeName);
-        }
-        var eventInfo = eventObject.type || eventObject.constructor.name;
-        console.log("qp| startTurn " + turnInfo + ' ' + eventInfo +  ' ' + targetInfo) ; 
+        var turn = startTurn(entryPointFunction, args);
         entryPointFunction.apply(null, args);  // TODO check |this| maybe use null
-        console.log("qp| endTurn " + window.__qp.turn); 
+        endTurn(turn);
       }
     }
 
@@ -223,6 +221,8 @@
         trace: trace,
         setTracedPropertyObject: setTracedPropertyObject, // store the traced object by property
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object
+        startTurn: startTurn,  // standard turn marking 
+        endTurn: endTurn,
       };      
     }
      

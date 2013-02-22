@@ -61,7 +61,7 @@
   RemoteWebPageProject.prototype.putFiles = function(files) {
     var scripts = files.map(function(file){
       var source = file.generatedSource + "\n//@ sourceURL=" + file.name + '.js';  // .js.js for transcoded files
-      return {content: source};
+      return {content: source, name: file.name};
     });
     this.putPageScripts(scripts, function(result) {
       if (debug) console.log("Put " + scripts.length + " transcoded scripts", scripts);
@@ -115,7 +115,9 @@
       scripts.forEach(function(script) {
         var content = script.content;
         try {
+          var turn = window.__qp.startTurn('ScriptBody', [{name: script.name}]);
           eval.call(window, content);
+          window.__qp.endTurn(turn);
           result.compiled.push(script.src);
         } catch (exc) {          
           result.errors.push({message: exc.toString(), content: content, stack: exc.stack});
