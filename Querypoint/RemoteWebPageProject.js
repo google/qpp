@@ -115,7 +115,7 @@
       scripts.forEach(function(script) {
         var content = script.content;
         try {
-          eval(content);
+          eval.call(window, content);
           result.compiled.push(script.src);
         } catch (exc) {          
           result.errors.push({message: exc.toString(), content: content, stack: exc.stack});
