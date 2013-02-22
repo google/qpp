@@ -494,15 +494,20 @@ QuerypointPanel.Panel.prototype = {
 
   setScroll: function(node,elem) {
       var logFloat = document.querySelector('.floaty');
-      elem.scroll = logFloat.scrollHeight;
-      if (parseInt(elem.scroll,10) < 210) elem.scroll = '0px';
-      logFloat.scrollTop = logFloat.scrollHeight;
+      elem.scroll = node[1];
+      elem.scroll.scrollIntoView(false);
   },
 
   focusLog: function (elem) {
-    if(!elem.scroll) return;
-    var logFloat = document.querySelector('.floaty');
-    logFloat.scrollTop = elem.scroll - logFloat.offsetHeight/2;
+    if(typeof(elem.scroll) == 'undefined'){
+        // Clicked on Turn Indicator
+        // Focus on some element of the turn or ignore?
+        // What if no messages appeared in this turn?
+    }else{
+      elem.scroll.scrollIntoView(false);
+      var logFloat = document.querySelector('.floaty');
+      if(logFloat.scrollTop > logFloat.offsetHeight) logFloat.scrollTop += logFloat.offsetHeight / 2 ;
+    }
   },
 
   turnInfo: function(){

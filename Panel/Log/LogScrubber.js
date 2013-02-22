@@ -32,7 +32,7 @@
       this.showMessage = ko.observable(0);
 
       this.turnMessages = ko.computed(function(){
-          if(!self.showLoad().turns || self.showLoad().turns().length==0) return [];
+          if(!self.showLoad().turns || self.showLoad().turns().length<=self.showTurn()) return [];
           return self.showLoad().turns()[self.showTurn()].messages();
       });
 
@@ -60,6 +60,7 @@
 
       this.displayLoad = function(object){
         self.showLoad(object);
+        object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
       }
 
       this._initMouse();
