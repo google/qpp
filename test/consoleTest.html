@@ -12,11 +12,15 @@
     console.error("Error " + i);
    }
  }
+ window.addEventListener('load', function() {
+   document.querySelector('.consoleFirst').addEventListener('click', consoleFirst);
+   document.querySelector('.consoleAction').addEventListener('click', consoleAction);
+ });
    </script>
 </head>
 <body>
   <h1>Querypoint Test Page for Console</h1>
-  <button class='consoleFirst' onclick='consoleFirst();'>Show One Console Message</button>
-  <button class='consoleAction' onclick='consoleAction();'>Show Console Messages</button>
+  <button class='consoleFirst'>Show One Console Message</button>
+  <button class='consoleAction'>Show Console Messages</button>
   <p>Dumps 30 log, warning and error messages in the the console.</p>
 </body>

@@ -46,7 +46,8 @@
             var str = 'Function ' + eventInfo[0] + ' triggered by ' + eventInfo[1] + ' on target ' + eventInfo[2];
             return str;
         }catch(err){
-            return 'Undefined event';
+          console.warn('LogScrubber.eventInformation fails ' + err, err);
+          return 'Undefined event';
         }
       });
 
