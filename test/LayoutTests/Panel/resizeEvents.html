@@ -37,7 +37,7 @@ function test_resizeEvents10() {
 
 
   var strClick = ' && document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))';
-  var passed = 0;
+  var passed = 1;
   function functionchange(current){
       var ans = '((function (){ var change = (document.querySelector(".logScrubber").offsetWidth - 30 - ';
           ans+= (current * 3).toString() + ') / ' + (current * 3).toString() + ';';
@@ -51,9 +51,10 @@ function test_resizeEvents10() {
           return ans;
   }
 
-  AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ if(ans=='0'){ AsyncMachine.ops=[]; return "Window too wide to run test case" ;} passed+=ans; });
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){ return "";} );
   AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱5');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").style.borderWidth');
+  AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ if(ans=='0'){ AsyncMachine.ops=[]; return "Window too wide to run test case" ;} passed+=ans; });
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){ return "";} );
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("span.turnNumber").textContent = 100', function(text){ return "";} );
   AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '100');

@@ -70,10 +70,13 @@
             this._logScrubber.loadStarted(this._reloadCount);
             break;
           case 'startTurn': 
+            messageSource.qp = false;
+            messageSource.severity = 'turn';
             this._turn = parseInt(segments[2], 10);
             this._logScrubber.turnStarted(this._turn);
             this._event = segments[3]+'|'+segments[4];
-            if(segments[5]!='null' && segments[5] != 'undefined') this._event+= '|' + segments[5];
+            if(segments[5] && segments[5]!='null' && segments[5] != 'undefined') this._event+= '|' + segments[5];
+            messageSource.text = 'Turn ' + this._turn + ' started. (' + this._event + ')';
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
@@ -129,7 +132,7 @@
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
         this._logScrubber.showLoad(this.currentReload);
-        this.currentReload.messages.push({severity: 'turn', turn: this.currentTurn.turn});
+        //this.currentReload.messages.push({severity: 'turn', turn: this.currentTurn.turn});
         if (DEBUG){
           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }

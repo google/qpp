@@ -157,6 +157,9 @@
 .logView .messages [severity="error"] {
   color: rgb(255, 0, 0);
 }
+.logView .messages [severity="turn"] {
+  color: rgb(255, 255, 255);
+}
 .logView .messages div[odd="1"] {
   color: rgb(148, 143, 118);
   background-color: rgb(32, 32, 29);

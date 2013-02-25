@@ -26,7 +26,7 @@ function test_lastChange() {
   
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleFirst").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'td.messages', 'log');
-  AsyncMachine.pushOp(extractText, 'td.messages', function(text) { return text.trim();});
+  AsyncMachine.pushOp(extractText, 'td div[severity="log"]');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleAction").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'div[severity="error"]', 'Error 29');
   AsyncMachine.pushOp(getBoundingClientRect, '.floaty', '', function (rects) {
