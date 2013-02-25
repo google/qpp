@@ -522,7 +522,7 @@ QuerypointPanel.Panel.prototype = {
         // Focus on some element of the turn or ignore?
         // What if no messages appeared in this turn?
         document.querySelector().scrollIntoView(false);
-    }else{
+    } else {
       elem.scroll.scrollIntoView(false);
       var logFloat = document.querySelector('.floaty');
       logFloat.scrollTop += logFloat.offsetHeight / 2 ;

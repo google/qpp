@@ -32,7 +32,7 @@
       this.showMessage = ko.observable(0);
 
       this.turnMessages = ko.computed(function(){
-          if(!self.showLoad().turns ||  !self.showLoad().turns()[self.showTurn() - 1]) return [];
+          if (!self.showLoad().turns ||  !self.showLoad().turns()[self.showTurn() - 1]) return [];
           return self.showLoad().turns()[self.showTurn() - 1].messages();
       });
 
@@ -153,16 +153,16 @@
     },
     
     collapseTurns: function(node, event){
-      if(arguments.length == 2){
+      if (arguments.length == 2){
           node = event.currentTarget;
-      }else{
+      } else {
           node = arguments[0].parentElement;
       }
 
       var allTurns = document.querySelectorAll('span.turns');
       var currentLoad = node.querySelector('span.turns');
       
-      while(!currentLoad){
+      while (!currentLoad){
           node = node.parentElement;
           currentLoad = node.querySelector('span.turns');
       }

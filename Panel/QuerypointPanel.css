@@ -106,7 +106,7 @@ body {
 }
 .hoverDoor:hover {
   width: 20ex;
-  color: black;
+  color: #272822;
   font-size: 9px;
   padding-bottom: 2px;
   font-family: sans-serif;
@@ -357,8 +357,8 @@ pre.traceBackground {
 }
 
 .traceBody::-webkit-scrollbar-thumb{
-    background-color: rgba(0,0,0,0.2);
-    -webkit-box-shadow: inset 1px 1px 0 rgba(0,0,0,0.10),inset 0 -1px 0 rgba(0,0,0,0.07);
+    background-color: rgba(248,248,242,0.4);
+    -webkit-box-shadow: inset 1px 1px 0 rgba(39,40,34,0.10),inset 0 -1px 0 rgba(39,40,34,0.07);
 }
 
 .traceBody::-webkit-scrollbar-button{

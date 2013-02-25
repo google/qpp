@@ -74,8 +74,8 @@
             messageSource.severity = 'turn';
             this._turn = parseInt(segments[2], 10);
             this._logScrubber.turnStarted(this._turn);
-            this._event = segments[3]+'|'+segments[4];
-            if(segments[5] && segments[5]!='null' && segments[5] != 'undefined') this._event+= '|' + segments[5];
+            this._event = segments[3] + '|' + segments[4];
+            if (segments[5] && segments[5] != 'null' && segments[5] != 'undefined') this._event += '|' + segments[5];
             messageSource.text = 'Turn ' + this._turn + ' started. (' + this._event + ')';
             break;
           case 'endTurn':
