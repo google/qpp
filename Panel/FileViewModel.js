@@ -85,16 +85,17 @@
       var treeRoot = this.treeRoot();
       if (treeRoot) {
         var treeInView = this.tokenViewModel.tokenTree();
-        if (treeInView) {
-          this.tracepoints.removeAll();
-          this._panel.tracequeries().forEach(function(tq){
-            tq.extractTracepoints(this, treeInView, function (tracepoint){
-              if (tracepoint) {
-                this.tracepoints.push(tracepoint);
-              } // else no data?
-            }.bind(this));
+        if (!treeInView) 
+            treeInView = treeRoot;
+       
+        this.tracepoints.removeAll();
+        this._panel.tracequeries().forEach(function(tq){
+          tq.extractTracepoints(this, treeInView, function (tracepoint){
+            if (tracepoint) {
+              this.tracepoints.push(tracepoint);
+            } // else no data?
           }.bind(this));
-        }
+        }.bind(this));
       }
     }
 
