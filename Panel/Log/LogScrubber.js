@@ -41,11 +41,26 @@
       });
 
       this.eventInformation = ko.computed(function(){
-        try{
-            var eventInfo = self.showLoad().turns()[self.showTurn() - 1].event.split('|');
-            var str = 'Function ' + eventInfo[0] + ' triggered by ' + eventInfo[1] + ' on target ' + eventInfo[2];
-            return str;
-        }catch(err){
+        try {
+            var currentTurnNumber = self.showTurn(); // updated by user interaction
+            if (currentTurnNumber) {  
+              var load = self.showLoad();
+              if (load.turns) {
+                var turn = load.turns()[currentTurnNumber - 1];
+                if (turn) {
+                  var eventInfo = turn.event.split('|');
+                  var str = 'Function ' + eventInfo[0] + ' triggered by ' + eventInfo[1] + ' on target ' + eventInfo[2];
+                  return str;
+                } else {
+                  console.warn('LogScrubber.eventInformation no turn ' + (currentTurnNumber - 1), Object.keys(load.turns()));
+                }
+              } else {
+                if (load.load !== '-') {
+                  console.warn('LogScrubber.eventInformation no .turns in load', load);
+                }
+              }
+            } 
+        } catch(err) {
           console.warn('LogScrubber.eventInformation fails ' + err, err);
           return 'Undefined event';
         }
