@@ -48,49 +48,65 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
-  this.allMessages = ko.computed( function(){
-    var currentLoad = panel.logScrubber.showLoad();
-    var joinMessages = currentLoad.messages || [];
-    var maxMessages = document.querySelector('.logScrubber').offsetWidth-30;
-
-    if (currentLoad.load == '-') return joinMessages;
-    if(joinMessages.length < maxMessages){
-        var borderWidth = Math.floor(maxMessages / joinMessages.length);
-        if(borderWidth > 10) borderWidth = 10;
+  this._setMessageWidth = function(borderWidth) {
+    if (borderWidth > 10) borderWidth = 10;
         borderWidth = borderWidth + 'px';
         setTimeout(function(){
             var events = document.querySelectorAll('.eventIndicator');
             for(var i = 0; i < events.length; i++){
                 events[i].style.borderWidth = borderWidth;
             }
-        },5);
-        return joinMessages;
-    }
+        }, 5);
+  }
 
-    var perPixel = joinMessages.length / maxMessages;
+  this._downSizeMessages = function(perPixel, joinMessages) {
     var last = 0, next = 0;
     var showMessages=[];
     var hasError, hasTurn, hasWarn, lastTurn;
 
-    while(next != joinMessages.length){
-        if(!hasTurn){
+    while (next != joinMessages.length) {
+        if (!hasTurn) {
             hasError = hasTurn = hasWarn = false;
-        }else{
+        } else {
             hasTurn = false;
         }
-        if(last + perPixel > joinMessages.length) last = joinMessages.length; else last = last + perPixel;
-        for(; next < last;next++){
+        if (last + perPixel > joinMessages.length) 
+          last = joinMessages.length; 
+        else 
+          last = last + perPixel;
+
+        for (; next < last; next++) {
             var severity = joinMessages[next].severity;
-            if(severity == 'turn') hasTurn = true;
-            if(severity == 'warn') hasWarn = true;
-            if(severity == 'error') hasError = true;
+            if (severity === 'turn') hasTurn = true;
+            if (severity === 'warn') hasWarn = true;
+            if (severity === 'error') hasError = true;
         }
         lastTurn = joinMessages[next-1].turn;
-        showMessages.push({severity: hasTurn ? 'turn' : hasWarn ? 'warn' : hasError ? 'error' : 'log', turn:lastTurn, scroll: joinMessages[next-1].scroll });
+        showMessages.push({
+          severity: hasTurn ? 'turn' : (hasWarn ? 'warn' : (hasError ? 'error' : 'log')), 
+          turn:lastTurn, 
+          scroll: joinMessages[next-1].scroll 
+        });
     }
+  }
 
-    return showMessages;
+  this.allMessages = ko.computed(function(){
+    var currentLoad = panel.logScrubber.showLoad();
+    if (currentLoad.load == '-') 
+      return joinMessages;
+
+    var joinMessages = currentLoad.messages || [];
+    var maxMessages = document.querySelector('.logScrubber').offsetWidth-30;
+    if (joinMessages.length < maxMessages) {
+        var borderWidth = Math.floor(maxMessages / joinMessages.length);
+        panel._setMessageWidth(borderWidth);
+        return joinMessages;
+    } else {
+      var perPixel = joinMessages.length / maxMessages;
+      return panel._downSizeMessages(perPixel, joinMessages);
+    }
   });
+
   var dropDown = document.querySelector('.dropDown');
 
   ko.applyBindings(this.logScrubber, dropDown);
@@ -104,12 +120,14 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.showLoad = ko.computed( function(){
       return panel.logScrubber.showLoad().load;
   });
+
   this.showNext = ko.computed( function(){
-      if (panel.logScrubber.showLoad().load == '-' || panel.logScrubber.showLoad().load == panel._log.currentReload.load){
+      var load = panel.logScrubber.showLoad().load;
+      if (load === '-' || load == panel._log.currentReload.load) {
           nextLoad.onmousedown = null;
           return '-';
-      }else{
-          nextLoad.onmousedown = function(){
+      } else {
+          nextLoad.onmousedown = function() {
               var next = panel.logScrubber.showLoad().next;
               panel.logScrubber.showLoad(next);
           };
