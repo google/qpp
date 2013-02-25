@@ -171,32 +171,36 @@
     height: 15px;
 }
 
-.overviewLog{
+.overviewLog {
     height: 15px;
     background-color: #75715E;
     margin-left: 15px;
     margin-right: 15px;
 }
 
-.eventIndicator{
+.eventIndicator {
     height: 15px;
     width: 1px;
     border-left-style: solid;
     border-left-width: 2px;
+    border-left-color: #272822;
     float: left;
 }
 
 .eventIndicator[severity="turn"]{
-    border-color: #f8f8f2;
-    border-width: 2px;
+    background-color: #f8f8f2;
 }
 
-.eventIndicator[severity="warning"]{
-    border-color: rgb(255, 208, 69);
+.eventIndicator[severity="warning"] {
+    background-color: rgb(255, 208, 69);
+}
+
+.eventIndicator[severity="log"] {
+    background-color: #d0d0d0;
 }
 
 .eventIndicator[severity="error"]{
-    border-color: #F00;
+    background-color: #F00;
 }
 
 .eventIndicator[severity="hide"]{

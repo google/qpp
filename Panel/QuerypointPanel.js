@@ -48,13 +48,13 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
-  this._setMessageWidth = function(borderWidth) {
-    if (borderWidth > 10) borderWidth = 10;
-        borderWidth = borderWidth + 'px';
+  this._setMessageWidth = function(width) {
+    if (width > 10) width = 10;
+        width = width + 'px';
         setTimeout(function(){
             var events = document.querySelectorAll('.eventIndicator');
             for(var i = 0; i < events.length; i++){
-                events[i].style.borderWidth = borderWidth;
+                events[i].style.width = width;
             }
         }, 5);
   }
@@ -98,8 +98,8 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     var joinMessages = currentLoad.messages || [];
     var maxMessages = document.querySelector('.logScrubber').offsetWidth-30;
     if (joinMessages.length < maxMessages) {
-        var borderWidth = Math.floor(maxMessages / joinMessages.length);
-        panel._setMessageWidth(borderWidth);
+        var width = Math.floor(maxMessages / joinMessages.length);
+        panel._setMessageWidth(width);
         return joinMessages;
     } else {
       var perPixel = joinMessages.length / maxMessages;
