@@ -29,6 +29,19 @@
     }
   };
   
+  QuerypointPanel.Console = {
+    __proto__: chrome.devtools.protocol.Console.prototype,
+    onMessageAdded: {
+      addListener: function(fnc) {
+        QuerypointPanel.Console.messageAdded = fnc;
+        if (!QuerypointPanel.Console._registered) {
+          QuerypointPanel.Console.addListeners();
+          QuerypointPanel.Console._registered = true;
+        }
+      }
+    }
+  };
+
   QuerypointPanel.Log = {
 
     currentReload: {},
@@ -38,15 +51,9 @@
       this.project = project;
       this._logScrubber = logScrubber;
 
-      chrome.experimental.devtools.console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
+      QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
-      /* ignore the stored messages for now, they are confusing the load# counting
-      chrome.experimental.devtools.console.getMessages(function(messages){
-        
-        messages.forEach(this._onMessageAdded.bind(this));
-      }.bind(this));
-      return this;
-      */
+
       this.currentReload.messages = [];
       return this;
     },
@@ -117,6 +124,7 @@
       if (typeof messageSource.load === 'undefined') messageSource.load = this._reloadBase;
       if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
       messageSource.__proto__ = messagePrototype;
+      messageSource.severity = messageSource.level;
       
       if (this.currentReload.load !== messageSource.load) {
         this.currentReload = this._reloadRow(messageSource);
