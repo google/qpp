@@ -124,7 +124,7 @@
       if (typeof messageSource.load === 'undefined') messageSource.load = this._reloadBase;
       if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
       messageSource.__proto__ = messagePrototype;
-      messageSource.severity = messageSource.level;
+      messageSource.severity = messageSource.severity || messageSource.level;
       
       if (this.currentReload.load !== messageSource.load) {
         this.currentReload = this._reloadRow(messageSource);
