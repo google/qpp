@@ -1,0 +1,5 @@
+http://localhost:8686/test/qpd.html
+innerHTML in   button.innerHTML = 'I am not a bug';
+true
+Try Me!|I am not a bug|I've been clicked 0 times
+

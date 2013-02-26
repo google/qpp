@@ -158,17 +158,27 @@
       return match;
     }
 
+    function formatTracepoint(tp) {
+      // Defines the tracepoint API
+      return {
+        value: tp.value,
+        valueType: typeof tp.value, // JSON will not transmit undefined values correctly.
+        functionOffset: tp.functionOffset,
+        turn: tp.turn,
+        activationCount: tp.activationCount,
+      };
+    }
+
     function extractTracepoints(tps) {
       try {
         if (debug_in_page) console.log("__qp_runtime.extractTracepoints", tps);
         return tps.map(function(tp) {
-          tp.valueType = typeof tp.value; // JSON will not transmit undefined values correctly.
           var activation = tp.activations[tp.activationIndex - 1];
           if (debug_in_page) {
             console.log("__qp_runtime.extractTracepoints tp", tp);
             console.log('__qp_runtime.extractTracepoints activation', activation);
           }
-          return findMatchingActivation(activation, tp);
+          return formatTracepoint(findMatchingActivation(activation, tp));
         });
       } catch (exc) {
         console.error('__qp_runtime.extractTracepoints failed '+exc, exc);

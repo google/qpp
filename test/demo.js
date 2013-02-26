@@ -35,6 +35,8 @@ function bar() {
     obj.prop = 0;
   }
   condition.prop = 7;
+  var button = document.querySelector("#myButton");
+  button.innerHTML = 'I am not a bug';
 }
 
 function onLoad() {
