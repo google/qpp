@@ -146,9 +146,17 @@
     },
 
     visitFunctionDeclaration: function(tree) {
+      this.declareVariable_(tree.name);
+      
       var scope = this.pushScope_(tree);
-      this.visitFunction_(tree.name, tree.formalParameterList,
-                          tree.functionBody);
+      // Function declaration does not bind the name inside the function body.
+      this.visitFunction_(null, tree.formalParameterList, tree.functionBody);
+      this.pop_(scope);
+      },
+
+    visitFunctionExpression: function(tree) {
+      var scope = this.pushScope_(tree);
+      this.visitFunction_(tree.name, tree.formalParameterList, tree.functionBody);
       this.pop_(scope);
     },
 
