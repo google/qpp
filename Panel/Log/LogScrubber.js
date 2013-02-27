@@ -92,7 +92,6 @@
       this.eventTurn = QuerypointPanel.EventTurn;
       this.eventTurn.initialize(this);
 
-
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){
         var height = logElement.clientHeight;
@@ -206,6 +205,14 @@
       document.querySelector('.logScrubber').style.display = 'none';
       setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
     },
+
+    revealElement: function(){
+        console.error("TODO reveal element");
+    },
+
+    traceElement: function(){
+        console.error("TODO trace element");
+    }
 
   };
 }());

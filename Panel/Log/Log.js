@@ -90,11 +90,12 @@
               eventType: segments[6],
               target: segments[7]
             };
-            messageSource.event = this._currentEvent.functionName + '|', this._currentEvent.eventType;
+            var turnDetail;
+            turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
             if (this._currentEvent.target !== 'undefined') 
-                messageSource.event += '|', this._currentEvent.target;
+                turnDetail += '|' + this._currentEvent.target;
                 
-            messageSource.text = 'Turn ' + this._turn + ' started. (' + messageSource.event + ')';
+            messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));

@@ -99,10 +99,22 @@
         </div>
         <div class="dropDown" data-bind="with: eventTurn">
             <p data-bind="text: turnInformation"> </p>
-            <p class="eventInfo" data-bind="with: summary">Function <a data-bind="text: functionName, attr:{'data-url': url}">
-                                                           </a> triggered by <span data-bind="text: eventType">
-                                                                                      </span> on target <span data-bind="text:target">
-                                                                                      </span> </p>
+            <ul id="infoNav" data-bind="with: summary">
+                <li>
+                    Function <a data-bind="text: functionName, attr:{'data-url': url}"></a>
+                </li>
+                <li>
+                triggered by <a data-bind="text: eventType"></a>
+                </li>
+                <li>
+                    on target <a data-bind="text: target"></a>
+                    <ul>
+                        <li data-bind="event: {mousedown: $root.revealElement}"><a>Reveal</a></li>
+                        <li data-bind="event: {mousedown: $root.traceElement}"><a>Trace Element</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <div style="clear: both"></div>
             <div class="messages" data-bind="foreach: turnMessages">
                 <p class="message" data-bind="text: text, attr:{severity: severity}">
                 </p>
@@ -110,7 +122,7 @@
         </div>
         <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoad}"></div>
         <div class="overviewLog" data-bind="foreach: allMessages">
-            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn, title: $root.tooltip(turn)}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
         </div>
         <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
       <!-- <span class="scrubberIndicator" title="TODO slide sideways to select visible log entries, up/down to resize log view"></span> -->

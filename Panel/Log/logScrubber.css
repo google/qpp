@@ -237,7 +237,7 @@
     z-index: 50;
     border-radius: 10px;
     display: none;
-    margin-top: 30px;
+    margin-top: 3px;
     color: #f8f8f2;
     font-size: 12px;
     padding: 8px;
@@ -282,6 +282,64 @@
     background-color: rgba(248,248,242,0.2);
 }
 
-table.messagesByLoadNumber{
+table.messagesByLoadNumber {
     margin-top: 500px;
+}
+
+#infoNav {
+    margin-bottom: 15px;
+    margin-left: -10px;
+    padding: 0;
+    list-style: none;
+    float: left;
+    width: 100%;
+    position: relative;
+    z-index: 100;
+}
+
+#infoNav li {
+    margin-left: 8px;
+    float: left;
+    position: relative;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+#infoNav a {
+    color: #f8f8f2;
+}
+
+#infoNav a:hover {
+    color: #f8f8f2;
+    text-decoration: underline;
+}
+
+#infoNav ul {
+    list-style: none;
+    position: absolute;
+    left: -9999px;
+    background: #272822;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+#infoNav ul li {
+    padding-top: 1px;
+    float: none;
+}
+
+#infoNav ul a {
+    white-space: nowrap;
+}
+
+#infoNav li:hover ul {
+    left: 70px;
+}
+
+#infoNav li:hover a {
+    text-decoration: none;
+}
+
+#infoNav li:hover ul a {
+    text-decoration: none;
 }
