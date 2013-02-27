@@ -97,10 +97,13 @@
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
             </div>
         </div>
-        <div class="dropDown" >
-            <p data-bind="text: $root.turnInformation()"> </p>
-            <p data-bind="text: $root.eventInformation()"> </p>
-            <div class="messages" data-bind="foreach: turnMessages()">
+        <div class="dropDown" data-bind="with: eventTurn">
+            <p data-bind="text: turnInformation"> </p>
+            <p class="eventInfo" data-bind="with: summary">Function <a data-bind="text: functionName, attr:{'data-url': url}">
+                                                           </a> triggered by <span data-bind="text: eventType">
+                                                                                      </span> on target <span data-bind="text:target">
+                                                                                      </span> </p>
+            <div class="messages" data-bind="foreach: turnMessages">
                 <p class="message" data-bind="text: text, attr:{severity: severity}">
                 </p>
             </div>

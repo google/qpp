@@ -84,7 +84,7 @@
                 traceViewModel[prop] = trace[prop];
               });
               traceViewModel.tooltip = trace.query.title() + " found in " + trace.file;
-              traceViewModel.url = trace.file + '?start=' + trace.startOffset + '&end=' + trace.endOffset + '&';
+              traceViewModel.url = QuerypointPanel.createFileURL(trace.file, trace.startOffset, trace.endOffset);
               traceViewModel.iconText = trace.query.iconText();
               return traceViewModel;
             });

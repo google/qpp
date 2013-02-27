@@ -203,6 +203,12 @@ body {
   width:  326px;  /* must be fixed to avoid flashy resizing of the width */
 }
 
+a {
+  color: -webkit-link;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 a:focus, a:active {
   background-color: rgb(33, 34, 31);
   outline: none;

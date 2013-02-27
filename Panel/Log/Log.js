@@ -62,6 +62,8 @@
       this._reformatMessage(this._parse(message));
     },
     
+    _currentEvent: 'none yet',
+    
     _parse: function(messageSource) {
       var mark = messageSource.text.indexOf('qp|');
       if (mark === 0) {
@@ -81,9 +83,18 @@
             messageSource.severity = 'turn';
             this._turn = parseInt(segments[2], 10);
             this._logScrubber.turnStarted(this._turn);
-            this._event = segments[3] + '|' + segments[4];
-            if (segments[5] && segments[5] != 'null' && segments[5] != 'undefined') this._event += '|' + segments[5];
-            messageSource.text = 'Turn ' + this._turn + ' started. (' + this._event + ')';
+            this._currentEvent = {
+              functionName: segments[3],
+              filename: segments[4],
+              offset: segments[5],
+              eventType: segments[6],
+              target: segments[7]
+            };
+            messageSource.event = this._currentEvent.functionName + '|', this._currentEvent.eventType;
+            if (this._currentEvent.target !== 'undefined') 
+                messageSource.event += '|', this._currentEvent.target;
+                
+            messageSource.text = 'Turn ' + this._turn + ' started. (' + messageSource.event + ')';
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
@@ -99,7 +110,7 @@
       }
       messageSource.load = this._reloadCount;
       messageSource.turn = this._turn;
-      messageSource.event = this._event;
+      messageSource.event = this._currentEvent;
       return messageSource; 
     },
 

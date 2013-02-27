@@ -27,6 +27,11 @@
     });
     return target;
   }
+
+  QuerypointPanel.createFileURL = function(filename, startOffset, endOffset) {
+    return filename + '?start=' + startOffset + '&end=' + endOffset + '&';
+  },
+
 /**
  * @param panel {ExtensionPanel} devtools panel
  * @param panel_window {Window} the content window of the extension panel
@@ -214,7 +219,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   
   ko.applyBindings(this, this.fileViews);
 
-   $(".QPOutput").live("click", function(jQueryEvent) {
+   $(".panel").live("click", function(jQueryEvent) {
         jQueryEvent.target.focus();
         var url = jQueryEvent.target.getAttribute('data-url');
         if (url) {
@@ -535,7 +540,7 @@ QuerypointPanel.Panel.prototype = {
       var loadElement = document.querySelector('.loadList');
       dropDown.style.display = 'block';
       loadElement.style.display = 'none';
-      QuerypointPanel.LogScrubber.showTurn(this.turn);
+      QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
       QuerypointPanel.LogScrubber.showMessage(this.position);
       var messages = document.querySelector('.dropDown .messages');
       messages.scrollTop = 15 * this.position;

@@ -71,14 +71,56 @@
         if (debug_in_page) console.log("__qp_runtime. grabLoadEvent DOMContentLoaded event, stored");
       });
     }
-       
-    function startTurn(entryPointFunction, args) {
-      if (typeof entryPointFunction === 'string') 
+    
+    var reTranscodedFunctionPreamble = /{([^;]*);/;
+    var reFunctionsData = /\[([^\]]*)\]\[([^\]]*)\]/;
+
+    function appendFileInfoFromPreamble(entryPointFunction, startInfo) {
+      if (entryPointFunction.__qp) {
+          startInfo = entryPointFunction.__qp;
+        } else {
+          var preamble = reTranscodedFunctionPreamble.exec(entryPointFunction + '');
+          if (preamble) {
+            var functionsData = reFunctionsData.exec(preamble[1]);
+            if (functionsData) {
+              startInfo.filename = functionsData[1];
+              startInfo.offset = functionsData[2];
+              startInfo.name = entryPointFunction.name || '(anonymous)';
+              entryPointFunction.__qp = {
+                filename: startInfo.filename,
+                offset: startInfo.offset,
+                name: startInfo.name
+              };
+            }
+          } else {
+            startInfo.offset = 0;
+            startInfo.filename = '?';
+            startInfo.name = entryPointFunction.name || '(anonymous)';
+          }
+        }
+        return startInfo;
+    }
+
+    function getStartInfo(entryPointFunction, args) {
+      var startInfo = {fnc: entryPointFunction, args: args};
+      if (typeof entryPointFunction === 'string') {
         entryPointFunction = function ScriptBody(){};
-      
-      window.__qp.turns.push({fnc: entryPointFunction, args: args}); 
+        startInfo.name = '[[ScriptBody]]';
+        startInfo.filename = args[0].name;
+        startInfo.offset = 0; // outer function
+      } else if (typeof entryPointFunction === 'function') {
+        startInfo = appendFileInfoFromPreamble(entryPointFunction, startInfo);
+      } else {
+        throw new Error('QPRuntime.startTurn: illegal entryPointFunction ', entryPointFunction);
+      }
+      return startInfo;
+    }
+
+    function startTurn(entryPointFunction, args) {
+      var startInfo = getStartInfo(entryPointFunction, args);
+      window.__qp.turns.push(startInfo); 
       var turn = window.__qp.turn = window.__qp.turns.length; 
-      var turnInfo = turn + ' ' + entryPointFunction.name;
+      var functionInfo = startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset;
       var eventObject = args[0];    
       var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
       var targetInfo = '';
@@ -87,7 +129,7 @@
          var id = eventObject.target.id;
          targetInfo = (localName ? (localName + (id ? "#" + id : '')) : eventObject.target.nodeName);
       }
-      console.log("qp| startTurn " + turnInfo + ' ' + eventInfo +  ' ' + targetInfo);
+      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo +  ' ' + targetInfo);
       return turn;
     }
 

@@ -9,6 +9,65 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+  QuerypointPanel.EventTurn = {
+    initialize: function(logScrubber) {
+      
+      var eventTurn = this;
+
+      this.showTurn = ko.observable(0);
+      
+      this.turnInformation = ko.computed(function(){
+        return 'Turn ' + eventTurn.showTurn() + ' on load ' + logScrubber.showLoad().load + '.';
+      });
+
+      this.createFileURL = function(eventInfo) {
+        // the QPRuntime only has the function start offset.
+        return QuerypointPanel.createFileURL(eventInfo.filename, eventInfo.offset, eventInfo.offset + 1);
+      }
+
+      this.summary = ko.computed(function(){
+        try {
+            var currentTurnNumber = eventTurn.showTurn(); // updated by user interaction
+            if (currentTurnNumber) {  
+              var load = logScrubber.showLoad();
+              if (load.turns) {
+                var turn = load.turns()[currentTurnNumber - 1];
+                if (turn) {
+                  if (!turn.event.url) {
+                    turn.event.url = eventTurn.createFileURL(turn.event);
+                  }
+                  return turn.event;
+                } else {
+                  console.warn('LogScrubber.summary no turn ' + (currentTurnNumber - 1), Object.keys(load.turns()));
+                }
+              } else {
+                if (load.load !== '-') {
+                  console.warn('LogScrubber.summary no .turns in load', load);
+                }
+              }
+            } 
+        } catch(err) {
+          console.warn('LogScrubber.summary fails ' + err, err);
+        }
+      });
+
+      this.turnMessages = ko.computed(function(){
+        var turns = logScrubber.showLoad().turns;
+        var messages = [];
+        if (turns) {
+          var turnIndex = eventTurn.showTurn() - 1;
+          var turn = turns[turnIndex];
+          if (turn)
+            return turn.messages();
+        }
+        return messages;
+      });
+
+      //var eventTurnElement = document.querySelector('.dropDown');  // TODO rename class
+      //ko.applyBindings(this, eventTurnElement);
+    }
+  }
+
   QuerypointPanel.LogScrubber = {
     
     initialize: function(logElement) {
@@ -28,43 +87,11 @@
       this.turnStarted = ko.observable(0);
       this.turnEnded = ko.observable(0);
       this.showLoad = ko.observable({load: '-'});
-      this.showTurn = ko.observable(0);
       this.showMessage = ko.observable(0);
 
-      this.turnMessages = ko.computed(function(){
-          if (!self.showLoad().turns ||  !self.showLoad().turns()[self.showTurn() - 1]) return [];
-          return self.showLoad().turns()[self.showTurn() - 1].messages();
-      });
+      this.eventTurn = QuerypointPanel.EventTurn;
+      this.eventTurn.initialize(this);
 
-      this.turnInformation = ko.computed(function(){
-        return 'Turn ' + self.showTurn() + ' on load ' + self.showLoad().load + '.';
-      });
-
-      this.eventInformation = ko.computed(function(){
-        try {
-            var currentTurnNumber = self.showTurn(); // updated by user interaction
-            if (currentTurnNumber) {  
-              var load = self.showLoad();
-              if (load.turns) {
-                var turn = load.turns()[currentTurnNumber - 1];
-                if (turn) {
-                  var eventInfo = turn.event.split('|');
-                  var str = 'Function ' + eventInfo[0] + ' triggered by ' + eventInfo[1] + ' on target ' + eventInfo[2];
-                  return str;
-                } else {
-                  console.warn('LogScrubber.eventInformation no turn ' + (currentTurnNumber - 1), Object.keys(load.turns()));
-                }
-              } else {
-                if (load.load !== '-') {
-                  console.warn('LogScrubber.eventInformation no .turns in load', load);
-                }
-              }
-            } 
-        } catch(err) {
-          console.warn('LogScrubber.eventInformation fails ' + err, err);
-          return 'Undefined event';
-        }
-      });
 
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){
