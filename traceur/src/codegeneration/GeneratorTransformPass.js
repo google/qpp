@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import {
 } from '../syntax/trees/ParseTrees.js';
 import GeneratorTransformer from 'generator/GeneratorTransformer.js';
 import ParseTreeVisitor from '../syntax/ParseTreeVisitor.js';
+import parseStatement from 'PlaceholderParser.js';
 import TempVarTransformer from 'TempVarTransformer.js';
 import ParseTreeTransformer from 'ParseTreeTransformer.js';
 import {
@@ -32,7 +33,6 @@ import {
   COMMA_EXPRESSION,
   IDENTIFIER_EXPRESSION,
   PAREN_EXPRESSION,
-  VARIABLE_DECLARATION,
   YIELD_EXPRESSION
 } from '../syntax/trees/ParseTreeType.js';
 import {
@@ -48,7 +48,13 @@ import {
   createVariableStatement,
   createYieldStatement
 } from 'ParseTreeFactory.js';
-import YIELD_SENT from '../syntax/PredefinedName.js';
+import {
+  ACTION_SEND,
+  ACTION_THROW,
+  ACTION_CLOSE,
+  YIELD_ACTION,
+  YIELD_SENT
+} from '../syntax/PredefinedName.js';
 import transformOptions from '../options.js';
 
 /**
@@ -58,8 +64,10 @@ import transformOptions from '../options.js';
 function isYieldAssign(tree) {
   return tree.operator.type === EQUAL &&
       tree.right.type === YIELD_EXPRESSION &&
-      tree.left.type === IDENTIFIER_EXPRESSION;
+      tree.left.isLeftHandSideExpression();
 }
+
+var id = createIdentifierExpression;
 
 /**
  * Can tell you if function body contains a yield statement. Does not search
@@ -104,54 +112,28 @@ class YieldFinder extends ParseTreeVisitor {
   visitGetAccessor(tree) {}
 }
 
-/**
- * This transformer turns "yield* E" into a ForOf that
- * contains a yield and is lowered by the ForOfTransformer.
- */
-class YieldForTransformer extends TempVarTransformer {
+var throwClose;
 
+class YieldExpressionTransformer extends TempVarTransformer {
   /**
-   * @param {YieldExpression} tree Must be a 'yield *'.
-   * @return {ParseTree}
-   * @private
+   * @param {UniqueIdentifierGenerator} identifierGenerator
    */
-  transformYieldForExpression_(tree) {
-    // yield* expression
-    //   becomes
-    // for (var $temp of expression) { yield $temp; }
+  constructor(identifierGenerator) {
+    super(identifierGenerator);
 
-    var idTemp = createIdentifierExpression(this.getTempIdentifier());
-
-    var varTemp = createVariableDeclarationList(VAR, idTemp, null);
-    var expression = tree.expression;
-    var yieldTemp = createYieldStatement(idTemp, false);
-
-    var forEach = createForOfStatement(varTemp, expression, yieldTemp);
-
-    return ForOfTransformer.transformTree(this.identifierGenerator, forEach);
-  }
-
-  /**
-   * @param {ExpressionStatement} tree
-   * @return {ParseTree}
-   */
-  transformExpressionStatement(tree) {
-    var e = tree.expression;
-    if (e.type === YIELD_EXPRESSION && e.isYieldFor)
-      return this.transformYieldForExpression_(e);
-
-    return tree;
-  }
-}
-
-YieldForTransformer.transformTree = function(identifierGenerator, tree) {
-  return new YieldForTransformer(identifierGenerator).transformAny(tree);
-};
-
-class YieldExpressionTransformer extends ParseTreeTransformer {
-  constructor() {
-    super();
-    this.sentId = createIdentifierExpression(YIELD_SENT);
+    // Initialize unless already cached.
+    if (!throwClose) {
+      // Inserted after every simple yield expression in order to handle
+      // 'throw' and 'close'. No extra action is needed to handle 'send'.
+      throwClose = parseStatement `
+          switch (${id(YIELD_ACTION)}) {
+            case ${ACTION_THROW}:
+              ${id(YIELD_ACTION)} = ${ACTION_SEND};
+              throw ${id(YIELD_SENT)};
+            case ${ACTION_CLOSE}:
+              break $close;
+          }`;
+    }
   }
 
   /**
@@ -184,6 +166,11 @@ class YieldExpressionTransformer extends ParseTreeTransformer {
         ex = e.expressions;
         if (ex[0].type === BINARY_OPERATOR && isYieldAssign(ex[0]))
           return this.factor_(ex[0].left, ex[0].right, commaWrap);
+
+      case YIELD_EXPRESSION:
+        if (e.isYieldFor)
+          return this.transformYieldForExpression_(e);
+        return createBlock(tree, throwClose);
     }
 
     return tree;
@@ -219,15 +206,115 @@ class YieldExpressionTransformer extends ParseTreeTransformer {
    * @return {ParseTree} { yield ...; wrap(lhs, $yieldSent) }
    */
   factor_(lhs, rhs, wrap) {
+    if (rhs.isYieldFor)
+      return createBlock(
+          this.transformYieldForExpression_(rhs),
+          wrap(lhs, id(YIELD_SENT)));
+
     return createBlock([
         createExpressionStatement(rhs),
-        wrap(lhs, this.sentId)]);
+        throwClose,
+        wrap(lhs, id(YIELD_SENT))]);
+  }
+
+  /**
+   * Turns "yield* E" into what is essentially, a generator-specific ForOf.
+   * @param {YieldExpression} tree Must be a 'yield *'.
+   * @return {ParseTree}
+   * @private
+   */
+  transformYieldForExpression_(tree) {
+    var g = createIdentifierExpression(this.getTempIdentifier());
+    var next = createIdentifierExpression(this.getTempIdentifier());
+
+    // http://wiki.ecmascript.org/doku.php?id=harmony:generators
+    //
+    // The expression yield* <<expr>> is equivalent to:
+    //
+    //   let (g = <<expr>>) {
+    //     let received = void 0, send = true, result = void 0;
+    //     try {
+    //       while (true) {
+    //         let next = send ? g.send(received) : g.throw(received);
+    //         try {
+    //           received = yield next;
+    //           send = true;
+    //         } catch (e) {
+    //           received = e;
+    //           send = false;
+    //         }
+    //       }
+    //     } catch (e) {
+    //       if (!isStopIteration(e))
+    //         throw e;
+    //       result = e.value;
+    //     } finally {
+    //       try { g.close(); } catch (ignored) { }
+    //     }
+    //     result
+    //   }
+
+    return parseStatement `
+        {
+          var ${g} = traceur.runtime.getIterator(${tree.expression}), ${next};
+
+          // TODO: Should 'yield *' handle non-generator iterators? A strict
+          // interpretation of harmony:generators would indicate 'no', but
+          // 'yes' seems makes more sense from a language-user's perspective.
+
+          // received = void 0;
+          ${id(YIELD_SENT)} = void 0;
+          // send = true; // roughly equivalent
+          ${id(YIELD_ACTION)} = ${ACTION_SEND};
+          try {
+            while (true) {
+              switch (${id(YIELD_ACTION)}) {
+                case ${ACTION_SEND}:
+                  if (!${g}.send)
+                    ${next} = ${g}.next();
+                  else
+                    ${next} = ${g}.send(${id(YIELD_SENT)});
+                  break;
+                case ${ACTION_THROW}:
+                  ${id(YIELD_ACTION)} = ${ACTION_SEND};
+                  if (!${g}.throw)
+                    throw ${id(YIELD_SENT)};
+                  ${next} = ${g}.throw(${id(YIELD_SENT)});
+                  break;
+                case ${ACTION_CLOSE}:
+                  // TODO: Another deviation from harmony:generators. This line
+                  // is needed if we want any given generator function G to be
+                  // identical in behavior to GG when 'close' is used.
+                  //   function* GG() { yield* G(); }
+                  if (${g}.close)
+                    ${g}.close();
+                  break $close;
+              }
+              ${createYieldStatement(next)};
+            }
+          } catch(e) {
+            if (!traceur.runtime.isStopIteration(e))
+              throw e;
+            // result = e.value;
+            ${id(YIELD_SENT)} = e.value;
+          } finally {
+            try {
+              ${g}.close();
+            } catch(e) {}
+          }
+        }`;
+  }
+
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {ParseTree} tree
+   * @return {ParseTree}
+   */
+  static transformTree(identifierGenerator, tree) {
+    return new YieldExpressionTransformer(identifierGenerator).
+        transformAny(tree);
   }
 }
-
-YieldExpressionTransformer.transformTree = function(tree) {
-  return new YieldExpressionTransformer().transformAny(tree);
-};
 
 /**
  * This pass just finds function bodies with yields in them and passes them
@@ -273,8 +360,6 @@ export class GeneratorTransformPass extends TempVarTransformer {
       return body;
     }
 
-    body = YieldExpressionTransformer.transformTree(body);
-
     // We need to transform for-in loops because the object key iteration
     // cannot be interrupted.
     if (finder.hasForIn &&
@@ -282,12 +367,19 @@ export class GeneratorTransformPass extends TempVarTransformer {
       body = ForInTransformPass.transformTree(this.identifierGenerator, body);
     }
 
-    if (finder.hasYieldFor && transformOptions.generators) {
-      body = YieldForTransformer.transformTree(this.identifierGenerator, body);
-    }
-
     if (finder.hasYield) {
       if (transformOptions.generators) {
+        // The labeled do-while serves as a jump target for 'ACTION_CLOSE'.
+        // See the var 'throwClose' and the class 'YieldExpressionTransformer'
+        // for more details.
+        body = parseStatement `
+            {
+              $close: do {
+                ${YieldExpressionTransformer.
+                      transformTree(this.identifierGenerator, body)}
+              } while (0);
+            }`;
+
         body = GeneratorTransformer.transformGeneratorBody(this.reporter_,
                                                            body);
       }
@@ -329,10 +421,9 @@ export class GeneratorTransformPass extends TempVarTransformer {
         tree.parameter,
         body);
   }
-}
 
-GeneratorTransformPass.transformTree = function(identifierGenerator, reporter,
-    tree) {
-  return new GeneratorTransformPass(identifierGenerator, reporter).
-      transformAny(tree);
-};
+  static transformTree(identifierGenerator, reporter, tree) {
+    return new GeneratorTransformPass(identifierGenerator, reporter).
+        transformAny(tree);
+  }
+}

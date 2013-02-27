@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ import {
   VAR
 } from '../syntax/TokenType.js';
 import {
+  COMPREHENSION_FOR,
+  COMPREHENSION_IF
+  } from '../syntax/trees/ParseTreeType.js';
+import {
   createBlock,
   createCallExpression,
   createEmptyParameterList,
@@ -35,6 +39,7 @@ import {
   createThisExpression,
   createVariableDeclarationList
 } from 'ParseTreeFactory.js';
+import options from '../options.js';
 
 /**
  * This is used to find whether a function contains a reference to 'this'.
@@ -78,19 +83,25 @@ export class ComprehensionTransformer extends TempVarTransformer {
 
     // This should really be a let but we don't support let in generators.
     // https://code.google.com/p/traceur-compiler/issues/detail?id=6
-    var bindingKind = isGenerator ? VAR : LET;
+    var bindingKind = isGenerator || !options.blockBinding ? VAR : LET;
 
-    if (tree.ifExpression) {
-      var ifExpression = this.transformAny(tree.ifExpression);
-      statement = createIfStatement(ifExpression, statement);
-    }
-    for (var i = tree.comprehensionForList.length - 1; i >= 0; i--) {
-      var item = tree.comprehensionForList[i];
-      var left = this.transformAny(item.left);
-      var iterator = this.transformAny(item.iterator);
-      var initializer = createVariableDeclarationList(bindingKind,
-                                                      left, null);
-      statement = createForOfStatement(initializer, iterator, statement);
+    for (var i = tree.comprehensionList.length - 1; i >= 0; i--) {
+      var item = tree.comprehensionList[i];
+      switch (item.type) {
+        case COMPREHENSION_IF:
+          var expression = this.transformAny(item.expression);
+          statement = createIfStatement(expression, statement);
+          break;
+        case COMPREHENSION_FOR:
+          var left = this.transformAny(item.left);
+          var iterator = this.transformAny(item.iterator);
+          var initializer = createVariableDeclarationList(bindingKind,
+                                                          left, null);
+          statement = createForOfStatement(initializer, iterator, statement);
+          break;
+        default:
+          throw new Error('Unreachable.');
+      }
     }
 
     var argumentsFinder = new ArgumentsFinder(statement);

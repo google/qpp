@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,82 @@
 
 import NewExpression from '../syntax/trees/ParseTrees.js';
 import ParseTreeVisitor from 'ParseTreeVisitor.js';
-import {
-  IS,
-  ISNT
-} from 'PredefinedName.js';
 import TreeWriter from '../outputgeneration/TreeWriter.js';
-import * from 'TokenType.js';
-import * from 'trees/ParseTreeType.js';
+import {
+  AMPERSAND,
+  AMPERSAND_EQUAL,
+  AND,
+  BAR,
+  BAR_EQUAL,
+  CARET,
+  CARET_EQUAL,
+  CLOSE_ANGLE,
+  EQUAL,
+  EQUAL_EQUAL,
+  EQUAL_EQUAL_EQUAL,
+  GREATER_EQUAL,
+  IN,
+  INSTANCEOF,
+  LEFT_SHIFT,
+  LEFT_SHIFT_EQUAL,
+  LESS_EQUAL,
+  MINUS,
+  MINUS_EQUAL,
+  NOT_EQUAL,
+  NOT_EQUAL_EQUAL,
+  OPEN_ANGLE,
+  OR,
+  PERCENT,
+  PERCENT_EQUAL,
+  PLUS,
+  PLUS_EQUAL,
+  RIGHT_SHIFT,
+  RIGHT_SHIFT_EQUAL,
+  SLASH,
+  SLASH_EQUAL,
+  STAR,
+  STAR_EQUAL,
+  STRING,
+  UNSIGNED_RIGHT_SHIFT,
+  UNSIGNED_RIGHT_SHIFT_EQUAL
+} from 'TokenType.js';
+import {
+  ARRAY_PATTERN,
+  BINDING_ELEMENT,
+  BINDING_IDENTIFIER,
+  BLOCK,
+  CASE_CLAUSE,
+  CATCH,
+  CLASS_DECLARATION,
+  DEFAULT_CLAUSE,
+  EXPORT_DECLARATION,
+  EXPORT_MAPPING,
+  EXPORT_MAPPING_LIST,
+  EXPORT_SPECIFIER,
+  EXPORT_SPECIFIER_SET,
+  EXPORT_STAR,
+  FINALLY,
+  FORMAL_PARAMETER_LIST,
+  FUNCTION_DECLARATION,
+  GET_ACCESSOR,
+  IDENTIFIER_EXPRESSION,
+  IMPORT_DECLARATION,
+  MODULE_DECLARATION,
+  MODULE_DEFINITION,
+  MODULE_EXPRESSION,
+  MODULE_SPECIFIER,
+  OBJECT_PATTERN,
+  OBJECT_PATTERN_FIELD,
+  PROPERTY_METHOD_ASSIGNMENT,
+  PROPERTY_NAME_ASSIGNMENT,
+  PROPERTY_NAME_SHORTHAND,
+  REST_PARAMETER,
+  SET_ACCESSOR,
+  TEMPLATE_LITERAL_PORTION,
+  TEMPLATE_SUBSTITUTION,
+  VARIABLE_DECLARATION_LIST,
+  VARIABLE_STATEMENT
+} from 'trees/ParseTreeType.js';
 
 /*
 TODO: add contextual information to the validator so we can check
@@ -209,16 +278,6 @@ export class ParseTreeValidator extends ParseTreeVisitor {
         this.check_(tree.right.isArrowFunctionExpression(), tree.right,
             'assignment expression expected');
         break;
-
-      case IDENTIFIER:
-        var foundIsIdentifier = false;
-        switch (tree.operator.value) {
-          case IS:
-          case ISNT:
-            foundIsIdentifier = true;
-        }
-        if (foundIsIdentifier)
-          break;
 
       default:
         this.fail_(tree, 'unexpected binary operator');

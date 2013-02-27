@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2013 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file is used to create 'build/dep.mk', which is used by 'make' to find
+// out the dependencies for 'bin/traceur.js'.
+//
+// The output of this file is something like:
+//
+//   bin/traceur.js: third_party/source-map/lib/source-map/array-set.js
+//   bin/traceur.js: src/options.js
+//   bin/traceur.js: src/codegeneration/RestParameterTransformer.js
+
 'use strict';
 
 var fs = require('fs');
 var path = require('path');
+
 var flags;
 var cmdName = path.basename(process.argv[1]);
 try {
@@ -29,54 +39,24 @@ flags.setMaxListeners(100);
 
 require('../src/node/traceur.js');
 
-flags.option('--out <FILE>', 'path to the file to output');
-flags.option('--all-options-off', 'all options are set to false');
-flags.on('all-options-off', function() {
-  traceur.options.reset(true);
-});
-flags.option('--dep', 'echo dependencies to stdout');
-flags.on('dep', function() {
-  if (!flags.out)
-    flags.missingArgument('out');
-  else
-    flags.depTarget = flags.out;
-});
+flags.option('--depTarget <FILE>', 'path to the dependency target');
+
 traceur.options.addOptions(flags);
 
 flags.parse(process.argv);
 
-var outputfile = flags.out;
-if (!outputfile)
-  flags.help();
+if (!flags.depTarget) {
+  console.error('\n  `--depTarget\' missing.\n');
+  process.exit(1);
+}
 
 var includes = flags.args;
 if (!includes.length) {
-  console.error('\n  At least one input file is needed');
-  flags.help();
+  console.error('\n  At least one input file is needed.\n');
+  process.exit(1);
 }
 
 var ErrorReporter = traceur.util.ErrorReporter;
-var TreeWriter = traceur.outputgeneration.TreeWriter;
-
-function existsSync(p) {
-  return fs.existsSync ? fs.existsSync(p) : path.existsSync(p);
-}
-
-/**
- * Recursively makes all directoires, similar to mkdir -p
- * @param {string} dir
- */
-function mkdirRecursive(dir) {
-  var parts = path.normalize(dir).split('/');
-
-  dir = '';
-  for (var i = 0; i < parts.length; i++) {
-    dir += parts[i] + '/';
-    if (!existsSync(dir)) {
-      fs.mkdirSync(dir, 0x1FF);
-    }
-  }
-}
 
 var resolvedIncludes = includes.map(function(include) {
   return path.resolve(include);
@@ -84,15 +64,9 @@ var resolvedIncludes = includes.map(function(include) {
 
 var reporter = new ErrorReporter();
 
-var inlineAndCompile = require('./inline-module.js').inlineAndCompile;
+var inlineAndCompile = require('../src/node/inline-module.js').inlineAndCompile;
 
 inlineAndCompile(resolvedIncludes, flags, reporter, function(tree) {
-  // Currently, passing flags.depTarget is the only reason tree would be null,
-  // but in the future there may be other reasons to require a no-op here.
-  if (tree) {
-    mkdirRecursive(path.dirname(outputfile));
-    fs.writeFileSync(outputfile, TreeWriter.write(tree), 'utf8');
-  }
   process.exit(0);
 }, function(err) {
   process.exit(1);

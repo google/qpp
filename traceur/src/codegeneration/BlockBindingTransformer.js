@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,11 @@ import AlphaRenamer from 'AlphaRenamer.js';
 import {
   BINDING_IDENTIFIER,
   BLOCK,
-  FUNCTION_DECLARATION,
   VARIABLE_DECLARATION_LIST
 } from '../syntax/trees/ParseTreeType.js';
 import {
-  Block,
-  ClassDeclaration,
-  ForInStatement,
-  ForStatement,
   FunctionDeclaration,
-  FunctionExpression,
-  GetAccessor,
-  Program,
-  SetAccessor,
-  VariableDeclaration,
-  VariableDeclarationList,
-  VariableStatement
+  FunctionExpression
 } from '../syntax/trees/ParseTrees.js';
 import ParseTreeTransformer from 'ParseTreeTransformer.js';
 import {
@@ -49,10 +38,8 @@ import {
   createFinally,
   createForInStatement,
   createForStatement,
-  createGetAccessor,
   createIdentifierExpression,
   createIdentifierToken,
-  createSetAccessor,
   createThrowStatement,
   createTryStatement,
   createUndefinedExpression,
@@ -788,13 +775,12 @@ export class BlockBindingTransformer extends ParseTreeTransformer {
     }
     throw new Error('Unexpected destructuring declaration found.');
   }
+
+  /**
+   * @param {Program} tree
+   * @return {Program}
+   */
+  static transformTree(tree) {
+    return new BlockBindingTransformer().transformAny(tree);
+  }
 }
-
-/**
- * @param {Program} tree
- * @return {Program}
- */
-BlockBindingTransformer.transformTree = function(tree) {
-  return new BlockBindingTransformer().transformAny(tree);
-};
-

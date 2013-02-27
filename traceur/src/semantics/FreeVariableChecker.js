@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import {
 import IdentifierToken from '../syntax/IdentifierToken.js';
 import IDENTIFIER_EXPRESSION from '../syntax/trees/ParseTreeType.js';
 import ParseTreeVisitor from '../syntax/ParseTreeVisitor.js';
-import SourcePosition from '../util/SourcePosition.js';
 import TYPEOF from '../syntax/TokenType.js';
+
+var global = this;
 
 /**
  * Represents the link in the scope chain.
@@ -249,17 +250,15 @@ export class FreeVariableChecker extends ParseTreeVisitor {
   reportError_(...args) {
     this.reporter_.reportError(...args);
   }
+
+  /**
+   * Checks the program for free variables, and reports an error when it
+   * encounters any.
+   *
+   * @param {ErrorReporter} reporter
+   * @param {Program} tree
+   */
+  static checkProgram(reporter, tree) {
+    new FreeVariableChecker(reporter).visitProgram(tree, global);
+  }
 }
-
-var global = this;
-
-/**
- * Checks the program for free variables, and reports an error when it
- * encounters any.
- *
- * @param {ErrorReporter} reporter
- * @param {Program} tree
- */
-FreeVariableChecker.checkProgram = function(reporter, tree) {
-  new FreeVariableChecker(reporter).visitProgram(tree, global);
-};

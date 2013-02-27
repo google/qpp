@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ import AtNameToken from 'AtNameToken.js';
 import IdentifierToken from 'IdentifierToken.js';
 import KeywordToken from 'KeywordToken.js';
 import LiteralToken from 'LiteralToken.js';
-import SourcePosition from '../util/SourcePosition.js';
 import Token from 'Token.js';
 import isKeyword from 'Keywords.js';
 import * from 'TokenType.js';
@@ -308,6 +307,7 @@ export class Scanner {
    * @return {Token}
    */
   peekToken(opt_index) {
+    // Too hot for default parameters.
     return opt_index ? peekTokenLookahead() : peekToken();
   }
 
@@ -1135,7 +1135,7 @@ function updateCurrentCharCode() {
   currentCharCode = input.charCodeAt(index);
 }
 
-function reportError(message, opt_index) {
-  var position = getPosition(opt_index || index);
+function reportError(message, indexArg = index) {
+  var position = getPosition(indexArg);
   errorReporter.reportError(position, message);
 }

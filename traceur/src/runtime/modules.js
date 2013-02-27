@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ import ProgramTransformer from '../codegeneration/ProgramTransformer.js';
 import Project from '../semantics/symbols/Project.js';
 import SourceFile from '../syntax/SourceFile.js';
 import TreeWriter from '../outputgeneration/TreeWriter.js';
-import {
-  canonicalizeUrl,
-  resolveUrl
-} from '../util/url.js';
+import resolveUrl from '../util/url.js';
 
 // TODO(arv): I stripped the resolvers to make this simpler for now.
 
@@ -111,6 +108,9 @@ class CodeUnit {
    * Adds callback for COMPLETE and ERROR.
    */
   addListener(callback, errback) {
+    // TODO(arv): Handle this case?
+    if (this.state >= COMPLETE)
+      throw Error(`${this.url} is already loaded`);
     if (!this.listeners) {
       this.listeners = [];
     }
@@ -296,7 +296,7 @@ class InternalLoader {
 
     codeUnit.state = LOADING;
     var loader = this;
-    var xhr = codeUnit.xhr = this.loadTextFile(url, function(text) {
+    codeUnit.xhr = this.loadTextFile(url, function(text) {
       codeUnit.text = text;
       codeUnit.state = LOADED;
       loader.handleCodeUnitLoaded(codeUnit);
@@ -395,7 +395,6 @@ class InternalLoader {
   }
 
   analyze() {
-    var project = this.project;
     var dependencies = this.cache.values();
     var trees = [];
     var modules = [];
@@ -546,8 +545,9 @@ export class CodeLoader {
    * @param {Project} project
    * @param {CodeLoader} parentLoader The parent loader or null if this is
    *     the initial loader.
+   * @param {*=} resolver
    */
-  constructor(reporter, project, parentLoader, opt_resolver) {
+  constructor(reporter, project, parentLoader, resolver = undefined) {
     // TODO(arv): Implement parent loader
     // TODO(arv): Implement resolver
     this.internalLoader_ = new InternalLoader(reporter, project);
@@ -560,9 +560,9 @@ export class CodeLoader {
    * and its URL is the given URL. The additional callback is used if an error
    * occurs.
    */
-  load(url, callback, opt_errback) {
+  load(url, callback, errback = undefined) {
     var codeUnit = this.internalLoader_.load(url);
-    codeUnit.addListener(callback, opt_errback);
+    codeUnit.addListener(callback, errback);
   }
 
   /**
@@ -586,9 +586,9 @@ export class CodeLoader {
    * statically associated with this loader, and its URL is the base URL of
    * this loader. The additional callback is used if an error occurs.
    */
-  evalLoad(program, callback, opt_errback) {
+  evalLoad(program, callback, errback = undefined) {
     var codeUnit = this.internalLoader_.evalLoad(program);
-    codeUnit.addListener(callback, opt_errback);
+    codeUnit.addListener(callback, errback);
     this.internalLoader_.handleCodeUnitLoaded(codeUnit);
   }
 
@@ -618,7 +618,7 @@ export class CodeLoader {
    * that key.
    * @return {void}
    */
-  defineModule(name, moduleInstanceObject, opt_cacheKey) {
+  defineModule(name, moduleInstanceObject, cacheKey = undefined) {
     throw Error('Not implemented');
   }
 
@@ -635,10 +635,10 @@ export class CodeLoader {
    *
    * @return {CodeLoader}
    */
-  create(moduleInstanceObject, opt_resolver) {
+  create(moduleInstanceObject, resolver = undefined) {
     var url = this.project_.url;
     var project = new Project(url);
-    var loader = new CodeLoader(this.reporter, project, this, opt_resolver);
+    var loader = new CodeLoader(this.reporter, project, this, resolver);
     // TODO(arv): Implement globals
     // TODO(arv): Implement resolver
     return loader;

@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ export class PropertyNameShorthandTransformer extends ParseTreeTransformer {
     return new PropertyNameAssignment(tree.location,
         tree.name, new IdentifierExpression(tree.location, tree.name));
   }
-}
 
-PropertyNameShorthandTransformer.transformTree = function(tree) {
-  return new PropertyNameShorthandTransformer().transformAny(tree);
-};
+  static transformTree(tree) {
+    return new PropertyNameShorthandTransformer().transformAny(tree);
+  }
+}

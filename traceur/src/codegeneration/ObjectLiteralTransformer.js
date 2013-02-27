@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -26,20 +26,15 @@ import {
   STRING
 } from '../syntax/TokenType.js';
 import {
-  createArgumentList,
   createAssignmentExpression,
-  createBindingIdentifier,
-  createCallExpression,
   createCommaExpression,
   createDefineProperty,
   createEmptyParameterList,
   createFunctionExpression,
   createIdentifierExpression,
-  createMemberExpression,
   createObjectCreate,
   createObjectLiteralExpression,
   createParenExpression,
-  createPropertyDescriptor,
   createPropertyNameAssignment,
   createStringLiteral
 } from 'ParseTreeFactory.js';
@@ -293,10 +288,6 @@ export class ObjectLiteralTransformer extends TempVarTransformer {
       return createPropertyNameAssignment(tree.name, func);
     }
 
-    // Use descriptor.
-    var body = this.transformAny(tree.functionBody);
-    var parameters = this.transformAny(tree.formalParameterList);
-
     return this.createProperty_(tree.name,
         {
           value: func,
@@ -318,14 +309,12 @@ export class ObjectLiteralTransformer extends TempVarTransformer {
           writable: true
         });
   }
-}
 
-/**
- * @param {UniqueIdentifierGenerator} identifierGenerator
- * @param {ParseTree} tree
- */
-ObjectLiteralTransformer.transformTree = function(identifierGenerator,
-                                                  tree) {
-  return new ObjectLiteralTransformer(identifierGenerator).
-      transformAny(tree);
-};
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {ParseTree} tree
+   */
+  static transformTree(identifierGenerator, tree) {
+    return new ObjectLiteralTransformer(identifierGenerator).transformAny(tree);
+  }
+}

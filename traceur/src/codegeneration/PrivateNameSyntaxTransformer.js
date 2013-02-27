@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -76,14 +76,13 @@ export class PrivateNameSyntaxTransformer extends TempVarTransformer {
         createMemberExpression(TRACEUR, RUNTIME, name),
         args));
   }
-}
 
-/**
- * @param {UniqueIdentifierGenerator} identifierGenerator
- * @param {ParseTree} tree
- */
-PrivateNameSyntaxTransformer.transformTree = function(identifierGenerator,
-                                                      tree) {
-  return new PrivateNameSyntaxTransformer(identifierGenerator).
-      transformAny(tree);
-};
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {ParseTree} tree
+   */
+  static transformTree(identifierGenerator, tree) {
+    return new PrivateNameSyntaxTransformer(identifierGenerator).
+        transformAny(tree);
+  }
+}

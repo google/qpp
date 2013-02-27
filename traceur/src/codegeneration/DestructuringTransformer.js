@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -36,14 +36,11 @@ import {
 } from '../syntax/trees/ParseTreeType.js';
 import {
   BindingElement,
-  BindingIdentifier,
   Catch,
   ForInStatement,
   ForOfStatement,
   LiteralExpression,
-  SetAccessor,
-  VariableDeclaration,
-  VariableDeclarationList
+  SetAccessor
 } from '../syntax/trees/ParseTrees.js';
 import TempVarTransformer from 'TempVarTransformer.js';
 import {
@@ -74,6 +71,7 @@ import {
   createVariableDeclarationList,
   createVariableStatement
 } from 'ParseTreeFactory.js';
+import options from '../options.js';
 import prependStatements from 'PrependStatements.js';
 
 var stack = [];
@@ -426,7 +424,8 @@ export class DestructuringTransformer extends TempVarTransformer {
 
     var body = this.transformAny(tree.catchBody);
     var statements = [];
-    var binding = this.desugarBinding_(tree.binding, statements, LET);
+    var kind = options.blockBinding ? LET : VAR;
+    var binding = this.desugarBinding_(tree.binding, statements, kind);
     statements.push(...body.statements);
     return new Catch(tree.location, binding, createBlock(statements));
   }
@@ -494,7 +493,7 @@ export class DestructuringTransformer extends TempVarTransformer {
     // - tree.initializer is assigned to a temporary.
     // - tree.initializer normally doesn't need parens for member access.
     // Don't use temporary if:
-    // - there is only one value to assign.
+    // - there is only one value to assign (and no initializer).
     switch (tree.initializer.type) {
       // Paren not necessary.
       case ARRAY_LITERAL_EXPRESSION:
@@ -512,10 +511,10 @@ export class DestructuringTransformer extends TempVarTransformer {
         // [1] Try first using a temporary (used later as the base rvalue).
         desugaring = new VariableDeclarationDesugaring(tempRValueIdent);
         desugaring.assign(desugaring.rvalue, tree.initializer);
-        this.desugarPattern_(desugaring, tree.lvalue);
+        var initializerFound = this.desugarPattern_(desugaring, tree.lvalue);
 
         // [2] Was the temporary necessary? Then return.
-        if (desugaring.declarations.length > 2)
+        if (initializerFound || desugaring.declarations.length > 2)
           return desugaring.declarations;
 
         initializer = initializer || createParenExpression(tree.initializer);
@@ -531,8 +530,10 @@ export class DestructuringTransformer extends TempVarTransformer {
   /**
    * @param {Desugaring} desugaring
    * @param {ParseTree} tree
+   * @return {boolean} True if any of the patterns have an initializer.
    */
   desugarPattern_(desugaring, tree) {
+    var initializerFound = false;
     switch (tree.type) {
       case ARRAY_PATTERN: {
         var pattern = tree;
@@ -552,6 +553,8 @@ export class DestructuringTransformer extends TempVarTransformer {
                         desugaring.rvalue,
                         createNumberLiteral(i))));
           } else {
+            if (lvalue.initializer)
+              initializerFound = true;
             desugaring.assign(
                 lvalue,
                 createConditionalMemberLookupExpression(
@@ -570,6 +573,8 @@ export class DestructuringTransformer extends TempVarTransformer {
           var lookup;
           switch (field.type) {
             case BINDING_ELEMENT:
+              if (field.initializer)
+                initializerFound = true;
               lookup = createConditionalMemberExpression(desugaring.rvalue,
                   field.binding.identifierToken, field.initializer);
               desugaring.assign(
@@ -578,6 +583,8 @@ export class DestructuringTransformer extends TempVarTransformer {
               break;
 
             case OBJECT_PATTERN_FIELD:
+              if (field.element.initializer)
+                initializerFound = true;
               lookup = createConditionalMemberExpression(desugaring.rvalue,
                   field.identifier, field.element.initializer);
               desugaring.assign(field.element, lookup);
@@ -598,20 +605,21 @@ export class DestructuringTransformer extends TempVarTransformer {
       }
 
       case PAREN_EXPRESSION:
-        this.desugarPattern_(desugaring, tree.expression);
-        break;
+        return this.desugarPattern_(desugaring, tree.expression);
 
       default:
         throw new Error('unreachable');
     }
+
+    return initializerFound;
+  }
+
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {ParseTree} tree
+   * @return {ParseTree}
+   */
+  static transformTree(identifierGenerator, tree) {
+    return new DestructuringTransformer(identifierGenerator).transformAny(tree);
   }
 }
-
-/**
- * @param {UniqueIdentifierGenerator} identifierGenerator
- * @param {ParseTree} tree
- * @return {ParseTree}
- */
-DestructuringTransformer.transformTree = function(identifierGenerator, tree) {
-  return new DestructuringTransformer(identifierGenerator).transformAny(tree);
-};

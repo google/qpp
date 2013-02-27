@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -141,13 +141,13 @@ export class AtNameMemberTransformer extends TempVarTransformer {
         createMemberExpression(TRACEUR, RUNTIME, DELETE_PROPERTY),
         createArgumentList(operand, atNameExpression));
   }
-}
 
-/**
- * @param {UniqueIdentifierGenerator} identifierGenerator
- * @param {ParseTree} tree
- * @return {ParseTree}
- */
-AtNameMemberTransformer.transformTree = function(identifierGenerator, tree) {
-  return new AtNameMemberTransformer(identifierGenerator).transformAny(tree);
-};
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {ParseTree} tree
+   * @return {ParseTree}
+   */
+  static transformTree(identifierGenerator, tree) {
+    return new AtNameMemberTransformer(identifierGenerator).transformAny(tree);
+  }
+}

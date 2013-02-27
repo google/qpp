@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License; Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ export var CREATE_CLASS = 'createClass';
 export var CREATE_ERRBACK = '$createErrback';
 export var CREATE_NAME = 'createName';
 export var CREATE_PROMISE = 'createPromise';
-export var CURRENT = 'current';
+export var CURRENT = '$current';
 export var DEFERRED = 'Deferred';
 export var DEFINE_PROPERTIES = 'defineProperties';
 export var DEFINE_PROPERTY = 'defineProperty';
@@ -62,14 +62,12 @@ export var GET_MODULE_INSTANCE_BY_URL = 'getModuleInstanceByUrl';
 export var GET_PROPERTY = 'getProperty';
 export var HAS = 'has';
 export var INIT = '$init';
-export var IS = 'is';
-export var ISNT = 'isnt';
 export var IS_DONE = 'isDone';
 export var ITERATOR = 'iterator';
 export var LENGTH = 'length';
 export var MODULE = 'module';
 export var MODULES = 'modules';
-export var MOVE_NEXT = 'moveNext';
+export var MOVE_NEXT = '$moveNext';
 export var NEW = 'new';
 export var NEW_STATE = '$newState';
 export var NUMBER = 'number';
@@ -107,8 +105,14 @@ export var UNDEFINED = 'undefined';
 export var VALUE = 'value';
 export var WAIT_TASK = '$waitTask';
 export var WRITABLE = 'writable';
+export var YIELD_ACTION = '$yieldAction';
 export var YIELD_SENT = '$yieldSent';
 export function getParameterName(index) {
   // TODO: consider caching these
   return '$' + index;
 };
+
+// constants for generator actions
+export var ACTION_SEND = 0;
+export var ACTION_THROW = 1;
+export var ACTION_CLOSE = 2;

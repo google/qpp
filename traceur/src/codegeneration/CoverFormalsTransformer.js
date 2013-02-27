@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import {
   IDENTIFIER_EXPRESSION,
   SPREAD_PATTERN_ELEMENT
 } from '../syntax/trees/ParseTreeType.js';
+import AssignmentPatternTransformerError from 'AssignmentPatternTransformer.js';
 
 /**
  * @fileoverview This transformer is used by the parser to transform a

@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -13,18 +13,12 @@
 // limitations under the License.
 
 import {
-  CONSTRUCTOR,
-  CREATE_CLASS,
-  RUNTIME,
-  TRACEUR
+  CONSTRUCTOR
 } from '../syntax/PredefinedName.js';
 import {
-  FormalParameterList,
   GetAccessor,
   PropertyMethodAssignment,
-  PropertyNameAssignment,
-  SetAccessor,
-  SuperExpression
+  SetAccessor
 } from '../syntax/trees/ParseTrees.js';
 import {
   GET_ACCESSOR,
@@ -38,22 +32,10 @@ import {
   VAR
 } from '../syntax/TokenType.js';
 import {
-  createArgumentList,
-  createAssignmentExpression,
   createBlock,
-  createBooleanLiteral,
-  createCallExpression,
-  createExpressionStatement,
-  createFunctionExpression,
   createIdentifierExpression,
-  createIdentifierToken,
   createMemberExpression,
-  createNullLiteral,
   createObjectLiteralExpression,
-  createParenExpression,
-  createPropertyNameAssignment,
-  createRestParameter,
-  createSpreadExpression,
   createThisExpression,
   createVariableStatement
 } from 'ParseTreeFactory.js';
@@ -336,17 +318,16 @@ export class ClassTransformer extends TempVarTransformer{
       ${superCall};
     }`;
   }
-}
 
-/**
- * @param {UniqueIdentifierGenerator} identifierGenerator
- * @param {RuntimeInliner} runtimeInliner
- * @param {ErrorReporter} reporter
- * @param {Program} tree
- * @return {Program}
- */
-ClassTransformer.transform = function(identifierGenerator, runtimeInliner,
-                                      reporter, tree) {
-  return new ClassTransformer(identifierGenerator, runtimeInliner, reporter).
-      transformAny(tree);
-};
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {RuntimeInliner} runtimeInliner
+   * @param {ErrorReporter} reporter
+   * @param {Program} tree
+   * @return {Program}
+   */
+  static transformTree(identifierGenerator, runtimeInliner, reporter, tree) {
+    return new this(identifierGenerator, runtimeInliner, reporter).
+        transformAny(tree);
+  }
+}

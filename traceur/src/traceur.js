@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ module traceur {
    * @param {string} path Path to the module relative to src/.
    */
   export function getModuleForTesting(path) {
-    return global[generateNameForUrl(`src/${path}`, '')];
+    return global[generateNameForUrl(`../src/${path}`, './')];
   }
 
   export function assert(b) {

@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ import {
   VARIABLE_DECLARATION_LIST,
   IDENTIFIER_EXPRESSION
 } from '../../syntax/trees/ParseTreeType.js';
-import IdentifierExpression from '../../syntax/trees/ParseTrees.js';
 import {
   LENGTH,
   PUSH
@@ -174,12 +173,12 @@ export class ForInTransformPass extends TempVarTransformer {
 
     return createBlock(elements);
   }
-}
 
-/*
- * @param {UniqueIdentifierGenerator} identifierGenerator
- * @param {ParseTree} tree
- */
-ForInTransformPass.transformTree = function(identifierGenerator, tree) {
-  return new ForInTransformPass(identifierGenerator).transformAny(tree);
-};
+  /*
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {ParseTree} tree
+   */
+  static transformTree(identifierGenerator, tree) {
+    return new ForInTransformPass(identifierGenerator).transformAny(tree);
+  }
+}

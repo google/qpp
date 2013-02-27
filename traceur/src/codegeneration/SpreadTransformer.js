@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -28,20 +28,14 @@ import {
   createArgumentList,
   createArrayLiteralExpression,
   createAssignmentExpression,
-  createBlock,
-  createBooleanLiteral,
   createCallExpression,
   createEmptyArgumentList,
-  createFunctionExpression,
   createIdentifierExpression,
   createMemberExpression,
   createMemberLookupExpression,
   createNewExpression,
   createNullLiteral,
-  createParameterList,
-  createParameterReference,
-  createParenExpression,
-  createReturnStatement
+  createParenExpression
 } from 'ParseTreeFactory.js';
 
 // Spreads the elements in the arguments into a single array.
@@ -226,10 +220,9 @@ export class SpreadTransformer extends TempVarTransformer {
     }
     return super.transformNewExpression(tree);
   }
-}
 
-SpreadTransformer.transformTree = function(identifierGenerator, runtimeInliner,
-                                           tree) {
-  return new SpreadTransformer(identifierGenerator, runtimeInliner).
-      transformAny(tree);
-};
+  static transformTree(identifierGenerator, runtimeInliner, tree) {
+    return new SpreadTransformer(identifierGenerator, runtimeInliner).
+        transformAny(tree);
+  }
+}

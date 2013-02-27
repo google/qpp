@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
 import BIND from '../syntax/PredefinedName.js';
 import FindInFunctionScope from 'FindInFunctionScope.js';
 import {
-  FormalParameterList,
-  ThisExpression
+  FormalParameterList
 } from '../syntax/trees/ParseTrees.js';
 import ParseTreeTransformer from 'ParseTreeTransformer.js';
 import BLOCK from '../syntax/trees/ParseTreeType.js';
@@ -89,8 +88,8 @@ export class ArrowFunctionTransformer extends ParseTreeTransformer {
 
     return result;
   }
-}
 
-ArrowFunctionTransformer.transformTree = function(reporter, tree) {
-  return new ArrowFunctionTransformer(reporter).transformAny(tree);
-};
+  static transformTree(reporter, tree) {
+    return new ArrowFunctionTransformer(reporter).transformAny(tree);
+  }
+}

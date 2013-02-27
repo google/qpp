@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 import CPSTransformer from 'CPSTransformer.js';
 import EndState from 'EndState.js';
 import {
+  ACTION_SEND,
+  ACTION_THROW,
+  ACTION_CLOSE,
   ADD_ITERATOR,
+  CURRENT,
   MOVE_NEXT,
   RESULT,
   RUNTIME,
@@ -26,6 +30,7 @@ import {
   STATE_MACHINE,
   YIELD_EXPRESSION
 } from '../../syntax/trees/ParseTreeType.js';
+import parseStatement from '../PlaceholderParser.js';
 import StateMachine from '../../syntax/trees/StateMachine.js';
 import VAR from '../../syntax/TokenType.js';
 import YieldState from 'YieldState.js';
@@ -35,21 +40,30 @@ import {
   createAssignmentStatement,
   createBlock,
   createCallExpression,
-  createEmptyParameterList,
   createExpressionStatement,
   createFalseLiteral,
-  createFunctionExpression,
   createIdentifierExpression,
   createMemberExpression,
+  createNumberLiteral,
   createObjectLiteralExpression,
   createPropertyNameAssignment,
   createReturnStatement,
   createStatementList,
-  createStringLiteral,
-  createThisExpression,
   createThrowStatement,
+  createUndefinedExpression,
   createVariableStatement
 } from '../ParseTreeFactory.js';
+
+// Generator states. Terminology roughly matches that of
+//   http://wiki.ecmascript.org/doku.php?id=harmony:generators
+// Since '$state' is already taken, use '$GState' instead to denote what's
+// referred to as "G.[[State]]" on that page.
+var ST_NEWBORN = 0;
+var ST_EXECUTING = 1;
+var ST_SUSPENDED = 2;
+var ST_CLOSED = 3;
+var GSTATE = '$GState';
+var $GSTATE = createIdentifierExpression(GSTATE);
 
 /**
  * Desugars generator function bodies. Generator function bodies contain
@@ -75,25 +89,26 @@ export class GeneratorTransformer extends CPSTransformer {
    * @private
    */
   transformYieldExpression_(tree) {
-    if (tree.expression != null) {
-      var startState = this.allocateState();
-      var fallThroughState = this.allocateState();
-      return this.stateToStateMachine_(
-          new YieldState(
-              startState,
-              fallThroughState,
-              this.transformAny(tree.expression)),
-          fallThroughState);
-    }
-    var stateId = this.allocateState();
-    return new StateMachine(
-        stateId,
-        // TODO: this should not be required, but removing requires making
-        // consumers resilient
-        // TODO: to INVALID fallThroughState
-        this.allocateState(),
-        [new EndState(stateId)],
-        []);
+    var e = tree.expression || createUndefinedExpression();
+
+    var startState = this.allocateState();
+    var fallThroughState = this.allocateState();
+    return this.stateToStateMachine_(
+        new YieldState(
+            startState,
+            fallThroughState,
+            this.transformAny(e)),
+        fallThroughState);
+  }
+
+  /**
+   * @param {YieldExpression} tree
+   * @return {ParseTree}
+   */
+  transformYieldExpression(tree) {
+    this.reporter.reportError(tree.location.start,
+        'Only \'a = yield b\' and \'var a = yield b\' currently supported.');
+    return tree;
   }
 
   /**
@@ -172,6 +187,9 @@ export class GeneratorTransformer extends CPSTransformer {
 
     var statements = [];
 
+    var $MOVE_NEXT = createIdentifierExpression(MOVE_NEXT);
+    var $CURRENT = createIdentifierExpression(CURRENT);
+
     // TODO(arv): Simplify the outputted code by only alpha renaming this and
     // arguments if needed.
     // https://code.google.com/p/traceur-compiler/issues/detail?id=108
@@ -188,17 +206,88 @@ export class GeneratorTransformer extends CPSTransformer {
     // Lifted machine variables.
     statements.push(...this.getMachineVariables(tree, machine));
 
+    statements.push(
+        parseStatement `
+        var
+          ${$GSTATE} = ${ST_NEWBORN},
+          ${$CURRENT},
+          ${$MOVE_NEXT} = ${this.generateMachineMethod(machine)}
+        `);
+
     // TODO(arv): The result should be an instance of Generator.
     // https://code.google.com/p/traceur-compiler/issues/detail?id=109
-    //
-    // var $result = {moveNext : machineMethod};
-    statements.push(createVariableStatement(
-        VAR,
-        RESULT,
-        createObjectLiteralExpression(
-            createPropertyNameAssignment(
-                MOVE_NEXT,
-                this.generateMachineMethod(machine)))));
+    statements.push(
+        // TODO: Look into if this code can be shared between generator
+        // instances.
+        //
+        // TODO: Almost all of these placeholders are constants. Can we do
+        // something more efficient in that case?
+        parseStatement `
+        var $result = {
+          send: function(x) {
+            switch (${$GSTATE}) {
+              case ${ST_EXECUTING}:
+                throw new Error('"send" on executing generator');
+              case ${ST_CLOSED}:
+                throw new Error('"send" on closed generator');
+              case ${ST_NEWBORN}:
+                if (x !== undefined) {
+                  throw new TypeError('Sent value to newborn generator');
+                }
+                // fall through
+              case ${ST_SUSPENDED}:
+                ${$GSTATE} = ${ST_EXECUTING};
+                if (${$MOVE_NEXT}(x, ${ACTION_SEND})) {
+                  ${$GSTATE} = ${ST_SUSPENDED};
+                  return ${$CURRENT};
+                }
+                ${$GSTATE} = ${ST_CLOSED};
+                throw traceur.runtime.StopIteration;
+            }
+          },
+
+          next: function() {
+            return this.send(undefined);
+          },
+
+          'throw': function(x) {
+            switch (${$GSTATE}) {
+              case ${ST_EXECUTING}:
+                throw new Error('"throw" on executing generator');
+              case ${ST_CLOSED}:
+                throw new Error('"throw" on closed generator');
+              case ${ST_NEWBORN}:
+                ${$GSTATE} = ${ST_CLOSED};
+                $state = ${this.machineEndState};
+                throw x;
+              case ${ST_SUSPENDED}:
+                ${$GSTATE} = ${ST_EXECUTING};
+                if (${$MOVE_NEXT}(x, ${ACTION_THROW})) {
+                  ${$GSTATE} = ${ST_SUSPENDED};
+                  return ${$CURRENT};
+                }
+                ${$GSTATE} = ${ST_CLOSED};
+                throw traceur.runtime.StopIteration;
+            }
+          },
+
+          close: function() {
+            switch (${$GSTATE}) {
+              case ${ST_EXECUTING}:
+                throw new Error('"close" on executing generator');
+              case ${ST_CLOSED}:
+                return;
+              case ${ST_NEWBORN}:
+                ${$GSTATE} = ${ST_CLOSED};
+                $state = ${this.machineEndState};
+                return;
+              case ${ST_SUSPENDED}:
+                ${$GSTATE} = ${ST_EXECUTING};
+                ${$MOVE_NEXT}(undefined, ${ACTION_CLOSE});
+                ${$GSTATE} = ${ST_CLOSED};
+            }
+          }
+        };`);
 
     // traceur.runtime.addIterator($result)
     statements.push(createExpressionStatement(
@@ -214,10 +303,13 @@ export class GeneratorTransformer extends CPSTransformer {
 
   /**
    * @param {number} rethrowState
+   * @param {number} machineEndState
    * @return {Array.<ParseTree>}
    */
-  machineUncaughtExceptionStatements(rethrowState) {
+  machineUncaughtExceptionStatements(rethrowState, machineEndState) {
     return createStatementList(
+        createAssignmentStatement($GSTATE, createNumberLiteral(ST_CLOSED)),
+        createAssignStateStatement(machineEndState),
         createThrowStatement(createIdentifierExpression(STORED_EXCEPTION)));
   }
 
@@ -240,7 +332,9 @@ export class GeneratorTransformer extends CPSTransformer {
 
   /** @return {Array.<ParseTree>} */
   machineEndStatements() {
-    return [createReturnStatement(createFalseLiteral())];
+    return [
+        createAssignmentStatement($GSTATE, createNumberLiteral(ST_CLOSED)),
+        createReturnStatement(createFalseLiteral())];
   }
 }
 

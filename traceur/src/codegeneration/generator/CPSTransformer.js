@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import {
   FINALLY_FALL_THROUGH,
   STATE,
   STORED_EXCEPTION,
+  YIELD_ACTION,
   YIELD_SENT
 } from '../../syntax/PredefinedName.js';
 import State from 'State.js';
@@ -61,17 +62,14 @@ import {
   createBinaryOperator,
   createBindingIdentifier,
   createBlock,
-  createBoundCall,
   createBreakStatement,
   createCaseClause,
   createCatch,
   createDefaultClause,
-  createEmptyParameterList,
   createEmptyStatement,
   createExpressionStatement,
   createFunctionExpression,
   createIdentifierExpression,
-  createIdentifierToken,
   createNumberLiteral,
   createOperatorToken,
   createParameterList,
@@ -777,9 +775,9 @@ export class CPSTransformer extends ParseTreeTransformer {
    * @return {CallExpression}
    */
   generateMachineMethod(machine) {
-    //  function($yieldSent) {
+    //  function($yieldSent, $yieldAction) {
     return createFunctionExpression(
-            createParameterList(YIELD_SENT),
+            createParameterList(YIELD_SENT, YIELD_ACTION),
             //     while (true) {
             createBlock(
                 createWhileStatement(
@@ -818,6 +816,8 @@ export class CPSTransformer extends ParseTreeTransformer {
         this.transformMachineStates(machine, machineEndState, rethrowState,
                                     enclosingFinallyState));
 
+    this.machineEndState = machineEndState;
+
     // try {
     //   ...
     // } catch ($caughtException) {
@@ -840,13 +840,14 @@ export class CPSTransformer extends ParseTreeTransformer {
     // }
     var caseClauses = [];
     this.addExceptionCases_(rethrowState, enclosingFinallyState,
-                            enclosingCatchState, machine.getAllStateIDs(),
+                            enclosingCatchState, machine.states,
                             caseClauses);
     //   default:
     //     throw $storedException;
     caseClauses.push(
         createDefaultClause(
-            this.machineUncaughtExceptionStatements(rethrowState)));
+            this.machineUncaughtExceptionStatements(rethrowState,
+                                                    machineEndState)));
 
     // try {
     //   ...
@@ -922,16 +923,24 @@ export class CPSTransformer extends ParseTreeTransformer {
    * @param {number} rethrowState
    * @param {Object} enclosingFinallyState
    * @param {Object} enclosingCatchState
-   * @param {Array.<number>} allStates
+   * @param {Array.<State>} allStates
    * @param {Array.<number>} caseClauses
    */
   addExceptionCases_(rethrowState, enclosingFinallyState,
-      enclosingCatchState, allStates, caseClauses) {
-
+                     enclosingCatchState, allStates, caseClauses) {
     for (var i = 0; i < allStates.length; i++) {
-      var state = allStates[i];
+      var state = allStates[i].id;
+      var statements = allStates[i].statements;
       var finallyState = enclosingFinallyState[state];
       var catchState = enclosingCatchState[state];
+
+      // We don't need to add a case clause for the current state if it doesn't
+      // contain any statements, since that definitely won't throw. Due to the
+      // possibility of global getters and setters, however, just about
+      // anything else has the potential to throw.
+      if (!statements || statements.length === 0)
+        continue;
+
       if (catchState != null && finallyState != null &&
           catchState.tryStates.indexOf(finallyState.finallyState) >= 0) {
         // we have:
@@ -976,8 +985,8 @@ export class CPSTransformer extends ParseTreeTransformer {
                     finallyState.finallyState,
                     rethrowState)));
       } else {
-        // we have no try's around this state.
-        // Generate Nothing.
+        // Anything not contained inside a 'try' block.
+        // The 'default' case handles this, so don't generate anything.
       }
     }
   }

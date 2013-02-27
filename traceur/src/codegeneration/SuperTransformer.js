@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc.
+// Copyright 2012 Traceur Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -18,20 +18,10 @@ import {
   SUPER_EXPRESSION
 } from '../syntax/trees/ParseTreeType.js';
 import ParseTreeTransformer from 'ParseTreeTransformer.js';
-import {
-  RUNTIME,
-  SUPER_CALL,
-  SUPER_GET,
-  SUPER_SET,
-  TRACEUR
-} from '../syntax/PredefinedName.js';
 import EQUAL from '../syntax/TokenType.js';
 import {
-  createArgumentList,
   createArrayLiteralExpression,
-  createCallExpression,
   createIdentifierExpression,
-  createMemberExpression,
   createStringLiteral,
   createThisExpression
 } from 'ParseTreeFactory.js';
