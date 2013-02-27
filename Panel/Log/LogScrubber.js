@@ -212,6 +212,31 @@
 
     traceElement: function(){
         console.error("TODO trace element");
+    },
+
+    highlightElement: function(){
+        var DOM, highlightConfig, selector;
+        selector = this.target;
+        DOM = chrome.devtools.protocol.DOM.prototype;
+        highlightConfig = {
+            contentColor: {r: 0, g: 0, b: 255, a: 0.4},
+            borderColor: {r: 0, g: 0, b: 255, a: 0.4},
+            marginColor: {r: 0, g: 0, b: 255, a: 0.4},
+            paddingColor: {r: 0, g: 0, b: 255, a: 0.4},
+        }
+        DOM.getDocument(function(root){
+            if (selector === '#document'){
+                DOM.highlightNode(highlightConfig, root.nodeId, '', function(){});
+            } else {
+                DOM.querySelector(root.nodeId, selector, function(node){
+                    DOM.highlightNode(highlightConfig, node, '', function(){});
+                });
+            }
+        });
+    },
+
+    unhighlight: function(){
+        chrome.devtools.protocol.DOM.prototype.hideHighlight( function(){} );
     }
 
   };

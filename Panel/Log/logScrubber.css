@@ -333,7 +333,7 @@ table.messagesByLoadNumber {
 }
 
 #infoNav li:hover ul {
-    left: 70px;
+    left: 0px;
 }
 
 #infoNav li:hover a {

@@ -104,10 +104,10 @@
                     Function <a data-bind="text: functionName, attr:{'data-url': url}"></a>
                 </li>
                 <li>
-                triggered by <a data-bind="text: eventType"></a>
+                triggered by <a data-bind="text: eventType"></a> on target
                 </li>
                 <li>
-                    on target <a data-bind="text: target"></a>
+                <a data-bind="text: target, event:{mouseover: $root.highlightElement, mouseout: $root.unhighlight}"></a>
                     <ul>
                         <li data-bind="event: {mousedown: $root.revealElement}"><a>Reveal</a></li>
                         <li data-bind="event: {mousedown: $root.traceElement}"><a>Trace Element</a></li>
