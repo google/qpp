@@ -28,12 +28,15 @@
   var createOperatorToken = ParseTreeFactory.createOperatorToken;
   var createExpressionStatement = ParseTreeFactory.createExpressionStatement;
   var createTrueLiteral = ParseTreeFactory.createTrueLiteral;
+  var createStringLiteralToken = ParseTreeFactory.createStringLiteralToken;
  
   var PredefinedName = traceur.syntax.PredefinedName;
   var TokenType = traceur.syntax.TokenType;
   var Trees = traceur.syntax.trees;
   var Program = Trees.Program;
   var BinaryOperator = Trees.BinaryOperator;
+  var IdentifierExpression = Trees.IdentifierExpression;
+  var LiteralExpression = Trees.LiteralExpression;
   var MemberLookupExpression = Trees.MemberLookupExpression;
   var MemberExpression = Trees.MemberExpression;
   var UnaryExpression = Trees.UnaryExpression;
@@ -54,20 +57,26 @@
     obj = {prop: value}
   */
 
-  function propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation) {
+  function propertyChangeStatement(objectExpression, memberExpression, valueTree, traceLocation) {
       // I suppose we may want to point at the obj.prop expression, but let's try the value first
       var traceStart = traceLocation.start.offset; 
       var traceEnd = traceLocation.end.offset;
       var traceFile = traceLocation.start.source.name;
-      // window.__qp.propertyChanges.<propertyId>.push({obj: <objExpr>, prop: <propExpr>, ...)
+      // window.__qp.propertyChanges[propertyName]push({obj: <objExpr>, prop: <propExpr>, ...)
       var statement =
         createExpressionStatement(
-          createCallExpression( 
-            createMemberExpression('window', '__qp','propertyChanges', tracePropertyKey, 'push'),
+          createCallExpression(
+            createMemberExpression( 
+              createMemberLookupExpression(
+                createMemberExpression('window', '__qp','propertyChanges'),
+                memberExpression
+              ), 
+              'push'
+            ),
             createArgumentList(
               createObjectLiteralExpression([
                 createPropertyNameAssignment('obj', objectExpression),
-                createPropertyNameAssignment('property', createStringLiteral(tracePropertyKey)),
+                createPropertyNameAssignment('property', memberExpression),
                 createPropertyNameAssignment('activations', createIdentifierExpression('__qp_function')),
                 createPropertyNameAssignment('activationIndex', createMemberExpression('__qp_function', 'length')),
                 createPropertyNameAssignment('startOffset', createStringLiteral(traceStart.toString())),
@@ -84,35 +93,89 @@
         return statement;         
   };
   
-  function propertyChangeTrace(objectExpression, memberExpression, tracePropertyKey, valueTree, traceLocation) {
-      // if (memberExpression === tracePropertyKey) { trace };
-      var traceStatement = propertyChangeStatement(objectExpression, tracePropertyKey, valueTree, traceLocation);
+  function propertyChangeTrace(objectExpression, memberExpression, valueTree, traceLocation) {
+      // if (window.__qp.isTraced(memberExpression)) { trace };
+      var traceStatement = propertyChangeStatement(objectExpression, memberExpression, valueTree, traceLocation);
       traceStatement.doNotTrace = true;
       traceStatement.doNotTransform = true;
-      if (memberExpression.literalToken && memberExpression.literalToken.processedValue === tracePropertyKey) {
-        return traceStatement;
-      } else {
-        var ifStatement =
-          ParseTreeFactory.createIfStatement(
-            createBinaryOperator(
-              memberExpression, 
-              createOperatorToken(TokenType.EQUAL_EQUAL_EQUAL), 
-              createStringLiteral(tracePropertyKey)
-            ),
-            traceStatement
-          );
-        ifStatement.doNotTransform = true;
-        ifStatement.doNotTrace = true;
-        if (debug) ParseTreeValidator.validate(ifStatement);
-        return ifStatement;
-      }
+      var ifStatement =
+        ParseTreeFactory.createIfStatement(
+          createCallExpression(
+            createMemberExpression('window', '__qp', 'isTraced'),
+            createArgumentList(
+              memberExpression  // TODO this is traced, (__qp_activation._170_1 = window.__qp.trace(__qp_170_1)), __qp_170_1)
+            )
+          ),
+          traceStatement
+        );
+      ifStatement.doNotTransform = true;
+      ifStatement.doNotTrace = true;
+      if (debug) ParseTreeValidator.validate(ifStatement);
+      return ifStatement;
   };
 
-  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName, tree) {
+  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(propertyKey, generateFileName, tree) {
+    this.propertyKey = propertyKey;
+    this.generateFileName = generateFileName;
+    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
+    this.propertyAccessExpressionStart = tree.location.start.offset;
+    this.propertyAccessExpressionEnd = tree.location.end.offset;
+  }
+
+  SetTracedPropertyObjectTransformer.prototype = {
+
+    __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
+
+    transformAny: function(tree) {
+      if (this.found)
+        return tree;
+        
+      if (tree && !tree.doNotTransform && tree.location) {
+        var treeOffset = tree.location.start.offset;
+        if ( this.propertyAccessExpressionEnd === tree.location.end.offset &&
+             this.propertyAccessExpressionStart === tree.location.start.offset) {
+          // tree is obj[prop]
+          tree.operand = this._insertObjectCheck(tree.operand, this.propertyAccessExpressionStart);
+          this.found = tree;  // stop early
+        }
+      }
+      tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
+
+      return tree;
+    },
+
+    _insertObjectCheck: function(operand, tracedObjectOffset) {
+      // We are at the object reference tree where we need to check if other traces for
+      // the property used the required object.
+      
+      // If the operand is a complex expression, we need a temp to avoid
+      // double execution of the expression.
+      if (operand.type !== 'IDENTIFIER_EXPRESSION') {
+        operand = this.insertVariableFor(operand);
+      }
+      
+      // window.__qp.setTracedPropertyObject(ourObj, <propertyKey>, tracedObjectOffset);
+      var objectCheck = 
+        createExpressionStatement(
+          createCallExpression(
+            createMemberExpression('window', '__qp', 'setTracedPropertyObject'),
+            createArgumentList(
+              operand, 
+              createStringLiteral(this.propertyKey),
+              createNumberLiteral(tracedObjectOffset)
+            )
+          )
+        );
+       objectCheck.doNotTransform = true;
+       this.insertions.push(objectCheck);
+       return operand;
+    },
+  };
+
+  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName) {
     this.generateFileName = generateFileName;
     Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
     this.propertyKey = propertyKey;
-    this.objectOffset = tree.location.start.offset;
   }
 
   var QP_FUNCTION = '__qp_function';
@@ -127,10 +190,9 @@
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
     transformAny: function(tree) {
-      if (!tree || tree.doNotTransform)
-        return tree;
+      if (tree && !tree.doNotTransform)
+        tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
 
-      tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
       return tree;
     },
 
@@ -199,86 +261,45 @@
         return new BinaryOperator(tree.location, left, tree.operator, right);  
       }
     },
-        
-    _insertObjectCheck: function(tree, tracedObjectOffset) {
-      // We are at the object reference tree where we need to check if other traces for
-      // the property used the required object.
-
-      tree = Querypoint.InsertVariableForExpressionTransformer.prototype.transformAny.call(this, tree);
-      
-      // If the tree is a complex expression, we need a temp to avoid
-      // double execution of the expression.
-      if (tree.type !== 'IDENTIFIER_EXPRESSION') {
-        tree = this.insertVariableFor(tree);
-      }
-      
-      // window.__qp.setTracedPropertyObject(ourObj, <propertyKey>, tracedObjectOffset);
-      var objectCheck = 
-        createExpressionStatement(
-          createCallExpression(
-            createMemberExpression('window', '__qp', 'setTracedPropertyObject'),
-            createArgumentList(
-              tree, 
-              createStringLiteral(this.propertyKey),
-              createNumberLiteral(tracedObjectOffset)
-            )
-          )
-        );
-       objectCheck.doNotTransform = true;
-       this.insertions.push(objectCheck);
-       return tree;
-    },
 
     transformMemberExpression: function(tree) {
-      if (this.isReferenceTree) {  
-        // we can test for the traced property name at compile time.
-        if (tree.memberName.value === this.propertyKey) { 
-          var operand = this.insertVariableFor(tree.operand);
-          this.reference = {
-            base: operand,
-            name: createStringLiteral(this.propertyKey)
-          };
-          tree = new MemberExpression(tree.location, operand, tree.memberName);
-        }  // else we aren't tracing this property
-      } // else this member expr does not appear on the RHS of assignment
-      
-      var treeOffset = tree.location.start.offset; 
-      if (this.objectOffset === treeOffset) {
-        var operand = this._insertObjectCheck(tree.operand, this.objectOffset);
-        tree = new MemberExpression(tree.location, operand, tree.memberName);
-      }
+      // eg obj.field => obj['field']
+      var memberExpression = new LiteralExpression(
+        tree.memberName.location, 
+        createStringLiteralToken(tree.memberName.value)
+      );
 
-      return tree;
+      tree = new MemberLookupExpression(tree.location, tree.operand, memberExpression);
+      return this.transformMemberLookupExpression(tree);
     },
-    
+
     /**
      * obj[string]
      * @param {MemberLookupExpression} tree
      * @return {ParseTree}
      */
     transformMemberLookupExpression: function(tree) {
+
+      var operand = this.transformAny(tree.operand);
+      var memberExpression = this.transformAny(tree.memberExpression);
+
       if (this.isReferenceTree) {
-         // we don't know until runtime if this property will be traced.
-         // simplify the components
-         var operand = this.insertVariableFor(tree.operand);
-         var memberExpression = this.insertVariableFor(tree.memberExpression);
+         operand = this.insertVariableFor(operand);
+         memberExpression = this.insertVariableFor(memberExpression);
          this.reference = {
             base: operand,
             name: memberExpression
           };
-         tree = new MemberLookupExpression(tree.location, operand, memberExpression);
       }
-      var treeOffset = tree.location.start.offset;
-      if (this.objectOffset === treeOffset) {
-        var operand = this._insertObjectCheck(tree, this.objectOffset);
-        tree = new MemberLookupExpression(tree.location, operand, tree.memberExpression);
-      }
-        
+
+      if (operand !== tree.operand || memberExpression !== tree.memberExpression)
+        tree = new MemberLookupExpression(tree.location, operand, memberExpression);
+
       return tree;
     },
 
     trace: function(valueTree, traceLocation) {
-      return propertyChangeTrace(this.reference.base, this.reference.name, this.propertyKey, valueTree, traceLocation);
+      return propertyChangeTrace(this.reference.base, this.reference.name, valueTree, traceLocation);
     },
     
     // Called once per load by QPRuntime
@@ -305,7 +326,18 @@
       propertyChangesMemberInitialization.doNotTrace = true;
       propertyChangesMemberInitialization.doNotTransform = true;
 
-      return [propertyChangesInitialization, propertyChangesMemberInitialization];
+      // window.__qp.setTraced(<propertyKey>);
+      var setTracedStatement =
+        createExpressionStatement(
+          createCallExpression(
+            createMemberExpression('window', '__qp', 'setTraced'),
+            createArgumentList(
+              createStringLiteral(this.propertyKey)
+            )
+          )
+        );
+
+      return [propertyChangesInitialization, propertyChangesMemberInitialization, setTracedStatement];
     },
 
   };

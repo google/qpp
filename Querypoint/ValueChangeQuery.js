@@ -58,7 +58,8 @@
     },
     
     activate: function() {
-      this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier, this.generateFileName, this.tree);
+      this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier, this.generateFileName);
+      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, this.generateFileName, this.tree);
       this.tree.location.query = this;
     },
 
@@ -69,7 +70,19 @@
     // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
     // 
     transformParseTree: function(tree) {
-      return this._transformer.transformAny(tree);
+      if (!tree.hasValueChangeTransform) {
+        // This transform is generic to all value-change tracing
+        tree = this._transformer.transformAny(tree);
+        tree.hasValueChangeTransform = true;
+      }
+      // This transformation is unique for each query
+      if (this.tree.location.start.source.name === tree.location.start.source.name) {
+          delete this._setTracedPropertyObjectTransformer.found;   
+          tree = this._setTracedPropertyObjectTransformer.transformAny(tree);
+          if (!this._setTracedPropertyObjectTransformer.found) 
+              throw new Error("ValueChangeQuery.transformParseTree unable to find object to trace");
+      }
+      return tree;
     },
 
     runtimeSource: function() {

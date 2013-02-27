@@ -67,8 +67,7 @@
       if (debug) console.log("Put " + scripts.length + " transcoded scripts", scripts);
       result.errors.forEach(function(error) {
         // As far as I can tell the eval does not provide meaningful line numbers for errors.
-        var partialContent = error.content.substring(0, 300);
-        console.error(error.message, partialContent);
+        console.error(error.message, error.stack, error.content);
       });
     });
   };

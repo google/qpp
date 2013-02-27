@@ -79,12 +79,11 @@ var QPTreeWriter = (function() {
       if (traceId) {
         if (debug)
           console.log('tracing ' + traceId + ' for '+tree.type + ' : ' + traceur.outputgeneration.TreeWriter.write(tree));
-        // To avoid recursion we remove the mark while writing out the tracing expression
+        // To avoid recursion we remove the mark before writing out the tracing expression
         delete tree.traceId;
         // Now we will bury the identifier tree in a tracing expression
         var tracingTree = this._traceIdentifierExpression(tree, traceId);
         ParseTreeWriter.prototype.visitParenExpression.call(this, tracingTree);
-        tree.traceId = traceId;
       } else {
         ParseTreeWriter.prototype.visitIdentifierExpression.call(this, tree);  
       }

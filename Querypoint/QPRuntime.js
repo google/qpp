@@ -54,9 +54,16 @@
       else 
         fireLoadTrigger = fireLoad;
     }
-    
+
     function trace(expr) {
-      return expr + '';
+      if (typeof expr === 'object') {
+        var objTrace = Object.keys(expr).map(function(key){
+          return key+ ': ' + expr[key];
+        }).join(',');
+        return '{' + objTrace + '}';
+      } else {
+        return expr + '';  
+      }
     }
 
     function grabLoadEvent() {
@@ -236,7 +243,7 @@
       if (debug_in_page) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
       var changes = window.__qp.propertyChanges[propertyKey];
       if (!changes || !changes.length) {
-        if (debug_in_page) console.error("__qp_runtime.reducePropertyChangesToTracedObject No chanages for " + propertyKey + ' at ' + tracedObjectOffset);
+        if (debug_in_page) console.warn("__qp_runtime.reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectOffset);
         return [];
       }
       if (!changes.objectTraced) {
@@ -252,7 +259,7 @@
         },
         []
       );
-      if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject ends with " + window.__qp.propertyChanges[propertyKey].length);
+      if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject ends with " + rawTracepoints.length);
       return extractTracepoints(rawTracepoints);
     }
 
@@ -263,7 +270,7 @@
       window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectOffset] = object;
       if (debug_in_page) console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
-     
+
     function initializeHiddenGlobalState() {
       window.__qp = {
         intercepts: {}, // keys are intercepted function names, values functions
@@ -272,7 +279,14 @@
         turn: 0,        // turns.length set by wrapEntryPoint
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
         interceptEntryPoints: interceptEntryPoints, // call just before we load traced source.
-        fireLoad: fireLoadAfterRealLoad,
+        fireLoad: fireLoadAfterRealLoad,  // hack until script preprocessor corrected
+        setTraced: function(propertyName) {  // called by eval
+          this._propertiesTraced.push(propertyName);
+        },
+        isTraced: function(propertyName) {
+          return (this._propertiesTraced.indexOf(propertyName) !== -1);
+        },
+        _propertiesTraced: [],
         trace: trace,
         setTracedPropertyObject: setTracedPropertyObject, // store the traced object by property
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object
