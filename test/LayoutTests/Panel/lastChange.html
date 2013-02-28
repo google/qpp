@@ -30,6 +30,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', '0');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
+  AsyncMachine.pushOp(extractAttr, 'span.command', 'data-url');
 
   AsyncMachine.runOp();
 }

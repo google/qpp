@@ -49,7 +49,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   var logScrubberElement = document.querySelector('.overviewLog');
   var loadElement = document.querySelector('.loadList');
 
-  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement);
+  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project);
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
@@ -240,9 +240,9 @@ QuerypointPanel.Panel.prototype = {
   },
 
   showPrimaryFileView: function(editor) {
-    var sourceFile = this.project.getFile(editor.name);  
-    if (sourceFile) {
-      var tree = this.project.getParseTree(sourceFile);
+    var sourceFile = this.project.getFile(editor.name); 
+    var tree = this.project.getTreeByName(editor.name);  
+    if (tree) {
       this.fileViewModels()[0].setModel(editor, sourceFile, tree);
     } else {
       this.fileViewModels()[0].setModel(editor);

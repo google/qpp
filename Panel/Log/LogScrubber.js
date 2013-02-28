@@ -10,7 +10,7 @@
   });
 
   QuerypointPanel.EventTurn = {
-    initialize: function(logScrubber) {
+    initialize: function(logScrubber, project) {
       
       var eventTurn = this;
 
@@ -22,7 +22,11 @@
 
       this.createFileURL = function(eventInfo) {
         // the QPRuntime only has the function start offset.
-        return QuerypointPanel.createFileURL(eventInfo.filename, eventInfo.offset, eventInfo.offset + 1);
+        var offset = parseInt(eventInfo.offset, 10);
+        var functionTree = project.find(eventInfo.filename, offset);
+        var startOffset = functionTree.location.start.offset;
+        var endOffset = functionTree.location.end.offset;
+        return QuerypointPanel.createFileURL(eventInfo.filename, startOffset, endOffset);
       }
 
       this.summary = ko.computed(function(){
@@ -63,14 +67,12 @@
         return messages;
       });
 
-      //var eventTurnElement = document.querySelector('.dropDown');  // TODO rename class
-      //ko.applyBindings(this, eventTurnElement);
     }
   }
 
   QuerypointPanel.LogScrubber = {
     
-    initialize: function(logElement) {
+    initialize: function(logElement, project) {
       this.loads = ko.observableArray();
 
       this.trackLatestMessage = ko.observable(true);
@@ -90,7 +92,7 @@
       this.showMessage = ko.observable(0);
 
       this.eventTurn = QuerypointPanel.EventTurn;
-      this.eventTurn.initialize(this);
+      this.eventTurn.initialize(this, project);
 
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){

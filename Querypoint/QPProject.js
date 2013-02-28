@@ -109,6 +109,18 @@
       return Querypoint.FindInTree;
     },
 
+    getTreeByName: function(name) {
+      var sourceFile = this.getFile(name);  
+      if (sourceFile)
+        return this.getParseTree(sourceFile);
+    },
+
+    find: function(name, offset) {
+      var tree = this.getTreeByName(name);
+      if (tree)
+        return this.treeFinder().byOffset(tree, offset);
+    },
+
     addScript: function(url) {
       if (debug) console.log("QPProject got new script " + url);
     },

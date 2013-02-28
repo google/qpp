@@ -73,7 +73,7 @@
     }
     
     var reTranscodedFunctionPreamble = /{([^;]*);/;
-    var reFunctionsData = /\[([^\]]*)\]\[([^\]]*)\]/;
+    var reFunctionsData = /\[\"([^\"]*)\"\]\[([^\]]*)\]/;
 
     function appendFileInfoFromPreamble(entryPointFunction, startInfo) {
       if (entryPointFunction.__qp) {
@@ -208,6 +208,9 @@
         functionOffset: tp.functionOffset,
         turn: tp.turn,
         activationCount: tp.activationCount,
+        startOffset: tp.startOffset,
+        file: tp.file,
+        endOffset: tp.endOffset
       };
     }
 
