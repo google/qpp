@@ -43,15 +43,32 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.document = panel_window.document;
   this.page = page;
   this.project = project;
-
   var panel = this;
+
+  this.recordData = {
+      start: -1,
+      end:   0,
+      play: function(){
+            for(var i = panel.recordData.start; i < panel.recordData.end; i++)
+                chrome.devtools.inspectedWindow.eval('var event = window.__qp.turns[' + i + '].args[0]; event.target.dispatchEvent(event);');
+        }
+  }
+
   var logElement = document.querySelector('.logView');
-  var logScrubberElement = document.querySelector('.overviewLog');
+  var logScrubberElement = document.querySelector('.logScrubber');
   var loadElement = document.querySelector('.loadList');
 
   this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project);
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
+
+  this.preMessages = ko.observableArray([]);
+  this.postMessages = ko.observableArray([]);
+  this.messages = this.preMessages;
+
+  this._addMessage = function(message){
+    panel.messages.push(message);
+  }
 
   this._setMessageWidth = function(width) {
     if (width > 10) width = 10;
@@ -101,11 +118,11 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       return joinMessages;
 
     var joinMessages = currentLoad.messages || [];
-    var maxMessages = document.querySelector('.logScrubber').offsetWidth-30;
+    var maxMessages = document.querySelector('.logScrubber').offsetWidth - 40; 
     if (joinMessages.length < maxMessages) {
-        var width = Math.floor(maxMessages / joinMessages.length);
-        panel._setMessageWidth(width);
-        return joinMessages;
+      var width = Math.floor(maxMessages / joinMessages.length);
+      panel._setMessageWidth(width);
+      return joinMessages;
     } else {
       var perPixel = joinMessages.length / maxMessages;
       return panel._downSizeMessages(perPixel, joinMessages);
@@ -114,13 +131,10 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
 
   var dropDown = document.querySelector('.dropDown');
 
-  ko.applyBindings(this.logScrubber, dropDown);
-  ko.applyBindings(this.logScrubber, loadElement);
-  ko.applyBindings(this, logScrubberElement);
-  ko.applyBindings(this, logElement);
-
   var currentLoad = document.querySelector('.currentLoad');
   var nextLoad = document.querySelector('.nextLoad');
+  var recordButton = document.querySelector('.recordIndicator');
+  var playButton = document.querySelector('.recordMarker');
 
   this.showLoad = ko.computed( function(){
       return panel.logScrubber.showLoad().load;
@@ -140,6 +154,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       }
   });
 
+  ko.applyBindings(this, logScrubberElement);
+  ko.applyBindings(this, logElement);
+
   dropDown.onmouseout = function(event){
       var e = event.toElement || event.relatedTarget;
       while(e && e.parentNode && e.parentNode != window) {
@@ -151,9 +168,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       }
       dropDown.style.display = 'none';
   }
-
-  ko.applyBindings(this, currentLoad);
-  ko.applyBindings(this, nextLoad);
 
   currentLoad.onmouseover = function(){
       dropDown.style.display = 'none';
@@ -538,18 +552,42 @@ QuerypointPanel.Panel.prototype = {
       if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
       var dropDown = document.querySelector('.dropDown');
       var loadElement = document.querySelector('.loadList');
+      var messages = document.querySelector('.dropDown .messages');
       dropDown.style.display = 'block';
       loadElement.style.display = 'none';
       QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
       QuerypointPanel.LogScrubber.showMessage(this.position);
-      var messages = document.querySelector('.dropDown .messages');
       messages.scrollTop = 15 * this.position;
   },
 
   tooltip: function(turn){
     return this._log.currentTurn.event;
-  }
-  
+  },
+
+  startRecord: function(){
+    var button = document.querySelector('.recordIndicator');
+    var marker = document.querySelector('.recordMarker');
+    if (button.classList.contains('on')) {
+        marker.innerHTML = '&#x25B6';
+        this.recordData.end = this.logScrubber.showLoad().turns().length;
+    } else {
+        try{
+        var current = this.logScrubber.showLoad().messages.length;
+        } catch (err) {
+            return;             // Load hasn't started
+        }
+        for (var i = 0; i < this.postMessages().length; i++) this.preMessages().push(this.postMessages()[i]);
+        this.preMessages.valueHasMutated();
+        this.logScrubber.showLoad.valueHasMutated();
+        this.postMessages([]);
+        this.messages = this.postMessages;
+        this.recordData.start = this.logScrubber.showLoad().turns().length;
+        marker.innerHTML = 'x';
+        marker.style.display = 'block';
+    }
+    button.classList.toggle('on');
+  },
+
 };
 
 }());

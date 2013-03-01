@@ -59,8 +59,8 @@
         var turns = logScrubber.showLoad().turns;
         var messages = [];
         if (turns) {
-          var turnIndex = eventTurn.showTurn() - 1;
-          var turn = turns[turnIndex];
+          var turnIndex = logScrubber.eventTurn.showTurn() - 1;
+          var turn = turns()[turnIndex];
           if (turn)
             return turn.messages();
         }
@@ -240,6 +240,5 @@
     unhighlight: function(){
         chrome.devtools.protocol.DOM.prototype.hideHighlight( function(){} );
     }
-
   };
 }());

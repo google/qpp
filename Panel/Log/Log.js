@@ -160,6 +160,7 @@
       messageSource.position = this.currentTurn.messages().length;
       this.currentTurn.messages.push(messageSource);
       this.currentReload.messages.push(messageSource);
+      QuerypointPanel.OnPanelOpen.panel._addMessage(messageSource);
       if (DEBUG){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }

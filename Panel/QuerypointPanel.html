@@ -90,15 +90,15 @@
         </table>
      </div>
     </div>
-    <div class="logScrubber scrubberBox">
-      <span class="helpInfo">
-        Log Scrubber: click or drag to change log viewport
-      </span>
-        <div class="loadList" data-bind="foreach: loads">
-            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
+    <div class="logScrubber">
+        <span class="helpInfo">
+          Log Scrubber: click or drag to change log viewport
+        </span>
+        <div class="loadList" data-bind="foreach: logScrubber.loads">
+            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.logScrubber.displayLoad}">
             </div>
         </div>
-        <div class="dropDown" data-bind="with: eventTurn">
+        <div class="dropDown" data-bind="with: logScrubber.eventTurn">
             <p data-bind="text: turnInformation"> </p>
             <ul id="infoNav" data-bind="if: summary">
                 <li>
@@ -108,10 +108,10 @@
                 triggered by <a data-bind="text: summary().eventType"></a> on target
                 </li>
                 <li>
-                <a data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
+                <a data-bind="text: summary().target, event:{mouseover: $root.logScrubber.highlightElement, mouseout: $root.logScrubber.unhighlight}"></a>
                     <ul>
-                        <li data-bind="event: {mousedown: revealElement}"><a>Reveal</a></li>
-                        <li data-bind="event: {mousedown: traceElement}"><a>Trace Element</a></li>
+                        <li data-bind="event: {mousedown: $root.logScrubber.revealElement}"><a>Reveal</a></li>
+                        <li data-bind="event: {mousedown: $root.logScrubber.traceElement}"><a>Trace Element</a></li>
                     </ul>
                 </li>
             </ul>
@@ -122,9 +122,16 @@
             </div>
         </div>
         <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoad}"></div>
-        <div class="overviewLog" data-bind="foreach: allMessages">
+        <div class="overviewLog">
+            <!-- ko foreach: preMessages -->
             <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+            <!-- /ko -->
+            <div class="recordMarker" data-bind="event:{mousedown: recordData.play }">x</div>
+            <!-- ko foreach: postMessages -->
+             <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+            <!-- /ko -->
         </div>
+        <div class="recordIndicator" data-bind="event:{mousedown: startRecord }">&#9679;</div> 
         <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
       <!-- <span class="scrubberIndicator" title="TODO slide sideways to select visible log entries, up/down to resize log view"></span> -->
     </div>

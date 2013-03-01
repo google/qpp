@@ -84,7 +84,8 @@
 
     function appendFileInfoFromPreamble(entryPointFunction, startInfo) {
       if (entryPointFunction.__qp) {
-          startInfo = entryPointFunction.__qp;
+          for (var key in entryPointFunction.__qp) startInfo[key] = entryPointFunction.__qp[key];
+          // startInfo = entryPointFunction.__qp;
         } else {
           var preamble = reTranscodedFunctionPreamble.exec(entryPointFunction + '');
           if (preamble) {
