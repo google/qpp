@@ -1,0 +1,44 @@
+<html>
+
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../../../DebugLogger.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../panel-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function test_lastChange() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  AsyncMachine.pushOp(openQuerypointPanel);
+  AsyncMachine.pushOp(openSourceFile, 'sample.js');
+  
+  var objPropSelector = [
+    {type: 'variable', text:'inside'},
+    {type: 'string', text: 'field'},
+    {type: 'string', text: 'field'}
+    ];
+  AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
+  AsyncMachine.pushOp(verifyTokenView, "obj.['field']");
+  AsyncMachine.pushOp(clickQPOperation, 'lastChange');
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', '11');
+  AsyncMachine.pushOp(extractText, 'td.traceValue');
+  AsyncMachine.pushOp(extractAttr, 'span.command', 'data-url');
+
+  AsyncMachine.runOp();
+}
+
+var testScript = test_lastChange;
+</script>
+<body>
+<h1>Feature Test lastChange</h1>
+</body>
+</html>

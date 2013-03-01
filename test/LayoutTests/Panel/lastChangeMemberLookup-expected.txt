@@ -1,0 +1,6 @@
+http://localhost:8686/test/qpd.html
+prop in   var message = "I've been clicked " + obj.prop + " times";
+true
+1|0
+http://localhost:8686/test/demo.js?start=166&end=174&|http://localhost:8686/test/demo.js?start=536&end=537&
+

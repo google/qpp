@@ -284,7 +284,10 @@ window.PatientSelector = (function(){
                         }
                         // select within the previous hit
                         var tokenElt = PatientSelector._querySelectorAll('| ' + selector, text)[0];
-                        PatientSelector._fireMouseMove(tokenElt, callback);
+                        if (tokenElt)
+                            PatientSelector._fireMouseMove(tokenElt, callback);
+                        else 
+                            console.error("....PatientSelector.selectTokenInSource no " + selector + '/' + text);
                     });
                 }
             }
