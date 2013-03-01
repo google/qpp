@@ -266,7 +266,7 @@ window.PatientSelector = (function(){
 
             function next(lineNumber) {
                 var token = editorTokens.shift();
-                var selector = 'span.cm-' + token.type;
+                var selector = token.type;
                 var text = token.text;
                     
                 if (editorTokens.length) {

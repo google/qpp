@@ -22,8 +22,8 @@ function test_lastChange() {
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
   
   var objPropSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'property', text: 'prop'}
+    {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
+    {type: 'span.cm-property', text: 'prop'}
     ];
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');

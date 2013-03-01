@@ -22,10 +22,10 @@ function test_lastChange() {
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
 
     var innerHTMLSelector = [
-      {type: 'variable', text:'bar'},  // call in onClick
-      {type: 'variable', text:'bar'},  // func decl
-      {type: 'property', text:'innerHTML'}, // button.innerHTML
-      {type: 'property', text:'innerHTML'} // button.innerHTML
+      {type: 'span.cm-variable', text:'bar'},  // call in onClick
+      {type: 'span.cm-variable', text:'bar'},  // func decl
+      {type: 'span.cm-property', text:'innerHTML'}, // button.innerHTML
+      {type: 'span.cm-property', text:'innerHTML'} // button.innerHTML
     ];
   AsyncMachine.pushOp(selectTokenInSource, innerHTMLSelector);
   AsyncMachine.pushOp(verifyTokenView, 'button.innerHTML');

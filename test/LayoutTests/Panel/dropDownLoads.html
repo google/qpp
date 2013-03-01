@@ -23,8 +23,8 @@ function test_dropDown() {
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
   AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
   var objPropSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'property', text: 'prop'}
+    {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
+    {type: 'span.cm-property', text: 'prop'}
     ];
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
@@ -36,10 +36,10 @@ function test_dropDown() {
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
 
     var conditionValueSelector = [
-      {type: 'variable', text:'bar'},  // call in onClick
-      {type: 'variable', text:'bar'},  // func decl
-      {type: 'property', text: 'value'},  // (!condition.value)
-      {type: 'property', text: 'value'}   // value  in condition.value
+      {type: 'span.cm-variable', text:'bar'},  // call in onClick
+      {type: 'span.cm-variable', text:'bar'},  // func decl
+      {type: 'span.cm-property', text: 'value'},  // (!condition.value)
+      {type: 'span.cm-property', text: 'value'}   // value  in condition.value
     ];
   AsyncMachine.pushOp(selectTokenInSource, conditionValueSelector);
   AsyncMachine.pushOp(verifyTokenView, 'condition.value');

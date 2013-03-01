@@ -21,10 +21,10 @@ function test_lastChange() {
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
     var objPropSelector = [
-      {type: 'variable', text:'bar'},  // call in onClick
-      {type: 'variable', text:'bar'},  // func decl
-      {type: 'property', text: 'prop'},  // obj.prop = 0
-      {type: 'property', text: 'prop'}   // prop in obj.prop = 0
+      {type: 'span.cm-variable', text:'bar'},  // call in onClick
+      {type: 'span.cm-variable', text:'bar'},  // func decl
+      {type: 'span.cm-property', text: 'prop'},  // obj.prop = 0
+      {type: 'span.cm-property', text: 'prop'}   // prop in obj.prop = 0
     ];
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');

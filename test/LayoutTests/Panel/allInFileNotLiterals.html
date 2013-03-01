@@ -22,11 +22,11 @@ function test_lastChange() {
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
   
   var conditionPropSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'variable', text:'bar'},
-    {type: 'variable', text:'obj'},
-    {type: 'variable', text:'condition'},
-    {type: 'property', text: 'prop'}
+    {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
+    {type: 'span.cm-variable', text:'bar'},
+    {type: 'span.cm-variable', text:'obj'},
+    {type: 'span.cm-variable', text:'condition'},
+    {type: 'span.cm-property', text: 'prop'}
     ];
   AsyncMachine.pushOp(selectTokenInSource, conditionPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'condition.prop');
@@ -38,11 +38,11 @@ function test_lastChange() {
 
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
   var sevenSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'variable', text:'bar'},
-    {type: 'variable', text:'obj'},
-    {type: 'variable', text:'condition'},
-    {type: 'number', text:'7'},
+    {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
+    {type: 'span.cm-variable', text:'bar'},
+    {type: 'span.cm-variable', text:'obj'},
+    {type: 'span.cm-variable', text:'condition'},
+    {type: 'span.cm-number', text:'7'},
     ];
   AsyncMachine.pushOp(selectTokenInSource, sevenSelector);
   AsyncMachine.pushOp(verifyTokenView, '7');

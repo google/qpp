@@ -22,10 +22,10 @@ function test_lastChange() {
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
 
     var conditionValueSelector = [
-      {type: 'variable', text:'bar'},  // call in onClick
-      {type: 'variable', text:'bar'},  // func decl
-      {type: 'property', text: 'value'},  // (!condition.value)
-      {type: 'property', text: 'value'}   // value  in condition.value
+      {type: 'span.cm-variable', text:'bar'},  // call in onClick
+      {type: 'span.cm-variable', text:'bar'},  // func decl
+      {type: 'span.cm-property', text: 'value'},  // (!condition.value)
+      {type: 'span.cm-property', text: 'value'}   // value  in condition.value
     ];
   AsyncMachine.pushOp(selectTokenInSource, conditionValueSelector);
   AsyncMachine.pushOp(verifyTokenView, 'condition.value');

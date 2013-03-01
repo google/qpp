@@ -51,8 +51,8 @@ function test_lastChange() {
   AsyncMachine.pushOp(whenSelectorAll, '.CodeMirror', '', asyncScreenShot);
   
   var objPropSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'property', text: 'prop'}
+    {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
+    {type: 'span.cm-property', text: 'prop'}
     ];
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector, function() {
     var h1 = '<h2>Selecting <code>lastChange</code> for an object property</h2>';

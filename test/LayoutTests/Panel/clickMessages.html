@@ -23,8 +23,8 @@ function test_clickMessage() {
   AsyncMachine.pushOp(evaluateInPanel, click('.initialOptions_noReload'), function(text){});
 
   var objPropSelector = [
-    {type: 'string', text:'\"I\'ve been clicked \"'},
-    {type: 'property', text: 'prop'}
+    {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
+    {type: 'span.cm-property', text: 'prop'}
     ];
   AsyncMachine.pushOp(selectTokenInSource, objPropSelector);
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
