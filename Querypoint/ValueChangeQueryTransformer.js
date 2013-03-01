@@ -182,8 +182,6 @@
             createObjectLiteralExpression([])
           )
        );
-      propertyChangesInitialization.doNotTrace = true;
-      propertyChangesInitialization.doNotTransform = true;
       
       // window.__qp.propertyChanges.<propertyKey> = [];
       var propertyChangesMemberInitialization = 
@@ -191,9 +189,7 @@
           createMemberExpression('window', '__qp', 'propertyChanges', this.propertyKey),
           createArrayLiteralExpression([])
          );
-      propertyChangesMemberInitialization.doNotTrace = true;
-      propertyChangesMemberInitialization.doNotTransform = true;
-
+      
       // window.__qp.setTraced(<propertyKey>);
       var setTracedStatement =
         createExpressionStatement(

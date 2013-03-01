@@ -126,17 +126,17 @@
 
     function startTurn(entryPointFunction, args) {
       var startInfo = getStartInfo(entryPointFunction, args);
+      var eventObject = args[0];    
+      var targetInfo = '';
+      if (eventObject.target) {
+         targetInfo = getSelectorUniqueToElement(eventObject.target)
+         startInfo.target = eventObject.target;
+      }
+
       window.__qp.turns.push(startInfo); 
       var turn = window.__qp.turn = window.__qp.turns.length; 
       var functionInfo = startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset;
-      var eventObject = args[0];    
       var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
-      var targetInfo = '';
-      if (eventObject.target) {
-         var localName = eventObject.target.localName;
-         var id = eventObject.target.id;
-         targetInfo = (localName ? (localName + (id ? "#" + id : '')) : eventObject.target.nodeName);
-      }
       console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo +  ' ' + targetInfo);
       return turn;
     }
@@ -241,7 +241,12 @@
     
     // For lastChange
     function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex) {
-      if (debug_in_page) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
+      if (debug_in_page) {
+        if (window.__qp.propertyChanges[propertyKey]) 
+          console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
+        else
+          console.error('reducePropertyChangesToTracedObject propertyChanges not Initialized for ' + propertyKey);
+      }
       var changes = window.__qp.propertyChanges[propertyKey];
       if (!changes || !changes.length) {
         if (debug_in_page) console.warn("__qp_runtime.reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectIndex);
@@ -271,6 +276,50 @@
       window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectIndex] = object;
       if (debug_in_page) console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
+
+    function setTraceElement(selector, propertyKeys, tracedObjectIndex) {
+      var element = document.querySelector(selector);
+      if (element) {
+        propertyKeys.forEach(function(propertyKey) {
+          setTracedPropertyObject(element, propertyKey, tracedObjectIndex);
+        });
+      } else {
+        throw new Error("QPRuntime.setTraceElement querySelector found no element for selector " + selector);
+      }
+    }
+
+    function getSelectorUniqueToElement(element) {
+      var path;
+      while (element) {
+          var name = element.localName;
+          if (!name) break;
+
+          name = name.toLowerCase();
+          if (element.id) {
+              // As soon as an id is found, there's no need ascend further
+              return name + '#' + element.id + (path ? '>' + path : '');
+          } else if (element.className) {
+              name += '.' + element.className.split(/\s+/).join('.');
+          }
+
+          var parent = element.parentElement;
+
+          var sibling = parent && parent.firstChild;
+          var ith = 0;
+          while(sibling && sibling !== element) {
+            sibling = sibling.element;
+            ith++;
+          }
+          if (ith) {
+            name += ':eq(' + ith + ')'; 
+          }
+          
+          path = name + (path ? '>' + path : '');
+
+          element = parent;
+      }
+      return path;
+    };
 
     function initializeHiddenGlobalState() {
       window.__qp = {

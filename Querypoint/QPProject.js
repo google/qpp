@@ -24,6 +24,7 @@
     this.compiler_ = new QPCompiler(this.reporter, {}); // TODO traceur options
         
     this.querypoints = Querypoint.Querypoints.initialize();
+    this.elementQueries = [Querypoint.ElementChangeQuery];
     
     this.runtime = Querypoint.QPRuntime.initialize();
 

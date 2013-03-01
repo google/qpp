@@ -10,7 +10,7 @@
   });
 
   QuerypointPanel.EventTurn = {
-    initialize: function(logScrubber, project) {
+    initialize: function(logScrubber, project, tracequeries) {
       
       var eventTurn = this;
 
@@ -24,8 +24,12 @@
         // the QPRuntime only has the function start offset.
         var offset = parseInt(eventInfo.offset, 10);
         var functionTree = project.find(eventInfo.filename, offset);
-        var startOffset = functionTree.location.start.offset;
-        var endOffset = functionTree.location.end.offset;
+        var startOffset = 0;
+        var endOffset = 0;
+        if (functionTree) {
+          startOffset = functionTree.location.start.offset;
+          endOffset = functionTree.location.end.offset;
+        }
         return QuerypointPanel.createFileURL(eventInfo.filename, startOffset, endOffset);
       }
 
@@ -59,20 +63,68 @@
         var turns = logScrubber.showLoad().turns;
         var messages = [];
         if (turns) {
-          var turnIndex = logScrubber.eventTurn.showTurn() - 1;
-          var turn = turns()[turnIndex];
+          var turnIndex = eventTurn.showTurn() - 1;
+          var turn = turns[turnIndex];
           if (turn)
             return turn.messages();
         }
         return messages;
       });
 
+      this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
+      this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
+    },    
+
+    revealElement: function(){
+        console.error("TODO reveal element");
+    },
+
+    traceElement: function(eventTurn){
+      console.log("trace target of turn " + this.showTurn(), eventTurn);
+      var selector = eventTurn.summary().target;
+      this.elementQueryProvider.selector(selector);
+      this.query = this.elementQueryProvider.queries()[0]
+
+      this.query.activate(this._tracequeries().length);
+
+      // project -> query
+      this._tracequeries.push(this.query);
+
+    },
+
+    highlightElement: function(){
+        var DOM, highlightConfig, selector;
+        selector = this.target;
+        if (!selector) {
+          return;
+        }
+        DOM = chrome.devtools.protocol.DOM.prototype;
+        highlightConfig = {
+            contentColor: {r: 0, g: 0, b: 255, a: 0.4},
+            borderColor: {r: 0, g: 0, b: 255, a: 0.4},
+            marginColor: {r: 0, g: 0, b: 255, a: 0.4},
+            paddingColor: {r: 0, g: 0, b: 255, a: 0.4},
+        }
+        DOM.getDocument(function(root){
+            if (selector === '#document'){
+                DOM.highlightNode(highlightConfig, root.nodeId, '', function(){});
+            } else {
+                DOM.querySelector(root.nodeId, selector, function(node){
+                    DOM.highlightNode(highlightConfig, node, '', function(){});
+                });
+            }
+        });
+    },
+
+    unhighlight: function(){
+        chrome.devtools.protocol.DOM.prototype.hideHighlight( function(){} );
     }
+
   }
 
   QuerypointPanel.LogScrubber = {
     
-    initialize: function(logElement, project) {
+    initialize: function(logElement, project, tracequeries) {
       this.loads = ko.observableArray();
 
       this.trackLatestMessage = ko.observable(true);
@@ -92,7 +144,7 @@
       this.showMessage = ko.observable(0);
 
       this.eventTurn = QuerypointPanel.EventTurn;
-      this.eventTurn.initialize(this, project);
+      this.eventTurn.initialize(this, project, tracequeries);
 
       // TODO depends on resize of logElement
       this.rangeShowable = ko.computed(function(){
@@ -208,37 +260,5 @@
       setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
     },
 
-    revealElement: function(){
-        console.error("TODO reveal element");
-    },
-
-    traceElement: function(){
-        console.error("TODO trace element");
-    },
-
-    highlightElement: function(){
-        var DOM, highlightConfig, selector;
-        selector = this.target;
-        DOM = chrome.devtools.protocol.DOM.prototype;
-        highlightConfig = {
-            contentColor: {r: 0, g: 0, b: 255, a: 0.4},
-            borderColor: {r: 0, g: 0, b: 255, a: 0.4},
-            marginColor: {r: 0, g: 0, b: 255, a: 0.4},
-            paddingColor: {r: 0, g: 0, b: 255, a: 0.4},
-        }
-        DOM.getDocument(function(root){
-            if (selector === '#document'){
-                DOM.highlightNode(highlightConfig, root.nodeId, '', function(){});
-            } else {
-                DOM.querySelector(root.nodeId, selector, function(node){
-                    DOM.highlightNode(highlightConfig, node, '', function(){});
-                });
-            }
-        });
-    },
-
-    unhighlight: function(){
-        chrome.devtools.protocol.DOM.prototype.hideHighlight( function(){} );
-    }
   };
 }());

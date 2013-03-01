@@ -54,11 +54,16 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
         }
   }
 
+  // Active queries are synced back to the project
+  this.tracequeries = ko.observableArray().extend({
+    runPage: this.project
+  });
+
   var logElement = document.querySelector('.logView');
   var logScrubberElement = document.querySelector('.logScrubber');
   var loadElement = document.querySelector('.loadList');
 
-  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project);
+  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project, this.tracequeries);
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
@@ -209,10 +214,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     panel.logScrubber.showLoad.valueHasMutated();
   }
 
-  // Active queries are synced back to the project
-  this.tracequeries = ko.observableArray().extend({
-    runPage: this.project
-  });
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
   
@@ -220,6 +221,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     var turnEnded = panel.logScrubber.turnEnded();
     return turnEnded;
   });
+
 
   this.fileViews = document.querySelector('.fileViews');
   this.primaryFileView = this.fileViews.querySelector('.fileView');
