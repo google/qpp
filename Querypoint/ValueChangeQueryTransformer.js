@@ -170,6 +170,43 @@
        this.insertions.push(objectCheck);
        return operand;
     },
+        // Called once per load by QPRuntime
+    runtimeInitializationStatements: function() {
+      // window.__qp.propertyChanges = window.__qp.propertyChanges || {};
+      var propertyChangesInitialization = 
+        createAssignmentStatement(
+          createMemberExpression('window', '__qp', 'propertyChanges'),
+          createBinaryOperator(
+            createMemberExpression('window', '__qp', 'propertyChanges'),
+            createOperatorToken(TokenType.OR), 
+            createObjectLiteralExpression([])
+          )
+       );
+      propertyChangesInitialization.doNotTrace = true;
+      propertyChangesInitialization.doNotTransform = true;
+      
+      // window.__qp.propertyChanges.<propertyKey> = [];
+      var propertyChangesMemberInitialization = 
+        createAssignmentStatement(
+          createMemberExpression('window', '__qp', 'propertyChanges', this.propertyKey),
+          createArrayLiteralExpression([])
+         );
+      propertyChangesMemberInitialization.doNotTrace = true;
+      propertyChangesMemberInitialization.doNotTransform = true;
+
+      // window.__qp.setTraced(<propertyKey>);
+      var setTracedStatement =
+        createExpressionStatement(
+          createCallExpression(
+            createMemberExpression('window', '__qp', 'setTraced'),
+            createArgumentList(
+              createStringLiteral(this.propertyKey)
+            )
+          )
+        );
+
+      return [propertyChangesInitialization, propertyChangesMemberInitialization, setTracedStatement];
+    },
   };
 
   var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName) {
@@ -300,44 +337,6 @@
 
     trace: function(valueTree, traceLocation) {
       return propertyChangeTrace(this.reference.base, this.reference.name, valueTree, traceLocation);
-    },
-    
-    // Called once per load by QPRuntime
-    runtimeInitializationStatements: function() {
-      // window.__qp.propertyChanges = window.__qp.propertyChanges || {};
-      var propertyChangesInitialization = 
-        createAssignmentStatement(
-          createMemberExpression('window', '__qp', 'propertyChanges'),
-          createBinaryOperator(
-            createMemberExpression('window', '__qp', 'propertyChanges'),
-            createOperatorToken(TokenType.OR), 
-            createObjectLiteralExpression([])
-          )
-       );
-      propertyChangesInitialization.doNotTrace = true;
-      propertyChangesInitialization.doNotTransform = true;
-      
-      // window.__qp.propertyChanges.<propertyKey> = [];
-      var propertyChangesMemberInitialization = 
-        createAssignmentStatement(
-          createMemberExpression('window', '__qp', 'propertyChanges', this.propertyKey),
-          createArrayLiteralExpression([])
-         );
-      propertyChangesMemberInitialization.doNotTrace = true;
-      propertyChangesMemberInitialization.doNotTransform = true;
-
-      // window.__qp.setTraced(<propertyKey>);
-      var setTracedStatement =
-        createExpressionStatement(
-          createCallExpression(
-            createMemberExpression('window', '__qp', 'setTraced'),
-            createArgumentList(
-              createStringLiteral(this.propertyKey)
-            )
-          )
-        );
-
-      return [propertyChangesInitialization, propertyChangesMemberInitialization, setTracedStatement];
     },
 
   };

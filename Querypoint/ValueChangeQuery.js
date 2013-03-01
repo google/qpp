@@ -26,7 +26,7 @@
     this.identifier = identifierTree.value;
     console.assert(typeof this.identifier === 'string'); 
     this.tree = tree;
-    this.generateFileName = project.generateFileName;
+    this._generateFileName = project.generateFileName;
   }
     
   Querypoint.ValueChangeQuery.ifAvailableFor = function(tree, project) {
@@ -58,8 +58,8 @@
     },
     
     activate: function() {
-      this._transformer = new Querypoint.ValueChangeQueryTransformer(this.identifier, this.generateFileName);
-      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, this.generateFileName, this.tree);
+      this._transformer = new Querypoint.ValueChangeQueryTransformer(this._generateFileName);
+      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, this._generateFileName, this.tree);
       this.tree.location.query = this;
     },
 
@@ -87,7 +87,7 @@
 
     runtimeSource: function() {
       var src = '';
-      this._transformer.runtimeInitializationStatements().forEach(function(tree){
+      this._setTracedPropertyObjectTransformer.runtimeInitializationStatements().forEach(function(tree){
         src += traceur.outputgeneration.TreeWriter.write(tree) + '\n';
       });
       return src;
