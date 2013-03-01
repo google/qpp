@@ -114,8 +114,9 @@
       return ifStatement;
   };
 
-  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(propertyKey, tree) {
+  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(propertyKey, queryNumber, tree) {
     this.propertyKey = propertyKey;
+    this.queryNumber = queryNumber;
     Querypoint.InsertVariableForExpressionTransformer.call(this);
     this.propertyAccessExpressionStart = tree.location.start.offset;
     this.propertyAccessExpressionEnd = tree.location.end.offset;
@@ -134,7 +135,7 @@
         if ( this.propertyAccessExpressionEnd === tree.location.end.offset &&
              this.propertyAccessExpressionStart === tree.location.start.offset) {
           // tree is obj[prop]
-          tree.operand = this._insertObjectCheck(tree.operand, this.propertyAccessExpressionStart);
+          tree.operand = this._insertObjectCheck(tree.operand, this.queryNumber);
           this.found = tree;  // stop early
         }
       }
@@ -143,7 +144,7 @@
       return tree;
     },
 
-    _insertObjectCheck: function(operand, tracedObjectOffset) {
+    _insertObjectCheck: function(operand, tracedObjectIndex) {
       // We are at the object reference tree where we need to check if other traces for
       // the property used the required object.
       
@@ -153,7 +154,7 @@
         operand = this.insertVariableFor(operand);
       }
       
-      // window.__qp.setTracedPropertyObject(ourObj, <propertyKey>, tracedObjectOffset);
+      // window.__qp.setTracedPropertyObject(ourObj, <propertyKey>, tracedObjectIndex);
       var objectCheck = 
         createExpressionStatement(
           createCallExpression(
@@ -161,7 +162,7 @@
             createArgumentList(
               operand, 
               createStringLiteral(this.propertyKey),
-              createNumberLiteral(tracedObjectOffset)
+              createNumberLiteral(tracedObjectIndex)
             )
           )
         );

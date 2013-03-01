@@ -239,18 +239,18 @@
     }
     
     // For lastChange
-    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectOffset) {
+    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex) {
       if (debug_in_page) console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
       var changes = window.__qp.propertyChanges[propertyKey];
       if (!changes || !changes.length) {
-        if (debug_in_page) console.warn("__qp_runtime.reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectOffset);
+        if (debug_in_page) console.warn("__qp_runtime.reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectIndex);
         return [];
       }
       if (!changes.objectTraced) {
-        if (debug_in_page) console.error("__qp_runtime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectOffset);
+        if (debug_in_page) console.error("__qp_runtime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectIndex);
         return [];
       }
-      var object = changes.objectTraced[tracedObjectOffset];
+      var object = changes.objectTraced[tracedObjectIndex];
       var rawTracepoints = changes.reduce(
         function(ours, change) {
           if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
@@ -264,10 +264,10 @@
     }
 
         // For lastChange
-    function setTracedPropertyObject(object, propertyKey, tracedObjectOffset) {
+    function setTracedPropertyObject(object, propertyKey, tracedObjectIndex) {
       // We are setting a property on an array here.
       window.__qp.propertyChanges[propertyKey].objectTraced = window.__qp.propertyChanges[propertyKey].objectTraced || {};
-      window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectOffset] = object;
+      window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectIndex] = object;
       if (debug_in_page) console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
 

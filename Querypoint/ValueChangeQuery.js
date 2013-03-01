@@ -56,9 +56,10 @@
       return "Trace the changes to the current expression and report the last one";
     },
     
-    activate: function() {
+    activate: function(queryIndex) {
       this._transformer = new Querypoint.ValueChangeQueryTransformer();
-      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, this.tree);
+      this._queryIndex = queryIndex;
+      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, queryIndex, this.tree);
       this.tree.location.query = this;
     },
 
@@ -110,8 +111,8 @@
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var tracedObjectOffset = this.tree.location.start.offset;
-      var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + this.identifier + '\",' + tracedObjectOffset + ')';
+      var tracedObjectIndex = this._queryIndex;
+      var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + this.identifier + '\",' + tracedObjectIndex + ')';
       chrome.devtools.inspectedWindow.eval(expr, onEval.bind(this));
     },
   };

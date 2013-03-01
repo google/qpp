@@ -39,7 +39,7 @@
       // tree -> query
       this.query.setQueryOnTree(this.query.tree, this.query);
       
-      this.query.activate();
+      this.query.activate(this.panel.tracequeries.length);
 
       // project -> query
       this.panel.tracequeries.push(this.query);
