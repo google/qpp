@@ -46,28 +46,19 @@
     },
   };
 
-  QuerypointPanel.QueriesViewModel = function(fileViewModel, panel) {
-    this.fileViewModel = fileViewModel;
-    this.tokenViewModel = fileViewModel.tokenViewModel;
+  QuerypointPanel.QueriesViewModel = function(queryProvider, panel) {
     this._panel = panel;
         
-    this.currentQueries = ko.computed(function() {
-      var tree = this.tokenViewModel.tokenTree();
+    this.queryViewModels = ko.computed(function() {
       var queries = [];
-      if (tree) {
-        var project = this._panel.project;
-        project.querypoints.possibleQueries().forEach(function(possibleQuery) {
-          var query = possibleQuery.ifAvailableFor(tree, project);
-          if (query) {
-            queries.push(new QuerypointPanel.QueryViewModel(query, panel));
-          }
-        });
-      }
+      queryProvider.queries().forEach(function(query) {
+        queries.push(new QuerypointPanel.QueryViewModel(query, panel));
+      });
       return queries;
     }.bind(this)).extend({ throttle: 1 });
     
     this.hasQueries = ko.computed(function() {
-      return (this.currentQueries().length > 0)
+      return (this.queryViewModels().length > 0)
     }.bind(this));
   }
   

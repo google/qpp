@@ -23,9 +23,10 @@
     this.treeRoot = ko.observable({traceData: function(){}});
     this.project = panel.project;
 
-    this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);  // wired to editor token
-    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);    // wired to token viewed
-    this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this, panel);  // wired to token viewed.
+    this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);        // wired to editor token
+    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);        // wired to token viewed
+    this.queryProvider = new QuerypointPanel.TokenQueryProvider(this.tokenViewModel, this.project);  // wired to token viewed.
+    this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this.queryProvider, panel);  
     this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, panel);
 
     this.currentLocation = ko.computed(function() {

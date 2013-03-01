@@ -37,6 +37,7 @@
 <script src="TokenViewModel.js"></script>
 <script src="TraceViewModel.js"></script>
 <script src="QueryViewModel.js"></script>
+<script src="TokenQueryProvider.js"></script>
 <script src="FileViewModel.js"></script>
 <script src="QuerypointPanel.js"></script>
 <script src="OnPanelOpen.js"></script>
@@ -99,18 +100,18 @@
         </div>
         <div class="dropDown" data-bind="with: eventTurn">
             <p data-bind="text: turnInformation"> </p>
-            <ul id="infoNav" data-bind="with: summary">
+            <ul id="infoNav" data-bind="if: summary">
                 <li>
-                    Function <a data-bind="text: functionName, attr:{'data-url': url}"></a>
+                    Function <a data-bind="text: summary().functionName, attr:{'data-url': summary().url}"></a>
                 </li>
                 <li>
-                triggered by <a data-bind="text: eventType"></a> on target
+                triggered by <a data-bind="text: summary().eventType"></a> on target
                 </li>
                 <li>
-                <a data-bind="text: target, event:{mouseover: $root.highlightElement, mouseout: $root.unhighlight}"></a>
+                <a data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
                     <ul>
-                        <li data-bind="event: {mousedown: $root.revealElement}"><a>Reveal</a></li>
-                        <li data-bind="event: {mousedown: $root.traceElement}"><a>Trace Element</a></li>
+                        <li data-bind="event: {mousedown: revealElement}"><a>Reveal</a></li>
+                        <li data-bind="event: {mousedown: traceElement}"><a>Trace Element</a></li>
                     </ul>
                 </li>
             </ul>
@@ -165,7 +166,7 @@
             </table>
             <div class="queryView">
               <div data-bind="if: queriesViewModel.hasQueries">
-                <div class="toolbar" data-bind="foreach: queriesViewModel.currentQueries">
+                <div class="toolbar" data-bind="foreach: queriesViewModel.queryViewModels">
                   <button class="command" data-bind="text: buttonName(), attr: {title: toolTip(), 'data-active': isActive}, click: activateQuery.bind($data, $parent)"></button>
                 </div>
               </div>
