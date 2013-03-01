@@ -41,8 +41,8 @@
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function InsertVariableForExpressionTransformer(generateFileName) {
-    Querypoint.InsertingTransformer.call(this, generateFileName);
+  function InsertVariableForExpressionTransformer() {
+    Querypoint.InsertingTransformer.call(this);
   }
 
   InsertVariableForExpressionTransformer.prototype =  {

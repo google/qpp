@@ -10,7 +10,6 @@
   })
 
   Querypoint.AllExpressionsQuery = function(tree, project) {
-    this.generateFileName = project.generateFileName;
     Querypoint.Query.call(this);
     this.tree = tree;
   }
@@ -55,7 +54,7 @@
     },
     
     activate: function() {
-      this._transformer = new Querypoint.LinearizeTransformer(this.generateFileName);
+      this._transformer = new Querypoint.LinearizeTransformer();
     },
 
     tracePromptText: function() {

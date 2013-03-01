@@ -101,10 +101,6 @@
       }.bind(this));
     },
 
-    generateFileName: function (location) {
-        return location ? location.start.source.name : "internal";
-    },
-
     treeFinder: function() {
       return Querypoint.FindInTree;
     },
@@ -199,5 +195,9 @@
 
   window.Querypoint = window.Querypoint || {};
   window.Querypoint.QPProject = QPProject;
+  window.Querypoint.generateFileName =function (location) {
+    return location ? location.start.source.name : "internal";
+  };
+
 
 }());

@@ -26,7 +26,6 @@
     this.identifier = identifierTree.value;
     console.assert(typeof this.identifier === 'string'); 
     this.tree = tree;
-    this._generateFileName = project.generateFileName;
   }
     
   Querypoint.ValueChangeQuery.ifAvailableFor = function(tree, project) {
@@ -58,8 +57,8 @@
     },
     
     activate: function() {
-      this._transformer = new Querypoint.ValueChangeQueryTransformer(this._generateFileName);
-      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, this._generateFileName, this.tree);
+      this._transformer = new Querypoint.ValueChangeQueryTransformer();
+      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, this.tree);
       this.tree.location.query = this;
     },
 

@@ -37,15 +37,13 @@
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function InsertingTransformer(generateFileName) {
+  function InsertingTransformer() {
     ParseTreeTransformer.call(this);
     this.insertions = [];      // statements to be added to this block
     this.expressionStack = []; // tracks compound expressions
     this.insertionStack = [];  // insertions waiting for inner blocks to exit
     this.blockStack = [];      // tracks nest blocks
     this.insertAbove = this.insertAbove.bind(this);
-
-    this._generateFileName = generateFileName;
   }
 
   InsertingTransformer.prototype = {

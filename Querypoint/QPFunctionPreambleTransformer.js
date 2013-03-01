@@ -25,8 +25,7 @@
   var TokenType = traceur.syntax.TokenType;
   var Program = traceur.syntax.trees.Program;
 
-  var QPFunctionPreambleTransformer = Querypoint.QPFunctionPreambleTransformer = function(generateFileName) {
-    this.generateFileName = generateFileName;
+  var QPFunctionPreambleTransformer = Querypoint.QPFunctionPreambleTransformer = function() {
     this.functionLocations = [];       // tree.location for all functions parsed 
   }
 
@@ -38,7 +37,7 @@
     // window.__qp.functions["<file_name>"]
     return createMemberLookupExpression(
       createMemberExpression('window', '__qp', 'functions'),
-      createStringLiteral(this.generateFileName(location))
+      createStringLiteral(Querypoint.generateFileName(location))
     );
   }
 

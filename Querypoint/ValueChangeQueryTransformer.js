@@ -114,10 +114,9 @@
       return ifStatement;
   };
 
-  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(propertyKey, generateFileName, tree) {
+  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(propertyKey, tree) {
     this.propertyKey = propertyKey;
-    this.generateFileName = generateFileName;
-    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
+    Querypoint.InsertVariableForExpressionTransformer.call(this);
     this.propertyAccessExpressionStart = tree.location.start.offset;
     this.propertyAccessExpressionEnd = tree.location.end.offset;
   }
@@ -209,9 +208,8 @@
     },
   };
 
-  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey, generateFileName) {
-    this.generateFileName = generateFileName;
-    Querypoint.InsertVariableForExpressionTransformer.call(this, generateFileName);
+  var ValueChangeQueryTransformer = Querypoint.ValueChangeQueryTransformer = function(propertyKey) {
+    Querypoint.InsertVariableForExpressionTransformer.call(this);
     this.propertyKey = propertyKey;
   }
 
