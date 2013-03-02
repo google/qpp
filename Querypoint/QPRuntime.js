@@ -129,7 +129,7 @@
       var eventObject = args[0];    
       var targetInfo = '';
       if (eventObject.target) {
-         targetInfo = getSelectorUniqueToElement(eventObject.target)
+         targetInfo = getSelectorUniqueToElement(eventObject.target);
          startInfo.target = eventObject.target;
       }
 
@@ -290,6 +290,7 @@
 
     function getSelectorUniqueToElement(element) {
       var path;
+      if (element.nodeName === '#document') return '#document';
       while (element) {
           var name = element.localName;
           if (!name) break;
