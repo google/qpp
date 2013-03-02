@@ -109,10 +109,10 @@
                 triggered by <a data-bind="text: summary().eventType"></a> on target
                 </li>
                 <li>
-                <a data-bind="text: summary().target, event:{mouseover: $root.logScrubber.highlightElement, mouseout: $root.logScrubber.unhighlight}"></a>
+                <a data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
                     <ul>
-                        <li data-bind="event: {mousedown: $root.logScrubber.revealElement}"><a>Reveal</a></li>
-                        <li data-bind="event: {mousedown: $root.logScrubber.traceElement}"><a>Trace Element</a></li>
+                        <li data-bind="event: {mousedown: revealElement}"><a>Reveal</a></li>
+                        <li data-bind="event: {mousedown: traceElement}"><a>Trace Element</a></li>
                     </ul>
                 </li>
             </ul>

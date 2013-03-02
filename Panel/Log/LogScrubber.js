@@ -94,7 +94,7 @@
 
     highlightElement: function(){
         var DOM, highlightConfig, selector;
-        selector = this.target;
+        selector = this.summary().target;
         if (!selector) {
           return;
         }
