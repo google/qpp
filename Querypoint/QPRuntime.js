@@ -277,7 +277,7 @@
       if (debug_in_page) console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
 
-    function setTraceElement(selector, propertyKeys, tracedObjectIndex) {
+    function setTracedElement(selector, propertyKeys, tracedObjectIndex) {
       var element = document.querySelector(selector);
       if (element) {
         propertyKeys.forEach(function(propertyKey) {
@@ -340,6 +340,7 @@
         _propertiesTraced: [],
         trace: trace,
         setTracedPropertyObject: setTracedPropertyObject, // store the traced object by property
+        setTracedElement: setTracedElement,               // store traced object by selector and property
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object
         startTurn: startTurn,  // standard turn marking 
         endTurn: endTurn,

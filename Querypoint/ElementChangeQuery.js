@@ -38,7 +38,7 @@
     activate: function(queryIndex) {
       this._queryIndex = queryIndex;
       this._transformer = new Querypoint.ValueChangeQueryTransformer();
-      this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(this._selector, this._properties, this.queryIndex);
+      this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(this._selector, this._properties, this._queryIndex);
     },
 
     transformParseTree: function(tree) {

@@ -88,11 +88,11 @@
     },
 
     _setTraced: function(propertyKey) {
-      // window.__qp.setTraced(<propertyKey>);
+      // window.__qp.setTracedElement(selector, <propertyKey>, queryNumber);
       var setTracedStatement =
         createExpressionStatement(
           createCallExpression(
-            createMemberExpression('window', '__qp', 'setTraced'),
+            createMemberExpression('window', '__qp', 'setTracedElement'),
             createArgumentList(
               createStringLiteral(this._selector),
               createStringLiteral(propertyKey),
