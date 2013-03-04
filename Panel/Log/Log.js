@@ -111,6 +111,7 @@
       }
       messageSource.load = this._reloadCount;
       messageSource.turn = this._turn;
+      if (messageSource.load && messageSource.turn == 1) messageSource.load += 1;
       messageSource.event = this._currentEvent;
       return messageSource; 
     },
