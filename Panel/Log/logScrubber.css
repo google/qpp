@@ -223,7 +223,7 @@
     display: none;
 }
 
-.dropDown{
+.eventTurn{
     line-height: 15px;
     position: absolute;
     top: 15px;
@@ -239,42 +239,42 @@
     padding: 8px;
 }
 
-.dropDown .messages{
+.eventTurn .messages{
     max-height: 150px;
     overflow-y: scroll;
 }
 
-.dropDown p.message{
+.eventTurn p.message{
   margin: 0;
   color: rgb(141, 141, 134);
   font-size: small;
 }
 
-.dropDown p.message[severity="error"] {
+.eventTurn p.message[severity="error"] {
   color: rgb(255, 0, 0);
 }
 
-.dropDown p.message[severity="warning"] {
+.eventTurn p.message[severity="warning"] {
   color: rgb(255, 208, 69);
 }
 
-.dropDown .messages::-webkit-scrollbar{
+.eventTurn .messages::-webkit-scrollbar{
     width: 8px;
     height: 16px;
 }
 
-.dropDown .messages::-webkit-scrollbar-thumb{
+.eventTurn .messages::-webkit-scrollbar-thumb{
     background-color: rgba(248,248,242,0.5);
     -webkit-box-shadow: inset 1px 1px 0 rgba(39,40,34,0.10),inset 0 -1px 0 rgba(39,40,34,0.07);
 }
 
-.dropDown .messages::-webkit-scrollbar-button{
+.eventTurn .messages::-webkit-scrollbar-button{
     width: 0;
     height: 0;
     display: none;
 }
 
-.dropDown .messages::-webkit-scrollbar-corner{
+.eventTurn .messages::-webkit-scrollbar-corner{
     background-color: rgba(248,248,242,0.2);
 }
 
@@ -282,7 +282,7 @@ table.messagesByLoadNumber {
     margin-top: 500px;
 }
 
-#infoNav {
+.eventTurn_summary {
     margin-bottom: 15px;
     margin-left: -10px;
     padding: 0;
@@ -293,7 +293,7 @@ table.messagesByLoadNumber {
     z-index: 100;
 }
 
-#infoNav li {
+.eventTurn_summary li {
     margin-left: 8px;
     float: left;
     position: relative;
@@ -301,16 +301,16 @@ table.messagesByLoadNumber {
     cursor: default;
 }
 
-#infoNav a {
+.eventTurn_summary a {
     color: #f8f8f2;
 }
 
-#infoNav a:hover {
+.eventTurn_summary a:hover {
     color: #f8f8f2;
     text-decoration: underline;
 }
 
-#infoNav ul {
+.eventTurn_summary ul {
     list-style: none;
     position: absolute;
     left: -9999px;
@@ -319,24 +319,24 @@ table.messagesByLoadNumber {
     padding: 3px;
 }
 
-#infoNav ul li {
+.eventTurn_summary ul li {
     padding-top: 1px;
     float: none;
 }
 
-#infoNav ul a {
+.eventTurn_summary ul a {
     white-space: nowrap;
 }
 
-#infoNav li:hover ul {
+.eventTurn_summary li:hover ul {
     left: 0px;
 }
 
-#infoNav li:hover a {
+.eventTurn_summary li:hover a {
     text-decoration: none;
 }
 
-#infoNav li:hover ul a {
+.eventTurn_summary li:hover ul a {
     text-decoration: none;
 }
 

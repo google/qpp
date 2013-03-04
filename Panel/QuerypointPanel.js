@@ -139,7 +139,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
     }
   });
 
-  var dropDown = document.querySelector('.dropDown');
+  var dropDown = document.querySelector('.eventTurn');
 
   var currentLoad = document.querySelector('.currentLoad');
   var nextLoad = document.querySelector('.nextLoad');
@@ -557,9 +557,9 @@ QuerypointPanel.Panel.prototype = {
 
   turnInfo: function(){
       if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-      var dropDown = document.querySelector('.dropDown');
+      var dropDown = document.querySelector('.eventTurn');
       var loadElement = document.querySelector('.loadList');
-      var messages = document.querySelector('.dropDown .messages');
+      var messages = document.querySelector('.eventTurn .messages');
       dropDown.style.display = 'block';
       loadElement.style.display = 'none';
       QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
