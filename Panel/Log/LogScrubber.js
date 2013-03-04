@@ -64,7 +64,7 @@
         var messages = [];
         if (turns) {
           var turnIndex = eventTurn.showTurn() - 1;
-          var turn = turns[turnIndex];
+          var turn = turns()[turnIndex];
           if (turn)
             return turn.messages();
         }
