@@ -5,12 +5,15 @@
 
   'use strict';
 
-  Querypoint.ElementChangeQuery = function(selector) {
+  Querypoint.ElementChangeQuery = function(selector, tree) {
     this._selector = selector;
+    this._tree = tree;
   }
 
-  Querypoint.ElementChangeQuery.ifAvailableFor = function(selector) {
-    return new Querypoint.ElementChangeQuery(selector);
+  Querypoint.ElementChangeQuery.ifAvailableFor = function(project, selector, functionInfo) {
+    var tree = project.find(functionInfo.filename, functionInfo.startOffset - 1);
+    if (tree)
+      return new Querypoint.ElementChangeQuery(selector, tree);
   }
 
   Querypoint.ElementChangeQuery.prototype = {
@@ -26,11 +29,7 @@
     buttonName: function() {
       return 'traceElement';
     },
-    
-    iconText: function() {
-      return 'Trace Element';
-    },
-    
+
     toolTip: function() {
       return "Trace the changes to the target element";
     },
@@ -39,6 +38,7 @@
       this._queryIndex = queryIndex;
       this._transformer = new Querypoint.ValueChangeQueryTransformer();
       this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(this._selector, this._properties, this._queryIndex);
+      this._tree.location.query = this;
     },
 
     transformParseTree: function(tree) {
@@ -59,7 +59,8 @@
       return src;
     },
 
-    extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
+    extractTracepoints: function(fileViewModel, onTracepoint) {
+      var query = this;
       function onEval(result, isException) {
          if (!isException && result && result instanceof Array) {
           var changes = result;
@@ -67,19 +68,19 @@
             var trace = change;
             if (trace.valueType === 'undefined')
               trace.value = 'undefined';
-            trace.query = this;
+            trace.query = query;
             trace.load = fileViewModel.project.numberOfReloads;
             trace.activation = change.activationCount;
             onTracepoint(trace);  
-          }.bind(this));      
+          });      
         } else {
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var tracedObjectIndex = this._queryIndex;
-      this._properties.forEach(function(property){
+      var tracedObjectIndex = query._queryIndex;
+      query._properties.forEach(function(property){
         var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + property + '\",' + tracedObjectIndex + ')';
-        chrome.devtools.inspectedWindow.eval(expr, onEval.bind(this));        
+        chrome.devtools.inspectedWindow.eval(expr, onEval);        
       });
     },
 

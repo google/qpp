@@ -25,7 +25,7 @@
     Querypoint.Query.call(this);
     this.identifier = identifierTree.value;
     console.assert(typeof this.identifier === 'string'); 
-    this.tree = tree;
+    this._tree = tree;
   }
     
   Querypoint.ValueChangeQuery.ifAvailableFor = function(tree, project) {
@@ -55,12 +55,16 @@
     toolTip: function() {
       return "Trace the changes to the current expression and report the last one";
     },
+        
+    targetTree: function() {
+      return this._tree;
+    },
     
     activate: function(queryIndex) {
       this._transformer = new Querypoint.ValueChangeQueryTransformer();
       this._queryIndex = queryIndex;
-      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, queryIndex, this.tree);
-      this.tree.location.query = this;
+      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, queryIndex, this._tree);
+      this._tree.location.query = this;
     },
 
     tracePromptText: function() {
@@ -76,7 +80,7 @@
         tree.hasValueChangeTransform = true;
       }
       // This transformation is unique for each query
-      if (this.tree.location.start.source.name === tree.location.start.source.name) {
+      if (this._tree.location.start.source.name === tree.location.start.source.name) {
           delete this._setTracedPropertyObjectTransformer.found;   
           tree = this._setTracedPropertyObjectTransformer.transformAny(tree);
           if (!this._setTracedPropertyObjectTransformer.found) 
@@ -94,7 +98,7 @@
     },
 
     // Pull trace results out of the page for this querypoint
-    extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
+    extractTracepoints: function(fileViewModel, onTracepoint) {
       function onEval(result, isException) {
          if (!isException && result && result instanceof Array) {
           var changes = result;

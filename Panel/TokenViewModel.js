@@ -31,8 +31,9 @@
 
     }.bind(this));  // do not throttle
     
+    this.setTokenTree = ko.observable();
     
-    this.tokenTree = ko.computed(function() {
+    this.eventedTokenTree = ko.computed(function() {
       var tokenEvent = this.tokenEvent();
       if (!tokenEvent || !this._fileViewModel.sourceFile())
           return; 
@@ -40,25 +41,29 @@
       var line = this.tokenEvent().start.line;
       var offsetOfLine = this._fileViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
       var tokenOffset = offsetOfLine + tokenEvent.start.column;
-      var tokenTree = this._fileViewModel.project.treeFinder().byOffset(this._fileViewModel.treeRoot(), tokenOffset);
-      if (tokenTree) {
-        var traces = tokenTree.location.trace;
-        if (debug) {
-          var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
-          var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
-          var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
-          console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
-        }
+      var eventedTokenTree = this._fileViewModel.project.treeFinder().byOffset(this._fileViewModel.treeRoot(), tokenOffset);
+      if (debug && eventedTokenTree) {
+        var traces = eventedTokenTree.location.trace;
+        var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
+        var treeLog = eventedTokenTree.type + '@' + eventedTokenTree.location.start.offset + '-' + eventedTokenTree.location.end.offset;
+        var varIdLog =  traces ? " varId " + eventedTokenTree.location.varId : "";
+        console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
+      } else if (debug) {
+        console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
+      }
+      this.setTokenTree(eventedTokenTree);
+      return eventedTokenTree;
+    }.bind(this));
 
-        var tokenBoxData =  {
-          token: tokenEvent.token, 
+    this.tokenTree = ko.computed(function(){
+      var tokenTree = this.setTokenTree();
+      if (tokenTree) {
+        var tokenBoxData = {
           start: tokenTree.location.start, 
           end: tokenTree.location.end
         };
         this._fileViewModel.editor().drawTokenBox(tokenBoxData);
-      } else {
-        console.warn("No tree at offset " + tokenOffset + ' for token ' + tokenLog);
-      }
+      } 
       return tokenTree;
     }.bind(this)).extend({ throttle: 1 });
 

@@ -56,6 +56,9 @@ function whenSelectorAll(selector, text, then) {
 function clickSelector(selector, text, then) {
   ExtensionPanelTestAPI.clickSelector(selector, text, then);
 }
+function mouseOverSelector(selector, text, then) {
+  ExtensionPanelTestAPI.mouseOverSelector(selector, text, then);
+}
 function keyInDevtools(selector, text, keyDescriptor, then) {
   DevtoolsWindowTestAPI.keySelector(selector, text, keyDescriptor, then);
 }

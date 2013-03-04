@@ -56,6 +56,10 @@
     activate: function() {
       this._transformer = new Querypoint.LinearizeTransformer();
     },
+    
+    targetTree: function() {
+      return this.tree;
+    },
 
     tracePromptText: function() {
       return "(awaiting execution)";
@@ -76,7 +80,7 @@
     },
     
     // Pull trace results out of the page for this querypoint
-    extractTracepoints: function(fileViewModel, currentTree, onTracepoint) {
+    extractTracepoints: function(fileViewModel, onTracepoint) {
       var fileName = fileViewModel.treeRoot().location.start.source.name;
       function onEval(traceData, isException) {
         if (debug)

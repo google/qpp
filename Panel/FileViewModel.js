@@ -83,21 +83,17 @@
     },
 
     update: function(turn) {
-      var treeRoot = this.treeRoot();
-      if (treeRoot) {
-        var treeInView = this.tokenViewModel.tokenTree();
-        if (!treeInView) 
-            treeInView = treeRoot;
-       
-        this.tracepoints.removeAll();
-        this._panel.tracequeries().forEach(function(tq){
-          tq.extractTracepoints(this, treeInView, function (tracepoint){
-            if (tracepoint) {
-              this.tracepoints.push(tracepoint);
-            } // else no data?
-          }.bind(this));
+      this.tracepoints.removeAll();
+      var tracequeries = this._panel.tracequeries();
+      tracequeries.forEach(function(tq){
+        tq.extractTracepoints(this, function (tracepoint){
+          if (tracepoint) {
+            this.tracepoints.push(tracepoint);
+          } 
         }.bind(this));
-      }
+      }.bind(this));
+      var lastTracequery = tracequeries[tracequeries.length - 1];  
+      this.tokenViewModel.setTokenTree(lastTracequery.targetTree());
     }
 
   };

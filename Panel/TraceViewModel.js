@@ -37,7 +37,7 @@
           
           var treeTracepoints = [];
           this._fileViewModel.tracepoints().reduce(function(treeTracepoints, tracepoint) {
-              if (tracepoint.query.tree === tree) treeTracepoints.push(tracepoint);
+              if (tracepoint.query.targetTree() === tree) treeTracepoints.push(tracepoint);
               return treeTracepoints;
           }, treeTracepoints);  
           
@@ -46,7 +46,7 @@
           
           var prompts = [];
           this._panel.tracequeries().reduce(function(prompts, query) {
-              if (query.tree === tree) prompts.push(query.tracePrompt());
+              if (query.targetTree() === tree) prompts.push(query.tracePrompt());
               return prompts;
           }, prompts);
           

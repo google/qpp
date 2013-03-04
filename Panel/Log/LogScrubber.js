@@ -81,14 +81,12 @@
 
     traceElement: function(eventTurn){
       console.log("trace target of turn " + this.showTurn(), eventTurn);
-      var selector = eventTurn.summary().target;
-      this.query = this.elementQueryProvider.getQueriesBySelector(selector)[0];
-
+      var summary = eventTurn.summary(); 
+      var selector = summary.target;
+      var functionURL = summary.url;
+      this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
       this.query.activate(this._tracequeries().length);
-
-      // project -> query
       this._tracequeries.push(this.query);
-
     },
 
     highlightElement: function(){

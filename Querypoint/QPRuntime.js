@@ -292,6 +292,8 @@
       bySelector[selector] = bySelector[selector] || [];
       bySelector[selector].push(function _setTracedElement(element) {
         setTracedPropertyObject(element, propertyKey, tracedObjectIndex);
+        if (!window.__qp.isTraced(propertyKey))
+          window.__qp.setTraced(propertyKey);
       });
       if (debug_in_page) 
         console.log('QPRuntime.setTracedElement ' + selector + 'key ' + propertyKey + ' index ' + tracedObjectIndex + ': ' + bySelector[selector].length);

@@ -36,7 +36,7 @@
     activateQuery: function(fileViewModel) {
       if (this.isActive()) return;
       // tree -> query
-      this.query.setQueryOnTree(this.query.tree, this.query);
+      this.query.setQueryOnTree(this.query.targetTree(), this.query);
       
       this.query.activate(this.panel.tracequeries.length);
 

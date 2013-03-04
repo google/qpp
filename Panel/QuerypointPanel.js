@@ -32,6 +32,19 @@
     return filename + '?start=' + startOffset + '&end=' + endOffset + '&';
   },
 
+  QuerypointPanel.reFileURL = /([^\?]*)\?start=([^&]*)&end=([^&]*)&/;
+  
+  QuerypointPanel.parseFileURL = function(fileURL) {
+    var m = QuerypointPanel.reFileURL.exec(fileURL);
+    if (m) {
+      return {
+        filename: m[1],
+        startOffset: parseInt(m[2], 10),
+        endOffset: parseInt(m[3], 10)
+      };
+    }
+  },
+
 /**
  * @param panel {ExtensionPanel} devtools panel
  * @param panel_window {Window} the content window of the extension panel

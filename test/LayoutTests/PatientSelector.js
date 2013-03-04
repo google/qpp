@@ -175,9 +175,9 @@ window.PatientSelector = (function(){
             } 
         },
 
-        _click: function(elt, callback) {
+        _mouseEvent: function(type, elt, callback) {
             function onClick(event) {
-                elt.removeEventListener('click', onClick);
+                elt.removeEventListener(type, onClick);
                 if (callback) {  
                     // allow the click handler to fire before next test step
                     setTimeout(function() {  
@@ -185,19 +185,27 @@ window.PatientSelector = (function(){
                     });    
                 }
             }
-            elt.addEventListener('click', onClick);
+            elt.addEventListener(type, onClick);
             var event = document.createEvent("MouseEvent");
-            event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            event.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             elt.dispatchEvent(event);
         },
 
-        clickSelector: function(selector, textToMatch, callback) {
-            if (debug) console.log("....PatientSelector.clickSelector(" + selector + ', ' + textToMatch + ')');
+        mouseToSelector: function(type, selector, textToMatch, callback) {
+            if (debug) console.log("....PatientSelector."+type+"Selector(" + selector + ', ' + textToMatch + ')');
             PatientSelector.whenSelectorAll(selector, textToMatch, function() {
-                PatientSelector._click(PatientSelector.hits[0], callback);
+                PatientSelector._mouseEvent(type, PatientSelector.hits[0], callback);
                 if (debug) 
-                    console.log("....PatientSelector.clickSelector hit ", PatientSelector.hits[0])
+                    console.log("....PatientSelector."+type+"Selector hit ", PatientSelector.hits[0])
             }.bind(PatientSelector));
+        },
+
+        clickSelector: function(selector, textToMatch, callback) {
+            PatientSelector.mouseToSelector('click', selector, textToMatch, callback);
+        },
+
+        mouseOverSelector: function(selector, textToMatch, callback) {
+            PatientSelector.mouseToSelector('mouseover', selector, textToMatch, callback);
         },
 
         _key: function(keyDescriptor, elt, callback) {
