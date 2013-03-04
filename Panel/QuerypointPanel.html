@@ -183,7 +183,7 @@
               <div data-active="true" data-bind="css: {hide:  !tokenViewModel.followingTokens()}">Selecting Syntax Tree; Focus Editor to Lock</div>
               <div data-bind="css: {hide:  tokenViewModel.followingTokens()}">Click to Select Another Syntax Tree</div>
           </a>
-          <p class="fileViewModel_syncState" data-bind="text: (currentLocation() ? 'ready' : 'updating')">Not Yet Updated</p>
+          <p class="fileViewModel_syncState" data-bind="text: (currentLocation() ? tokenViewModel.tokenTree().type : 'updating')">Not Yet Updated</p>
           <!-- <div class="tracepoints">
             <p><span data-bind="tokenViewModel.tracepoints().length"></span> tracepoints in this file</p>
           </div> -->
