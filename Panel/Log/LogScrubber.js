@@ -104,19 +104,22 @@
             marginColor: {r: 0, g: 0, b: 255, a: 0.4},
             paddingColor: {r: 0, g: 0, b: 255, a: 0.4},
         }
-        DOM.getDocument(function(root){
+        DOM.getDocument(function(error, root){
             if (selector === '#document'){
-                DOM.highlightNode(highlightConfig, root.nodeId, '', function(){});
+                DOM.highlightNode(highlightConfig, root.nodeId, '');
             } else {
-                DOM.querySelector(root.nodeId, selector, function(node){
-                    DOM.highlightNode(highlightConfig, node, '', function(){});
+                DOM.querySelector(root.nodeId, selector, function(error, node){
+                    DOM.highlightNode(highlightConfig, node, '', function(error){
+                        if (debug && error) console.error('LogScrubber.highlightElement FAILED:', error);
+                        // else just ignore the error, occurs in testing
+                    });
                 });
             }
         });
     },
 
     unhighlight: function(){
-        chrome.devtools.protocol.DOM.prototype.hideHighlight( function(){} );
+        chrome.devtools.protocol.DOM.prototype.hideHighlight( );
     }
 
   }
