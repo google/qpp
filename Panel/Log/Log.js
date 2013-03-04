@@ -139,6 +139,7 @@
       messageSource.severity = messageSource.severity || messageSource.level;
       
       if (this.currentReload.load !== messageSource.load) {
+      QuerypointPanel.OnPanelOpen.panel._clearMessages();
         this.currentReload = this._reloadRow(messageSource);
         this.currentTurn = this.currentReload.turns()[0];
         this._logScrubber.showLoad().next = this.currentReload;

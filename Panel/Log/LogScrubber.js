@@ -154,7 +154,16 @@
       }.bind(this));
 
       this.displayLoad = function(object){
+        var button = document.querySelector('.recordIndicator');
+        var marker = document.querySelector('.recordMarker');
+        if (button.classList.contains('on')) {
+            marker.innerHTML = '&#x25B6';
+            QuerypointPanel.OnPanelOpen.panel.recordData.end = QuerypointPanel.OnPanelOpen.panel.logScrubber.showLoad().turns().length;
+            button.classList.toggle('on');
+        }
         self.showLoad(object);
+        QuerypointPanel.OnPanelOpen.panel.postMessages([]);
+        QuerypointPanel.OnPanelOpen.panel.preMessages(object.messages);
         object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
       }
 

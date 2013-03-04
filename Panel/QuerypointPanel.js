@@ -74,6 +74,11 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this._addMessage = function(message){
     panel.messages.push(message);
   }
+  this._clearMessages = function(){
+      panel.preMessages([]);
+      panel.postMessages([]);
+      panel.messages = panel.preMessages;
+  }
 
   this._setMessageWidth = function(width) {
     if (width > 10) width = 10;
@@ -567,6 +572,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   startRecord: function(){
+    if (this.logScrubber.showLoad().load != this.logScrubber.loadStarted()) return;
     var button = document.querySelector('.recordIndicator');
     var marker = document.querySelector('.recordMarker');
     if (button.classList.contains('on')) {
