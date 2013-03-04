@@ -22,7 +22,7 @@
         // So far we cannot transcode synchronously so we miss the 'load' event
         beforeArtificalLoadEvent = false;
         console.log("qp| loadEvent " + window.__qp_reloads);
-        var handlers = window.__qp.beforeArtificalLoadEventEventHandlers['load'];
+        var handlers = window.__qp.artificalLoadEventHandlers['load'];
         if (handlers) {
           if (debug_in_page) {
             var loadInfo = 'loaded: ' + !!window.__qp.loadEvent;
@@ -38,7 +38,7 @@
           return handlers.length;
         } else {
           if (debug_in_page) 
-            console.log("__qp_runtime.fireLoad no beforeArtificalLoadEventEventHandlers");
+            console.log("__qp_runtime.fireLoad no artificalLoadEventHandlers");
         }
       } catch(exc) {
         console.error("__qp_runtime.fireLoad fails "+exc, exc.stack);
@@ -127,17 +127,25 @@
     function startTurn(entryPointFunction, args) {
       var startInfo = getStartInfo(entryPointFunction, args);
       var eventObject = args[0];    
-      var targetInfo = '';
+      var targetSelector = '';
       if (eventObject.target) {
-         targetInfo = getSelectorUniqueToElement(eventObject.target);
-         startInfo.target = eventObject.target;
+        var element = eventObject.target;
+        startInfo.target = element;
+        targetSelector = getSelectorUniqueToElement(element);
+        if (targetSelector in window.__qp._traceSettersBySelector) {
+          var setters = window.__qp._traceSettersBySelector[targetSelector];
+          if (debug_in_page) console.log('QPRuntime.startTurn ' + setters.length + ' setters for ' + targetSelector);
+          setters.forEach(function(setter) {
+            setter.call(null, element)
+          });
+        }
       }
 
       window.__qp.turns.push(startInfo); 
       var turn = window.__qp.turn = window.__qp.turns.length; 
       var functionInfo = startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset;
       var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
-      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo +  ' ' + targetInfo);
+      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo +  ' ' + targetSelector);
       return turn;
     }
 
@@ -169,7 +177,7 @@
           console.log("__qp_runtime.addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         var wrapped = wrapEntryPoint(listener);
         if (beforeArtificalLoadEvent) {
-          var handlers = window.__qp.beforeArtificalLoadEventEventHandlers;
+          var handlers = window.__qp.artificalLoadEventHandlers;
           if (!handlers[type]) {
             handlers[type] = [wrapped];
           } else {
@@ -274,18 +282,19 @@
       // We are setting a property on an array here.
       window.__qp.propertyChanges[propertyKey].objectTraced = window.__qp.propertyChanges[propertyKey].objectTraced || {};
       window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectIndex] = object;
-      if (debug_in_page) console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
+      if (debug_in_page) 
+        console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
 
-    function setTracedElement(selector, propertyKeys, tracedObjectIndex) {
-      var element = document.querySelector(selector);
-      if (element) {
-        propertyKeys.forEach(function(propertyKey) {
-          setTracedPropertyObject(element, propertyKey, tracedObjectIndex);
-        });
-      } else {
-        throw new Error("QPRuntime.setTraceElement querySelector found no element for selector " + selector);
-      }
+    function setTracedElement(selector, propertyKey, tracedObjectIndex) {
+      // Triggered during startTurn
+      var bySelector = window.__qp._traceSettersBySelector;
+      bySelector[selector] = bySelector[selector] || [];
+      bySelector[selector].push(function _setTracedElement(element) {
+        setTracedPropertyObject(element, propertyKey, tracedObjectIndex);
+      });
+      if (debug_in_page) 
+        console.log('QPRuntime.setTracedElement ' + selector + 'key ' + propertyKey + ' index ' + tracedObjectIndex + ': ' + bySelector[selector].length);
     }
 
     function getSelectorUniqueToElement(element) {
@@ -325,7 +334,7 @@
     function initializeHiddenGlobalState() {
       window.__qp = {
         intercepts: {}, // keys are intercepted function names, values functions
-        beforeArtificalLoadEventEventHandlers: {}, // keys are event types, values are arrays of handlers
+        artificalLoadEventHandlers: {}, // keys are event types, values are arrays of handlers
         turns: [],      // stack of {fnc: <function>, args: []}
         turn: 0,        // turns.length set by wrapEntryPoint
         functions: {},  // keys filename, values {<function_ids>: [<activations>]}
@@ -341,6 +350,7 @@
         trace: trace,
         setTracedPropertyObject: setTracedPropertyObject, // store the traced object by property
         setTracedElement: setTracedElement,               // store traced object by selector and property
+        _traceSettersBySelector: {},
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object
         startTurn: startTurn,  // standard turn marking 
         endTurn: endTurn,
