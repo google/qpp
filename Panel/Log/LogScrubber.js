@@ -87,6 +87,7 @@
       this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
       this.query.activate(this._tracequeries().length);
       this._tracequeries.push(this.query);
+      eventTurn.close();
     },
 
     highlightElement: function(){
@@ -118,6 +119,11 @@
 
     unhighlight: function(){
         chrome.devtools.protocol.DOM.prototype.hideHighlight( );
+    },
+
+    close: function() {      
+      var eventTurnInfo = document.querySelector('.eventTurn');
+      eventTurnInfo.style.display = 'none';
     }
 
   }
