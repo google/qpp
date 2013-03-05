@@ -27,28 +27,28 @@
           if (debug_in_page) {
             var loadInfo = 'loaded: ' + !!window.__qp.loadEvent;
             var handlerInfo = handlers.length + ' handlers';
-            console.log('__qp_runtime.fireLoad,  ' + handlerInfo,  handlers.map(function(h){return h.toString()}));
+            console.log('qp| debug fireLoad,  ' + handlerInfo,  handlers.map(function(h){return h.toString()}));
           }
           handlers.forEach(function fireOne(handler){
             handler(window.__qp.loadEvent);
           });
           if (debug_in_page) {
-            console.log("__qp_runtime.fireLoad complete, fired "+handlers.length+" handlers");
+            console.log("qp| debug fireLoad complete, fired "+handlers.length+" handlers");
           }
           return handlers.length;
         } else {
           if (debug_in_page) 
-            console.log("__qp_runtime.fireLoad no artificalLoadEventHandlers");
+            console.log("qp| debug fireLoad no artificalLoadEventHandlers");
         }
       } catch(exc) {
-        console.error("__qp_runtime.fireLoad fails "+exc, exc.stack);
+        console.error("qp| debug fireLoad fails "+exc, exc.stack);
         return exc.toString();
       }
     }
 
     function fireLoadAfterRealLoad() {
       if (debug_in_page) 
-        console.log("__qp_runtime.fireLoadAfterRealLoad fireLoadTrigger " + !!fireLoadTrigger);
+        console.log("qp| debug fireLoadAfterRealLoad fireLoadTrigger " + !!fireLoadTrigger);
       if (fireLoadTrigger) 
         return fireLoadTrigger.call();
       else 
@@ -70,12 +70,12 @@
       window.addEventListener('load', function grabbedLoadEvent(event) {
         window.__qp.loadEvent = event;
         if (debug_in_page) 
-          console.log("__qp_runtime. grabLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
+          console.log("qp| debug  grabLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         fireLoadAfterRealLoad();
       });
       window.addEventListener('DOMContentLoaded', function(event) {
         window.__qp.DOMContentLoaded = event;
-        if (debug_in_page) console.log("__qp_runtime. grabLoadEvent DOMContentLoaded event, stored");
+        if (debug_in_page) console.log("qp| debug  grabLoadEvent DOMContentLoaded event, stored");
       });
     }
     
@@ -134,7 +134,7 @@
         targetSelector = getSelectorUniqueToElement(element);
         if (targetSelector in window.__qp._traceSettersBySelector) {
           var setters = window.__qp._traceSettersBySelector[targetSelector];
-          if (debug_in_page) console.log('QPRuntime.startTurn ' + setters.length + ' setters for ' + targetSelector);
+          if (debug_in_page) console.log('qp| debug QPRuntime.startTurn ' + setters.length + ' setters for ' + targetSelector);
           setters.forEach(function(setter) {
             setter.call(null, element)
           });
@@ -174,7 +174,7 @@
     function interceptEntryPoints() {
       window.addEventListener = function(type, listener, useCapture) {
        if (debug_in_page) 
-          console.log("__qp_runtime.addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
+          console.log("qp| debug addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         var wrapped = wrapEntryPoint(listener);
         if (beforeArtificalLoadEvent) {
           var handlers = window.__qp.artificalLoadEventHandlers;
@@ -184,7 +184,7 @@
             handlers[type].push(wrapped);
           }
           if (type !== 'load')
-            console.error('__qp_runtime.interceptEntryPoints not a load event, we fail!', type);  
+            console.error('qp| debug interceptEntryPoints not a load event, we fail!', type);  
         } else {
           // We've already passed the artifical load event, so don't delay the add call
           window.__qp.intercepts.addEventListener.call(this, type, wrapped, useCapture);
@@ -232,17 +232,17 @@
 
     function extractTracepoints(tps) {
       try {
-        if (debug_in_page) console.log("__qp_runtime.extractTracepoints", tps);
+        if (debug_in_page) console.log("qp| debug extractTracepoints", tps);
         return tps.map(function(tp) {
           var activation = tp.activations[tp.activationIndex - 1];
           if (debug_in_page) {
-            console.log("__qp_runtime.extractTracepoints tp", tp);
-            console.log('__qp_runtime.extractTracepoints activation', activation);
+            console.log("qp| debug extractTracepoints tp", tp);
+            console.log('qp| debug extractTracepoints activation', activation);
           }
           return formatTracepoint(findMatchingActivation(activation, tp));
         });
       } catch (exc) {
-        console.error('__qp_runtime.extractTracepoints failed '+exc, exc);
+        console.error('qp| debug extractTracepoints failed '+exc, exc);
         return exc.toString();
       }  
     }
@@ -251,29 +251,29 @@
     function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex) {
       if (debug_in_page) {
         if (window.__qp.propertyChanges[propertyKey]) 
-          console.log("reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
+          console.log("qp| debug reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
         else
-          console.error('reducePropertyChangesToTracedObject propertyChanges not Initialized for ' + propertyKey);
+          console.error('qp| debug reducePropertyChangesToTracedObject propertyChanges not Initialized for ' + propertyKey);
       }
       var changes = window.__qp.propertyChanges[propertyKey];
       if (!changes || !changes.length) {
-        if (debug_in_page) console.warn("__qp_runtime.reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectIndex);
+        if (debug_in_page) console.warn("qp| debug reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectIndex);
         return [];
       }
       if (!changes.objectTraced) {
-        if (debug_in_page) console.error("__qp_runtime.reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectIndex);
+        if (debug_in_page) console.error("qp| debug reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectIndex);
         return [];
       }
       var object = changes.objectTraced[tracedObjectIndex];
       var rawTracepoints = changes.reduce(
         function(ours, change) {
-          if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
+          if (debug_in_page) console.log("qp| debug reducePropertyChangesToTracedObject %o =?= %o", change.obj, object, change);
           if (change.obj === object) ours.push(change);
           return ours; 
         },
         []
       );
-      if (debug_in_page) console.log("__qp_runtime.reducePropertyChangesToTracedObject ends with " + rawTracepoints.length);
+      if (debug_in_page) console.log("qp| debug reducePropertyChangesToTracedObject ends with " + rawTracepoints.length);
       return extractTracepoints(rawTracepoints);
     }
 
@@ -283,7 +283,7 @@
       window.__qp.propertyChanges[propertyKey].objectTraced = window.__qp.propertyChanges[propertyKey].objectTraced || {};
       window.__qp.propertyChanges[propertyKey].objectTraced[tracedObjectIndex] = object;
       if (debug_in_page) 
-        console.log("__qp_runtime.setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
+        console.log("qp| debug setTracedPropertyObject: %o setting " + propertyKey, object, window.__qp.propertyChanges[propertyKey].objectTraced);
     }
 
     function setTracedElement(selector, propertyKey, tracedObjectIndex) {
@@ -296,7 +296,7 @@
           window.__qp.setTraced(propertyKey);
       });
       if (debug_in_page) 
-        console.log('QPRuntime.setTracedElement ' + selector + 'key ' + propertyKey + ' index ' + tracedObjectIndex + ': ' + bySelector[selector].length);
+        console.log('qp| debug QPRuntime.setTracedElement ' + selector + 'key ' + propertyKey + ' index ' + tracedObjectIndex + ': ' + bySelector[selector].length);
     }
 
     function getSelectorUniqueToElement(element) {
@@ -367,7 +367,7 @@
     
     function andWeBegin() {
       console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
-      if (debug_in_page) console.log("__qp_runtime.wrapEntryPoint: window.__qp: %o", window.__qp);    
+      if (debug_in_page) console.log("qp| debug wrapEntryPoint: window.__qp: %o", window.__qp);    
     }
 
     var beginWrapped = wrapEntryPoint(andWeBegin);
@@ -382,7 +382,7 @@
       return this;
     },
     runtimeSource: function(numberOfReloads) {
-      if (debug) console.log("QPRuntime creating runtime for load#" + numberOfReloads);
+      if (debug) console.log("qp| debug QPRuntime creating runtime for load#" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
         return '(' + fnc + '(' + debug + '));\n';
       });

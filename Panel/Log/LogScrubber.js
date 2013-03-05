@@ -164,7 +164,8 @@
         }
         self.showLoad(object);
         QuerypointPanel.OnPanelOpen.panel.postMessages([]);
-        QuerypointPanel.OnPanelOpen.panel.preMessages(object.messages);
+        var stored = object.messages().splice(0);
+        QuerypointPanel.OnPanelOpen.panel.preMessages(stored);
         object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
       }
 

@@ -104,6 +104,8 @@
           case 'script':
             this.project.addScript(segments[2]);
             break; 
+          case 'debug':
+            break;
           default: 
             console.error('unknown keyword: '+messageSource.text);
             break;
