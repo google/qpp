@@ -50,8 +50,6 @@
       if (!treeObjectMap)
         return [];
 
-      Querypoint.QPRuntime.initialize();
-
       return treeObjectMap.keys().map(function(file) {
         var tree = treeObjectMap.get(file);  
 
@@ -91,6 +89,7 @@
     },
 
     runInWebPage: function(treeObjectMap) {
+      Querypoint.QPRuntime.initialize();
       // inject the tracing source
       RemoteWebPageProject.prototype.runInWebPage.call(this, treeObjectMap);
       this.startRuntime();
