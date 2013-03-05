@@ -32,7 +32,7 @@
     function byOffset(offset, tree){
       if (tree.location) {
         var startOffset = tree.location.start.offset;
-        var endOffset = tree.location.end.offset - 1;
+        var endOffset = tree.location.end.offset;
         if (startOffset <= offset && offset <= endOffset) {
           return Math.max(Math.abs(endOffset - offset), Math.abs(startOffset - offset));
         } else {
@@ -64,15 +64,31 @@
         if (distance <= this._closest) {
           this._deepestTree = tree;
           this._closest = distance;
+          if (distance) { // try to get closer
+            ParseTreeVisitor.prototype.visitAny.call(this, tree);
+          } // else hit
         }
-        if (distance) { // try to get closer
-          ParseTreeVisitor.prototype.visitAny.call(this, tree);
-        } // else hit
-        return true;
       } else {
         // Don't visit childern
         return false;
       }
+    },
+
+    visitFunction: function(tree) {
+      this.visitAny(tree.name);
+      this.visitFormalParameterList(tree.formalParameterList);
+      this.visitAny(tree.functionBody);
+    },
+
+    visitFormalParameterList: function(tree) {
+      // Enlarge the hit zone to include the parens
+      var startOffset = tree.location.start.offset;
+      var endOffset = tree.location.end.offset;
+      tree.location.start.offset -= 1;
+      tree.location.end.offset += 1;
+      this.visitAny(tree);
+      tree.location.start.offset = startOffset;
+      tree.location.end.offset = endOffset;
     },
 
     visitList: function(list) {

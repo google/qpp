@@ -5,6 +5,10 @@
 (function() {
   "use strict";
   
+  var debug = DebugLogger.register('TokenViewModel', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  })
+
   QuerypointPanel.TokenViewModel = function(fileViewModel, panel) {
     this._fileViewModel = fileViewModel;
 
@@ -39,12 +43,11 @@
       var tokenTree = this._fileViewModel.project.treeFinder().byOffset(this._fileViewModel.treeRoot(), tokenOffset);
       if (tokenTree) {
         var traces = tokenTree.location.trace;
-        if (QuerypointPanel.TokenViewModel.debug) {
+        if (debug) {
           var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
           var treeLog = tokenTree.type + '@' + tokenTree.location.start.offset + '-' + tokenTree.location.end.offset;
           var varIdLog =  traces ? " varId " + tokenTree.location.varId : "";
-          if (QuerypointPanel.TokenViewModel.debug) 
-            console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
+          console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
         }
 
         var tokenBoxData =  {
@@ -119,8 +122,6 @@
       return leftOffset < 0 ? leftOffset : 0;
     };
   }
-
-  QuerypointPanel.TokenViewModel.debug = false;
   
   QuerypointPanel.TokenViewModel.prototype = {
 
