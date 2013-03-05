@@ -38,9 +38,8 @@ function test_lastChange() {
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
 
-  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '11');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:11:5');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
-
   AsyncMachine.runOp();
 }
 
