@@ -347,10 +347,10 @@ pre.traceBackground {
 .cm-s-monokai .qp-traces .CodeMirror-linenumber  {color: #d0d0d0;}
 .cm-s-monokai .qp-activations .CodeMirror-linenumber {color: rgb(6, 137, 255);}
 .cm-s-monokai .qp-highlight {
-   border-bottom: 2px solid #d0d0d0;
-   border-top: 2px solid #d0d0d0;
+   background-color: #FFE792;
+   color: #000000 !important;
    font-size: larger;
-   }
+}
 /* .qp-fade * {   I cannot get transitions to work
     border-bottom: none;
     transition: border-bottom 4s ease-in-out;
