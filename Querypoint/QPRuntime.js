@@ -365,13 +365,8 @@
     recordEntryPoints();
     interceptEntryPoints();
     
-    function andWeBegin() {
-      console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
-      if (debug_in_page) console.log("qp| debug wrapEntryPoint: window.__qp: %o", window.__qp);    
-    }
-
-    var beginWrapped = wrapEntryPoint(andWeBegin);
-    beginWrapped(new CustomEvent('BeginLoading'));
+    console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
+    if (debug_in_page) console.log("qp| debug runtime initialized: window.__qp: %o", window.__qp);    
   }; 
 
   Querypoint.QPRuntime = {
@@ -382,7 +377,7 @@
       return this;
     },
     runtimeSource: function(numberOfReloads) {
-      if (debug) console.log("qp| debug QPRuntime creating runtime for load#" + numberOfReloads);
+      if (debug) console.log("qp| debug QPRuntime creating runtime for load #" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
         return '(' + fnc + '(' + debug + '));\n';
       });

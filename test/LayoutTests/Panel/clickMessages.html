@@ -32,7 +32,7 @@ function test_clickMessage() {
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
   for(var i=0;i<30;i++) AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){} );
-  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱35');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '↱34');
 
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.eventIndicator[severity=error][turn=\'10\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "";} );
 
