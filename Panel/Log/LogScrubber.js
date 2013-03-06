@@ -30,7 +30,7 @@
           startOffset = functionTree.location.start.offset;
           endOffset = functionTree.location.end.offset;
         }
-        return QuerypointPanel.createFileURL(eventInfo.filename, startOffset, endOffset);
+        return project.createFileURL(eventInfo.filename, startOffset, endOffset);
       }
 
       this.summary = ko.computed(function(){
@@ -85,8 +85,11 @@
       var selector = summary.target;
       var functionURL = summary.url;
       this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
-      this.query.activate(this._tracequeries().length);
-      this._tracequeries.push(this.query);
+      if (this.query && !this.query.isActive()) {
+        this.query.activate(this._tracequeries().length);
+        this._tracequeries.push(this.query);        
+      }
+      // User has asked for an action, now show them where the results will appear.
       eventTurn.close();
     },
 

@@ -39,7 +39,12 @@
         });
         return found;
       }
-    }
+    },
+    
+    isActive: function() {
+      return this._isActive;
+    },
+
   };
 
 }());

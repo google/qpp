@@ -5,15 +5,17 @@
 
   'use strict';
 
-  Querypoint.ElementChangeQuery = function(selector, tree) {
+  Querypoint.ElementChangeQuery = function(selector, functionURL, tree) {
     this._selector = selector;
+    this._functionURL = functionURL;
     this._tree = tree;
   }
 
-  Querypoint.ElementChangeQuery.ifAvailableFor = function(project, selector, functionInfo) {
+  Querypoint.ElementChangeQuery.ifAvailableFor = function(project, selector, functionURL) {
+    var functionInfo = project.parseFileURL(functionURL);
     var tree = project.find(functionInfo.filename, functionInfo.startOffset - 1);
     if (tree)
-      return new Querypoint.ElementChangeQuery(selector, tree);
+      return new Querypoint.ElementChangeQuery(selector, functionURL, tree);
   }
 
   Querypoint.ElementChangeQuery.prototype = {
@@ -44,6 +46,12 @@
       this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(transformData);
       this._tree.location.query = this;
       this._isActive = true;
+    },
+
+    matches: function(ctor, queryData) {
+      return (ctor === Querypoint.ElementChangeQuery) && 
+        (queryData.selector === this._selector) &&
+        (queryData.functionURL === this._functionURL);
     },
 
     transformDescriptions: function() {

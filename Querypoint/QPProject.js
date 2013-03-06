@@ -122,6 +122,15 @@
         return this.treeFinder().byOffset(tree, offset);
     },
 
+    getMatchingQuery: function(ctor, queryData) {
+      var match; 
+      this.querypoints.tracequeries.some(function(query){
+        match = query.matches(ctor, queryData) ? query : undefined;
+        return match;
+      });
+      return match;
+    },
+
     addScript: function(url) {
       if (debug) console.log("QPProject got new script " + url);
     },
@@ -189,12 +198,30 @@
     lineModelTraceVisitor: function(sourceFile) {
       return new Querypoint.LineModelTraceVisitor(this, sourceFile);
     },
+    
     treeHangerTraceVisitor: function() {
       return new Querypoint.TreeHangerTraceVisitor(this);
-    }
+    },
     
-  };
+    createFileURL: function(filename, startOffset, endOffset) {
+      return filename + '?start=' + startOffset + '&end=' + endOffset + '&';
+    },
+  
+    parseFileURL: function(fileURL) {
+      var m = reFileURL.exec(fileURL);
+      if (m) {
+        return {
+          filename: m[1],
+          startOffset: parseInt(m[2], 10),
+          endOffset: parseInt(m[3], 10)
+        };
+      }
+    },
 
+  };
+  
+  var reFileURL = /([^\?]*)\?start=([^&]*)&end=([^&]*)&/;
+  
   window.Querypoint = window.Querypoint || {};
   window.Querypoint.QPProject = QPProject;
   window.Querypoint.generateFileName =function (location) {

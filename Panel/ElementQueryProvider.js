@@ -26,16 +26,21 @@
       if (!selector) 
         return [];
         
-      var provider = this;
-      var queries = provider._project.elementQueries.reduce(function(queries, queryClass) {
-        var functionInfo = QuerypointPanel.parseFileURL(functionURL);
-        if (functionInfo) {
-          var query = queryClass.ifAvailableFor(provider._project, selector, functionInfo);
+      var provider = this;  
+      var query;
+      provider._project.elementQueries.some(function(queryClass) {
+        query = provider._project.getMatchingQuery(queryClass, {selector: selector, functionURL: functionURL});
+        return query;
+      });  
+      if (query)
+        return [query];
+              
+      var queries = provider._project.elementQueries.reduce(function(queries, queryClass) {          
+          var query = queryClass.ifAvailableFor(provider._project, selector, functionURL);
           if (query)
-              queries.push(query);  
-        }
-        return queries;
-      }, []);
+            queries.push(query);  
+          return queries;
+        }, []);
       return queries;      
     }
   };

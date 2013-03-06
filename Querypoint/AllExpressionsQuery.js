@@ -61,12 +61,21 @@
       this._isActive = true;
     },
 
+    queryData: function() {
+      return {
+          filenames: Object.keys(Querypoint.AllExpressionsQuery.filesTraced)
+        };
+    },
+
+    matches: function(ctor, queryData) {
+      return (ctor === Querypoint.AllExpressionsQuery) &&
+        (queryData.filenames === this.queryData().filenames);
+    },
+
     transformDescriptions: function() {
       return [{
         ctor: 'LinearizeTransformer',
-        queryData: {
-          filenames: Object.keys(Querypoint.AllExpressionsQuery.filesTraced)
-        }
+        queryData: this.queryData()
       }];
     },
     

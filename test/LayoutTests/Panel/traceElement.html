@@ -36,6 +36,11 @@ function test_lastChange() {
   AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', 'I am not a bug');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
   AsyncMachine.pushOp(extractAttr, 'span.command', 'data-url');
+  // Verify issue 96, no duplicate traces
+  AsyncMachine.pushOp(mouseOverSelector, 'div.eventIndicator[severity="error"]', '');
+  AsyncMachine.pushOp(mouseOverSelector, 'a.eventInfo_target', 'button');
+  AsyncMachine.pushOp(clickSelector, 'li.eventInfo_target_trace', 'Trace');
+  AsyncMachine.pushOp(extractText, 'td.traceValue');
   AsyncMachine.runOp();
 }
 

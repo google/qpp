@@ -4,4 +4,5 @@ true
 true
 I am not a bug|I've been clicked 0 times
 http://localhost:8686/test/demo.js?start=638&end=654&|http://localhost:8686/test/demo.js?start=392&end=399&
+I am not a bug|I've been clicked 0 times
 
