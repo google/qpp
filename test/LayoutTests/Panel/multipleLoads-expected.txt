@@ -5,5 +5,5 @@ true
 prop in   var message = "I've been clicked " + obj.prop + " times";
 true
 true
-7
+6
 

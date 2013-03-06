@@ -88,7 +88,9 @@
               filename: segments[4],
               offset: segments[5],
               eventType: segments[6],
-              target: segments[7]
+              target: segments[7],
+              eventBubbles: segments[8] === 'true',
+              eventCancels: segments[9] === 'true'
             };
             var turnDetail;
             turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
@@ -155,7 +157,7 @@
       if (this.currentTurn.turn !== messageSource.turn) {
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
-        this._logScrubber.showLoad(this.currentReload);
+        if(this.currentReload.load !== this._logScrubber.showLoad().load) this._logScrubber.displayLoad(this.currentReload);
         //this.currentReload.messages.push({severity: 'turn', turn: this.currentTurn.turn});
         if (DEBUG){
           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);

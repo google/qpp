@@ -161,17 +161,29 @@
       }.bind(this));
 
       this.displayLoad = function(object){
+        var panel = QuerypointPanel.OnPanelOpen.panel;
         var button = document.querySelector('.recordIndicator');
         var marker = document.querySelector('.recordMarker');
-        if (button.classList.contains('on')) {
-            marker.innerHTML = '&#x25B6';
-            QuerypointPanel.OnPanelOpen.panel.recordData.end = QuerypointPanel.OnPanelOpen.panel.logScrubber.showLoad().turns().length;
-            button.classList.toggle('on');
+        if (button && button.classList.contains('on')) {
+            panel.recordData.stopRecording(button, marker, panel);
         }
+
+        var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
+        if (loadElement) loadElement.classList.remove('selectedLoad');
         self.showLoad(object);
-        QuerypointPanel.OnPanelOpen.panel.postMessages([]);
-        var stored = object.messages.slice(0);
-        QuerypointPanel.OnPanelOpen.panel.preMessages(stored);
+        loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
+        if (loadElement) loadElement.classList.add('selectedLoad');
+
+        if (panel.isCurrentLoad() ){
+            if (panel.recordData.start !== -1) {
+              marker = document.querySelector('.recordMarker');
+              marker.style.display = 'block';
+              marker.innerHTML = '&#x25B6';
+            }
+        } else {
+          panel.storedMessages(object.messages);
+        }
+
         object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
       }
 

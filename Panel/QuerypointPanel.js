@@ -59,12 +59,27 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   var panel = this;
 
   this.recordData = {
+      load: 0,
       start: -1,
       end:   0,
       play: function(){
-            for(var i = panel.recordData.start; i < panel.recordData.end; i++)
-                chrome.devtools.inspectedWindow.eval('var event = window.__qp.turns[' + i + '].args[0]; event.target.dispatchEvent(event);');
+        for (var i = panel.recordData.start; i < panel.recordData.end; i++){
+          var event = panel.recordData.load.turns()[i].event;
+          var command = 'var target = document.querySelector("' + event.target + '"); ';
+          command += 'var event = document.createEvent("Events"); ';
+          command += 'event.initEvent("' + event.eventType + '", ' + event.eventBubbles + ', ' + event.eventCancels + '); ';
+          command += 'target.dispatchEvent(event); ';
+          chrome.devtools.inspectedWindow.eval(command);
         }
+      },
+      stopRecording: function(button, marker, panel) {
+        marker.innerHTML = '&#x25B6';
+        panel.recordData.end = panel.logScrubber.showLoad().turns().length;
+        panel.messages = panel.postMessages;
+        marker.classList.remove('on');
+        button.classList.remove('on');
+        marker.onmousedown = null;
+      }
   }
 
   // Active queries are synced back to the project
@@ -80,8 +95,10 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
-  this.preMessages = ko.observableArray([]);
-  this.postMessages = ko.observableArray([]);
+  this.preMessages = ko.observableArray();
+  this.postMessages = ko.observableArray();
+  this.recordedMessages = ko.observableArray();
+  this.storedMessages = ko.observableArray();
   this.messages = this.preMessages;
 
   this._addMessage = function(message){
@@ -171,10 +188,18 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       } else {
           nextLoad.onmousedown = function() {
               var next = panel.logScrubber.showLoad().next;
-              panel.logScrubber.showLoad(next);
+              panel.logScrubber.displayLoad(next);
           };
           return panel.logScrubber.showLoad().load+1;
       }
+  });
+
+  this.isCurrentLoad = ko.computed( function(){
+    return panel.logScrubber.showLoad().load == panel.logScrubber.loadStarted();
+  });
+
+  this.isPastLoad = ko.computed( function(){
+    return panel.logScrubber.loadStarted() && (panel.logScrubber.showLoad().load != panel.logScrubber.loadStarted());
   });
 
   ko.applyBindings(this, logScrubberElement);
@@ -573,28 +598,38 @@ QuerypointPanel.Panel.prototype = {
   },
 
   startRecord: function(){
-    if (this.logScrubber.showLoad().load != this.logScrubber.loadStarted()) return;
+    var panel = this;
+    if (panel.logScrubber.showLoad().load != panel.logScrubber.loadStarted()) return;
     var button = document.querySelector('.recordIndicator');
     var marker = document.querySelector('.recordMarker');
     if (button.classList.contains('on')) {
-        marker.innerHTML = '&#x25B6';
-        this.recordData.end = this.logScrubber.showLoad().turns().length;
+        panel.recordData.stopRecording(button, marker, panel);
     } else {
         try{
-        var current = this.logScrubber.showLoad().messages.length;
+          var current = panel.logScrubber.showLoad().messages.length;
         } catch (err) {
             return;             // Load hasn't started
         }
-        for (var i = 0; i < this.postMessages().length; i++) this.preMessages().push(this.postMessages()[i]);
-        this.preMessages.valueHasMutated();
-        this.logScrubber.showLoad.valueHasMutated();
-        this.postMessages([]);
-        this.messages = this.postMessages;
-        this.recordData.start = this.logScrubber.showLoad().turns().length;
-        marker.innerHTML = 'x';
+        for (var i = 0; i < panel.recordedMessages().length; i++) panel.preMessages().push(panel.recordedMessages()[i]);
+        for (var i = 0; i < panel.postMessages().length; i++) panel.preMessages().push(panel.postMessages()[i]);
+        panel.preMessages.valueHasMutated();
+        panel.logScrubber.showLoad.valueHasMutated();
+        
+        panel.recordedMessages([]);
+        panel.postMessages([]);
+
+        panel.messages = panel.recordedMessages;
+
+        panel.recordData.load = panel.logScrubber.showLoad();
+        panel.recordData.start = panel.logScrubber.showLoad().turns().length;
+        panel.recordData.end = -1;
+        
+        marker.onmousedown = function(){ panel.recordData.stopRecording(button, marker, panel);};
+        marker.innerHTML = '&#9679;';
         marker.style.display = 'block';
+        marker.classList.add('on');
+        button.classList.add('on');
     }
-    button.classList.toggle('on');
   },
 
   // Event mouseout triggers when mouse goes into child nodes
@@ -608,6 +643,13 @@ QuerypointPanel.Panel.prototype = {
       element = element.parentNode;
     }
     return false;
+  },
+
+  selectLast: function(node){
+      if(!node.classList) return;
+      var element = document.querySelector('.selectedLoad');
+      if(element) element.classList.remove('selectedLoad');
+      node.classList.add('selectedLoad');
   }
 
 };

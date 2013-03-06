@@ -341,6 +341,7 @@ table.messagesByLoadNumber {
 }
 
 .recordIndicator, .recordMarker{
+    float: left;
     width: 10px;
     height: 15px;
     background-color: rgb(46, 156, 46);
@@ -352,16 +353,14 @@ table.messagesByLoadNumber {
     color: #272822;
 }
 
-.recordIndicator{
-    position: absolute;
-    right: 15px;
-}
-
 .recordMarker{
-    float: left;
     display: none;
 }
 
-.recordIndicator.on{
+.recordIndicator.on, .recordMarker.on{
     color: #F00;
+}
+
+.selectedLoad{
+    background-color: red;
 }

@@ -95,7 +95,7 @@
         <span class="helpInfo">
           Log Scrubber: click or drag to change log viewport
         </span>
-        <div class="loadList" data-bind="foreach: logScrubber.loads">
+        <div class="loadList" data-bind="foreach: {data: logScrubber.loads, afterAdd: selectLast}">
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.logScrubber.displayLoad}">
             </div>
         </div>
@@ -124,15 +124,25 @@
         </div>
         <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoad}"></div>
         <div class="overviewLog">
+            <!-- ko if: isCurrentLoad -->
             <!-- ko foreach: preMessages -->
             <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
             <!-- /ko -->
             <div class="recordMarker" data-bind="event:{mousedown: recordData.play }">x</div>
-            <!-- ko foreach: postMessages -->
+            <!-- ko foreach: recordedMessages -->
              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
             <!-- /ko -->
+            <div class="recordIndicator" data-bind="event:{mousedown: startRecord }">&#9679;</div>
+            <!-- ko foreach: postMessages -->
+            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: isPastLoad -->
+            <!-- ko foreach: storedMessages -->
+            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+            <!-- /ko -->
+            <!-- /ko -->
         </div>
-        <div class="recordIndicator" data-bind="event:{mousedown: startRecord }">&#9679;</div> 
         <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
       <!-- <span class="scrubberIndicator" title="TODO slide sideways to select visible log entries, up/down to resize log view"></span> -->
     </div>

@@ -145,7 +145,9 @@
       var turn = window.__qp.turn = window.__qp.turns.length; 
       var functionInfo = startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset;
       var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
-      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo +  ' ' + targetSelector);
+      var eventBubbles = eventObject.bubbles;
+      var eventCancels = eventObject.cancelable;
+      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo + ' ' + targetSelector + ' ' + eventBubbles + ' ' + eventCancels);
       return turn;
     }
 
