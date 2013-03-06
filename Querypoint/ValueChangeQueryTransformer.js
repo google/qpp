@@ -120,11 +120,23 @@
     Querypoint.InsertVariableForExpressionTransformer.call(this);
     this.propertyAccessExpressionStart = tree.location.start.offset;
     this.propertyAccessExpressionEnd = tree.location.end.offset;
+    this.propertyAccessName = tree.location.start.source.name;
   }
 
   SetTracedPropertyObjectTransformer.prototype = {
 
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
+        
+    transformTree: function(tree) {
+      // This transformation is unique for each query
+      if (this.propertyAccessName === tree.location.start.source.name) {
+          delete this.found;   
+          tree = this.transformAny(tree);
+          if (!this.found) 
+              throw new Error("ValueChangeQuery.transformParseTree unable to find object to trace");
+      }
+      return tree;
+    },
 
     transformAny: function(tree) {
       if (this.found)
@@ -220,6 +232,15 @@
   ValueChangeQueryTransformer.prototype = {
 
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
+    
+    transformTree: function(tree) {
+      if (!tree.hasValueChangeTransform) {
+        // This transform is generic to all value-change tracing
+        tree = this.transformAny(tree);
+        tree.hasValueChangeTransform = true;
+      }
+      return tree;
+    },
 
     transformAny: function(tree) {
       if (tree && !tree.doNotTransform)

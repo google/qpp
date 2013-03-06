@@ -74,18 +74,8 @@
     // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
     // 
     transformParseTree: function(tree) {
-      if (!tree.hasValueChangeTransform) {
-        // This transform is generic to all value-change tracing
-        tree = this._transformer.transformAny(tree);
-        tree.hasValueChangeTransform = true;
-      }
-      // This transformation is unique for each query
-      if (this._tree.location.start.source.name === tree.location.start.source.name) {
-          delete this._setTracedPropertyObjectTransformer.found;   
-          tree = this._setTracedPropertyObjectTransformer.transformAny(tree);
-          if (!this._setTracedPropertyObjectTransformer.found) 
-              throw new Error("ValueChangeQuery.transformParseTree unable to find object to trace");
-      }
+      tree = this._transformer.transformTree(tree);
+      tree = this._setTracedPropertyObjectTransformer.transformTree(tree);
       return tree;
     },
 
