@@ -104,8 +104,11 @@ var RemoteMethodCall = (function() {
         try {
           if (callback && status === RESPONSE) {
             callback.apply(this, args);
-          } else if (errback && status === ERROR) {
-            errback.apply(this, args);
+          } else if (status === ERROR) {
+            if (errback)
+              errback.apply(this, args);
+            else 
+              console.error('RemoteMethodCall.Requestor._onMessage ERROR (no errback) ', args);
           }
           if (DEBUG) {
             console.log("RemoteMethodCall.Requestor._onMessage " + postId + ": " + method + ": " + status, args);
