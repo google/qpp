@@ -180,15 +180,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   ko.applyBindings(this, logScrubberElement);
   ko.applyBindings(this, logElement);
 
-  dropDown.onmouseout = function(event){
+  dropDown.onmouseout = function(event) {
       var e = event.toElement || event.relatedTarget;
-      while(e && e.parentNode && e.parentNode != window) {
-        if (e.parentNode == this ||  e==this) {
-            if(e.preventDefault) e.preventDefault();
-            return false;
-        }
-        e = e.parentNode;
-      }
+      if (panel.isOurRelatedTarget(e, this)) return false;
       dropDown.style.display = 'none';
   }
 
@@ -197,15 +191,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
       loadElement.style.display = 'block';
   }
 
-  loadElement.onmouseout = function(event){
+  loadElement.onmouseout = function(event) {
       var e = event.toElement || event.relatedTarget;
-      while(e && e.parentNode && e.parentNode != window) {
-        if (e.parentNode == this ||  e==this) {
-            if(e.preventDefault) e.preventDefault();
-            return false;
-        }
-        e = e.parentNode;
-      }
+      if (panel.isOurRelatedTarget(e, this)) return false;
       loadElement.style.display = 'none';
   }
 
@@ -608,6 +596,19 @@ QuerypointPanel.Panel.prototype = {
     }
     button.classList.toggle('on');
   },
+
+  // Event mouseout triggers when mouse goes into child nodes
+  // If we are looking to hide target, we must assure element focused isn't a descendant
+  isOurRelatedTarget: function(element, target) {
+    while (element && element.parentNode) {
+      if (element.parentNode === target ||  element === target) {
+          if (element.preventDefault) element.preventDefault();
+          return true;
+      }
+      element = element.parentNode;
+    }
+    return false;
+  }
 
 };
 
