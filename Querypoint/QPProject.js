@@ -11,6 +11,7 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+
   var RemoteWebPageProject = Querypoint.RemoteWebPageProject;
 
   function QPProject(url, loads) {
@@ -20,8 +21,8 @@
 
     // FIXME override parent __getter__ for reporter
     this.reporter_ = new QPErrorReporter();
-
-    this.compiler_ = new QPCompiler(this.reporter, {}); // TODO traceur options
+    this._fileCompiler = new Querypoint.QPFileCompiler(this.reporter_);
+    this.compiler_ = new QPCompiler(this._fileCompiler, {}); // TODO traceur options
         
     this.querypoints = Querypoint.Querypoints.initialize();
     this.elementQueries = [Querypoint.ElementChangeQuery];
@@ -30,12 +31,18 @@
 
     this._onWebPageNavigated = this._onWebPageNavigated.bind(this);
     this._monitorReloads();
+
+    Querypoint.QPPreprocessor.useAsyncPreprocessor = true;
     
-    if (debug) console.log(loads + " QPProject created for "+url);
+    if (debug) console.log("QPProject ctor using " + (Querypoint.QPPreprocessor.useAsyncPreprocessor?'async':'sync') +" preprocessor for "+url);
   }
 
   QPProject.prototype = {
     __proto__: RemoteWebPageProject.prototype,
+
+    reporter: function() {
+      return this.reporter_;
+    },
         
     compile: function(onAllCompiled) {
       function onScriptsReady() {
@@ -43,6 +50,14 @@
         onAllCompiled(this.parseTrees_); 
       }
       this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
+    },
+   
+    transformDescriptions: function() {
+      var transformDescriptions = this.querypoints.tracequeries.reduce(function(descriptions, tq) {
+        return descriptions.concat(tq.transformDescriptions());
+      }, []);
+      transformDescriptions.push({ctor: 'QPFunctionPreambleTransformer'});
+      return transformDescriptions;
     },
 
     // Called by runInWebPage
@@ -52,20 +67,9 @@
 
       return treeObjectMap.keys().map(function(file) {
         var tree = treeObjectMap.get(file);  
-
-        this.querypoints.tracequeries.forEach(function(tq) {
-          tree = tq.transformParseTree(tree);
-          console.assert(tree);
-        });
-
-        var preambleTransformer = new Querypoint.QPFunctionPreambleTransformer(this.generateFileName);
-        tree = preambleTransformer.transformAny(tree);
-
         file.generatedFileName = file.name + ".js";
-        var writer = new QPTreeWriter(file.generatedFileName);
-        file = writer.generateSource(file, tree);
-
-        return file;
+        file.generatedSource = this._fileCompiler.generateSourceFromTree(tree, file.generatedFileName, this.transformDescriptions());
+        return file; 
       }.bind(this));
     },
 
@@ -90,8 +94,9 @@
 
     runInWebPage: function(treeObjectMap) {
       Querypoint.QPRuntime.initialize();
-      // inject the tracing source
-      RemoteWebPageProject.prototype.runInWebPage.call(this, treeObjectMap);
+      // inject the tracing source, if we are using the async preprocessor
+      if (Querypoint.QPPreprocessor.useAsyncPreprocessor)
+        RemoteWebPageProject.prototype.runInWebPage.call(this, treeObjectMap);
       this.startRuntime();
     },
 
@@ -127,6 +132,7 @@
       });
       
       this._unmonitorReloads();
+      
       var onNavigated = function(url) {
         chrome.devtools.network.onNavigated.removeListener(onNavigated);
         if (url !== this.url) {
@@ -138,25 +144,21 @@
           
       chrome.devtools.network.onNavigated.addListener(onNavigated);
       
-      this._reload(++this.numberOfReloads);
+      var transcoder = Querypoint.QPPreprocessor.transcoder(
+        this.transformDescriptions(),
+        this._reload.bind(this, ++this.numberOfReloads)
+      );       
       
       return this.numberOfReloads;
     },
     
-    _reload: function(numberOfReloads) {
+    _reload: function(numberOfReloads, transcoder) {
       console.assert(typeof numberOfReloads === 'number');
-      // We write a line that is parsed by Log.js calling back at this.addScript()
-      function transcode(str, name ) {
-        if (name && name.indexOf('.js.js') === -1)
-          return  "console.log('qp| script " + name + "');";
-        else
-          return str; // evals, esp. our own evals!
-      }
 
       var reloadOptions = {
         ignoreCache: true, 
         injectedScript:  Querypoint.QPRuntime.runtimeSource(numberOfReloads), 
-        preprocessingScript: '(' + transcode + ')'
+        preprocessingScript: '(' + transcoder + ')'
       };
       if (debug) console.log("reloadOptions.preprocessingScript ", reloadOptions.preprocessingScript);
       chrome.devtools.inspectedWindow.reload(reloadOptions);

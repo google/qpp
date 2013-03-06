@@ -73,6 +73,30 @@
       };
       this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(transformData);
       this._tree.location.query = this;
+      this._isActive = true;
+    },
+    
+    transformDescriptions: function() {
+      var location = this._tree.location;
+      return [
+        {
+          ctor: 'ValueChangeQueryTransformer'
+        },
+        {
+          ctor: 'SetTracedPropertyObjectTransformer',
+          queryData: {
+            propertyKey: this.identifier,
+            queryIndex: this._queryIndex,
+            filename: location.start.source.name,
+            startOffset: location.start.offset, 
+            endOffset: location.end.offset, 
+          }
+        }
+      ];
+    },
+
+    transformers: function() {
+      return [this._transformer, this._setTracedPropertyObjectTransformer];
     },
 
     tracePromptText: function() {

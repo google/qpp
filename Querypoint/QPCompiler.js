@@ -10,8 +10,8 @@ var QPCompiler = (function() {
   var ModuleAnalyzer = traceur.semantics.ModuleAnalyzer;
   var Project = traceur.semantics.symbols.Project;
   
-  function QPCompiler(reporter, opt_options) {
-    this.reporter_ = reporter;
+  function QPCompiler(fileCompiler, opt_options) {
+    this.fileCompiler_ = fileCompiler;
     
     traceur.options.reset(false);
 
@@ -25,25 +25,25 @@ var QPCompiler = (function() {
   QPCompiler.prototype = {
 
     compile: function(project) {
-      this.parse(project);
-      if (!this.reporter_.hadError()) {
-        return this.analyze(project);
-       }
+      project.getSourceFiles().forEach(function (file) {
+        project.setParseTree(file, this.fileCompiler_.compile(file));
+      }.bind(this));
+      return project;
     },
 
     parse: function(project) {
       project.getSourceFiles().forEach(function (file) {
-        project.setParseTree(file, new Parser(this.reporter_, file).parseProgram(true));
+        project.setParseTree(file, new Parser(project.reporter, file).parseProgram(true));
       }.bind(this));
       return project;
     },
 
     analyze: function(project) {
-      var analyzer = new ModuleAnalyzer(this.reporter_, project);
+      var analyzer = new ModuleAnalyzer(project.reporter, project);
       analyzer.analyze();
       project.getSourceFiles().forEach(function(file){
         var tree = project.getParseTree(file);
-        Querypoint.ScopeAttacher.attachScopes(project.reporter_, tree, Querypoint.globalSymbols);  
+        Querypoint.ScopeAttacher.attachScopes(project.reporter, tree, Querypoint.globalSymbols);  
       });
       return project;
     },

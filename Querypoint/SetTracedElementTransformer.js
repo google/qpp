@@ -51,8 +51,12 @@
 
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
 
+    transformTree: function(tree) {
+      return tree;
+    },
+
     transformAny: function(tree) {
-        return tree;
+      return tree;
     },
         // Called once per load by QPRuntime
     runtimeInitializationStatements: function() {

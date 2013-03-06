@@ -58,8 +58,22 @@
         filenames: Object.keys(Querypoint.AllExpressionsQuery.filesTraced)
       };
       this._transformer = new Querypoint.LinearizeTransformer(transformData);
+      this._isActive = true;
+    },
+
+    transformDescriptions: function() {
+      return [{
+        ctor: 'LinearizeTransformer',
+        queryData: {
+          filenames: Object.keys(Querypoint.AllExpressionsQuery.filesTraced)
+        }
+      }];
     },
     
+    transformers: function() {
+      return [this._transformer];
+    },
+
     targetTree: function() {
       return this.tree;
     },

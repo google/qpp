@@ -55,22 +55,21 @@ var QPTreeWriter = (function() {
     /**
    * @constructor
    */
-  function QPTreeWriter() {
+  function QPTreeWriter(generatedFilename) {
     ParseTreeWriter.call(this, false, false);
+    this._generatedFilename = generatedFilename;
   }
-
 
   QPTreeWriter.prototype = {
 
     __proto__: ParseTreeWriter.prototype,
 
-    generateSource: function(file, tree) {
+    generateSource: function(tree) {
       this.visitAny(tree);
       if (this.currentLine_.length > 0) {
         this.writeln_();
       }
-      file.generatedSource = this.result_.toString();
-      return file;
+      return this.result_.toString() + '\n//@ sourceURL=' + this._generatedFilename;
     },
     
     visitIdentifierExpression: function(tree) {

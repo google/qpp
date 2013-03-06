@@ -83,15 +83,19 @@
     },
 
     update: function(turn) {
-      this.tracepoints.removeAll();
       var tracequeries = this._panel.tracequeries();
+      if (!tracequeries.length)
+        return;
+      
+      this.tracepoints.removeAll();
+        
       tracequeries.forEach(function(tq){
         tq.extractTracepoints(this, function (tracepoint){
           if (tracepoint) {
             this.tracepoints.push(tracepoint);
           } 
         }.bind(this));
-      }.bind(this));
+      }.bind(this));    
       var lastTracequery = tracequeries[tracequeries.length - 1];  
       this.tokenViewModel.setTokenTree(lastTracequery.targetTree());
     }

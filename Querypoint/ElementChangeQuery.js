@@ -20,7 +20,6 @@
     __proto__: Querypoint.ValueChangeQuery.prototype,
 
     _properties: ['innerHTML'],
-    _transformers: [],
 
     title: function() { 
       return 'traceElement';
@@ -44,6 +43,27 @@
       };
       this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(transformData);
       this._tree.location.query = this;
+      this._isActive = true;
+    },
+
+    transformDescriptions: function() {
+      return [
+        {
+          ctor: 'ValueChangeQueryTransformer'
+        },
+        {
+          ctor: 'SetTracedElementTransformer',
+          queryData: {
+            selector: this._selector,
+            propertyKeys: this._properties,
+            queryIndex: this._queryIndex,
+          }
+        }
+      ];
+    },
+    
+    transformers: function() {
+      return [this._transformer, this._setTracedElementTransformer];
     },
 
     transformParseTree: function(tree) {

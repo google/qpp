@@ -28,10 +28,16 @@
     return statement;
   }
 
+  function generateFileName(location) {
+    return location ? location.start.source.name : "internal";
+  };
+
   window.Querypoint = {
     globalSymbols: globalSymbols,
     markDoNot: markDoNot,
     activationId: '__qp_activation',
+    generateFileName: generateFileName,
   };
 
 }());
+var Querypoint = window.Querypoint;

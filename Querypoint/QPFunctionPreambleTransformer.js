@@ -33,6 +33,10 @@
 
   var QP_FUNCTION = '__qp_function';
 
+  QPFunctionPreambleTransformer.prototype.transformTree = function(tree) {
+    return this.transformAny(tree);
+  }
+
   QPFunctionPreambleTransformer.prototype._createFileAccessExpression = function(location) {
     // window.__qp.functions["<file_name>"]
     return createMemberLookupExpression(

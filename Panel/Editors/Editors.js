@@ -181,19 +181,5 @@
       return sure;  
     },
 
-  
-    _xhrFromBackground: (new RemoteMethodCall.Requestor(XHRInBackground, ChannelPlate.DevtoolsTalker)).serverProxy(),
-
-    _asyncLoad: function(url, fncOfContent) {
-      this._xhrFromBackground.GET(
-        [url], 
-        function(content) {
-          fncOfContent(content);
-        },
-        function(err) {
-          console.error("_asyncLoad failed to GET " + url +': ' + err);
-        }
-      );
-    }
   }
 }());
