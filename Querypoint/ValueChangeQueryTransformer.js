@@ -114,13 +114,13 @@
       return ifStatement;
   };
 
-  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(propertyKey, queryNumber, tree) {
-    this.propertyKey = propertyKey;
-    this.queryNumber = queryNumber;
+  var SetTracedPropertyObjectTransformer = Querypoint.SetTracedPropertyObjectTransformer = function(transformData) {
+    this.propertyKey = transformData.propertyKey;
+    this.queryIndex = transformData.queryIndex;
+    this.propertyAccessStart = transformData.startOffset;
+    this.propertyAccessEnd = transformData.endOffset;
+    this.propertyAccessFileName = transformData.filename;
     Querypoint.InsertVariableForExpressionTransformer.call(this);
-    this.propertyAccessExpressionStart = tree.location.start.offset;
-    this.propertyAccessExpressionEnd = tree.location.end.offset;
-    this.propertyAccessName = tree.location.start.source.name;
   }
 
   SetTracedPropertyObjectTransformer.prototype = {
@@ -129,7 +129,7 @@
         
     transformTree: function(tree) {
       // This transformation is unique for each query
-      if (this.propertyAccessName === tree.location.start.source.name) {
+      if (this.propertyAccessFileName === tree.location.start.source.name) {
           delete this.found;   
           tree = this.transformAny(tree);
           if (!this.found) 
@@ -144,10 +144,10 @@
         
       if (tree && !tree.doNotTransform && tree.location) {
         var treeOffset = tree.location.start.offset;
-        if ( this.propertyAccessExpressionEnd === tree.location.end.offset &&
-             this.propertyAccessExpressionStart === tree.location.start.offset) {
+        if ( this.propertyAccessEnd === tree.location.end.offset &&
+             this.propertyAccessStart === tree.location.start.offset) {
           // tree is obj[prop]
-          tree.operand = this._insertObjectCheck(tree.operand, this.queryNumber);
+          tree.operand = this._insertObjectCheck(tree.operand, this.queryIndex);
           this.found = tree;  // stop early
         }
       }

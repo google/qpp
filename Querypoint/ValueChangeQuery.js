@@ -63,7 +63,15 @@
     activate: function(queryIndex) {
       this._transformer = new Querypoint.ValueChangeQueryTransformer();
       this._queryIndex = queryIndex;
-      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(this.identifier, queryIndex, this._tree);
+      var location = this._tree.location;
+      var transformData = {
+        propertyKey: this.identifier,
+        queryIndex: queryIndex,
+        filename: location.start.source.name,
+        startOffset: location.start.offset, 
+        endOffset: location.end.offset, 
+      };
+      this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(transformData);
       this._tree.location.query = this;
     },
 

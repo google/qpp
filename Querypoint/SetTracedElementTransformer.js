@@ -40,10 +40,10 @@
   var MemberExpression = Trees.MemberExpression;
 
 
-  var SetTracedElementTransformer = Querypoint.SetTracedElementTransformer = function(selector, propertyKeys, queryNumber) {
-    this._selector = selector;
-    this.propertyKeys = propertyKeys;
-    this._queryNumber = queryNumber;
+  var SetTracedElementTransformer = Querypoint.SetTracedElementTransformer = function(transformData) {
+    this._selector = transformData.selector;
+    this.propertyKeys = transformData.propertyKeys;
+    this._queryIndex = transformData.queryIndex;
     Querypoint.InsertVariableForExpressionTransformer.call(this);
   }
 
@@ -96,7 +96,7 @@
             createArgumentList(
               createStringLiteral(this._selector),
               createStringLiteral(propertyKey),
-              createNumberLiteral(this._queryNumber)
+              createNumberLiteral(this._queryIndex)
             )
           )
         );

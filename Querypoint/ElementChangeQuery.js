@@ -37,18 +37,17 @@
     activate: function(queryIndex) {
       this._queryIndex = queryIndex;
       this._transformer = new Querypoint.ValueChangeQueryTransformer();
-      this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(this._selector, this._properties, this._queryIndex);
+      var transformData = {
+        selector: this._selector,
+        propertyKeys: this._properties,
+        queryIndex: queryIndex,
+      };
+      this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(transformData);
       this._tree.location.query = this;
     },
 
     transformParseTree: function(tree) {
-      if (!tree.hasValueChangeTransform) {
-        // This transform is generic to all value-change tracing
-        tree = this._transformer.transformAny(tree);
-        tree.hasValueChangeTransform = true;
-      }
-
-      return tree;
+      return this._transformer.transformTree(tree);
     },
 
     runtimeSource: function() {

@@ -54,7 +54,10 @@
     },
     
     activate: function() {
-      this._transformer = new Querypoint.LinearizeTransformer();
+      var transformData = {
+        filenames: Object.keys(Querypoint.AllExpressionsQuery.filesTraced)
+      };
+      this._transformer = new Querypoint.LinearizeTransformer(transformData);
     },
     
     targetTree: function() {
@@ -68,11 +71,7 @@
     // Add tracing code to the parse tree. Record the traces onto __qp.propertyChanges.<identifier>
     // 
     transformParseTree: function(tree) {
-      if (Querypoint.AllExpressionsQuery.filesTraced[tree.location.start.source.name]) {
-        return this._transformer.transformAny(tree);  
-      } else {
-        return tree;
-      }
+      return this._transformer.transformTree(tree);
     },
 
     runtimeSource: function() {

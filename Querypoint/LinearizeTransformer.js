@@ -90,7 +90,8 @@
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function LinearizeTransformer() {
+  function LinearizeTransformer(transformData) {
+    this.filenames = transformData.filenames;
     Querypoint.InsertVariableForExpressionTransformer.call(this);
     this.labelsInScope = [];        // emca 262 12.12
     this.unlabelledBreakLabels = []; // tracks nested loops and switches 
@@ -136,6 +137,14 @@
 
   LinearizeTransformer.prototype =  {
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
+    
+    transformTree: function(tree) {
+      if (this.filenames.indexOf(tree.location.start.source.name) !== -1) {
+        return this.transformAny(tree);  
+      } else {
+        return tree;
+      }
+    },
     
     transformAny: function(tree) {
       var output_tree = 

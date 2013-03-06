@@ -296,7 +296,7 @@
           window.__qp.setTraced(propertyKey);
       });
       if (debug_in_page) 
-        console.log('qp| debug QPRuntime.setTracedElement ' + selector + 'key ' + propertyKey + ' index ' + tracedObjectIndex + ': ' + bySelector[selector].length);
+        console.log('qp| debug QPRuntime.setTracedElement ' + selector + ' key ' + propertyKey + ' index ' + tracedObjectIndex + ': ' + bySelector[selector].length);
     }
 
     function getSelectorUniqueToElement(element) {
