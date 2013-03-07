@@ -36,6 +36,10 @@
     activateQuery: function(fileViewModel) {
       if (this.isActive()) return;
       // tree -> query
+
+      // Stop recording if load changes.
+      if (QuerypointPanel.OnPanelOpen.panel.recordData.end == -1) QuerypointPanel.OnPanelOpen.panel.recordData.stopRecording();
+
       this.query.setQueryOnTree(this.query.targetTree(), this.query);
       
       this.query.activate(this.panel.tracequeries.length);

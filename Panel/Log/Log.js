@@ -50,6 +50,9 @@
     initialize: function(project, logScrubber) {
       this.project = project;
       this._logScrubber = logScrubber;
+      this.lastInitialTurn = -1;
+      this.lastMessage = -1;
+      this.finishedLoadingScripts = false;
 
       QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
@@ -73,6 +76,7 @@
         switch(keyword) {
           case 'loadEvent':
             this._logScrubber.loadEnded(parseInt(segments[2], 10));
+            this.finishedLoadingScripts = true;
             break;
           case 'reload': 
             this._reloadCount = parseInt(segments[2], 10);
@@ -92,12 +96,18 @@
               eventBubbles: segments[8] === 'true',
               eventCancels: segments[9] === 'true'
             };
+
             var turnDetail;
             turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
             if (this._currentEvent.target !== 'undefined') 
                 turnDetail += '|' + this._currentEvent.target;
                 
             messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
+
+            if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
+                this.lastInitialTurn = this._turn - 1;
+                this.lastMessage = this.currentTurn.messages().length;
+            }
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
@@ -169,6 +179,23 @@
       QuerypointPanel.OnPanelOpen.panel._addMessage(messageSource);
       if (DEBUG){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
+      }
+
+      if (this.lastInitialTurn == this._turn && this.lastMessage == this.currentTurn.messages().length && QuerypointPanel.OnPanelOpen.panel.recordData.load !== 0){
+          var recordedData = QuerypointPanel.OnPanelOpen.panel.recordData;
+
+          QuerypointPanel.OnPanelOpen.panel.recordedMessages([]);
+          QuerypointPanel.OnPanelOpen.panel.messages = QuerypointPanel.OnPanelOpen.panel.recordedMessages;
+
+          recordedData.play();
+
+          // Play events are sent by eval to the inspected window.
+          // We need to change where messages are stored after all play events occur.
+          setTimeout(function(){
+            QuerypointPanel.OnPanelOpen.panel.messages = QuerypointPanel.OnPanelOpen.panel.postMessages;
+            QuerypointPanel.OnPanelOpen.panel.logScrubber.displayLoad(QuerypointPanel.OnPanelOpen.panel.logScrubber.showLoad());
+          },100);
+
       }
     },
     

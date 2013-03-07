@@ -73,12 +73,16 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
         }
       },
       stopRecording: function(button, marker, panel) {
-        marker.innerHTML = '&#x25B6';
-        panel.recordData.end = panel.logScrubber.showLoad().turns().length;
-        panel.messages = panel.postMessages;
-        marker.classList.remove('on');
-        button.classList.remove('on');
-        marker.onmousedown = null;
+        if (arguments.length == 0){
+          QuerypointPanel.OnPanelOpen.panel.recordData.end = QuerypointPanel.OnPanelOpen.panel.logScrubber.showLoad().turns().length;
+        } else {
+          marker.innerHTML = '&#x25B6';
+          panel.recordData.end = panel.logScrubber.showLoad().turns().length;
+          panel.messages = panel.postMessages;
+          marker.classList.remove('on');
+          button.classList.remove('on');
+          marker.onmousedown = null;
+        }
       }
   }
 
