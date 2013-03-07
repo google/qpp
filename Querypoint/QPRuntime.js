@@ -250,7 +250,13 @@
     }
     
     // For lastChange
-    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex) {
+    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex, positionOffset) {
+      var property = tracedObjectIndex + '.' + propertyKey;
+      if (typeof positionOffset !== 'undefined') property = positionOffset + '.' + property;
+
+      if (window.__qp.lastReduced[property] === this.turn) return;
+      window.__qp.lastReduced[property] = this.turn;
+
       if (debug_in_page) {
         if (window.__qp.propertyChanges[propertyKey]) 
           console.log("qp| debug reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
@@ -368,6 +374,8 @@
     interceptEntryPoints();
     
     console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
+    window.__qp.lastReduced = {};
+
     if (debug_in_page) console.log("qp| debug runtime initialized: window.__qp: %o", window.__qp);    
   }; 
 

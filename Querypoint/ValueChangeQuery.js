@@ -138,7 +138,9 @@
         }
       }
       var tracedObjectIndex = this._queryIndex;
-      var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + this.identifier + '\",' + tracedObjectIndex + ')';
+      var position = this._tree.location.start.offset;
+
+      var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + this.identifier + '\",' + tracedObjectIndex + ',' + position + ')';
       chrome.devtools.inspectedWindow.eval(expr, onEval.bind(this));
     },
   };
