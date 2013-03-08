@@ -90,7 +90,7 @@
         scope = tree.scope;
       } else {
         if (tree.declaration) {  // a ref
-          appendView(tree.declaration.location);
+          // It would be cool to highlight the declaration at tree.declaration.location;
           scope = tree.declaration.scope;
         }
       }
@@ -167,6 +167,7 @@
       var clone = traceViewedLine.cloneNode(true);
       this._expressionFontSize = window.getComputedStyle(traceViewedLine).fontSize;
       clone.classList.remove('traceViewedLine');
+      clone.classList.add('clonedEditorLine');
       return clone;
     }
 

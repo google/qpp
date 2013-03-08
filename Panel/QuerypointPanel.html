@@ -150,17 +150,18 @@
       <div class="fileView">
         <div class="hoverDoorTarget">
           <div class="hoverDoorChannel">
+            <div class="hoverDoor hoverSpacer"></div>
             <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
             <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
           </div>
           <div class="QPOutput overflowMe">
             <span class="helpInfo">Tracing output, see tooltips for details</span>
-            <div class="tokenView" >
+            <div class="tokenView overflowMe" >
               <div class="scopeChain" data-bind="foreach: tokenViewModel.scopes">
-                <div data-bind="html: scopeDeclaration"></div>
+                <div class="overflowMe" data-bind="html: scopeDeclaration"></div>
               </div>
               <div class="expressionView">
-                <div class="currentExpression" title="Current expression trace values displayed below" data-bind="html: tokenViewModel.currentExpression"></div>
+                <div class="currentExpression overflowMe" title="Current expression trace values displayed below" data-bind="html: tokenViewModel.currentExpression"></div>
               </div>
             </div>
             <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && !!traceViewModel.currentTraces().length}">
@@ -178,7 +179,7 @@
                   <span title="Load number" data-bind="text: load">
                   </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
                 </td>
-                <td class="traceValue" data-bind="text: value"></td>
+                <td class="traceValue overflowMe" data-bind="text: value"></td>
               </tr>  
               </tbody>
             </table>
@@ -206,7 +207,7 @@
     </div>
     <div class="buffersStatusBar">
       <div class="commandLine">
-        <span>&#x1433;</span><input class="commandInput" type="search" size="100" value="Eventual home of command line">
+        <span>&#x1433;</span><input class="commandInput" type="search" size="70" value="Eventual home of command line">
       </div>
       <div class="counters">
         <span

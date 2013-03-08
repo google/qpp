@@ -27,6 +27,7 @@ body {
   font-family: monospace;
   border-spacing: 0px;
   -webkit-flex-flow: column;
+  -webkit-flex-wrap: nowrap;
   display: -webkit-flex;
 }
 
@@ -64,6 +65,9 @@ body {
 }
 .hoverDoorChannel {
   width: 100%;
+  display: -webkit-flex;
+  -webkit-flex-flow: row;
+  margin-bottom: -9px;
 }
 .closed {
   width: 9px !important;
@@ -85,8 +89,12 @@ body {
      height:9px;
 
      border-top: 9px solid #d0d0d0;
-     position: absolute;
      z-index: 10;
+}
+.hoverSpacer {
+  -webkit-flex: auto;
+  min-width: auto;
+  border-top-color: transparent;
 }
 .hoverOpener {
      border-right: 9px solid transparent;
@@ -95,8 +103,6 @@ body {
 }
 .hoverCloser {
      border-left: 9px solid transparent;
-     float: right;
-     position: relative;
 
      cursor: w-resize;
 }
@@ -104,9 +110,9 @@ body {
 .hoverDoor span {
   display: none;
 }
-.hoverDoor:hover {
+
+.hoverDoor.hoverCloser:hover, .hoverDoor.hoverOpener:hover {
   width: 20ex;
-  color: #272822;
   font-size: 9px;
   padding-bottom: 2px;
   font-family: sans-serif;
@@ -115,8 +121,7 @@ body {
 .hoverDoor:hover span {
   display: inline;
   padding-left: 3ex;
-  position: absolute;
-  top: -10px;
+  color: #f8f8f2;
 }
 .QPOutput .hoverDoor {
   margin-top: -4px; /* compensate for QPOutput padding */
@@ -162,9 +167,13 @@ body {
 } 
 
 .fileEditor {
-  height: 100%;
-  position: relative;  
-  overflow-y: auto;
+  min-height: 100%;  
+  min-width: auto;
+  height: 1ex; /* I have no idea why this works. */
+;
+  -webkit-flex-basis: 70%;
+  -webkit-flex-grow: 1;
+  -webkit-flex-shrink: 1;
 }
 
 .explainTokenPanel {
@@ -179,28 +188,29 @@ body {
 }
 
 .fileViews {
-  -webkit-flex-grow: 8;
-  min-height: 20ex;
-  -webkit-flex-shrink: 1;
+  min-height: auto;
   display: -webkit-flex;
   -webkit-flex-flow: column;
+  -webkit-flex-wrap: nowrap;
+  -webkit-flex: auto;
 }
 
 
 .fileView {
-  -webkit-flex-grow: 2;
-  -webkit-flex-shrink: 1;
-  -webkit-flex-basis: 100%;
-  height: 100%;
+  min-height: auto;
+  min-width: 100%;
   display: -webkit-flex;
   -webkit-flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  -webkit-flex: auto;
 }
 
 .hoverDoorTarget {
+  min-width: 30%;  /* must be fixed to avoid flashy resizing of the width */
+  min-height: 100%;
+  -webkit-flex-basis: 30%;
+  -webkit-flex-grow: 1;
   -webkit-flex-shrink: 0;
-  -webkit-flex-grow: 0;
-  -webkit-flex-basis: auto;
-  width:  326px;  /* must be fixed to avoid flashy resizing of the width */
 }
 
 a {
@@ -223,10 +233,7 @@ a:focus, a:active {
 }
 
 .overflowMe {
-  left: 0;
   overflow: hidden;
-  right: 0;
-  margin-left: 15px;
 }
 
 .traceView {
@@ -245,9 +252,15 @@ a:focus, a:active {
   margin-left: 4px; /* needed to match the padding of <pre> lines */
 }
 
-.currentExpression { /* keep the line number hidden offscreen to the left */
-;
+.currentExpression {
+    padding-top: 1ex;
+    padding-bottom: 1ex;
 }
+.currentExpression pre { 
+  margin: 0px;
+}
+.clonedEditorLine {
+}   
 
 .QPOutput caption {
   border-bottom: 1px solid #75715e;
@@ -327,9 +340,7 @@ pre.traceBackground {
 /* Editors */
 
 .CodeMirror-scroll {
-  overflow: auto;
 
-  height: 100%;
 }
 
 .CodeMirror-lines {

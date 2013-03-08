@@ -16,6 +16,7 @@
     font-size: 0px; /* prevent whitespace */
     line-height: normal;
     white-space: nowrap;
+    -webkit-flex-shrink: 0;
 }
 
 .logScrubber span {
@@ -117,6 +118,8 @@
 .logView {
   color: #75715e;
   cursor: default;
+  min-height: auto;
+  -webkit-flex-shrink: 0;
 }
 .logView table,tr {
   width: 100%;
