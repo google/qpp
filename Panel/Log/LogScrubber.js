@@ -161,27 +161,28 @@
       }.bind(this));
 
       this.displayLoad = function(object){
-        var panel = QuerypointPanel.OnPanelOpen.panel;
         var button = document.querySelector('.recordIndicator');
         var marker = document.querySelector('.recordMarker');
         if (button && button.classList.contains('on')) {
-            panel.recordData.stopRecording(button, marker, panel);
+            self.recordData.stopRecording(button, marker);
         }
 
         var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
         self.showLoad(object);
+        self._updateSize();
+
         loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
         if (loadElement) loadElement.classList.add('selectedLoad');
 
-        if (panel.isCurrentLoad() ){
-            if (panel.recordData.start !== -1) {
+        if (self.isCurrentLoad() ){
+            if (self.recordData.start !== -1) {
               marker = document.querySelector('.recordMarker');
               marker.style.display = 'block';
               marker.innerHTML = '&#x25B6';
             }
         } else {
-          panel.storedMessages(object.messages);
+          self.storedMessages(object.messages);
         }
 
         object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
@@ -192,44 +193,167 @@
       var panel =  document.querySelector('.panel');
       var logScrubberElement = document.querySelector('.logScrubber');
       var logFloat = document.querySelector('.floaty');
-      /*
-      function getMargin(elem){
-        var str = elem.style.marginLeft;
-        if(!str) str = '0px';
-        return parseInt(str.substr(0,str.length - 2));
+      var logElement = document.querySelector('.logView');
+      var loadElement = document.querySelector('.loadList');
+      var dropDown = document.querySelector('.eventTurn');
+      var currentLoad = document.querySelector('.currentLoad');
+      var nextLoad = document.querySelector('.nextLoad');
+      var recordButton = document.querySelector('.recordIndicator');
+      var playButton = document.querySelector('.recordMarker');
+
+      this.preMessages = ko.observableArray();
+      this.postMessages = ko.observableArray();
+      this.recordedMessages = ko.observableArray();
+      this.storedMessages = ko.observableArray();
+      this.messages = this.preMessages;
+
+      this._addMessage = function(message){
+        self.messages.push(message);
+        self._updateSize();
       }
-      
-      logScrubberElement.onmousewheel = function(event){
-        var newPosition = getMargin(logScrubberElement) + event['wheelDelta'];
-        if(newPosition < 0){
-            logScrubberElement.style.marginLeft= newPosition.toString() + 'px';
-            //TODO: Adjust the scroll on log with scroll on scrubberBox
-            logFloat.scrollByLines(event['wheelDelta'] < 0 ? 1 : -1);
-        }else{
-            logScrubberElement.style.marginLeft = '0px';
-            logFloat.scrollTop = 0;
+
+      this._updateSize = function(){
+        var maxMessages = logScrubberElement.offsetWidth - 40; 
+        var joinMessages;
+        if (self.showLoad().load == self.loadStarted()){
+            joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
+        } else {
+            joinMessages = self.storedMessages().length;
+        }
+
+        if (joinMessages < maxMessages) {
+          var width = Math.floor(maxMessages / joinMessages);
+          self._setMessageWidth(width);
+        } else {
+          var perPixel = joinMessages / maxMessages;
+          return self._downSizeMessages(perPixel, joinMessages);
         }
       }
 
-      logScrubberElement.onmousedown = function(event){
-        var curX = event.x;
-        var start = getMargin(logScrubberElement);
-        var lastPosition = 0;
-        event.preventDefault();
+      this._clearMessages = function(){
+          self.preMessages([]);
+          self.postMessages([]);
+          self.messages = self.preMessages;
+      }
 
-        panel.onmousemove = function(event){
-            var newPosition = start + (event.x - curX);
-            if (newPosition < 0) {
-                logScrubberElement.style.marginLeft = (newPosition).toString() + 'px';
-                //TODO: Adjust scroll on log with scrubberBox
-                logFloat.scrollTop+= (newPosition > lastPosition ? -2 : 2);
-                lastPosition = newPosition;
+      this._setMessageWidth = function(width) {
+        if (width > 10) width = 10;
+            width = width + 'px';
+            setTimeout(function(){
+                var events = document.querySelectorAll('.eventIndicator');
+                for(var i = 0; i < events.length; i++){
+                    events[i].style.width = width;
+                }
+            }, 5);
+      }
+
+      this.showLoadNumber = ko.computed(function(){
+          return self.showLoad().load;
+      });
+
+      this._downSizeMessages = function(perPixel, joinMessages) {
+        var last = 0, next = 0;
+        var showMessages=[];
+        var hasError, hasTurn, hasWarn, lastTurn;
+
+        while (next != joinMessages.length) {
+            if (!hasTurn) {
+                hasError = hasTurn = hasWarn = false;
+            } else {
+                hasTurn = false;
             }
+            if (last + perPixel > joinMessages.length) 
+              last = joinMessages.length; 
+            else 
+              last = last + perPixel;
+
+            for (; next < last; next++) {
+                var severity = joinMessages[next].severity;
+                if (severity === 'turn') hasTurn = true;
+                if (severity === 'warn') hasWarn = true;
+                if (severity === 'error') hasError = true;
+            }
+            lastTurn = joinMessages[next-1].turn;
+            showMessages.push({
+              severity: hasTurn ? 'turn' : (hasWarn ? 'warn' : (hasError ? 'error' : 'log')), 
+              turn:lastTurn, 
+              scroll: joinMessages[next-1].scroll 
+            });
         }
       }
 
-      panel.onmouseup = function(){ panel.onmousemove = null; }
-      */
+      this.showNext = ko.computed( function(){
+          var load = self.showLoad().load;
+          if (load === '-' || load == self.loadStarted()) {
+              nextLoad.onmousedown = null;
+              return '-';
+          } else {
+              nextLoad.onmousedown = function() {
+                  var next = self.showLoad().next;
+                  self.displayLoad(next);
+              };
+              return self.showLoad().load+1;
+          }
+      });
+
+      this.isCurrentLoad = ko.computed( function(){
+        return self.showLoad().load == self.loadStarted();
+      });
+
+      this.isPastLoad = ko.computed( function(){
+        return self.loadStarted() && (self.showLoad().load != self.loadStarted());
+      });
+
+      this.recordData = {
+          load: 0,
+          start: -1,
+          end:   0,
+          play: function(){
+            for (var i = self.recordData.start; i < self.recordData.end; i++){
+              var event = self.recordData.load.turns()[i].event;
+              var command = 'var target = document.querySelector("' + event.target + '"); ';
+              command += 'var event = document.createEvent("Events"); ';
+              command += 'event.initEvent("' + event.eventType + '", ' + event.eventBubbles + ', ' + event.eventCancels + '); ';
+              command += 'target.dispatchEvent(event); ';
+              chrome.devtools.inspectedWindow.eval(command);
+            }
+          },
+          stopRecording: function(button, marker) {
+            if (arguments.length == 0){
+              self.recordData.end = self.showLoad().turns().length;
+            } else {
+              marker.innerHTML = '&#x25B6';
+              self.recordData.end = self.showLoad().turns().length;
+              self.messages = self.postMessages;
+              marker.classList.remove('on');
+              button.classList.remove('on');
+              marker.onmousedown = null;
+            }
+          }
+      }
+
+      dropDown.onmouseout = function(event) {
+          var e = event.toElement || event.relatedTarget;
+          if (self.isOurRelatedTarget(e, this)) return false;
+          dropDown.style.display = 'none';
+      }
+    
+      currentLoad.onmouseover = function(){
+          dropDown.style.display = 'none';
+          loadElement.style.display = 'block';
+      }
+    
+      loadElement.onmouseout = function(event) {
+          var e = event.toElement || event.relatedTarget;
+          if (self.isOurRelatedTarget(e, loadElement)) return false;
+          loadElement.style.display = 'none';
+      }
+    
+      logElement.onmouseout = function(){
+          dropDown.style.display = 'none';
+          loadElement.style.display = 'none';
+      };
+
       return this;
     },
     
@@ -288,5 +412,84 @@
       setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
     },
 
+  // Event mouseout triggers when mouse goes into child nodes
+  // If we are looking to hide target, we must assure element focused isn't a descendant
+  isOurRelatedTarget: function(element, target) {
+    while (element && element.parentNode) {
+      if (element.parentNode === target ||  element === target) {
+          if (element.preventDefault) element.preventDefault();
+          return true;
+      }
+      element = element.parentNode;
+    }
+    return false;
+  },
+
+  selectLast: function(node){
+      if(!node.classList) return;
+      var element = document.querySelector('.selectedLoad');
+      if(element) element.classList.remove('selectedLoad');
+      node.classList.add('selectedLoad');
+  },
+
+  focusLog: function (elem) {
+    if(typeof(elem.scroll) == 'undefined'){
+        // Clicked on Turn Indicator
+        // Focus on some element of the turn or ignore?
+        // What if no messages appeared in this turn?
+        document.querySelector().scrollIntoView(false);
+    } else {
+      elem.scroll.scrollIntoView(false);
+      var logFloat = document.querySelector('.floaty');
+      logFloat.scrollTop += logFloat.offsetHeight / 2 ;
+    }
+  },
+
+  turnInfo: function(){
+      if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
+      var dropDown = document.querySelector('.eventTurn');
+      var loadElement = document.querySelector('.loadList');
+      var messages = document.querySelector('.eventTurn .messages');
+      dropDown.style.display = 'block';
+      loadElement.style.display = 'none';
+      QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
+      QuerypointPanel.LogScrubber.showMessage(this.position);
+      messages.scrollTop = 15 * this.position;
+  },
+
+  startRecord: function(){
+    var logScrubber = this;
+    if (logScrubber.showLoad().load != logScrubber.loadStarted()) return;
+    var button = document.querySelector('.recordIndicator');
+    var marker = document.querySelector('.recordMarker');
+    if (button.classList.contains('on')) {
+        logScrubber.recordData.stopRecording(button, marker);
+    } else {
+        try{
+          var current = logScrubber.showLoad().messages.length;
+        } catch (err) {
+            return;             // Load hasn't started
+        }
+        for (var i = 0; i < logScrubber.recordedMessages().length; i++) logScrubber.preMessages().push(logScrubber.recordedMessages()[i]);
+        for (var i = 0; i < logScrubber.postMessages().length; i++) logScrubber.preMessages().push(logScrubber.postMessages()[i]);
+        logScrubber.preMessages.valueHasMutated();
+        logScrubber._updateSize();
+
+        logScrubber.recordedMessages([]);
+        logScrubber.postMessages([]);
+
+        logScrubber.messages = logScrubber.recordedMessages;
+
+        logScrubber.recordData.load = logScrubber.showLoad();
+        logScrubber.recordData.start = logScrubber.showLoad().turns().length;
+        logScrubber.recordData.end = -1;
+        
+        marker.onmousedown = function(){ logScrubber.recordData.stopRecording(button, marker);};
+        marker.innerHTML = '&#9679;';
+        marker.style.display = 'block';
+        marker.classList.add('on');
+        button.classList.add('on');
+    }
+  }
   };
 }());

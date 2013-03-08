@@ -95,11 +95,11 @@
         <span class="helpInfo">
           Log Scrubber: click or drag to change log viewport
         </span>
-        <div class="loadList" data-bind="foreach: {data: logScrubber.loads, afterAdd: selectLast}">
-            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.logScrubber.displayLoad}">
+        <div class="loadList" data-bind="foreach: {data: loads, afterAdd: selectLast}">
+            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
             </div>
         </div>
-        <div class="eventTurn" data-bind="with: logScrubber.eventTurn">
+        <div class="eventTurn" data-bind="with: eventTurn">
             <p data-bind="text: turnInformation"> </p>
             <ul class="eventTurn_summary" data-bind="if: summary">
                 <li>
@@ -122,7 +122,7 @@
                 </p>
             </div>
         </div>
-        <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoad}"></div>
+        <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoadNumber}"></div>
         <div class="overviewLog">
             <!-- ko if: isCurrentLoad -->
             <!-- ko foreach: preMessages -->

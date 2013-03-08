@@ -58,34 +58,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
   var panel = this;
 
-  this.recordData = {
-      load: 0,
-      start: -1,
-      end:   0,
-      play: function(){
-        for (var i = panel.recordData.start; i < panel.recordData.end; i++){
-          var event = panel.recordData.load.turns()[i].event;
-          var command = 'var target = document.querySelector("' + event.target + '"); ';
-          command += 'var event = document.createEvent("Events"); ';
-          command += 'event.initEvent("' + event.eventType + '", ' + event.eventBubbles + ', ' + event.eventCancels + '); ';
-          command += 'target.dispatchEvent(event); ';
-          chrome.devtools.inspectedWindow.eval(command);
-        }
-      },
-      stopRecording: function(button, marker, panel) {
-        if (arguments.length == 0){
-          QuerypointPanel.OnPanelOpen.panel.recordData.end = QuerypointPanel.OnPanelOpen.panel.logScrubber.showLoad().turns().length;
-        } else {
-          marker.innerHTML = '&#x25B6';
-          panel.recordData.end = panel.logScrubber.showLoad().turns().length;
-          panel.messages = panel.postMessages;
-          marker.classList.remove('on');
-          button.classList.remove('on');
-          marker.onmousedown = null;
-        }
-      }
-  }
-
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({
     runPage: this.project
@@ -94,142 +66,18 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   var logElement = document.querySelector('.logView');
   var logScrubberElement = document.querySelector('.logScrubber');
   var loadElement = document.querySelector('.loadList');
-
-  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project, this.tracequeries);
-  this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
-  this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
-
-  this.preMessages = ko.observableArray();
-  this.postMessages = ko.observableArray();
-  this.recordedMessages = ko.observableArray();
-  this.storedMessages = ko.observableArray();
-  this.messages = this.preMessages;
-
-  this._addMessage = function(message){
-    panel.messages.push(message);
-  }
-  this._clearMessages = function(){
-      panel.preMessages([]);
-      panel.postMessages([]);
-      panel.messages = panel.preMessages;
-  }
-
-  this._setMessageWidth = function(width) {
-    if (width > 10) width = 10;
-        width = width + 'px';
-        setTimeout(function(){
-            var events = document.querySelectorAll('.eventIndicator');
-            for(var i = 0; i < events.length; i++){
-                events[i].style.width = width;
-            }
-        }, 5);
-  }
-
-  this._downSizeMessages = function(perPixel, joinMessages) {
-    var last = 0, next = 0;
-    var showMessages=[];
-    var hasError, hasTurn, hasWarn, lastTurn;
-
-    while (next != joinMessages.length) {
-        if (!hasTurn) {
-            hasError = hasTurn = hasWarn = false;
-        } else {
-            hasTurn = false;
-        }
-        if (last + perPixel > joinMessages.length) 
-          last = joinMessages.length; 
-        else 
-          last = last + perPixel;
-
-        for (; next < last; next++) {
-            var severity = joinMessages[next].severity;
-            if (severity === 'turn') hasTurn = true;
-            if (severity === 'warn') hasWarn = true;
-            if (severity === 'error') hasError = true;
-        }
-        lastTurn = joinMessages[next-1].turn;
-        showMessages.push({
-          severity: hasTurn ? 'turn' : (hasWarn ? 'warn' : (hasError ? 'error' : 'log')), 
-          turn:lastTurn, 
-          scroll: joinMessages[next-1].scroll 
-        });
-    }
-  }
-
-  this.allMessages = ko.computed(function(){
-    var currentLoad = panel.logScrubber.showLoad();
-    if (currentLoad.load == '-') 
-      return joinMessages;
-
-    var joinMessages = currentLoad.messages || [];
-    var maxMessages = document.querySelector('.logScrubber').offsetWidth - 40; 
-    if (joinMessages.length < maxMessages) {
-      var width = Math.floor(maxMessages / joinMessages.length);
-      panel._setMessageWidth(width);
-      return joinMessages;
-    } else {
-      var perPixel = joinMessages.length / maxMessages;
-      return panel._downSizeMessages(perPixel, joinMessages);
-    }
-  });
-
   var dropDown = document.querySelector('.eventTurn');
-
   var currentLoad = document.querySelector('.currentLoad');
   var nextLoad = document.querySelector('.nextLoad');
   var recordButton = document.querySelector('.recordIndicator');
   var playButton = document.querySelector('.recordMarker');
 
-  this.showLoad = ko.computed( function(){
-      return panel.logScrubber.showLoad().load;
-  });
+  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project, this.tracequeries);
+  this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
+  this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
-  this.showNext = ko.computed( function(){
-      var load = panel.logScrubber.showLoad().load;
-      if (load === '-' || load == panel._log.currentReload.load) {
-          nextLoad.onmousedown = null;
-          return '-';
-      } else {
-          nextLoad.onmousedown = function() {
-              var next = panel.logScrubber.showLoad().next;
-              panel.logScrubber.displayLoad(next);
-          };
-          return panel.logScrubber.showLoad().load+1;
-      }
-  });
-
-  this.isCurrentLoad = ko.computed( function(){
-    return panel.logScrubber.showLoad().load == panel.logScrubber.loadStarted();
-  });
-
-  this.isPastLoad = ko.computed( function(){
-    return panel.logScrubber.loadStarted() && (panel.logScrubber.showLoad().load != panel.logScrubber.loadStarted());
-  });
-
-  ko.applyBindings(this, logScrubberElement);
+  ko.applyBindings(this.logScrubber , logScrubberElement);
   ko.applyBindings(this, logElement);
-
-  dropDown.onmouseout = function(event) {
-      var e = event.toElement || event.relatedTarget;
-      if (panel.isOurRelatedTarget(e, this)) return false;
-      dropDown.style.display = 'none';
-  }
-
-  currentLoad.onmouseover = function(){
-      dropDown.style.display = 'none';
-      loadElement.style.display = 'block';
-  }
-
-  loadElement.onmouseout = function(event) {
-      var e = event.toElement || event.relatedTarget;
-      if (panel.isOurRelatedTarget(e, this)) return false;
-      loadElement.style.display = 'none';
-  }
-
-  logElement.onmouseout = function(){
-      dropDown.style.display = 'none';
-      loadElement.style.display = 'none';
-  };
 
   // Set max height of trace trable depend on window height
   var traceBody = document.querySelector('.traceBody');
@@ -572,88 +420,8 @@ QuerypointPanel.Panel.prototype = {
       elem.scroll.scrollIntoView(false);
   },
 
-  focusLog: function (elem) {
-    if(typeof(elem.scroll) == 'undefined'){
-        // Clicked on Turn Indicator
-        // Focus on some element of the turn or ignore?
-        // What if no messages appeared in this turn?
-        document.querySelector().scrollIntoView(false);
-    } else {
-      elem.scroll.scrollIntoView(false);
-      var logFloat = document.querySelector('.floaty');
-      logFloat.scrollTop += logFloat.offsetHeight / 2 ;
-    }
-  },
-
-  turnInfo: function(){
-      if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-      var dropDown = document.querySelector('.eventTurn');
-      var loadElement = document.querySelector('.loadList');
-      var messages = document.querySelector('.eventTurn .messages');
-      dropDown.style.display = 'block';
-      loadElement.style.display = 'none';
-      QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
-      QuerypointPanel.LogScrubber.showMessage(this.position);
-      messages.scrollTop = 15 * this.position;
-  },
-
   tooltip: function(turn){
     return this._log.currentTurn.event;
-  },
-
-  startRecord: function(){
-    var panel = this;
-    if (panel.logScrubber.showLoad().load != panel.logScrubber.loadStarted()) return;
-    var button = document.querySelector('.recordIndicator');
-    var marker = document.querySelector('.recordMarker');
-    if (button.classList.contains('on')) {
-        panel.recordData.stopRecording(button, marker, panel);
-    } else {
-        try{
-          var current = panel.logScrubber.showLoad().messages.length;
-        } catch (err) {
-            return;             // Load hasn't started
-        }
-        for (var i = 0; i < panel.recordedMessages().length; i++) panel.preMessages().push(panel.recordedMessages()[i]);
-        for (var i = 0; i < panel.postMessages().length; i++) panel.preMessages().push(panel.postMessages()[i]);
-        panel.preMessages.valueHasMutated();
-        panel.logScrubber.showLoad.valueHasMutated();
-        
-        panel.recordedMessages([]);
-        panel.postMessages([]);
-
-        panel.messages = panel.recordedMessages;
-
-        panel.recordData.load = panel.logScrubber.showLoad();
-        panel.recordData.start = panel.logScrubber.showLoad().turns().length;
-        panel.recordData.end = -1;
-        
-        marker.onmousedown = function(){ panel.recordData.stopRecording(button, marker, panel);};
-        marker.innerHTML = '&#9679;';
-        marker.style.display = 'block';
-        marker.classList.add('on');
-        button.classList.add('on');
-    }
-  },
-
-  // Event mouseout triggers when mouse goes into child nodes
-  // If we are looking to hide target, we must assure element focused isn't a descendant
-  isOurRelatedTarget: function(element, target) {
-    while (element && element.parentNode) {
-      if (element.parentNode === target ||  element === target) {
-          if (element.preventDefault) element.preventDefault();
-          return true;
-      }
-      element = element.parentNode;
-    }
-    return false;
-  },
-
-  selectLast: function(node){
-      if(!node.classList) return;
-      var element = document.querySelector('.selectedLoad');
-      if(element) element.classList.remove('selectedLoad');
-      node.classList.add('selectedLoad');
   }
 
 };
