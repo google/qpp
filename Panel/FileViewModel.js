@@ -94,7 +94,7 @@
           if (tracepoint) {
             this.tracepoints.push(tracepoint);
           } 
-        }.bind(this));
+        }.bind(this), this._panel.logScrubber);
       }.bind(this));    
       var lastTracequery = tracequeries[tracequeries.length - 1];  
       this.tokenViewModel.setTokenTree(lastTracequery.targetTree());

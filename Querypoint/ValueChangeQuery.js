@@ -74,7 +74,6 @@
       this._setTracedPropertyObjectTransformer = new Querypoint.SetTracedPropertyObjectTransformer(transformData);
       this._tree.location.query = this;
       this._isActive = true;
-      this._lastEvaluated = false;
     },
     
     transformDescriptions: function() {
@@ -121,10 +120,10 @@
     },
 
     // Pull trace results out of the page for this querypoint
-    extractTracepoints: function(fileViewModel, onTracepoint) {
+    extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
       function onEval(result, isException) {
          this._lastEvaluated = result.turn;
-         this._lastLoadEvaluated = fileViewModel._panel.logScrubber.loadStarted();
+         this._lastLoadEvaluated = logScrubber.loadStarted();
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
@@ -140,10 +139,10 @@
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var previousTurn = fileViewModel._panel.logScrubber.turnStarted() - 1;
-      var thisLoad = fileViewModel._panel.logScrubber.loadStarted();
+      var previousTurn = logScrubber.turnStarted() - 1;
+      var thisLoad = logScrubber.loadStarted();
 
-      if ( typeof this._lastEvaluated !== 'number' || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
+      if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = this._queryIndex;
         var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + this.identifier + '\",' + tracedObjectIndex + ')';
         chrome.devtools.inspectedWindow.eval(expr, onEval.bind(this));
