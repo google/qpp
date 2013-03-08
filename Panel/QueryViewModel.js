@@ -42,7 +42,7 @@
 
       this.query.setQueryOnTree(this.query.targetTree(), this.query);
       
-      this.query.activate(this.panel.tracequeries.length);
+      this.query.activate(this.panel.tracequeries().length);
 
       // project -> query
       this.panel.tracequeries.push(this.query);

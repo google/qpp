@@ -251,7 +251,6 @@
     
     // For lastChange
     function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex) {
-
       if (debug_in_page) {
         if (window.__qp.propertyChanges[propertyKey]) 
           console.log("qp| debug reducePropertyChangesToTracedObject starts with " + window.__qp.propertyChanges[propertyKey].length);
