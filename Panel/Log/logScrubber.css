@@ -168,7 +168,7 @@
     width: 15px;
     position: relative;
     height: 15px;
-    z-index: 999;
+    z-index: 1;
 }
 
 .overviewLog {

@@ -38,7 +38,7 @@
       // tree -> query
 
       // Stop recording if load changes.
-      if (QuerypointPanel.OnPanelOpen.panel.logScrubber.recordData.end == -1) QuerypointPanel.OnPanelOpen.panel.logScrubber.recordData.stopRecording();
+      if (this.panel.logScrubber.recordData.end == -1) this.panel.logScrubber.recordData.stopRecording();
 
       this.query.setQueryOnTree(this.query.targetTree(), this.query);
       
