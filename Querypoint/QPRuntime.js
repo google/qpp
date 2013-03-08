@@ -250,12 +250,7 @@
     }
     
     // For lastChange
-    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex, positionOffset) {
-      var property = tracedObjectIndex + '.' + propertyKey;
-      if (typeof positionOffset !== 'undefined') property = positionOffset + '.' + property;
-
-      if (window.__qp.lastReduced[property] === this.turn) return;
-      window.__qp.lastReduced[property] = this.turn;
+    function reducePropertyChangesToTracedObject(propertyKey, tracedObjectIndex) {
 
       if (debug_in_page) {
         if (window.__qp.propertyChanges[propertyKey]) 
@@ -266,11 +261,11 @@
       var changes = window.__qp.propertyChanges[propertyKey];
       if (!changes || !changes.length) {
         if (debug_in_page) console.warn("qp| debug reducePropertyChangesToTracedObject No changes for " + propertyKey + ' at ' + tracedObjectIndex);
-        return [];
+        return {turn: this.turn, tracepoints: []};
       }
       if (!changes.objectTraced) {
         if (debug_in_page) console.error("qp| debug reducePropertyChangesToTracedObject no objectTraced for " + propertyKey + ' at ' + tracedObjectIndex);
-        return [];
+        return {turn: this.turn, tracepoints: []};
       }
       var object = changes.objectTraced[tracedObjectIndex];
       var rawTracepoints = changes.reduce(
@@ -282,7 +277,7 @@
         []
       );
       if (debug_in_page) console.log("qp| debug reducePropertyChangesToTracedObject ends with " + rawTracepoints.length);
-      return extractTracepoints(rawTracepoints);
+      return {turn: this.turn, tracepoints: extractTracepoints(rawTracepoints)};
     }
 
         // For lastChange
@@ -363,7 +358,7 @@
         _traceSettersBySelector: {},
         reducePropertyChangesToTracedObject: reducePropertyChangesToTracedObject, // changes limited to object
         startTurn: startTurn,  // standard turn marking 
-        endTurn: endTurn,
+        endTurn: endTurn
       };      
     }
      
@@ -374,7 +369,6 @@
     interceptEntryPoints();
     
     console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
-    window.__qp.lastReduced = {};
 
     if (debug_in_page) console.log("qp| debug runtime initialized: window.__qp: %o", window.__qp);    
   }; 

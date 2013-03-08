@@ -44,6 +44,7 @@
       this._setTracedElementTransformer = new Querypoint.SetTracedElementTransformer(transformData);
       this._tree.location.query = this;
       this._isActive = true;
+      this._lastEvaluated = false;
     },
 
     transformDescriptions: function() {
@@ -81,8 +82,9 @@
     extractTracepoints: function(fileViewModel, onTracepoint) {
       var query = this;
       function onEval(result, isException) {
-         if (!isException && result && result instanceof Array) {
-          var changes = result;
+         query._lastEvaluated = result.turn;
+         if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
+          var changes = result.tracepoints;
           changes.forEach(function(change) {
             var trace = change;
             if (trace.valueType === 'undefined')
@@ -96,11 +98,14 @@
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var tracedObjectIndex = query._queryIndex;
-      query._properties.forEach(function(property){
-        var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + property + '\",' + tracedObjectIndex + ')';
-        chrome.devtools.inspectedWindow.eval(expr, onEval);        
-      });
+
+      if ( typeof this._lastEvaluated !== 'number' ||  this._lastEvaluated === fileViewModel._panel.logScrubber.turnStarted() - 1) {
+        var tracedObjectIndex = query._queryIndex;
+        query._properties.forEach(function(property){
+          var expr = 'window.__qp.reducePropertyChangesToTracedObject(\"' + property + '\",' + tracedObjectIndex + ')';
+          chrome.devtools.inspectedWindow.eval(expr, onEval);
+        });
+      }
     },
 
   };
