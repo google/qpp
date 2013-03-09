@@ -1,0 +1,25 @@
+html, body {
+  height: 90%;
+  width: 100%;
+  margin:  0px;
+  box-sizing: border-box;
+}
+
+.hbox {
+  -webkit-flex-flow: row;
+  -webkit-flex-wrap: nowrap;
+  display: -webkit-flex;
+  height: 100%;
+}
+.thirty {
+	-webkit-flex: 30;
+  overflow-x: hidden;
+  border: 2px solid gray;
+  min-width: 20ex;
+}
+.seventy {
+	-webkit-flex: 70;
+	overflow-x: hidden;
+  border: 2px solid orange;
+  min-width: 20ex;
+}

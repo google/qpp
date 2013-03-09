@@ -1,0 +1,108 @@
+html {
+  height: 100%;
+}
+/* apply a natural box layout model to all elements */
+* {  
+  box-sizing: border-box; 
+}
+body {
+  margin: 0px;
+  overflow: hidden; /* no scroll bar so we control */
+  -webkit-box-sizing: border-box; /* measure width & height w/o padding & border */
+  box-sizing: border-box;
+  height: 100%;
+  background: #272822; 
+  color: #f8f8f2;
+}
+
+
+.panel {
+  width: 100%;
+  height: 100%;
+  line-height: 1em;
+  font-family: monospace;
+  border-spacing: 0px;
+  -webkit-flex-flow: column;
+  -webkit-flex-wrap: nowrap;
+  display: -webkit-flex;
+}
+.logView {
+  color: #75715e;
+  cursor: default;
+  height: 200px;
+  -webkit-flex-shrink: 0;
+  width: 100%;
+}
+.logScrubber {
+    color: #272822; 
+    width: 100%;
+    height: 15px; 
+    position: relative;
+    background-color: #75715E;
+    font-size: 0px; /* prevent whitespace */
+    line-height: normal;
+    white-space: nowrap;
+    -webkit-flex-shrink: 0;
+}
+
+.workSpace {
+    /* as a flex item */  
+  -webkit-flex: 1;  
+  /* as a flex container */
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  /*  */
+  min-height: 1em;
+  overflow-y: auto;
+}
+
+.fileViews {
+  /* as a flex item */
+  -webkit-flex: none;   
+  /* as a flex container */
+  display: -webkit-flex;  
+  -webkit-flex-flow: column;
+  -webkit-flex-wrap: nowrap;
+  width: 100%;
+}
+
+.fileView {
+  /* as a flex item */
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-flex: 1;  /* Each file gets the same space */
+;
+  min-height: 1em;
+  height: 100%;
+}
+
+.hoverDoorTarget {
+  width: 38%;
+}
+
+.fileEditor {  
+  width: 62%;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+}
+
+.CodeMirror {
+   border: 1px solid gray;
+   overflow: auto;
+   max-height: 100%;
+   -webkit-flex: none;
+}
+
+.buffersStatusBar {
+  height: 17px;
+    color: #272822; /* reverse from cm-s */
+  background-color: #75715E;
+  position: relative;
+  font-size: 15px;
+    display: -webkit-flex;
+    -webkit-flex-direction: row;
+    -webkit-justify-content: space-between;
+    
+  -webkit-flex: none;
+}
