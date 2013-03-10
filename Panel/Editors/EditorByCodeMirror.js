@@ -27,6 +27,8 @@
   //  this.editorImpl.on('blur', this._onBlur.bind(this));
     
     this._container = containerElement;
+    containerElement.filename = name;
+    
     window.addEventListener('resize', this._setSize.bind(this));
     /* Set an initial size heusitically */
     setTimeout( this._setSize.bind(this) ); 
@@ -41,7 +43,6 @@
     
     show: function() {
       this.editorImpl.getWrapperElement().classList.remove('hide');
-
     },
     hide: function() {
       this.editorImpl.getWrapperElement().classList.add('hide');
@@ -56,6 +57,7 @@
       this.editorImpl.setValue(content);
     },
     resize: function(width, height) {
+      console.log('EditorByCodeMirror.resize: wxh ' + width + 'x' + height); 
       this.editorImpl.setSize(width, height);
     },
     setLineNumberClass: function(lineNumber, className) {

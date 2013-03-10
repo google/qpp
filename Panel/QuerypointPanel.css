@@ -162,19 +162,8 @@ body {
     padding: 1em;
     margin: 1em;
     border-radius: 999px; /* any value larger than the radius of the object gives a circle */
-;
     width: 200px;
 } 
-
-.fileEditor {
-  min-height: 100%;  
-  min-width: auto;
-  height: 1ex; /* I have no idea why this works. */
-;
-  -webkit-flex-basis: 70%;
-  -webkit-flex-grow: 1;
-  -webkit-flex-shrink: 1;
-}
 
 .explainTokenPanel {
   font-family: Lucida Grande, sans-serif;
@@ -184,33 +173,48 @@ body {
   color: #d0d0d0;
   border: 2px solid #75715e;
   border-radius: 20px;
-  padding: 3px;
+  padding-left: 1ex;
+  padding-right: 1ex;
+}
+
+.workSpace {
+  /* as a flex item */  
+  -webkit-flex: 1;  
+  /* as a flex container */
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  /*  */
+  min-height: 1em;
+  overflow-y: auto;
 }
 
 .fileViews {
-  min-height: auto;
-  display: -webkit-flex;
+  /* as a flex item */
+  -webkit-flex: 1;   
+  /* as a flex container */
+  display: -webkit-flex;  
   -webkit-flex-flow: column;
   -webkit-flex-wrap: nowrap;
-  -webkit-flex: auto;
+  width: 100%;
 }
 
 
 .fileView {
-  min-height: auto;
-  min-width: 100%;
+  /* as a flex item */
   display: -webkit-flex;
   -webkit-flex-direction: row;
-  -webkit-flex-wrap: nowrap;
-  -webkit-flex: auto;
+  -webkit-flex: 1;  /* Each file gets the same space */
+  min-height: 1em;
+  height: 100%;
 }
 
-.hoverDoorTarget {
-  min-width: 30%;  /* must be fixed to avoid flashy resizing of the width */
-  min-height: 100%;
-  -webkit-flex-basis: 30%;
-  -webkit-flex-grow: 1;
-  -webkit-flex-shrink: 0;
+.hoverDoorTarget { 
+}
+
+.tokenFollowControl {
+    width: -webkit-fit-content;
+    margin: auto;
 }
 
 a {
@@ -228,8 +232,16 @@ a:focus, a:active {
   padding: 4px;
   display: -webkit-flex;
   -webkit-flex-flow: column;
-  -webkit-justify-content: space-between;
-  -webkit-flex-basis: 100%;
+  -webkit-flex: 61;
+  width:  0px;
+}
+
+.tokenView {
+  display: -webkit-flex;
+  -webkit-flex-flow: row;
+  width: 100%;
+  -webkit-flex-wrap: wrap;
+  -webkit-flex: 1;
 }
 
 .overflowMe {
@@ -248,6 +260,18 @@ a:focus, a:active {
   position: absolute;
 }
 
+
+.fileEditor {
+  -webkit-flex: 99;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+}
+
+.CodeMirror {
+  -webkit-flex: none;
+  height: 100%;
+}
+
 .CodeMirror .box {
   margin-left: 4px; /* needed to match the padding of <pre> lines */
 }
@@ -260,6 +284,7 @@ a:focus, a:active {
   margin: 0px;
 }
 .clonedEditorLine {
+    overflow: hidden;
 }   
 
 .QPOutput caption {
@@ -283,24 +308,26 @@ pre.traceBackground {
   display: none !important;
 }
 
-.QPOutput .traceView {
+.traceView {
   display: none;
 }
 
-.QPOutput .traceView[hasTraceData="true"] {
+.traceView[hasTraceData="true"] {
   display: block;
 }
 
-.QPOutput .fileScope {
+.fileScope {
   color: #75715e;
 }
 
-.QPOutput .queryButtons {
+.queryButtons {
 }
-.QPOutput .activation {
+
+.activation {
   color: #75715e;
 }
-.QPOutput .command {
+
+.command {
   font-family: Lucida Grande, sans-serif;
   font-size: smaller;
   background-color: #272822;
@@ -313,7 +340,7 @@ pre.traceBackground {
   cursor: pointer;
 }
 
-.QPOutput .command:hover {
+.command:hover {
   background-color: #272822;
   color: #75715e; 
 }

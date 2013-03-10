@@ -118,8 +118,9 @@
 .logView {
   color: #75715e;
   cursor: default;
-  min-height: auto;
+  min-height: 200px;
   -webkit-flex-shrink: 0;
+  width: 100%;
 }
 .logView table,tr {
   width: 100%;

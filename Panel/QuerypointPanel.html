@@ -146,62 +146,72 @@
         <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
       <!-- <span class="scrubberIndicator" title="TODO slide sideways to select visible log entries, up/down to resize log view"></span> -->
     </div>
-    <div class="fileViews" data-bind="foreach: fileViewModels">
-      <div class="fileView">
-        <div class="hoverDoorTarget">
-          <div class="hoverDoorChannel">
-            <div class="hoverDoor hoverSpacer"></div>
-            <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
-            <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
-          </div>
-          <div class="QPOutput overflowMe">
-            <span class="helpInfo">Tracing output, see tooltips for details</span>
-            <div class="tokenView overflowMe" >
-              <div class="scopeChain" data-bind="foreach: tokenViewModel.scopes">
-                <div class="overflowMe" data-bind="html: scopeDeclaration"></div>
-              </div>
-              <div class="expressionView">
-                <div class="currentExpression overflowMe" title="Current expression trace values displayed below" data-bind="html: tokenViewModel.currentExpression"></div>
-              </div>
+    <div class="workSpace">
+      <div class="fileViews" data-bind="foreach: fileViewModels">
+        <div class="fileView">
+          <div class="QPOutput hoverDoorTarget">
+            <div class="hoverDoorChannel">
+              <div class="hoverDoor hoverSpacer"></div>
+              <div class="hoverDoor hoverCloser"><span>Close Tracing</span></div>
+              <div class="hoverDoor hoverOpener"><span>Open Tracing</span></div>
             </div>
-            <table class="traceView" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && !!traceViewModel.currentTraces().length}">
-              <caption>Trace Data</caption>
-              <thead>
-              <tr>
-                <th title="Function call within event turn, linked to source expression">Activation</th>
-                <th title="Expression value during specific activation">Value</th>
-              </tr>
-            </thead> 
-            <tbody class="traceBody" data-bind="foreach: {data: traceViewModel.currentTraces, afterRender: function(){ document.querySelector('.traceBody').scrollTop = 9999;}}">
-              <tr >
-                <td class="activation">
-                  <span class="command" data-bind="html: iconText, attr: {title: tooltip, 'data-url': url}"></span>
-                  <span title="Load number" data-bind="text: load">
-                  </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
-                </td>
-                <td class="traceValue overflowMe" data-bind="text: value"></td>
-              </tr>  
-              </tbody>
-            </table>
-            <div class="queryView">
-              <div data-bind="if: queriesViewModel.hasQueries">
-                <div class="toolbar" data-bind="foreach: queriesViewModel.queryViewModels">
-                  <button class="command" data-bind="text: buttonName(), attr: {title: toolTip(), 'data-active': isActive}, click: activateQuery.bind($data, $parent)"></button>
+            <span class="helpInfo">Tracing output, see tooltips for details</span>
+            <div class='hbox'>
+              <div class="tokenView vbox" >
+                <div class="scopeChain" data-bind="foreach: tokenViewModel.scopes">
+                  <div class="overflowMe" data-bind="html: scopeDeclaration"></div>
+                </div>
+                <div class="expressionView">
+                  <div class="currentExpression overflowMe" title="Current expression trace values displayed below" data-bind="html: tokenViewModel.currentExpression"></div>
                 </div>
               </div>
             </div>
-            <a class="explainTokenPanel"  data-bind="hasfocus: tokenViewModel.followTokens, attr: {'data-active': tokenViewModel.followingTokens()}" tabindex="0">
-              <div data-active="true" data-bind="css: {hide:  !tokenViewModel.followingTokens()}">Selecting Syntax Tree; Focus Editor to Lock</div>
-              <div data-bind="css: {hide:  tokenViewModel.followingTokens()}">Click to Select Another Syntax Tree</div>
-          </a>
+            <div class='hbox'>
+              <table class="traceView vbox" data-bind="attr: {hasTraceData: traceViewModel.currentTraces() && !!traceViewModel.currentTraces().length}">
+                <caption>Trace Data</caption>
+                <thead>
+                <tr>
+                  <th title="Function call within event turn, linked to source expression">Activation</th>
+                  <th title="Expression value during specific activation">Value</th>
+                </tr>
+                </thead> 
+                <tbody class="traceBody" data-bind="foreach: {data: traceViewModel.currentTraces, afterRender: function(){ document.querySelector('.traceBody').scrollTop = 9999;}}">
+                <tr >
+                  <td class="activation">
+                    <span class="command" data-bind="html: iconText, attr: {title: tooltip, 'data-url': url}"></span>
+                    <span title="Load number" data-bind="text: load">
+                    </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
+                  </td>
+                  <td class="traceValue overflowMe" data-bind="text: value"></td>
+                </tr>  
+                </tbody>
+              </table>
+            </div>
+            <div class='hbox'>
+              <div class="queryView vbox">
+                <div data-bind="if: queriesViewModel.hasQueries">
+                  <div class="toolbar" data-bind="foreach: queriesViewModel.queryViewModels">
+                    <button class="command" data-bind="text: buttonName(), attr: {title: toolTip(), 'data-active': isActive}, click: activateQuery.bind($data, $parent)"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class='hbox'>
+              <div class='tokenFollowControl vbox'>
+                <a class="explainTokenPanel"  data-bind="hasfocus: tokenViewModel.followTokens, attr: {'data-active': tokenViewModel.followingTokens()}" tabindex="0">
+                  <span data-active="true" data-bind="css: {hide:  !tokenViewModel.followingTokens()}">Selecting Syntax Tree; Focus Editor to Lock</span>
+                  <span data-bind="css: {hide:  tokenViewModel.followingTokens()}">Click to Select Another Syntax Tree</span>
+                </a>
+              </div>
+            </div>
           <p class="fileViewModel_syncState" data-bind="text: (currentLocation() ? tokenViewModel.tokenTree().type : 'updating')">Not Yet Updated</p>
           <!-- <div class="tracepoints">
             <p><span data-bind="tokenViewModel.tracepoints().length"></span> tracepoints in this file</p>
           </div> -->
           </div>
-        </div>
-        <div class="fileEditor">
-           <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
+          <div class="fileEditor">
+             <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
+          </div>
         </div>
       </div>
     </div>
