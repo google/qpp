@@ -290,7 +290,10 @@
           } else {
               nextLoad.onmousedown = function() {
                   var next = self.showLoad().next;
-                  self.displayLoad(next);
+                  if (next) 
+                    self.displayLoad(next);
+                  else 
+                    self.displayLoad({load: '-'});
               };
               return self.showLoad().load+1;
           }
