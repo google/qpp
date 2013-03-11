@@ -211,6 +211,7 @@ body {
   -webkit-flex-flow: column;
   -webkit-flex-wrap: nowrap;
   width: 100%;
+  min-width:  0px;
 }
 
 
@@ -272,7 +273,7 @@ a:focus, a:active {
 
 
 .fileEditor {
-  -webkit-flex: 1 1 70%;
+  -webkit-flex: 0 0 70%;
   display: -webkit-flex;
   -webkit-flex-direction: column;
   min-width: 20ex;
