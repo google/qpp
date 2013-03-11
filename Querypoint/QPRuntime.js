@@ -318,14 +318,14 @@
 
           var parent = element.parentElement;
 
-          var sibling = parent && parent.firstChild;
-          var ith = 0;
+          var sibling = parent && parent.firstElementChild;
+          var ith = 1;
           while(sibling && sibling !== element) {
-            sibling = sibling.element;
+            sibling = sibling.nextElementSibling;
             ith++;
           }
-          if (ith) {
-            name += ':eq(' + ith + ')'; 
+          if (ith > 1) {
+            name += ':nth-child(' + ith + ')';
           }
           
           path = name + (path ? '>' + path : '');
