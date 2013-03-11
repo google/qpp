@@ -101,7 +101,7 @@
       if (expression === tree.expression && statements === tree.statements) {
         return tree;
       }
-      return new CaseClause(tree.location, expression, statements);
+      return new Trees.CaseClause(tree.location, expression, statements);
     },
     
     transformDefaultClause: function(tree) {
@@ -110,7 +110,7 @@
       if (statements === tree.statements) {
         return tree;
       }
-      return new DefaultClause(tree.location, statements);
+      return new Trees.DefaultClause(tree.location, statements);
     },
     
     transformProgram: function(tree) {
