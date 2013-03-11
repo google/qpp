@@ -308,7 +308,7 @@ window.PatientSelector = (function(){
         evaluateInPage: function(expr, callback) {
             function checkException(result, isException) {
                 if (isException) {
-                    console.error("....PatientSelector.evaluateInPage(" + expr + ") exception", result);
+                    console.error("....PatientSelector.evaluateInPage(" + expr + ") exception", isException);
                 } else {
                     callback(result);
                 }
