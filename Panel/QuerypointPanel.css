@@ -38,7 +38,7 @@ body {
 .panel {
   width: 100%;
   height: 100%;
-  line-height: 1em;
+  line-height: 1;
   font-family: monospace;
   border-spacing: 0px;
   -webkit-flex-flow: column;
@@ -337,10 +337,6 @@ pre.traceBackground {
 .queryButtons {
 }
 
-.activation {
-  color: #75715e;
-}
-
 .command {
   font-family: Lucida Grande, sans-serif;
   font-size: smaller;
@@ -357,6 +353,16 @@ pre.traceBackground {
 .command:hover {
   background-color: #272822;
   color: #75715e; 
+}
+
+.activation {
+  color: #75715e;
+  height: 1.2em;
+  line-height: 1.2;
+}
+
+.activation span {
+    line-height: 1.0;
 }
 
 .QPOutput [data-active="true"] {
