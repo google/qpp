@@ -121,8 +121,8 @@
       // Shift the token in the expression by leftOffset such that the end of the token
       // is extraShowRight from the rigth edge of viewWidth
       // endOffset + extraShowRight = leftOffset + viewWidth
-      var view = document.querySelector('.expressionView');
-      var viewWidth = view.clientWidth || 300;
+      var hbox = $('.expressionView').closest('.hbox')[0];
+      var viewWidth = hbox.clientWidth;
       var leftOffset = viewWidth - boxEnd - this.extraShowRight;
       return leftOffset < 0 ? leftOffset : 0;
     };

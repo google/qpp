@@ -19,6 +19,21 @@ body {
 
 .cm-s-monokai {background: #272822; color: #f8f8f2;}
 
+.hbox {
+  -webkit-flex-flow: row;
+  -webkit-flex-wrap: nowrap;
+  display: -webkit-flex;
+  height: 100%;
+  overflow-x: hidden;
+}
+.vbox {
+  -webkit-flex-flow: column;
+  -webkit-flex-wrap: nowrap;
+  display: -webkit-flex;
+  width: 100%;  
+  min-width: 10ex;
+}
+
 
 .panel {
   width: 100%;
@@ -186,7 +201,6 @@ body {
   -webkit-flex-wrap: nowrap;
   /*  */
   min-height: 1em;
-  overflow-y: auto;
 }
 
 .fileViews {
@@ -213,8 +227,9 @@ body {
 }
 
 .tokenFollowControl {
-    width: -webkit-fit-content;
     margin: auto;
+    min-width: 0px;
+    width: auto;
 }
 
 a {
@@ -232,16 +247,11 @@ a:focus, a:active {
   padding: 4px;
   display: -webkit-flex;
   -webkit-flex-flow: column;
-  -webkit-flex: 61;
-  width:  0px;
+  -webkit-flex: 0 0 30%;
+  min-width: 20ex;
 }
 
 .tokenView {
-  display: -webkit-flex;
-  -webkit-flex-flow: row;
-  width: 100%;
-  -webkit-flex-wrap: wrap;
-  -webkit-flex: 1;
 }
 
 .overflowMe {
@@ -262,9 +272,10 @@ a:focus, a:active {
 
 
 .fileEditor {
-  -webkit-flex: 99;
+  -webkit-flex: 1 1 70%;
   display: -webkit-flex;
   -webkit-flex-direction: column;
+  min-width: 20ex;
 }
 
 .CodeMirror {
@@ -280,11 +291,13 @@ a:focus, a:active {
     padding-top: 1ex;
     padding-bottom: 1ex;
 }
+.currentExpression .box {
+    padding-top: 1ex;
+}
 .currentExpression pre { 
   margin: 0px;
 }
 .clonedEditorLine {
-    overflow: hidden;
 }   
 
 .QPOutput caption {
