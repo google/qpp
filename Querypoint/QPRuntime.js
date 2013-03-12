@@ -57,10 +57,17 @@
 
     function trace(expr) {
       if (typeof expr === 'object') {
+        if (expr instanceof Node) {
+          return getSelectorUniqueToElement(expr);
+        }
         var objTrace = Object.keys(expr).map(function(key){
           return key+ ': ' + expr[key];
         }).join(',');
         return '{' + objTrace + '}';
+      } else if (typeof expr === 'function') {
+        var src = expr + '';
+        var brace = src.indexOf('{');
+        return src.substr(0, brace);
       } else {
         return expr + '';  
       }
