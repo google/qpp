@@ -7,7 +7,7 @@
 
   var statusBarSelector = ".statusBar";
   
-  QuerypointPanel.statusBar = {
+  QuerypointPanel.StatusBar = {
     initialize: function(panel) {
       this.exploringMode = ko.observable(false);
       this.openURLs = ko.observableArray();

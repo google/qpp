@@ -94,7 +94,7 @@ body {
    -webkit-flex: none;
 }
 
-.buffersStatusBar {
+.statusBar {
   height: 17px;
     color: #272822; /* reverse from cm-s */
   background-color: #75715E;

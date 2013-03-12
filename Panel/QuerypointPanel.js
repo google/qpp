@@ -358,8 +358,8 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _initEditors: function(panelModel) {
-    this._buffersStatusBar = QuerypointPanel.BuffersStatusBar.initialize(this);
-    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._buffersStatusBar, this.commands);
+    this._statusBar = QuerypointPanel.StatusBar.initialize(this);
+    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._statusBar, this.commands);
     
     var lastURL = panelModel.buffers.openURLs.pop();
     panelModel.buffers.openURLs = [];  // create an list next time we save
