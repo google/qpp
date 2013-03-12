@@ -173,21 +173,23 @@
         var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
         self.showLoad(object);
-        self._updateSize();
 
         loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
         if (loadElement) loadElement.classList.add('selectedLoad');
 
         if (self.isCurrentLoad() ){
+            self.storedMessages([]);
             if (self.recordData.start !== -1) {
               marker = document.querySelector('.recordMarker');
               marker.style.display = 'block';
               marker.innerHTML = '&#x25B6';
             }
+            self.updateSize();
         } else {
-          self.storedMessages(object.messages);
+          self.storedMessages(self.compressMessages(object.messages));
+          var maxMessages = logScrubberElement.offsetWidth - 30;
+          self._setMessageWidth( maxMessages / self.storedMessages().length );
         }
-
         object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
       }
 
@@ -209,28 +211,99 @@
       this.recordedMessages = ko.observableArray();
       this.storedMessages = ko.observableArray();
       this.messages = this.preMessages;
+      this._scale = 1;
+      this._addedMessages;
 
       this._addMessage = function(message){
-        self.messages.push(message);
-        self._updateSize();
+        if (this._scale == 1) {
+          self.messages.push(message);
+        } else {
+          if (this._addedMessages == this._scale) {
+            self.messages.push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
+            self._addedMessages = 0;
+          } else {
+            self._addedMessages += 1;
+            var lastMessage = self.messages()[self.messages().length - 1];
+            if (message.severity === 'warn' && lastMessage.severity === 'log') lastMessage.severity = 'warn';
+            if (message.severity === 'error' && lastMessage.severity !== 'turn') lastMessage.severity = 'error';
+            if (message.turn === 'turn') {
+                lastMessage.severity = 'turn';
+                lastMessage.turn = message.turn;
+                lastMessage.position = 0;
+            }
+          }
+        }
       }
 
-      this._updateSize = function(){
-        var maxMessages = logScrubberElement.offsetWidth - 40; 
-        var joinMessages;
-        if (self.showLoad().load == self.loadStarted()){
-            joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
-        } else {
-            joinMessages = self.storedMessages().length;
+      this.compressMessages = function(messages){
+        var maxMessages = logScrubberElement.offsetWidth - 30;
+        if(messages.length < maxMessages) return messages;
+        var perPixel = Math.floor(messages.length / maxMessages);
+        var result = [];
+        var message;
+        for (var i = 0; i < messages.length; i++) {
+          message = messages[i];
+          if (i % perPixel == 0) {
+            result.push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
+          } else {
+            var lastMessage = result[result.length - 1];
+            if (message.severity === 'warn' && lastMessage.severity === 'log') lastMessage.severity = 'warn';
+            if (message.severity === 'error' && lastMessage.severity !== 'turn') lastMessage.severity = 'error';
+            if (message.turn === 'turn') {
+                lastMessage.severity = 'turn';
+                lastMessage.turn = message.turn;
+                lastMessage.position = 0;
+            }
+          }
         }
+        return result;
+      }
+
+      this.updateSize = function(){
+        var maxMessages = logScrubberElement.offsetWidth - 40;
+        if (self.recordData.start !== -1) maxMessages -= 10;
+        var joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
 
         if (joinMessages < maxMessages) {
           var width = Math.floor(maxMessages / joinMessages);
           self._setMessageWidth(width);
         } else {
-          var perPixel = joinMessages / maxMessages;
-          return self._downSizeMessages(perPixel, joinMessages);
+          self._scale *= 2;
+          self._addedMessages = 0;
+          if (self.messages !== self.preMessages) self._scaleMessages(self.preMessages);
+          if (self.messages !== self.recordedMessages) self._scaleMessages(self.recordedMessages);
+          self._scaleMessages(self.messages);
+          this.updateSize();
         }
+      }
+
+      this._scaleMessages = function(messages) {
+        var len = messages().length;
+        if (len % 2 == 1){
+            messages.push(messages()[len-1]);
+            len++;
+        }
+
+        for (var i = 0; i < len / 2; i++){
+            var message = {severity: null, position: null, scroll: null, turn: null};
+
+            message.severity = 'log';   // Defines color of indicator in scrubber bar
+            if (messages()[i * 2].severity === 'warn' || messages()[i * 2 + 1].severity === 'warn') message.severity = 'warn';
+            if (messages()[i * 2].severity === 'error' || messages()[i * 2 + 1].severity === 'error') message.severity = 'error';
+            if (messages()[i * 2].severity === 'turn') message.severity = 'turn';
+
+            message.position = messages()[i * 2].position;
+            message.scroll = messages()[i * 2].scroll; 
+            message.turn = messages()[i * 2].turn; 
+            if (messages()[i * 2 + 1].severity === 'turn'){
+                message.severity = 'turn';
+                message.position = 0;
+                message.turn = messages()[i * 2 + 1].turn;
+            }
+            messages()[i] = message;
+        }
+        messages.splice(messages().length / 2);
+        messages.valueHasMutated();
       }
 
       this._clearMessages = function(){
@@ -240,14 +313,10 @@
       }
 
       this._setMessageWidth = function(width) {
-        if (width > 10) width = 10;
-            width = width + 'px';
-            setTimeout(function(){
-                var events = document.querySelectorAll('.eventIndicator');
-                for(var i = 0; i < events.length; i++){
-                    events[i].style.width = width;
-                }
-            }, 5);
+        if (width < 3) document.styleSheets[3].cssRules[30].style.borderLeftWidth = '0px';
+        else document.styleSheets[3].cssRules[30].style.borderLeftWidth = '2px';
+        if (width > 10) document.styleSheets[3].cssRules[30].style.width = '10px';
+        else document.styleSheets[3].cssRules[30].style.width = width + 'px';
       }
 
       this.showLoadNumber = ko.computed(function(){
@@ -418,84 +487,83 @@
       setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
     },
 
-  // Event mouseout triggers when mouse goes into child nodes
-  // If we are looking to hide target, we must assure element focused isn't a descendant
-  isOurRelatedTarget: function(element, target) {
-    while (element && element.parentNode) {
-      if (element.parentNode === target ||  element === target) {
-          if (element.preventDefault) element.preventDefault();
-          return true;
-      }
-      element = element.parentNode;
-    }
-    return false;
-  },
-
-  selectLast: function(node){
-      if(!node.classList) return;
-      var element = document.querySelector('.selectedLoad');
-      if(element) element.classList.remove('selectedLoad');
-      node.classList.add('selectedLoad');
-  },
-
-  focusLog: function (elem) {
-    if(typeof(elem.scroll) == 'undefined'){
-        // Clicked on Turn Indicator
-        // Focus on some element of the turn or ignore?
-        // What if no messages appeared in this turn?
-        document.querySelector().scrollIntoView(false);
-    } else {
-      elem.scroll.scrollIntoView(false);
-      var logFloat = document.querySelector('.logContainer');
-      logFloat.scrollTop += logFloat.offsetHeight / 2 ;
-    }
-  },
-
-  turnInfo: function(){
-      if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-      var dropDown = document.querySelector('.eventTurn');
-      var loadElement = document.querySelector('.loadList');
-      var messages = document.querySelector('.eventTurn .messages');
-      dropDown.style.display = 'block';
-      loadElement.style.display = 'none';
-      QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
-      QuerypointPanel.LogScrubber.showMessage(this.position);
-      messages.scrollTop = 15 * this.position;
-  },
-
-  startRecord: function(){
-    var logScrubber = this;
-    if (logScrubber.showLoad().load != logScrubber.loadStarted()) return;
-    var button = document.querySelector('.recordIndicator');
-    var marker = document.querySelector('.recordMarker');
-    if (button.classList.contains('on')) {
-        logScrubber.recordData.stopRecording(button, marker);
-    } else {
-        try{
-          var current = logScrubber.showLoad().messages.length;
-        } catch (err) {
-            return;             // Load hasn't started
+    // Event mouseout triggers when mouse goes into child nodes
+    // If we are looking to hide target, we must assure element focused isn't a descendant
+    isOurRelatedTarget: function(element, target) {
+      while (element && element.parentNode) {
+        if (element.parentNode === target ||  element === target) {
+            if (element.preventDefault) element.preventDefault();
+            return true;
         }
-        for (var i = 0; i < logScrubber.recordedMessages().length; i++) logScrubber.preMessages().push(logScrubber.recordedMessages()[i]);
-        for (var i = 0; i < logScrubber.postMessages().length; i++) logScrubber.preMessages().push(logScrubber.postMessages()[i]);
-        logScrubber.preMessages.valueHasMutated();
-        logScrubber._updateSize();
-
-        logScrubber.recordedMessages([]);
-        logScrubber.postMessages([]);
-
-        logScrubber.messages = logScrubber.recordedMessages;
-
-        logScrubber.recordData.load = logScrubber.showLoad();
-        logScrubber.recordData.start = logScrubber.showLoad().turns().length;
-        logScrubber.recordData.end = -1;
-        
-        marker.onmousedown = function(){ logScrubber.recordData.stopRecording(button, marker);};
-        marker.innerHTML = '&#9679;';
-        marker.style.display = 'block';
-        marker.classList.add('on');
-        button.classList.add('on');
+        element = element.parentNode;
+      }
+      return false;
+    },
+  
+    selectLast: function(node){
+        if(!node.classList) return;
+        var element = document.querySelector('.selectedLoad');
+        if(element) element.classList.remove('selectedLoad');
+        node.classList.add('selectedLoad');
+    },
+  
+    focusLog: function (elem) {
+      if(typeof(elem.scroll) == 'undefined'){
+          // Clicked on Turn Indicator
+          // Focus on some element of the turn or ignore?
+          // What if no messages appeared in this turn?
+          document.querySelector().scrollIntoView(false);
+      } else {
+        elem.scroll.scrollIntoView(false);
+        var logFloat = document.querySelector('.logContainer');
+        logFloat.scrollTop += logFloat.offsetHeight / 2 ;
+      }
+    },
+  
+    turnInfo: function(){
+        if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
+        var dropDown = document.querySelector('.eventTurn');
+        var loadElement = document.querySelector('.loadList');
+        var messages = document.querySelector('.eventTurn .messages');
+        dropDown.style.display = 'block';
+        loadElement.style.display = 'none';
+        QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
+        QuerypointPanel.LogScrubber.showMessage(this.position);
+        messages.scrollTop = 15 * this.position;
+    },
+  
+    startRecord: function(){
+      var logScrubber = this;
+      if (logScrubber.showLoad().load != logScrubber.loadStarted()) return;
+      var button = document.querySelector('.recordIndicator');
+      var marker = document.querySelector('.recordMarker');
+      if (button.classList.contains('on')) {
+          logScrubber.recordData.stopRecording(button, marker);
+      } else {
+          try{
+            var current = logScrubber.showLoad().messages.length;
+          } catch (err) {
+              return;             // Load hasn't started
+          }
+          for (var i = 0; i < logScrubber.recordedMessages().length; i++) logScrubber.preMessages().push(logScrubber.recordedMessages()[i]);
+          for (var i = 0; i < logScrubber.postMessages().length; i++) logScrubber.preMessages().push(logScrubber.postMessages()[i]);
+          logScrubber.preMessages.valueHasMutated();
+          logScrubber.recordedMessages([]);
+          logScrubber.postMessages([]);
+          logScrubber.updateSize();
+  
+          logScrubber.messages = logScrubber.recordedMessages;
+  
+          logScrubber.recordData.load = logScrubber.showLoad();
+          logScrubber.recordData.start = logScrubber.showLoad().turns().length;
+          logScrubber.recordData.end = -1;
+          
+          marker.onmousedown = function(){ logScrubber.recordData.stopRecording(button, marker);};
+          marker.innerHTML = '&#9679;';
+          marker.style.display = 'block';
+          marker.classList.add('on');
+          button.classList.add('on');
+      }
     }
-  }
   };
 }());

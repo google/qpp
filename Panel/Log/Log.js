@@ -81,6 +81,7 @@
           case 'reload': 
             this._reloadCount = parseInt(segments[2], 10);
             this._logScrubber.loadStarted(this._reloadCount);
+            this._logScrubber._scale = 1;
             break;
           case 'startTurn': 
             messageSource.qp = false;
@@ -111,7 +112,7 @@
             break;
           case 'endTurn':
             this._logScrubber.turnEnded(parseInt(segments[2], 10));
-            this._logScrubber.showLoad.valueHasMutated();
+            this._logScrubber.updateSize();
             break; 
           case 'script':
             this.project.addScript(segments[2]);
