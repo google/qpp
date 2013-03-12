@@ -32,9 +32,10 @@
     var model;
     try {
       var modelJSON = localStorage.getItem(this.key);
-      model = JSON.parse(modelJSON || '');
-      if (debug) console.log("Storage.recall "+this.key,model);   
-      model ? onSuccess(model) : onError("No model from " + modelJSON);
+      if (modelJSON !== 'undefined') // string created by storing undefined.
+          model = JSON.parse(modelJSON || '');
+      if (debug) console.log('Storage.recall ' + this.key,model);   
+      model ? onSuccess(model) : onError('No model from ' + modelJSON);
     } catch(exc) {
       onError(exc);
     }

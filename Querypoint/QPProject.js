@@ -29,9 +29,6 @@
     
     this.runtime = Querypoint.QPRuntime.initialize();
 
-    this._onWebPageNavigated = this._onWebPageNavigated.bind(this);
-    this._monitorReloads();
-
     Querypoint.QPPreprocessor.useAsyncPreprocessor = true;
     
     if (debug) console.log("QPProject ctor using " + (Querypoint.QPPreprocessor.useAsyncPreprocessor?'async':'sync') +" preprocessor for "+url);
@@ -49,7 +46,10 @@
         this.compiler_.compile(this);
         onAllCompiled(this.parseTrees_); 
       }
-      this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
+      if (this.remoteScripts && this.remoteScripts.length) 
+        this.addFilesFromScriptElements(this.remoteScripts, onScriptsReady.bind(this));
+      else 
+        onAllCompiled(this.parseTrees_);
     },
    
     transformDescriptions: function() {
@@ -140,7 +140,7 @@
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
       });
       
-      this._unmonitorReloads();
+      this._reloading = true;
       
       var onNavigated = function(url) {
         chrome.devtools.network.onNavigated.removeListener(onNavigated);
@@ -148,7 +148,7 @@
           console.error("QPProject reload failed: url mismatch: " + url + '!==' + this.url);
         }
         this.runInWebPage(this.parseTrees_);
-        this._monitorReloads();        
+        delete this._reloading;        
       }.bind(this);
           
       chrome.devtools.network.onNavigated.addListener(onNavigated);
@@ -173,26 +173,13 @@
       chrome.devtools.inspectedWindow.reload(reloadOptions);
     },
     
-    _onWebPageNavigated: function(url) {
-      if (url === this.url) {
-        // a new project will be created by QuerypointDevtools.js
+    onReload: function(callback) {
+      if (this._reloading)
         return;
-      } else {
-        // User reloaded the page, so we are back to square one. TODO: offer to clear querypoints
-        this.getPageScripts(function() {
-          if (debug) console.log("rescanned page for scripts");
-        });
-      }
+     
+      callback();  // allow the UI to update
     },
     
-    _monitorReloads: function() {
-      chrome.devtools.network.onNavigated.addListener(this._onWebPageNavigated);
-    },
-    
-    _unmonitorReloads: function() {
-      chrome.devtools.network.onNavigated.addListener(this._onWebPageNavigated);
-    },
-
     // These functions hide features depending on traceur and running in this window from
     // functions running in the UI window (Panel)
     lineModelTraceVisitor: function(sourceFile) {

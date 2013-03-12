@@ -16,27 +16,24 @@ function onLoad() {
   function resetProject(url) {
     model.devtoolsModel = new Querypoint.InspectedPage();  // TODO rename DevtoolsPageModel
     model.project = new Querypoint.QPProject(url, loads);
-    collectScripts(url);  
+    model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
+    model.qpPanel.onShown();
   }
-  
-  function collectScripts(url) {
-    model.project.getPageScripts(function () {
-      if (!model.qpPanel) {
-        // Cross iframe fun
-        model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
-      }
-      model.qpPanel.onShown();
-
-    }); 
-  }
-  
+    
   function onNavigated(url) {
     if (!view.window)
       return; 
     loads += 1;
     if (!model.project || model.project.url !== url) {
+      if (model.qpPanel)
+        model.qpPanel.save();
       resetProject(url);
-    } 
+    } else {
+      // Same url, but maybe the user reloaded the page without us.
+      model.project.onReload( 
+        model.qpPanel.pageWasExternallyReloaded.bind(model.qpPanel)
+      );
+    }
   }
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);

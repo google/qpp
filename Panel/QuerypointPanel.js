@@ -373,14 +373,24 @@ QuerypointPanel.Panel.prototype = {
     if (debug) console.log("restore", panelModel);
     this._initEditors(panelModel);
     QuerypointPanel.OnPanelOpen.initialize(this);
-    this.project.compile(function(compileResult) {
-     // TODO copy the ParseTrees before ... this.project.runInWebPage(compileResult);
-      this.commands.selectFile.call(this);  
+    // compile to support UI
+    this.project.getPageScripts(function() {
+      this.project.compile(function(compileResult) {
+       // TODO copy the ParseTrees before ... this.project.runInWebPage(compileResult);
+        this.commands.selectFile.call(this);  
+      }.bind(this));      
     }.bind(this));
-    window.onbeforeunload = function(event) {
-      QuerypointModel.Storage.store(panelModel);
-      return undefined;
-    };
+    window.onbeforeunload = this.save.bind(this);
+    this._panelModel = panelModel; // TODO update 
+  },
+
+  save: function(event) {
+    QuerypointModel.Storage.store(this._panelModel);
+    return undefined;
+  },
+
+  pageWasExternallyReloaded: function() {
+    QuerypointPanel.OnPanelOpen.open();
   },
 
   _initModel: function() {
