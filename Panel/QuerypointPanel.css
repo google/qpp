@@ -46,8 +46,14 @@ body {
   display: -webkit-flex;
 }
 
+.initialView .onPanelOpen {
+  display: block;
+}
+
 .onPanelOpen {
     padding: 1em;
+    display: none;
+    min-height: 200px;
 }
 
 .onPanelOpen .hint {

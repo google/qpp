@@ -195,7 +195,7 @@
 
       var panel =  document.querySelector('.panel');
       var logScrubberElement = document.querySelector('.logScrubber');
-      var logFloat = document.querySelector('.floaty');
+      var logFloat = document.querySelector('.logContainer');
       var logElement = document.querySelector('.logView');
       var loadElement = document.querySelector('.loadList');
       var dropDown = document.querySelector('.eventTurn');
@@ -446,7 +446,7 @@
         document.querySelector().scrollIntoView(false);
     } else {
       elem.scroll.scrollIntoView(false);
-      var logFloat = document.querySelector('.floaty');
+      var logFloat = document.querySelector('.logContainer');
       logFloat.scrollTop += logFloat.offsetHeight / 2 ;
     }
   },

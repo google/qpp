@@ -19,19 +19,19 @@
     },
 
     initialize: function(panel) {
-      this.panel = panel;
+      this.panel = panel;          // TODO: should be this._panel
       var onPanelOpen = document.querySelector('div.onPanelOpen');
       onPanelOpen.addEventListener('click', this.onClick.bind(this));
     },
     
     close: function() {
-      var onPanelOpen = document.querySelector('div.onPanelOpen');
-      onPanelOpen.style.display = 'none';
+      var logView = document.querySelector('div.logView');
+      logView.classList.remove('initialView');
     },
 
     open: function() {
-      var onPanelOpen = document.querySelector('div.onPanelOpen');
-      onPanelOpen.style.display = 'none';
+      var logView = document.querySelector('div.logView');
+      logView.classList.add('initialView');
     },
 
     // Functions wired to eg hint_overview

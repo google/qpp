@@ -398,7 +398,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   setScroll: function(node,elem) {
-      var logFloat = document.querySelector('.floaty');
+      var logFloat = document.querySelector('.logContainer');
       elem.scroll = node[1];
       elem.scroll.scrollIntoView(false);
   },

@@ -11,7 +11,7 @@
   
   var messagePrototype = {
     tooltip: function() {
-     var logFloat = document.querySelector('.floaty');
+     var logFloat = document.querySelector('.logContainer');
      var logScrubber = document.querySelector('.logScrubber');
      this.scroll = logFloat.scrollHeight;
      totalLogs++;
