@@ -91,7 +91,11 @@ body {
   margin-bottom: -9px;
 }
 .closed {
-  width: 9px !important;
+  min-width: 0px !important;
+  -webkit-flex-basis: 0px !important;
+}
+.closed p {
+  display: none;
 }
 .closed .overflowMe {
   display: none;
