@@ -1,0 +1,6 @@
+http://localhost:8686/test/qpd.html
+prop in     obj.prop = 0;
+true
+1|0
+http://localhost:8686/test/switch.html
+

@@ -6,17 +6,17 @@
   "use strict";
 
   QuerypointPanel.Editors = {
-    initialize: function(buffers, editorsViewModel, commands) {
+    initialize: function(buffers, statusBar, commands) {
       console.assert(buffers);
       
-      this._viewModel = editorsViewModel;
-      this.commands;
+      this._statusBar = statusBar;
+      this.commands = commands;
       
-      this._editors = [];  // co-indexed with _viewMode.openURLs
+      this._editors = [];  // co-indexed with _statusBar.openURLs
 
       this._userOpenedURL = buffers.userOpenedURL;
 
-      this._viewModel.savedEditors = ko.observableArray();
+      this._statusBar.savedEditors = ko.observableArray();
 
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
       window.onbeforeunload = this._beforeUnload.bind(this);
@@ -45,7 +45,7 @@
     },
 
     _getEditorByName: function(name) {
-      var index = this._viewModel.openURLs.indexOf(name);
+      var index = this._statusBar.openURLs.indexOf(name);
       if (index !== -1)
         return this._editors[index];
     },
@@ -71,13 +71,13 @@
     },
     
     _onChange: function(editor, changes) {
-      if (this._viewModel.unsavedEditors.indexOf(editor.getName()) === -1) {
-        this._viewModel.unsavedEditors.push(editor);
+      if (this._statusBar.unsavedEditors.indexOf(editor.getName()) === -1) {
+        this._statusBar.unsavedEditors.push(editor);
       }
     },
 
     createEditor: function(fileEditorView, name, content, callback) {
-      this._viewModel.openURLs.push(name);
+      this._statusBar.openURLs.push(name);
       var editor = new QuerypointPanel.EditorByCodeMirror(fileEditorView, name, content);
       editor.resize(this._editorWidth, this._editorHeight);
       editor.addListener('onChange', this._onChange.bind(this, editor));
@@ -112,12 +112,12 @@
       }
       function onSave(response) {
           var name = currentEditor.getName();
-          var index = editors._viewModel.savedEditors.indexOf(name);
+          var index = editors._statusBar.savedEditors.indexOf(name);
           if (index === -1) {
-            editors._viewModel.savedEditors.push(name);
+            editors._statusBar.savedEditors.push(name);
           }
-          index = editors._viewModel.unsavedEditors.indexOf(name);
-          editors._viewModel.unsavedEditors.splice(index, 1);
+          index = editors._statusBar.unsavedEditors.indexOf(name);
+          editors._statusBar.unsavedEditors.splice(index, 1);
       }
       function onError(consoleArgs) {
         console.error.apply(this, arguments);
@@ -161,7 +161,7 @@
     },
 
     _onResourceUpdate: function(resource, content) {
-        if (this._viewModel.unsavedEditors.indexOf(resource.url) !== -1) {
+        if (this._statusBar.unsavedEditors.indexOf(resource.url) !== -1) {
           this.commands.show(resource.url);
           alert("This editor has changes and the file has changes");
         } else {
@@ -173,7 +173,7 @@
   
     _beforeUnload: function(event) {
       var sure = null;
-      if (this._viewModel.unsavedEditors.length) {
+      if (this._statusBar.unsavedEditors.length) {
         sure = "You have unsaved changes in " + unsavedEditors.length + "\nfiles: " + unsavedEditors.join(',');
         this.commands.show(unsavedEditors[0]);
       } 

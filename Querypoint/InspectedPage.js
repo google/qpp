@@ -36,6 +36,8 @@
     },
 
     addResource: function(resource) {
+      if (!resource.url)  // I guess these are console evaluations for example. 
+        return; 
       if (debug) console.log("addResource " + resource.url + ' to ' + this.resources.length + " resources");
       this.resources.push(resource);
     },

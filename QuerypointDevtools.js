@@ -14,8 +14,9 @@ function onLoad() {
   var loads = 0;
 
   function resetProject(url) {
-    model.devtoolsModel = new Querypoint.InspectedPage();  // TODO rename DevtoolsPageModel
-    model.project = new Querypoint.QPProject(url, loads);
+    model = {};
+    model.devtoolsModel = new Querypoint.InspectedPage();  
+    model.project = new Querypoint.QPProject(url, loads);  // TODO loads should be zero??
     model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
     model.qpPanel.onShown();
   }
@@ -52,11 +53,7 @@ chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/Q
   panel.onShown.addListener(function (panel_window) {
     view.window = panel_window;
     if (!model.project) {
-      chrome.devtools.inspectedWindow.eval('window.__qp_reloads', function(pastReloads) {
-        // If we reload qpp, the internal count will be out of sync with the web page content.
-        loads = pastReloads || 0;
-        chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
-      });
+      chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
     } else {
       model.qpPanel.onShown();
     }

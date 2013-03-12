@@ -41,6 +41,8 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.project = project;
   var panel = this;
 
+  this.clear(); // We don't recreate the panel HTML so we have to cleanup.
+
   // Active queries are synced back to the project
   this.tracequeries = ko.observableArray().extend({
     runPage: this.project
@@ -96,6 +98,8 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
   this.fileViewModels = ko.observableArray([new QuerypointPanel.FileViewModel(this.primaryFileView, this)]);
 
   this.fileEditor = this.document.querySelector('.fileEditor');
+
+  this.commands = new QuerypointPanel.Commands(this);
   this._initModel();
   this._onResize();  // set initial sizes
   
@@ -210,57 +214,6 @@ QuerypointPanel.Panel.prototype = {
     }
   },
 
-  // These methods are bound to |this| panel
-  commands: {  // KeyBindings must be kept in sync
-
-    // Open a dialog filled with file names for user selection
-    //
-    selectFile: function() {
-      if (debug) console.log("QuerypointPanel.selectFile");
-      var uriItems = new QuerypointPanel.URISelector(this.extensionPanel);
-      var names = {};
-      this.project.getSourceFiles().forEach(function(sourceFile){
-        names[sourceFile.name] = sourceFile;
-        uriItems.appendItem('open: '+sourceFile.name, this.openPrimaryFileView.bind(this, sourceFile));
-      }.bind(this));
-      this.page.resources.forEach(function(resource, index) {
-        if (!names.hasOwnProperty(resource.url))
-          uriItems.appendItem('open: '+resource.url, this._openResourceAndRefresh.bind(this, resource));
-      }.bind(this));
-      uriItems.selectItem();
-      return false;
-    },
-
-    // Open an editor to view information selected out of another editor
-    // e.g. trace with refs to other files or call stack with refs to older frames
-    openChainedEditor: function(url) {
-      var linkTarget = this.linkTargetFromURL(url);
-      var fileViewModel = this.getFileViewModelByName(linkTarget.name);
-      if (fileViewModel) {
-        var mark = fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
-        if (mark) {
-          var clearMark = function(event) {
-            mark.clear();
-            if (debug) console.log("cleared mark because of mouseout on ", event.target);
-            $(this.document).off('mouseout', clearMark);
-          }
-          $(this.document).on('mouseout', clearMark);
-        }
-      } else {
-        var sourceFile = this.project.getFile(linkTarget.name);
-        if (sourceFile) {
-          console.error("QuerypointPanel.onShown");   
-        } else {
-          console.error("QuerypointPanel.openChainedEditor but no sourcefile!");
-        }
-      }
-    },
-
-    saveFile: function() {
-      return this._editors.saveFile();
-    },
-  },
-
   getFileViewModelByName: function(name) {
     var found; 
     this.fileViewModels().some(function(fileViewModel) {
@@ -272,11 +225,6 @@ QuerypointPanel.Panel.prototype = {
 
   _initKeys: function() {
     this.keybindings = new KeyBindings(this.panel_window);
-
-    // rebind this.commands to create a subset of methods callable via user keys
-    Object.keys(this.commands).forEach(function(key){
-      this.commands[key] = this.commands[key].bind(this);
-    }.bind(this));
     this.keybindings.apply(this.commands);
   },
 
@@ -415,8 +363,16 @@ QuerypointPanel.Panel.prototype = {
 
   tooltip: function(turn){
     return this._log.currentTurn.event;
-  }
+  },
 
+  clear: function() {
+    // most of the clean up is done by knockout.
+    var mirrors = document.querySelectorAll('.fileEditor > .CodeMirror');
+    for (var i = 0; i < mirrors.length; i++) {
+      var mirror = mirrors[i];
+      mirror.parentElement.removeChild(mirror);
+    }
+  }
 };
 
 }());
