@@ -216,10 +216,10 @@
 
       this._addMessage = function(message){
         if (this._scale == 1) {
-          self.messages.push(message);
+          self.messages().push(message);
         } else {
           if (this._addedMessages == this._scale) {
-            self.messages.push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
+            self.messages().push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
             self._addedMessages = 0;
           } else {
             self._addedMessages += 1;
@@ -260,6 +260,7 @@
       }
 
       this.updateSize = function(){
+        self.messages.valueHasMutated();
         var maxMessages = logScrubberElement.offsetWidth - 40;
         if (self.recordData.start !== -1) maxMessages -= 10;
         var joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
