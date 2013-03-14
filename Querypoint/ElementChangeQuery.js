@@ -89,6 +89,7 @@
     extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
       var query = this;
       function onEval(result, isException) {
+         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === logScrubber.loadStarted()) return;
          query._lastEvaluated = result.turn;
          query._lastLoadEvaluated = logScrubber.loadStarted();
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {

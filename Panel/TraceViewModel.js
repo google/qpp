@@ -92,7 +92,7 @@
             return traceViewModels;
           }  
         }
-      }.bind(this)).extend({ throttle: 1 });
+      }.bind(this)).extend({ throttle: 100 });
   }
   
   QuerypointPanel.TraceViewModel.prototype = {

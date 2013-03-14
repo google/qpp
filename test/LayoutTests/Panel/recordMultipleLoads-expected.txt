@@ -1,0 +1,16 @@
+http://localhost:8686/test/qpd.html
+prop in   var message = "I've been clicked " + obj.prop + " times";
+true
+true
+true
+true
+true
+true
+1|0|1|0|1|0|1|0|1|0|1|0
+value in   if (!condition.value) {
+undefined|undefined
+true
+true
+prop in     obj.prop = 0;
+1|0
+

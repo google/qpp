@@ -134,6 +134,7 @@
     // Pull trace results out of the page for this querypoint
     extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
       function onEval(result, isException) {
+         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === logScrubber.loadStarted()) return;
          this._lastEvaluated = result.turn;
          this._lastLoadEvaluated = logScrubber.loadStarted();
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
