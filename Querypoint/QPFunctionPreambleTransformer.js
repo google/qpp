@@ -119,6 +119,7 @@
     // We'll use these to build __qp.functions objects in _createInitializationStatements
     this.functionLocations.push(tree.location);
     var preamble = this._createPreambleStatements(tree).map(Querypoint.markDoNot);
+    tree = this.transformAny(tree);
     tree.statements = preamble.concat(tree.statements);
     return tree;
   }
