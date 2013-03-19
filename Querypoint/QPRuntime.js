@@ -91,8 +91,9 @@
 
     function appendFileInfoFromPreamble(entryPointFunction, startInfo) {
       if (entryPointFunction.__qp) {
-          for (var key in entryPointFunction.__qp) startInfo[key] = entryPointFunction.__qp[key];
-          // startInfo = entryPointFunction.__qp;
+          Object.keys(entryPointFunction.__qp).forEach( function (key) {
+              startInfo[key] = entryPointFunction.__qp[key];
+          });
         } else {
           var preamble = reTranscodedFunctionPreamble.exec(entryPointFunction + '');
           if (preamble) {

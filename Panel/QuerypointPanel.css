@@ -23,7 +23,7 @@ body {
   -webkit-flex-flow: row;
   -webkit-flex-wrap: nowrap;
   display: -webkit-flex;
-  height: 100%;
+  min-height: 100%;
   overflow-x: hidden;
 }
 .vbox {

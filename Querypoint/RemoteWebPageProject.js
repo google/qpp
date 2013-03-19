@@ -59,10 +59,16 @@
   }
 
   RemoteWebPageProject.prototype.putFiles = function(files) {
-    var scripts = files.map(function(file){
-      var source = file.generatedSource + "\n//@ sourceURL=" + file.name + '.js';  // .js.js for transcoded files
-      return {content: source, name: file.name};
-    });
+    var scripts = [];
+    for (var i = 0; i < this.remoteScripts.length; i++){
+        var file;
+        for (var j = 0; j < files.length; j++){
+            if(files[j].scriptElement === this.remoteScripts[i]) file = files[j];
+        }
+        var source = file.generatedSource + "\n//@ sourceURL=" + file.name + '.js';  // .js.js for transcoded files
+        scripts.push({content: source, name: file.name});
+    }
+
     this.putPageScripts(scripts, function(result) {
       if (debug) console.log("Put " + scripts.length + " transcoded scripts", scripts);
       result.errors.forEach(function(error) {
