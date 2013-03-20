@@ -57,7 +57,7 @@
     ** side-effect: this.insertions.length++
     */
     insertVariableFor: function(tree) {
-      if (tree.doNotTransform)
+      if (!tree.location || tree.doNotTransform)
         return tree;
       
       if (!tree.isExpression()) {
