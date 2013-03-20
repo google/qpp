@@ -133,11 +133,18 @@
 
     // Pull trace results out of the page for this querypoint
     extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
-      function onEval(result, isException) {
-         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === logScrubber.loadStarted()) return;
+      function onEval(result, exception) {
+         if (exception) {
+           console.error("ValueChangeQuery extractTracepoints eval failed", exception);
+           return; 
+         }
+         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === logScrubber.loadStarted()) 
+           return;
+           
          this._lastEvaluated = result.turn;
          this._lastLoadEvaluated = logScrubber.loadStarted();
-         if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
+         
+         if (result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
             var trace = change;
@@ -148,9 +155,7 @@
             trace.activation = change.activationCount;
             onTracepoint(trace);  
           }.bind(this));      
-        } else {
-          console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
-        }
+         }
       }
       var previousTurn = logScrubber.turnStarted() - 1;
       var thisLoad = logScrubber.loadStarted();

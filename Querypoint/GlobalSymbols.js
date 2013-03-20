@@ -32,7 +32,7 @@
     return location ? location.start.source.name : "internal";
   };
 
-  window.Querypoint = {
+  global.Querypoint = {
     globalSymbols: globalSymbols,
     markDoNot: markDoNot,
     activationId: '__qp_activation',
@@ -40,4 +40,3 @@
   };
 
 }());
-var Querypoint = window.Querypoint;

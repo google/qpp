@@ -70,7 +70,7 @@ var QPTreeWriter = (function() {
       if (this.currentLine_.length > 0) {
         this.writeln_();
       }
-      return this.result_.toString() + '\n//@ sourceURL=' + this._generatedFilename;
+      return this.result_.toString();
     },
     
     visitIdentifierExpression: function(tree) {

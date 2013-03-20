@@ -4,7 +4,6 @@
 // Updates the editor line number decorations
 
 (function() {
-  window.QuerypointPanel = window.QuerypointPanel || {};
 
   QuerypointPanel.LineNumberViewModel = function(fileViewModel, panel) {
     this._fileViewModel = fileViewModel;

@@ -2,7 +2,10 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function() {
-  window.QuerypointPanel = window.QuerypointPanel || {};
+
+  var global = ('global', eval)('this');
+
+  global.QuerypointPanel = {};
 
   QuerypointPanel.addEventFunctions = function(prototype) {
     

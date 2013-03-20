@@ -20,7 +20,7 @@
     this.numberOfReloads = loads; 
 
     // FIXME override parent __getter__ for reporter
-    this.reporter_ = new QPErrorReporter();
+    this.reporter_ = new Querypoint.QPErrorReporter();
     this._fileCompiler = new Querypoint.QPFileCompiler(this.reporter_);
     this.compiler_ = new QPCompiler(this._fileCompiler, {}); // TODO traceur options
         
@@ -29,7 +29,7 @@
     
     this.runtime = Querypoint.QPRuntime.initialize();
 
-    Querypoint.QPPreprocessor.useAsyncPreprocessor = true;
+    //Querypoint.QPPreprocessor.useAsyncPreprocessor = true;
     
     if (debug) console.log("QPProject ctor using " + (Querypoint.QPPreprocessor.useAsyncPreprocessor?'async':'sync') +" preprocessor for "+url);
   }
@@ -80,12 +80,12 @@
           window.__qp.fireLoad();
           return window.__qp_reloads;
         } catch(exc) {
-          return exc.toString();
+          return {message: exc.toString(), stack: exc.stack};
         }
       }
       function onRuntimeStarted(results, isException) {
         if (isException) {
-          console.error("startRuntime FAILS");
+          console.error("startRuntime FAILS: " + isException.value);
         } else {
           if (debug) console.log("QP runtime called fireLoad() got "+results);
         }
@@ -170,7 +170,7 @@
         injectedScript:  Querypoint.QPRuntime.runtimeSource(numberOfReloads), 
         preprocessingScript: '(' + transcoder + ')'
       };
-      if (debug) console.log("reloadOptions.preprocessingScript ", reloadOptions.preprocessingScript);
+      if (debug) console.log("reloadOptions ", reloadOptions);
       chrome.devtools.inspectedWindow.reload(reloadOptions);
     },
     
@@ -209,12 +209,11 @@
   };
   
   var reFileURL = /([^\?]*)\?start=([^&]*)&end=([^&]*)&/;
-  
-  window.Querypoint = window.Querypoint || {};
-  window.Querypoint.QPProject = QPProject;
-  window.Querypoint.generateFileName =function (location) {
+
+  Querypoint.generateFileName =function (location) {
     return location ? location.start.source.name : "internal";
   };
 
+  Querypoint.QPProject = QPProject;
 
 }());

@@ -5,8 +5,6 @@
 
   'use strict';
 
-  var Querypoint = window.Querypoint;
-
   Querypoint.Query = function() {
   }
 

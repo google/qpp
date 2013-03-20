@@ -7,7 +7,8 @@
 
   'use strict';
 
-  var QuerypointModel = window.QuerypointModel = {};
+  var global = ('global', eval)('this');
+  var QuerypointModel = global.QuerypointModel = {};
 
   /**
    @param string url, no search or hash part

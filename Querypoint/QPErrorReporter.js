@@ -1,7 +1,7 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-var QPErrorReporter  = (function() {
+(function() {
   'use strict';
 
   var ErrorReporter = traceur.util.ErrorReporter;
@@ -28,6 +28,6 @@ var QPErrorReporter  = (function() {
     }
   };
 
-  return QPErrorReporter;
+  Querypoint.QPErrorReporter = QPErrorReporter;
   
 }());
