@@ -32,11 +32,18 @@
     }.bind(this));
     
     this.treeTraces = ko.computed(function() {
+         var tracepoints;
+         if (this._panel.logScrubber.showLoad().load !== this._panel.logScrubber.loadStarted()){
+             if (!('tracepoints' in this._panel.logScrubber.showLoad())) return [];
+             tracepoints = this._panel.logScrubber.showLoad().tracepoints();
+         } else {
+             tracepoints = this._fileViewModel.tracepoints();
+         }
          var tree = fileViewModel.tokenViewModel.tokenTree();
          if (tree) {
           
           var treeTracepoints = [];
-          this._fileViewModel.tracepoints().reduce(function(treeTracepoints, tracepoint) {
+          tracepoints.reduce(function(treeTracepoints, tracepoint) {
               if (tracepoint.query.targetTree() === tree) treeTracepoints.push(tracepoint);
               return treeTracepoints;
           }, treeTracepoints);  

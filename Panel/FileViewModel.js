@@ -87,7 +87,7 @@
       if (!tracequeries.length)
         return;
       
-      this.tracepoints.removeAll();
+      this.tracepoints = ko.observableArray([]);
         
       tracequeries.forEach(function(tq){
         tq.extractTracepoints(this, function (tracepoint){
@@ -96,6 +96,8 @@
           } 
         }.bind(this), this._panel.logScrubber);
       }.bind(this));    
+      var load = this._panel.logScrubber.showLoad();
+      load.tracepoints = this.tracepoints;
       var lastTracequery = tracequeries[tracequeries.length - 1];  
       this.tokenViewModel.setTokenTree(lastTracequery.targetTree());
     }
