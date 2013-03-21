@@ -16149,7 +16149,7 @@ var $___src_outputgeneration_ParseTreeWriter_js = (function() {
         if (tree === this.highlighted_) {
           this.write_('\x1B[41m');
         }
-        if (tree.location !== null && tree.location.start !== null && this.showLineNumbers_) {
+        if (tree.location && tree.location !== null && tree.location.start !== null && this.showLineNumbers_) {
           var line = tree.location.start.line + 1;
           var column = tree.location.start.column;
           this.currentLineComment_ = ("Line: " + line + "." + column);

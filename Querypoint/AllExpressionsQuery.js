@@ -57,7 +57,7 @@
       var transformData = {
         filenames: Object.keys(Querypoint.AllExpressionsQuery.filesTraced)
       };
-      this._transformer = new Querypoint.LinearizeTransformer(transformData);
+      this._transformer = new Querypoint.AllInFileTransformer(transformData);
       this._isActive = true;
     },
 
@@ -74,7 +74,7 @@
 
     transformDescriptions: function() {
       return [{
-        ctor: 'LinearizeTransformer',
+        ctor: 'AllInFileTransformer',
         queryData: this.queryData()
       }];
     },

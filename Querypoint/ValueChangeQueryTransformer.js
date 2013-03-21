@@ -250,35 +250,20 @@
     },
 
     /**
-     * ++obj.prop or ++obj[prop]  equiv to obj.prop = obj.prop + 1 
+     * ++obj.prop or ++obj[prop]  equiv to (obj.prop = obj.prop + 1) 
      * trace value: ++obj.prop;
      * @param {UnaryExpression} tree
      * @return {ParseTree}
      */
     transformUnaryExpression: function(tree) {
-      if (tree.operator.type !== TokenType.PLUS_PLUS && tree.operator.type !== TokenType.MINUS_MINUS) {
-        return Querypoint.InsertVariableForExpressionTransformer.prototype.transformUnaryExpression.call(this, tree);
+      if (tree.operator.type === TokenType.PLUS_PLUS || tree.operator.type === TokenType.MINUS_MINUS) {
+        throw new Error('ValueChangeQueryTransformer should never see unary ++ or --');
       }
-      this.isReferenceTree = true;
-      var operand = this.transformAny(tree.operand);
-      this.isReferenceTree = false;
-      
-      if (operand !== tree.operand) { // then the operand had a property access
-        // We have operand as tmp1[tmp2]
-        // Use the temporary vars in a new expression, eg ++tmp1[tmp2]
-        var unaryExpression = new UnaryExpression(tree.location, tree.operator, operand);
-        // insert a temporary for the expression so we can trace it without double operations
-        unaryExpression = this.insertVariableFor(unaryExpression);
-        // Finally insert the tracing statement  
-        this.insertions.push(this.trace(unaryExpression, tree.location));
-        return unaryExpression; 
-      } else {
-        return tree;  
-      }
+      return tree;  
     },
 
     /**
-      obj.prop++ or obj[prop]++
+      obj.prop++ or obj[prop]++  equiv to tmp = obj.prop; obj.prop = tmp + 1;
       Identical to prefix case because we are creating temps for the whole expression.
     */
     transformPostfixExpression: function(tree) {
@@ -293,37 +278,35 @@
       if (!tree.operator.isAssignmentOperator()) {
         return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator.call(this, tree);
       }
-      // else assignment, LHS = *= += etc RHS
-      var right = this.transformAny(tree.right);
-    
-      this.isReferenceTree = true;
-      var left = this.transformAny(tree.left);
-      this.isReferenceTree = false;
-      
-      if (left !== tree.left) { // Then we found something we want to trace
-        if (!right.doNotTransform && !right.doNotTrace) {
-          // Create a temp for the RHS to avoid double calls when we trace.
-          right = this.insertVariableFor(right);  
-          this.insertions.push(this.trace(right, tree.right.location));   
-        }
-      }
+      // else assignment, LHS = *= += etc RHS, RHS is simply an identifier
 
-      if (left == tree.left && right == tree.right) {
-        return tree;
-      } else {
-        return new BinaryOperator(tree.location, left, tree.operator, right);  
-      }
+      // The left side should be a reference tree
+      if (!tree.left.isReferenceTree)
+        throw new Error('ValueChangeQueryTransformer expected reference tree');
+
+      // Create the reference info according to the type of tree
+      var left = this.transformAny(tree.left);
+      
+      // Output the write-barrier 
+      this.insertions.push(this.trace(left, tree.right, tree.right.location));   
+
+      return new BinaryOperator(tree.location, left, tree.operator, tree.right);
     },
 
     transformMemberExpression: function(tree) {
-      // eg obj.field => obj['field']
-      var memberExpression = new LiteralExpression(
-        tree.memberName.location, 
-        createStringLiteralToken(tree.memberName.value)
-      );
+      if (tree.isReferenceTree) {
+        // eg obj.field => obj['field']
+        var memberExpression = new LiteralExpression(
+          tree.memberName.location, 
+          createStringLiteralToken(tree.memberName.value)
+        );
+         tree.reference = {
+            base: tree.operand,
+            name: memberExpression
+          };
+      }
 
-      tree = new MemberLookupExpression(tree.location, tree.operand, memberExpression);
-      return this.transformMemberLookupExpression(tree);
+      return tree;
     },
 
     /**
@@ -332,27 +315,20 @@
      * @return {ParseTree}
      */
     transformMemberLookupExpression: function(tree) {
-
-      var operand = this.transformAny(tree.operand);
-      var memberExpression = this.transformAny(tree.memberExpression);
-
-      if (this.isReferenceTree) {
-         operand = this.insertVariableFor(operand);
-         memberExpression = this.insertVariableFor(memberExpression);
-         this.reference = {
-            base: operand,
-            name: memberExpression
+      if (tree.isReferenceTree) {
+         tree.reference = {
+            base: tree.operand,
+            name: tree.memberExpression
           };
       }
 
-      if (operand !== tree.operand || memberExpression !== tree.memberExpression)
-        tree = new MemberLookupExpression(tree.location, operand, memberExpression);
-
       return tree;
     },
+    
+    // TODO transformVariableDeclaration for vars
 
-    trace: function(valueTree, traceLocation) {
-      return propertyChangeTrace(this.reference.base, this.reference.name, valueTree, traceLocation);
+    trace: function(tree, valueTree, traceLocation) {
+      return propertyChangeTrace(tree.reference.base, tree.reference.name, valueTree, traceLocation);
     },
 
   };

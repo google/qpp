@@ -55,7 +55,7 @@
     transformDescriptions: function() {
       var transformDescriptions = this.querypoints.tracequeries.reduce(function(descriptions, tq) {
         return descriptions.concat(tq.transformDescriptions());
-      }, []);
+      }, [{ctor: 'LinearizeTransformer'}]);
       transformDescriptions.push({ctor: 'QPFunctionPreambleTransformer'});
       return transformDescriptions;
     },
@@ -66,7 +66,8 @@
         return [];
 
       return treeObjectMap.keys().map(function(file) {
-        var tree = treeObjectMap.get(file);  
+        var tree = treeObjectMap.get(file);
+        tree = traceur.codegeneration.CloneTreeTransformer.cloneTree(tree);  
         file.generatedFileName = file.name + ".js";
         file.generatedSource = this._fileCompiler.generateSourceFromTree(tree, file.generatedFileName, this.transformDescriptions());
         return file; 

@@ -49,6 +49,7 @@
   var createVariableDeclarationList = ParseTreeFactory.createVariableDeclarationList;
   var createVariableStatement = ParseTreeFactory.createVariableStatement;
   var createParenExpression = ParseTreeFactory.createParenExpression;
+  var createOperatorToken = ParseTreeFactory.createOperatorToken;
 
   var VariableStatement = Trees.VariableStatement;
   var IdentifierExpression = Trees.IdentifierExpression;
@@ -90,8 +91,7 @@
    * @extends {ParseTreeTransformer}
    * @constructor
    */
-  function LinearizeTransformer(transformData) {
-    this.filenames = transformData.filenames;
+  function LinearizeTransformer() {
     Querypoint.InsertVariableForExpressionTransformer.call(this);
     this.labelsInScope = [];        // emca 262 12.12
     this.unlabelledBreakLabels = []; // tracks nested loops and switches 
@@ -139,11 +139,7 @@
     __proto__: Querypoint.InsertVariableForExpressionTransformer.prototype,
     
     transformTree: function(tree) {
-      if (this.filenames.indexOf(tree.location.start.source.name) !== -1) {
-        return this.transformAny(tree);  
-      } else {
-        return tree;
-      }
+        return this.transformAny(tree);
     },
     
     transformAny: function(tree) {
@@ -282,7 +278,7 @@
       statements.push(ifStatement);
       
       // Finally the increment expression
-      if (tree.increment && !tree.increment.isNull()) {
+      if (tree.increment) {
         this.transformAny(tree.increment);
         // Drop the expression statement 
         statements = this.insertAbove(statements);
@@ -362,7 +358,7 @@
         // The initializer insertions will go outside of our loop.
         // We don't need the newly introduced variable.
         this.transformAny(tree.initializer);
-      } else if (tree.initializer && !tree.initializer.isNull()) {  
+      } else if (tree.initializer) {  
         var variableDeclarationList = this.transformAny(tree.initializer);
         var statement = new VariableStatement(
           tree.initializer.location, 
@@ -379,20 +375,28 @@
       // Another issue is that assignment is not like other binary  operators that 
       // create values. For c*(a+b), the sum is value that we want to trace.
       // For c.b = a, the value we want to trace is c.b, the LHS after the assignment.
-      // So we want c.b = a to be emitted, then
-      // __qp_558_14 = c.b; trace __qp_558_14.
+      //   c.b = a;  // for lastChange write-barrier
+      //   __qp_558_14 = c.b;  // trace LHS
       // What about c.b = a = 5; ?
-      // a = 5;   // emit assignment statement
-      // __qp_xx = a;  // emit temp for LHS
-      // c.b = (trace __qp_xx, _qp_xx)  // return temp, next call: emit assignment statement
-      // __qp_yy = c.b;    //  emit temp for LHS
-      // (trace __qp_yy, _qp_yy)  // return temp
+      //   a = 5;   // emit assignment statement for lastChange write-barrier
+      //   __qp_xx = a;  // emit temp for LHS
+      //   c.b = (trace __qp_xx, _qp_xx)  // return temp, next call: emit assignment statement
+      //   __qp_yy = c.b;    //  emit temp for LHS
+      //   (trace __qp_yy, _qp_yy)  // return temp
       // Thus we want to return the linearExpression (eg __qp_xx) and let it get traced.
+      // Another case is an expression computing to an object ref in a property lookup:
+      // someObject().foo = 5;
+      // We linearize the ref, emit the assignment, then the LHS and trace:
+      //   __qp_559_10 = someObject();     // trace this to get value of object
+      //   __qp_559_10.foo = 5;            // add write-barrier for lastChange
+      //   __qp_559_15 = __qp_559_10.foo;  // tace for the value of LHS
       var left = this.transformAnySkipLinearization(tree.left);
+      left.isReferenceTree = true;
       var right = this.transformAny(tree.right);
+      right.location = tree.right.location;
       var assignmentExpression = new BinaryOperator(tree.location, left, tree.operator, right);
       var assigmentStatement = createExpressionStatement(assignmentExpression);
-      this.insertions.push(Querypoint.markDoNot(assigmentStatement));
+      this.insertions.push(assigmentStatement);
       return this.insertVariableFor(left);
     },
 
@@ -423,7 +427,7 @@
           new MemberExpression(tree.location, tree, 'bind'),
           new ArgumentList(tree.location, [tree.operand]) 
           );
-        return this.insertVariableFor(boundMemberFunction);
+        return this.insertVariableFor(Querypoint.markDoNot(boundMemberFunction));
       } else {
         return this.transformAny(tree);
       }
@@ -484,20 +488,41 @@
                                         memberExpression);
     },
 
+    // obj.prop++ or obj[prop]++  equiv to (tmp = obj.prop, obj.prop = tmp + 1)
+    // 
     transformPostfixExpression: function(tree) {
-      // inserts eg var __qp_11 = expr; returns ParenExpression for value of expr
-      var operandValue = this.transformAnySkipLinearization(tree.operand);  
-      var prefixExpresssion = new UnaryExpression(tree.location, tree.operator, tree.operand);
+      // Leave the structure of the reference but replace components with temps, 
+      // eg foo()[bar()] -> tmp1 = foo(); tmp2 = bar(); tmp1[tmp2]
+      var operand = this.transformAnySkipLinearization(tree.operand);
+      operand.isReferenceTree = true;
 
-      // inserts eg __qp_13;
+      // tmp3 = tmp1[tmp2]; tmp3
+      var preOperationValue = this.insertVariableFor(operand);
+
+      // ++tmp3
+      var postOperationExpr = new UnaryExpression(tree.location, tree.operator, preOperationValue);
+
+      // var tmp4 = ++tmp3;
+      var postOperationTemp = this.insertVariableFor(postOperationExpr);
+      
+      // Mark after the insertVariableFor or it won't take.
+      postOperationExpr.doNotTransform = true;
+      postOperationTemp.doNotTransform = true;
+      
+      // Right side needs a location for the ValueChangeTransformer
+      postOperationTemp.location = tree.location;
+      
+      // tmp1[tmp2] = tmp4
+      var assignment = new BinaryOperator(tree.location, operand, createOperatorToken(TokenType.EQUAL), postOperationTemp);
+
+      // inserts tmp1[tmp2] = ++tmp3;
       this.insertions.push( 
         new ExpressionStatement(
           tree.location, 
-          // inserts eg var __qp_13 = ++expr;
-          this.insertVariableFor(prefixExpresssion) 
+          assignment
         )
       );
-      return operandValue;  // eg __qp_11;
+      return postOperationTemp;  // eg __qp_11;
     },
 
     transformSwitchStatement: function(tree) {
@@ -516,14 +541,72 @@
       return this.wrapInLabels(labels, tree);
     },
         
-/*    transformUnaryExpression: function(tree) {
+
+    transformUnaryExpression: function(tree) {
+      if (tree.operator.type === TokenType.PLUS_PLUS || tree.operator.type === TokenType.MINUS_MINUS) {
+        return this._transformUnaryAssignmentExpression(tree);
+      } else {
+        return this._transformSimpleUnaryExpression(tree);
+      }
+    },
+    /**
+     * ++obj.prop or ++obj[prop]  equiv to (obj.prop = obj.prop + 1) 
+     * (obj.prop = obj.prop + 1)  equiv to (tmp1 = obj.prop; tmp2 = ++tmp1, obj.prop = tmp2, tmp2)  
+     * trace value: ++obj.prop;
+     */
+    _transformUnaryAssignmentExpression: function(tree) {
+      // Leave the structure of the reference, but replace components with temps
+      var operand = this.transformAnySkipLinearization(tree.operand);
+      // Mark the tree for ValueChange. This mark must be copied by subsequent transformations.
+      operand.isReferenceTree = true;
+      
+      var operator = tree.operator;
+      if (operator.type = TokenType.PLUS_PLUS) 
+        operator = new Token(TokenType.PLUS, operator.location);
+      else if (operator.type = TokenType.MINUS_MINUS) 
+        operator = new Token(TokenType.MINUS, operator.location);
+      else 
+        throw new Error("Not a unary assignment expression");
+
+      // var tmp1 = obj.prop; tmp1
+      var preOperationTemp = this.insertVariableFor(operand);
+      // ++tmp1
+      var postOperationExpr = new UnaryExpression(operator.location, tree.operator, preOperationTemp);
+      
+      // var tmp2 = ++tmp1; tmp2
+      var postOperationTemp = this.insertVariableFor(postOperationExpr);
+      
+      // Mark after insertVariableFor
+      postOperationExpr.doNotTransform = true;
+            
+      // Right side needs a location for the ValueChangeTransformer
+      postOperationTemp.location = tree.location;
+      
+      // obj.prop = tmp2
+      var assignmentExpr = new BinaryOperator(tree.location, operand, createOperatorToken(TokenType.EQUAL), postOperationTemp);
+      var assignmentStatement = this.insertions.push(
+        new ExpressionStatement(
+          tree.location,
+          assignmentExpr
+        )
+      );
+      return postOperationTemp;
+    },
+
+    /* 
+     * Non-assignment unary expressions, eg -x. 
+     * tmp = -x;
+     * tmp
+     */
+    _transformSimpleUnaryExpression: function(tree) {
       var operand = this.transformAny(tree.operand);
       if (operand !== tree.operand) {
-        tree = new UnaryExpression(tree.location, tree.operator, operand);
+        tree = new UnaryExpression(tree.location, tree.operator, tree.operand);
       }
-      return this.insertVariableFor(tree);
+      tree = this.insertVariableFor(tree);
+      return tree;
     },
-*/
+
     transformVariableDeclarationList: function(tree) {
       tree.declarations.forEach(function(declaration) {
           declaration = this.transformAny(declaration); 

@@ -65,6 +65,7 @@ var QPTreeWriter = (function() {
     __proto__: ParseTreeWriter.prototype,
 
     generateSource: function(tree) {
+      this.doTrace = tree.location.traceAll;
       this.visitAny(tree);
       if (this.currentLine_.length > 0) {
         this.writeln_();
@@ -75,7 +76,7 @@ var QPTreeWriter = (function() {
     visitIdentifierExpression: function(tree) {
       // Linearizer has marked the expressions we need to trace with .trace
       var traceId = tree.traceId;
-      if (traceId) {
+      if (this.doTrace && traceId) {
         if (debug)
           console.log('tracing ' + traceId + ' for '+tree.type + ' : ' + traceur.outputgeneration.TreeWriter.write(tree));
         // To avoid recursion we remove the mark before writing out the tracing expression
