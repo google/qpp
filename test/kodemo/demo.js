@@ -11,7 +11,11 @@ var condition = {
 var oldValue;
 var message;
 
-obj.prop.subscribe(function(){message = ko.computed(function(){return "I've been clicked " + obj.prop() + " times";});});
+obj.prop.subscribe(function(newValue){
+    message = ko.computed(function(){
+        return "I've been clicked " + newValue + " times";
+    }).extend({throttle: 2000});
+});
 
 function onClick() {
   foo() + 1;
@@ -20,6 +24,7 @@ function onClick() {
   bar();
   // lots more code....
   updateButton();
+  setTimeout(function(){console.warn('Asynchronous call');}, 2000);
 }
 
 function updateButton() {

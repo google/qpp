@@ -147,6 +147,8 @@
             setter.call(null, element)
           });
         }
+      } else {
+          if (eventObject.fakeTarget) targetSelector = eventObject.fakeTarget;
       }
 
       window.__qp.turns.push(startInfo); 
@@ -169,6 +171,9 @@
       //entryPointFunction.wrappedAt = (new Date()).getTime();
       return function wrapperOnEntryPoint() {
         var args = Array.prototype.slice.apply(arguments);
+        if (args.length == 0){
+            args = [{type: 'Asynchronous', fakeTarget: '#document'}];
+        }
         var turn = startTurn(entryPointFunction, args);
         entryPointFunction.apply(null, args);  // TODO check |this| maybe use null
         endTurn(turn);
@@ -204,6 +209,12 @@
       window.Node.prototype.addEventListener = function(type, listener, useCapture) {
         window.__qp.intercepts.Node.prototype.addEventListener.call(this, type, wrapEntryPoint(listener), useCapture);
       }
+
+      var oldTimeout = window.setTimeout;
+      window.setTimeout= function(stringFunction, millisecond){
+          oldTimeout(wrapEntryPoint(stringFunction), millisecond);
+      };
+
     }
 
     function findMatchingActivation(activation, tp) {

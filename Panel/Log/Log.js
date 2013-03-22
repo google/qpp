@@ -123,6 +123,8 @@
             console.error('unknown keyword: '+messageSource.text);
             break;
         }
+      } else {
+          if (this._logScrubber.turnStarted() === this._logScrubber.turnEnded()) console.error('QPRuntime error: No turn for message after turn %o', this._turn);
       }
       messageSource.load = this._reloadCount;
       messageSource.turn = this._turn;
