@@ -231,7 +231,6 @@ body {
   -webkit-flex-direction: row;
   -webkit-flex: 1;  /* Each file gets the same space */
   min-height: 1em;
-  height: 100%;
 }
 
 .hoverDoorTarget { 
