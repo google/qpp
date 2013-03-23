@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import ParseTreeVisitor from '../syntax/ParseTreeVisitor.js';
+import {ParseTreeVisitor} from '../syntax/ParseTreeVisitor.js';
 import {
   FROM,
   GET,
@@ -21,8 +21,8 @@ import {
   REQUIRES,
   SET
 } from '../syntax/PredefinedName.js';
-import Token from '../syntax/Token.js';
-import isKeyword from '../syntax/Keywords.js';
+import {Token} from '../syntax/Token.js';
+import {isKeyword} from '../syntax/Keywords.js';
 import * from '../syntax/TokenType.js';
 
 // constants
@@ -495,9 +495,20 @@ export class ParseTreeWriter extends ParseTreeVisitor {
   }
 
   /**
-   * @param {FunctionDeclaration|FunctionExpression} tree
+   * @param {FunctionDeclaration} tree
    */
-  visitFunction(tree) {
+  visitFunctionDeclaration(tree) {
+    this.visitFunction_(tree);
+  }
+
+  /**
+   * @param {FunctionExpression} tree
+   */
+  visitFunctionExpression(tree) {
+    this.visitFunction_(tree);
+  }
+
+  visitFunction_(tree) {
     this.write_(FUNCTION);
     if (tree.isGenerator) {
       this.write_(STAR);
@@ -575,18 +586,21 @@ export class ParseTreeWriter extends ParseTreeVisitor {
    * @param {ImportSpecifier} tree
    */
   visitImportSpecifier(tree) {
-    this.write_(tree.importedName);
-    if (tree.destinationName !== null) {
+    this.write_(tree.lhs);
+    if (tree.rhs !== null) {
       this.write_(COLON);
-      this.write_(tree.destinationName);
+      this.write_(tree.rhs);
     }
   }
 
   visitImportSpecifierSet(tree) {
-    if (tree.specifiers.type == STAR)
+    if (tree.specifiers.type == STAR) {
       this.write_(STAR);
-    else
-      this.visitList(tree.specifiers);
+    } else {
+      this.write_(OPEN_CURLY);
+      this.writeList_(tree.specifiers, COMMA, FALSE);
+      this.write_(CLOSE_CURLY);
+    }
   }
 
   /**
@@ -1136,6 +1150,13 @@ export class ParseTreeWriter extends ParseTreeVisitor {
   needsSpace_(token) {
     if (!this.lastToken_)
       return false;
+
+    // Prevent the next token from being interpreted as regular expression
+    // flags.
+    if (this.lastToken_.type === REGULAR_EXPRESSION &&
+        this.isIdentifierNameOrNumber_(token)) {
+      return true;
+    }
 
     var value = token.toString();
     var lastValue = this.lastToken_.toString();

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import FindVisitor from 'FindVisitor.js';
+import {FindVisitor} from './FindVisitor.js';
 
 /**
  * This is used to find something in a tree. Extend this class and override
@@ -24,7 +24,8 @@ import FindVisitor from 'FindVisitor.js';
  */
 export class FindInFunctionScope extends FindVisitor {
   // don't visit function children or bodies
-  visitFunction(tree) {}
+  visitFunctionDeclaration(tree) {}
+  visitFunctionExpression(tree) {}
   visitSetAccessor(tree) {}
   visitGetAccessor(tree) {}
   visitPropertyMethodAssignment(tree) {}

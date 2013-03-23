@@ -18,8 +18,8 @@ import {
   RUNTIME,
   TRACEUR
 } from '../syntax/PredefinedName.js';
-import TempVarTransformer from 'TempVarTransformer.js';
-import CONST from '../syntax/TokenType.js';
+import {TempVarTransformer} from './TempVarTransformer.js';
+import {CONST} from '../syntax/TokenType.js';
 import {
   VariableDeclarationList,
   VariableStatement
@@ -31,7 +31,7 @@ import {
   createIdentifierExpression,
   createMemberExpression,
   createVariableDeclaration
-} from 'ParseTreeFactory.js';
+} from './ParseTreeFactory.js';
 
 /**
  * Desugars the private name syntax, @name.

@@ -16,20 +16,18 @@ import {
   CURRENT,
   RESULT
 } from '../../syntax/PredefinedName.js';
-import State from 'State.js';
+import {State} from './State.js';
 import {
   createAssignmentStatement,
   createIdentifierExpression,
   createMemberExpression,
   createReturnStatement,
+  createThisExpression,
   createTrueLiteral
 } from '../ParseTreeFactory.js';
 
 /**
- * Represents the dispatch portion of a switch statement that has been added
- * to a StateMachine.
- *
- * SwitchStates are immutable.
+ * Represents a simple yield expression that has been added to a StateMachine.
  */
 export class YieldState extends State {
   /**
@@ -49,7 +47,7 @@ export class YieldState extends State {
    * @return {YieldState}
    */
   replaceState(oldState, newState) {
-    return new YieldState(
+    return new this.constructor(
         State.replaceStateId(this.id, oldState, newState),
         State.replaceStateId(this.fallThroughState, oldState, newState),
         this.expression);
@@ -63,9 +61,13 @@ export class YieldState extends State {
    */
   transform(enclosingFinally, machineEndState, reporter) {
     return [
-      // $current = expression;
+      // 'this' refers to the '$G' object from
+      // GeneratorTransformer.transformGeneratorBody
+      //
+      // this.$current = expression;
       createAssignmentStatement(
-          createIdentifierExpression(CURRENT), this.expression),
+          createMemberExpression(createThisExpression(), CURRENT),
+          this.expression),
       // either:
       //      $state = this.fallThroughState;
       //      return true;

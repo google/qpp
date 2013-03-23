@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import IdentifierToken from '../syntax/IdentifierToken.js';
-import LiteralToken from '../syntax/LiteralToken.js';
+import {IdentifierToken} from '../syntax/IdentifierToken.js';
+import {LiteralToken} from '../syntax/LiteralToken.js';
 import {
   ParseTree,
   ParseTreeType
@@ -30,7 +30,7 @@ import {
   UNDEFINED,
   getParameterName
 } from '../syntax/PredefinedName.js';
-import Token from '../syntax/Token.js';
+import {Token} from '../syntax/Token.js';
 import {
   EQUAL,
   FALSE,
@@ -299,7 +299,8 @@ export function createBinaryOperator(left, operator, right) {
 }
 
 /**
- * @param {string|IdentifierToken|IdentifierExpression|BindingIdentifier} identifier
+ * @param {string|IdentifierToken|IdentifierExpression|BindingIdentifier}
+ *     identifier
  * @return {BindingIdentifier}
  */
 export function createBindingIdentifier(identifier) {
@@ -705,10 +706,16 @@ export function createMemberLookupExpression(operand,  memberExpression) {
 }
 
 /**
+ * Creates 'this' or 'this.memberName'.
+ * @param {string=} memberName
  * @return {ParseTree}
  */
-export function createThisExpression() {
-  return new ThisExpression(null);
+export function createThisExpression(memberName = undefined) {
+  var result = new ThisExpression(null);
+  if (memberName) {
+    result = createMemberExpression(result, memberName);
+  }
+  return result;
 }
 
 /**
@@ -967,7 +974,9 @@ export function createUseStrictDirective() {
  * @param {ParseTree=} initializer
  * @return {VariableDeclarationList}
  */
-export function createVariableDeclarationList(binding, identifierOrDeclarations, initializer) {
+export function createVariableDeclarationList(binding,
+                                              identifierOrDeclarations,
+                                              initializer) {
   if (identifierOrDeclarations instanceof Array) {
     var declarations = identifierOrDeclarations;
     return new VariableDeclarationList(null, binding, declarations);
@@ -1000,7 +1009,9 @@ export function createVariableDeclaration(identifier, initializer) {
  * @param {ParseTree=} initializer
  * @return {VariableStatement}
  */
-export function createVariableStatement(listOrBinding, identifier, initializer) {
+export function createVariableStatement(listOrBinding,
+                                        identifier,
+                                        initializer) {
   if (listOrBinding instanceof VariableDeclarationList)
     return new VariableStatement(null, listOrBinding);
   var binding = listOrBinding;

@@ -1,14 +1,12 @@
 SRC = \
-  third_party/source-map/lib/source-map/array-set.js \
-  third_party/source-map/lib/source-map/base64.js \
-  third_party/source-map/lib/source-map/base64-vlq.js \
-  third_party/source-map/lib/source-map/binary-search.js \
-  third_party/source-map/lib/source-map/util.js \
-  third_party/source-map/lib/source-map/source-map-generator.js \
-  third_party/source-map/lib/source-map/source-map-consumer.js \
-  third_party/source-map/lib/source-map/source-node.js \
-  src/runtime/runtime.js \
-  src/traceur.js
+  src/traceur.js \
+  src/runtime/runtime.js
+GENSRC = \
+  src/codegeneration/ParseTreeTransformer.js \
+  src/outputgeneration/SourceMapIntegration.js \
+  src/syntax/trees/ParseTreeType.js \
+  src/syntax/trees/ParseTrees.js \
+  src/syntax/ParseTreeVisitor.js
 
 TFLAGS = --strict-semicolons --
 
@@ -36,13 +34,12 @@ clean:
 
 distclean: clean
 	rm -f build/dep.mk
-	rm -f src/syntax/trees/ParseTreeType.js src/syntax/trees/ParseTrees.js
+	rm -f $(GENSRC)
 
 initbench:
 	rm -rf test/bench/esprima
 	git clone https://github.com/ariya/esprima.git test/bench/esprima
-	cd test/bench/esprima; \
-			git reset --hard 1ddd7e0524d09475a14eee66e8e1e3557c5b5999
+	cd test/bench/esprima; git reset --hard 1ddd7e0524d09475
 	git apply test/bench/esprima-compare.patch
 
 bin/traceur.min.js: bin/traceur.js
@@ -54,17 +51,30 @@ bin/traceur.js force:
 # Prerequisites following '|' are rebuilt just like ordinary prerequisites.
 # However, they don't cause remakes if they're newer than the target. See:
 # http://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html
-build/dep.mk: | src/syntax/trees/ParseTreeType.js src/syntax/trees/ParseTrees.js
+build/dep.mk: | $(GENSRC)
 	node build/makedep.js --depTarget bin/traceur.js $(TFLAGS) $(SRC) > $@
 
-src/syntax/trees/ParseTrees.js: src/syntax/trees/trees.json build/build-parse-trees.js
-	node build/build-parse-trees.js src/syntax/trees/trees.json > $@
+src/syntax/trees/ParseTrees.js: \
+  build/build-parse-trees.js src/syntax/trees/trees.json
+	node $^ > $@
 
-src/syntax/trees/ParseTreeType.js: src/syntax/trees/trees.json build/build-parse-tree-type.js
-	node build/build-parse-tree-type.js src/syntax/trees/trees.json > $@
+src/syntax/trees/ParseTreeType.js: \
+  build/build-parse-tree-type.js src/syntax/trees/trees.json
+	node $^ > $@
+
+src/syntax/ParseTreeVisitor.js: \
+  build/build-parse-tree-visitor.js src/syntax/trees/trees.json
+	node $^ > $@
+
+src/codegeneration/ParseTreeTransformer.js: \
+  build/build-parse-tree-transformer.js src/syntax/trees/trees.json
+	node $^ > $@
+
+%.js: %.js-template.js
+	node build/expand-js-template.js $^ $@
 
 bin/traceur.ugly.js: bin/traceur.js
-	uglifyjs bin/traceur.js --compress dead_code=true,unused=true,sequences=true,join_vars=true,evaluate=true,booleans=true,conditionals=true -m -o $@
+	uglifyjs bin/traceur.js --compress -m -o $@
 
 .PHONY: build min test test-list force boot clean distclean
 

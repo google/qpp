@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CPSTransformer from 'CPSTransformer.js';
-import EndState from 'EndState.js';
-import FallThroughState from 'FallThroughState.js';
+import {CPSTransformer} from './CPSTransformer.js';
+import {EndState} from './EndState.js';
+import {FallThroughState} from './FallThroughState.js';
 import {
   $VALUE,
   CALLBACK,
@@ -32,9 +32,10 @@ import {
   THEN,
   WAIT_TASK
 } from '../../syntax/PredefinedName.js';
-import STATE_MACHINE from '../../syntax/trees/ParseTreeType.js';
-import StateMachine from '../../syntax/trees/StateMachine.js';
-import VAR from '../../syntax/TokenType.js';
+import {STATE_MACHINE} from '../../syntax/trees/ParseTreeType.js';
+import {parseStatement} from '../PlaceholderParser.js';
+import {StateMachine} from '../../syntax/trees/StateMachine.js';
+import {VAR} from '../../syntax/TokenType.js';
 import {
   createArgumentList,
   createAssignStateStatement,
@@ -248,11 +249,22 @@ export class AsyncTransformer extends CPSTransformer {
         VAR,
         WAIT_TASK,
         null));
-    //   var $continuation = machineMethod;
-    statements.push(createVariableStatement(
-        VAR,
-        CONTINUATION,
-        this.generateMachineMethod(machine)));
+    var id = createIdentifierExpression;
+    var G = '$G';
+    statements.push(
+        parseStatement `
+        var ${G} = {
+          GState: 0,
+          current: undefined,
+          yieldReturn: undefined,
+          innerFunction: ${this.generateMachineInnerFunction(machine)},
+          moveNext: ${this.generateMachineMethod(machine)}
+        };
+        `);
+    //   var $continuation = $G.moveNext.bind($G);
+    statements.push(
+        parseStatement `
+        var ${id(CONTINUATION)} = ${id(G)}.moveNext.bind(${id(G)});`);
     //   var $createCallback = function(newState) { return function (value) { $state = newState; $value = value; $continuation(); }}
     statements.push(createVariableStatement(
         VAR,

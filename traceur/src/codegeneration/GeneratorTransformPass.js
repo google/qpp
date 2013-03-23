@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import AsyncTransformer from 'generator/AsyncTransformer.js';
-import ForInTransformPass from 'generator/ForInTransformPass.js';
-import ForOfTransformer from 'ForOfTransformer.js';
+import {AsyncTransformer} from './generator/AsyncTransformer.js';
+import {ForInTransformPass} from './generator/ForInTransformPass.js';
+import {ForOfTransformer} from './ForOfTransformer.js';
 import {
   GetAccessor,
   SetAccessor
 } from '../syntax/trees/ParseTrees.js';
-import GeneratorTransformer from 'generator/GeneratorTransformer.js';
-import ParseTreeVisitor from '../syntax/ParseTreeVisitor.js';
-import parseStatement from 'PlaceholderParser.js';
-import TempVarTransformer from 'TempVarTransformer.js';
-import ParseTreeTransformer from 'ParseTreeTransformer.js';
+import {GeneratorTransformer} from './generator/GeneratorTransformer.js';
+import {ParseTreeVisitor} from '../syntax/ParseTreeVisitor.js';
+import {parseStatement} from './PlaceholderParser.js';
+import {TempVarTransformer} from './TempVarTransformer.js';
+import {ParseTreeTransformer} from './ParseTreeTransformer.js';
 import {
   EQUAL,
   VAR
@@ -36,6 +36,10 @@ import {
   YIELD_EXPRESSION
 } from '../syntax/trees/ParseTreeType.js';
 import {
+  FunctionDeclaration,
+  FunctionExpression
+} from '../syntax/trees/ParseTrees.js';
+import {
   createAssignmentExpression,
   createAssignmentStatement,
   createBlock,
@@ -47,7 +51,7 @@ import {
   createVariableDeclarationList,
   createVariableStatement,
   createYieldStatement
-} from 'ParseTreeFactory.js';
+} from './ParseTreeFactory.js';
 import {
   ACTION_SEND,
   ACTION_THROW,
@@ -55,7 +59,10 @@ import {
   YIELD_ACTION,
   YIELD_SENT
 } from '../syntax/PredefinedName.js';
-import transformOptions from '../options.js';
+import {
+  transformOptions,
+  options
+} from '../options.js';
 
 /**
  * @param {BinaryOperator} tree
@@ -107,7 +114,8 @@ class YieldFinder extends ParseTreeVisitor {
   }
 
   // don't visit function children or bodies
-  visitFunction(tree) {}
+  visitFunctionDeclaration(tree) {}
+  visitFunctionExpression(tree) {}
   visitSetAccessor(tree) {}
   visitGetAccessor(tree) {}
 }
@@ -131,7 +139,7 @@ class YieldExpressionTransformer extends TempVarTransformer {
               ${id(YIELD_ACTION)} = ${ACTION_SEND};
               throw ${id(YIELD_SENT)};
             case ${ACTION_CLOSE}:
-              break $close;
+              return;
           }`;
     }
   }
@@ -224,8 +232,9 @@ class YieldExpressionTransformer extends TempVarTransformer {
    * @private
    */
   transformYieldForExpression_(tree) {
-    var g = createIdentifierExpression(this.getTempIdentifier());
-    var next = createIdentifierExpression(this.getTempIdentifier());
+    var g = id(this.getTempIdentifier());
+    var next = id(this.getTempIdentifier());
+    var isGeneratorObject = id(this.getTempIdentifier());
 
     // http://wiki.ecmascript.org/doku.php?id=harmony:generators
     //
@@ -257,6 +266,9 @@ class YieldExpressionTransformer extends TempVarTransformer {
     return parseStatement `
         {
           var ${g} = traceur.runtime.getIterator(${tree.expression}), ${next};
+          // Use duck-type testing to also identify native generator objects.
+          // TODO: Reduce false positives.
+          var ${isGeneratorObject} = ${g}.send;
 
           // TODO: Should 'yield *' handle non-generator iterators? A strict
           // interpretation of harmony:generators would indicate 'no', but
@@ -270,25 +282,26 @@ class YieldExpressionTransformer extends TempVarTransformer {
             while (true) {
               switch (${id(YIELD_ACTION)}) {
                 case ${ACTION_SEND}:
-                  if (!${g}.send)
-                    ${next} = ${g}.next();
-                  else
+                  if (${isGeneratorObject})
                     ${next} = ${g}.send(${id(YIELD_SENT)});
+                  else
+                    ${next} = ${g}.next();
                   break;
                 case ${ACTION_THROW}:
                   ${id(YIELD_ACTION)} = ${ACTION_SEND};
-                  if (!${g}.throw)
+                  if (${isGeneratorObject})
+                    ${next} = ${g}.throw(${id(YIELD_SENT)});
+                  else
                     throw ${id(YIELD_SENT)};
-                  ${next} = ${g}.throw(${id(YIELD_SENT)});
                   break;
                 case ${ACTION_CLOSE}:
                   // TODO: Another deviation from harmony:generators. This line
                   // is needed if we want any given generator function G to be
                   // identical in behavior to GG when 'close' is used.
                   //   function* GG() { yield* G(); }
-                  if (${g}.close)
+                  if (${isGeneratorObject})
                     ${g}.close();
-                  break $close;
+                  return;
               }
               ${createYieldStatement(next)};
             }
@@ -323,40 +336,59 @@ class YieldExpressionTransformer extends TempVarTransformer {
 export class GeneratorTransformPass extends TempVarTransformer {
   /**
    * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {RuntimeInliner} runtimeInliner
    * @param {ErrorReporter} reporter
    */
-  constructor(identifierGenerator, reporter) {
+  constructor(identifierGenerator, runtimeInliner, reporter) {
     super(identifierGenerator);
+    this.runtimeInliner_ = runtimeInliner;
     this.reporter_ = reporter;
   }
 
   /**
-   * @param {FunctionDeclaration|FunctionExpression} tree
+   * @param {FunctionDeclaration} tree
    * @return {ParseTree}
    */
-  transformFunction(tree) {
-    var body = this.transformBody_(tree.functionBody);
+  transformFunctionDeclaration(tree) {
+    return this.transformFunction_(tree, FunctionDeclaration);
+  }
+
+  /**
+   * @param {FunctionExpression} tree
+   * @return {ParseTree}
+   */
+  transformFunctionExpression(tree) {
+    return this.transformFunction_(tree, FunctionExpression);
+  }
+
+  transformFunction_(tree, constructor) {
+    var body = this.transformBody_(tree.functionBody, tree.isGenerator);
     if (body === tree.functionBody)
       return tree;
 
     // The generator has been transformed away.
     var isGenerator = false;
 
-    return new tree.constructor(null, tree.name, isGenerator,
-                                tree.formalParameterList, body);
+    return new constructor(null, tree.name, isGenerator,
+                           tree.formalParameterList, body);
   }
 
   /**
    * @param {Block} tree
    * @return {Block}
    */
-  transformBody_(tree) {
-    var finder = new YieldFinder(tree);
+  transformBody_(tree, isGenerator) {
+    var finder;
 
     // transform nested functions
     var body = super.transformBlock(tree);
 
-    if (!finder.hasAnyGenerator()) {
+    if (isGenerator ||
+        (options.unstarredGenerators || transformOptions.deferredFunctions)) {
+      finder = new YieldFinder(tree);
+      if (!(finder.hasYield || isGenerator || finder.hasAsync))
+        return body;
+    } else if (!isGenerator) {
       return body;
     }
 
@@ -367,20 +399,13 @@ export class GeneratorTransformPass extends TempVarTransformer {
       body = ForInTransformPass.transformTree(this.identifierGenerator, body);
     }
 
-    if (finder.hasYield) {
+    if (finder.hasYield || isGenerator) {
       if (transformOptions.generators) {
-        // The labeled do-while serves as a jump target for 'ACTION_CLOSE'.
-        // See the var 'throwClose' and the class 'YieldExpressionTransformer'
-        // for more details.
-        body = parseStatement `
-            {
-              $close: do {
-                ${YieldExpressionTransformer.
-                      transformTree(this.identifierGenerator, body)}
-              } while (0);
-            }`;
+        body = YieldExpressionTransformer.
+            transformTree(this.identifierGenerator, body);
 
-        body = GeneratorTransformer.transformGeneratorBody(this.reporter_,
+        body = GeneratorTransformer.transformGeneratorBody(this.runtimeInliner_,
+                                                           this.reporter_,
                                                            body);
       }
     } else if (transformOptions.deferredFunctions) {
@@ -422,8 +447,15 @@ export class GeneratorTransformPass extends TempVarTransformer {
         body);
   }
 
-  static transformTree(identifierGenerator, reporter, tree) {
-    return new GeneratorTransformPass(identifierGenerator, reporter).
-        transformAny(tree);
+  /**
+   * @param {UniqueIdentifierGenerator} identifierGenerator
+   * @param {RuntimeInliner} runtimeInliner
+   * @param {ErrorReporter} reporter
+   * @param {ParseTree} tree
+   * @return {ParseTree}
+   */
+  static transformTree(identifierGenerator, runtimeInliner, reporter, tree) {
+    return new GeneratorTransformPass(
+        identifierGenerator, runtimeInliner, reporter).transformAny(tree);
   }
 }

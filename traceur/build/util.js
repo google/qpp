@@ -18,7 +18,13 @@ var fs = require('fs');
 var path = require('path');
 var print = console.log.bind(console);
 
+function isParseTreeType(type, trees) {
+    return type in trees || type === 'ParseTree';
+  };
+
 module.exports = {
+  print: print,
+
   printLicense: function() {
     // This reads the license header from the current file.
     var data = fs.readFileSync(__filename, 'utf-8');
@@ -38,5 +44,24 @@ module.exports = {
     print('// from %s', path.basename(process.argv[2]));
     print('// Do not edit!');
     print();
+  },
+
+  toConstantName: function(n) {
+    return n[0] + n.slice(1).replace(/([A-Z])/g, '_$1').toUpperCase();
+  },
+
+  isParseTreeType: isParseTreeType,
+
+  isParseTreeListType: function(type, trees) {
+    return (type.lastIndexOf('Array.<', 0) === 0) &&
+      isParseTreeType(type.substring('Array.<'.length, type.length - 1), trees);
+  },
+
+  // Filters out keys that are used as comments.
+  parseJSON: function(data) {
+    return JSON.parse(data, function(key, value) {
+      if (key !== '//')
+        return value;
+    });
   }
 };

@@ -13,9 +13,16 @@
 // limitations under the License.
 
 import {
-  FormalParameterList
+  isUndefined,
+  isVoidExpression,
+  isLiteralExpression
+} from '../semantics/util.js';
+import {
+  FormalParameterList,
+  FunctionDeclaration,
+  FunctionExpression
 } from '../syntax/trees/ParseTrees.js';
-import ParseTreeTransformer from 'ParseTreeTransformer.js';
+import {ParseTreeTransformer} from './ParseTreeTransformer.js';
 import {
   ARGUMENTS,
   UNDEFINED
@@ -42,33 +49,10 @@ import {
   createOperatorToken,
   createVariableStatement,
   createVoid0
-} from 'ParseTreeFactory.js';
-import prependStatements from 'PrependStatements.js';
+} from './ParseTreeFactory.js';
+import {prependStatements} from './PrependStatements.js';
 
 var stack = [];
-
-function isUndefined(tree) {
-  if (tree.type === PAREN_EXPRESSION)
-    return isUndefined(tree.expression);
-
-  return tree.type === IDENTIFIER_EXPRESSION &&
-      tree.identifierToken.value === UNDEFINED;
-}
-
-function isVoidExpression(tree) {
-  if (tree.type === PAREN_EXPRESSION)
-    return isVoidExpression(tree.expression);
-  // Any void expression without side effects can be dropped. Maybe expand
-  // this as needed?
-  return tree.type === UNARY_EXPRESSION && tree.operator.type === VOID &&
-      isLiteralExpression(tree.operand);
-}
-
-function isLiteralExpression(tree) {
-  if (tree.type === PAREN_EXPRESSION)
-    return isLiteralExpression(tree.expression);
-  return tree.type === LITERAL_EXPRESSION;
-}
 
 function createDefaultAssignment(index, binding, initializer) {
   var argumentsExpression =
@@ -104,10 +88,20 @@ function createDefaultAssignment(index, binding, initializer) {
  */
 export class DefaultParametersTransformer extends ParseTreeTransformer {
 
-  transformFunction(tree) {
+  transformFunctionExpression(tree) {
+    return this.transformFunction_(tree, FunctionExpression);
+  }
+
+  transformFunctionDeclaration(tree) {
+    return this.transformFunction_(tree, FunctionDeclaration);
+  }
+
+  transformFunction_(tree, constructor) {
     stack.push([]);
 
-    var transformedTree = super.transformFunction(tree);
+    var transformedTree = constructor === FunctionExpression ?
+        super.transformFunctionExpression(tree) :
+        super.transformFunctionDeclaration(tree);
 
     var statements = stack.pop();
     if (!statements.length)
@@ -117,11 +111,11 @@ export class DefaultParametersTransformer extends ParseTreeTransformer {
     statements = prependStatements(transformedTree.functionBody.statements,
                                    ...statements);
 
-    return new tree.constructor(transformedTree.location,
-                                transformedTree.name,
-                                transformedTree.isGenerator,
-                                transformedTree.formalParameterList,
-                                createBlock(statements));
+    return new constructor(transformedTree.location,
+                           transformedTree.name,
+                           transformedTree.isGenerator,
+                           transformedTree.formalParameterList,
+                           createBlock(statements));
   }
 
   transformFormalParameterList(tree) {

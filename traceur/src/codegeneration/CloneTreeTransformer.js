@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import ParseTreeTransformer from 'ParseTreeTransformer.js';
+import {ParseTreeTransformer} from './ParseTreeTransformer.js';
 
 import {
   AtNameExpression,
@@ -120,6 +120,18 @@ export class CloneTreeTransformer extends ParseTreeTransformer {
    */
   transformImportSpecifier(tree) {
     return new ImportSpecifier(tree.location, tree.lhs, tree.rhs);
+  }
+
+  /**
+   * @param {Array.<ParseTree>} list
+   * @return {Array.<ParseTree>}
+   */
+  transformList(list) {
+    if (list == null || list.length == 0) {
+      return [];
+    } else {
+      return super.transformList(list);
+    }
   }
 
   /**

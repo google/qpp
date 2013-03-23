@@ -13,23 +13,27 @@
 // limitations under the License.
 
 import {
+  FunctionDeclaration,
+  FunctionExpression
+} from '../syntax/trees/ParseTrees.js';
+import {
   MEMBER_EXPRESSION,
   MEMBER_LOOKUP_EXPRESSION,
   SUPER_EXPRESSION
 } from '../syntax/trees/ParseTreeType.js';
-import ParseTreeTransformer from 'ParseTreeTransformer.js';
-import EQUAL from '../syntax/TokenType.js';
+import {ParseTreeTransformer} from './ParseTreeTransformer.js';
+import {EQUAL} from '../syntax/TokenType.js';
 import {
   createArrayLiteralExpression,
   createIdentifierExpression,
   createStringLiteral,
   createThisExpression
-} from 'ParseTreeFactory.js';
+} from './ParseTreeFactory.js';
 import {
   expandMemberExpression,
   expandMemberLookupExpression
-} from 'OperatorExpander.js';
-import parseExpression from 'PlaceholderParser.js';
+} from './OperatorExpander.js';
+import {parseExpression} from './PlaceholderParser.js';
 
 var SUPER_DESCRIPTOR_CODE =
     `function (proto, name) {
@@ -105,11 +109,21 @@ export class SuperTransformer extends ParseTreeTransformer {
     return this.nestedSuperCount_ > 0;
   }
 
-  transformFunction(tree) {
+  transformFunctionDeclaration(tree) {
+    return this.transformFunction_(tree, FunctionDeclaration);
+  }
+
+  transformFunctionExpression(tree) {
+    return this.transformFunction_(tree, FunctionExpression);
+  }
+
+  transformFunction_(tree, constructor) {
     var oldSuperCount = this.superCount_;
 
     this.inNestedFunc_++;
-    var transformedTree = super.transformFunction(tree);
+    var transformedTree = constructor === FunctionExpression ?
+        super.transformFunctionExpression(tree) :
+        super.transformFunctionDeclaration(tree);
     this.inNestedFunc_--;
 
     if (oldSuperCount !== this.superCount_)

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import ComprehensionTransformer from 'ComprehensionTransformer.js';
-import PLUS_PLUS from '../syntax/TokenType.js';
+import {ComprehensionTransformer} from './ComprehensionTransformer.js';
+import {PLUS_PLUS} from '../syntax/TokenType.js';
 import {
   createArrayLiteralExpression,
   createAssignmentStatement,
@@ -22,7 +22,7 @@ import {
   createNumberLiteral,
   createPostfixExpression,
   createReturnStatement
-} from 'ParseTreeFactory.js';
+} from './ParseTreeFactory.js';
 
 /**
  * Array Comprehension Transformer:

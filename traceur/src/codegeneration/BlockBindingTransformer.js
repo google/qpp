@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import AlphaRenamer from 'AlphaRenamer.js';
+import {AlphaRenamer} from './AlphaRenamer.js';
 import {
   BINDING_IDENTIFIER,
   BLOCK,
@@ -22,7 +22,7 @@ import {
   FunctionDeclaration,
   FunctionExpression
 } from '../syntax/trees/ParseTrees.js';
-import ParseTreeTransformer from 'ParseTreeTransformer.js';
+import {ParseTreeTransformer} from './ParseTreeTransformer.js';
 import {
   CONST,
   LET,
@@ -46,7 +46,7 @@ import {
   createVariableDeclaration,
   createVariableDeclarationList,
   createVariableStatement
-} from 'ParseTreeFactory.js';
+} from './ParseTreeFactory.js';
 
 /**
  * Transforms the block bindings from traceur to js.
@@ -750,12 +750,14 @@ export class BlockBindingTransformer extends ParseTreeTransformer {
    * @return {Block}
    */
   transformBlockStatements_(tree) {
-    var statements = this.transformSourceElements(tree.statements);
+    var statements = this.transformList(tree.statements);
 
     if (this.scope_.blockVariables != null) {
       // rewrite into catch construct
       tree = toBlock(
-          this.rewriteAsCatch_(this.scope_.blockVariables, createBlock(statements)));
+          this.rewriteAsCatch_(
+              this.scope_.blockVariables,
+              createBlock(statements)));
     } else if (statements != tree.statements) {
       tree = createBlock(statements);
     }

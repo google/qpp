@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import BreakState from 'BreakState.js';
-import ContinueState from 'ContinueState.js';
-import ParseTreeTransformer from '../ParseTreeTransformer.js';
-import StateMachine from '../../syntax/trees/StateMachine.js';
+import {BreakState} from './BreakState.js';
+import {ContinueState} from './ContinueState.js';
+import {ParseTreeTransformer} from '../ParseTreeTransformer.js';
+import {StateMachine} from '../../syntax/trees/StateMachine.js';
 
 /**
  * @param {BreakStatement|ContinueStatement} tree
@@ -26,13 +26,14 @@ function safeGetLabel(tree) {
 }
 
 /**
- * Converts statements which do not contain a yield, to a state machine. Always called from a
- * context where the containing block contains a yield. Normally this just wraps the statement into
- * a single state StateMachine. However, if the statement contains a break or continue which
- * exits the statement, then the non-local break/continue must be converted into state machines.
+ * Converts statements which do not contain a yield, to a state machine. Always
+ * called from a context where the containing block contains a yield. Normally
+ * this just wraps the statement into a single state StateMachine. However, if
+ * the statement contains a break or continue which exits the statement, then
+ * the non-local break/continue must be converted into state machines.
  *
- * Note that parents of non-local break/continue statements are themselves translated into
- * state machines by the caller.
+ * Note that parents of non-local break/continue statements are themselves
+ * translated into state machines by the caller.
  */
 export class BreakContinueTransformer extends ParseTreeTransformer {
   /**
@@ -54,7 +55,8 @@ export class BreakContinueTransformer extends ParseTreeTransformer {
    * @return {StateMachibneTree}
    */
   stateToStateMachine_(newState) {
-    // TODO: this shouldn't be required, but removing it requires making consumers resilient
+    // TODO: this shouldn't be required, but removing it requires making
+    // consumers resilient
     // TODO: to a machine with INVALID fallThroughState
     var fallThroughState = this.allocateState_();
     return new StateMachine(newState.id, fallThroughState, [newState], []);
@@ -66,7 +68,8 @@ export class BreakContinueTransformer extends ParseTreeTransformer {
    */
   transformBreakStatement(tree) {
     return this.transformBreaks_ ?
-        this.stateToStateMachine_(new BreakState(this.allocateState_(), safeGetLabel(tree))) :
+        this.stateToStateMachine_(
+            new BreakState(this.allocateState_(), safeGetLabel(tree))) :
         tree;
   }
 
@@ -75,7 +78,8 @@ export class BreakContinueTransformer extends ParseTreeTransformer {
    * @return {ParseTree}
    */
   transformContinueStatement(tree) {
-    return this.stateToStateMachine_(new ContinueState(this.allocateState_(), safeGetLabel(tree)));
+    return this.stateToStateMachine_(
+        new ContinueState(this.allocateState_(), safeGetLabel(tree)));
   }
 
   /**
@@ -103,10 +107,18 @@ export class BreakContinueTransformer extends ParseTreeTransformer {
   }
 
   /**
-   * @param {FunctionDeclaration|FunctionExpression} tree
+   * @param {FunctionDeclaration} tree
    * @return {ParseTree}
    */
-  transformFunction(tree) {
+  transformFunctionDeclaration(tree) {
+    return tree;
+  }
+
+  /**
+   * @param {FunctionExpression} tree
+   * @return {ParseTree}
+   */
+  transformFunctionExpression(tree) {
     return tree;
   }
 

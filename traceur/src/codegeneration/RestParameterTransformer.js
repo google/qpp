@@ -15,13 +15,13 @@
 import {
   FormalParameterList
 } from '../syntax/trees/ParseTrees.js';
-import TempVarTransformer from 'TempVarTransformer.js';
+import {TempVarTransformer} from './TempVarTransformer.js';
 import {
   createBlock,
   createIdentifierToken,
-} from 'ParseTreeFactory.js';
-import parseStatement from 'PlaceholderParser.js';
-import prependStatements from 'PrependStatements.js';
+} from './ParseTreeFactory.js';
+import {parseStatement} from './PlaceholderParser.js';
+import {prependStatements} from './PrependStatements.js';
 
 function hasRestParameter(formalParameterList) {
   var parameters = formalParameterList.parameters;
@@ -41,10 +41,16 @@ function getRestParameterLiteralToken(formalParameterList) {
  */
 export class RestParameterTransformer extends TempVarTransformer {
 
-  transformFunction(tree) {
+  transformFunctionDeclaration(tree) {
     if (hasRestParameter(tree.formalParameterList))
       return this.desugarRestParameters_(tree);
-    return super.transformFunction(tree);
+    return super.transformFunctionDeclaration(tree);
+  }
+
+  transformFunctionExpression(tree) {
+    if (hasRestParameter(tree.formalParameterList))
+      return this.desugarRestParameters_(tree);
+    return super.transformFunctionExpression(tree);
   }
 
   /**

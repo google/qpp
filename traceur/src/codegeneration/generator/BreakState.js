@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import FallThroughState from 'FallThroughState.js';
-import State from 'State.js';
-import createStatementList from '../ParseTreeFactory.js';
+import {FallThroughState} from './FallThroughState.js';
+import {State} from './State.js';
+import {createStatementList} from '../ParseTreeFactory.js';
 
 export class BreakState extends State {
   /**
@@ -32,7 +32,8 @@ export class BreakState extends State {
    * @return {BreakState}
    */
   replaceState(oldState, newState) {
-    return new BreakState(State.replaceStateId(this.id, oldState, newState), this.label);
+    return new BreakState(
+        State.replaceStateId(this.id, oldState, newState), this.label);
   }
 
   /**

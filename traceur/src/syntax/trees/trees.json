@@ -401,9 +401,10 @@
       "SourceRange"
     ],
     "parameters": [
-      "Array.<BindingElement|RestParameter>"
+      "Array.<ParseTree>"
     ]
   },
+  "//": "FunctionDeclaration and FunctionExpression needs to have the exact same shape",
   "FunctionDeclaration": {
     "location": [
       "SourceRange"
@@ -805,7 +806,7 @@
       "ParseTree"
     ],
     "caseClauses": [
-      "Array.<CaseClause|DefaultClause>"
+      "Array.<ParseTree>"
     ]
   },
   "TemplateLiteralExpression": {

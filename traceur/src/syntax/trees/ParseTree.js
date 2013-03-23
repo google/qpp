@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export module ParseTreeType from 'ParseTreeType.js';
+export module ParseTreeType from './ParseTreeType.js';
 
 import * from ParseTreeType;
+
+import Token from '../Token.js';
+
+module utilJSON from '../../util/JSON.js';
 
 /**
  * An abstract syntax tree for JavaScript parse trees.
@@ -30,10 +34,6 @@ import * from ParseTreeType;
  *
  * When adding a new subclass of ParseTree you must also do the following:
  *   - add a new entry to ParseTreeType
- *   - modify ParseTreeVisitor.visit(ParseTree) for new ParseTreeType
- *   - add ParseTreeVisitor.visit(XTree)
- *   - modify ParseTreeTransformer.transform(ParseTree) for new ParseTreeType
- *   - add ParseTreeTransformer.transform(XTree)
  *   - add ParseTreeWriter.visit(XTree)
  *   - add ParseTreeValidator.visit(XTree)
  */
@@ -43,6 +43,7 @@ export class ParseTree {
    * @param {SourceRange} location
    */
   constructor(type, location) {
+    throw new Error("Don't use for now. 'super' is currently very slow.");
     this.type = type;
     this.location = location;
   }
@@ -248,6 +249,14 @@ export class ParseTree {
     }
     return this.isStatementStandard();
   }
+
+  toJSON() {
+    return utilJSON.transform(this, ParseTree.replacer);
+  }
+
+  stringify(indent = 2) {
+    return JSON.stringify(this, ParseTree.replacer, indent);
+  }
 }
 
 /**
@@ -262,4 +271,23 @@ ParseTree.stripLocation = function(key, value) {
     return undefined;
   }
   return value;
+};
+
+/**
+ * Like stripLocation, but also adds 'type' properties to the output.
+ * @param {string} key
+ * @param {*} value
+ * @return {*}
+ */
+ParseTree.replacer = function (k, v) {
+  if (v instanceof ParseTree || v instanceof Token) {
+    var rv = {type: v.type};
+    Object.keys(v).forEach(function(name) {
+      // assigns 'type' again for Token, but no big deal.
+      if (name !== 'location')
+        rv[name] = v[name];
+    });
+    return rv;
+  }
+  return v;
 };
