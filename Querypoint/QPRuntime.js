@@ -148,7 +148,7 @@
           });
         }
       } else {
-          if (eventObject.fakeTarget) targetSelector = eventObject.fakeTarget;
+          if (eventObject.fakeTarget) targetSelector = 'Turn:' + eventObject.fakeTarget;
       }
 
       window.__qp.turns.push(startInfo); 
@@ -165,14 +165,14 @@
       console.log("qp| endTurn " + turn); 
     }
 
-    function wrapEntryPoint(entryPointFunction) {
+    function wrapEntryPoint(entryPointFunction, wrappedTurn) {
       if (!entryPointFunction)
         return function noop(){};
       //entryPointFunction.wrappedAt = (new Date()).getTime();
       return function wrapperOnEntryPoint() {
         var args = Array.prototype.slice.apply(arguments);
         if (args.length == 0){
-            args = [{type: 'Asynchronous', fakeTarget: '#document'}];
+            args = [{type: 'Asynchronous', fakeTarget: wrappedTurn}];
         }
         var turn = startTurn(entryPointFunction, args);
         entryPointFunction.apply(null, args);  // TODO check |this| maybe use null
@@ -212,7 +212,7 @@
 
       var oldTimeout = window.setTimeout;
       window.setTimeout= function(stringFunction, millisecond){
-          oldTimeout(wrapEntryPoint(stringFunction), millisecond);
+          oldTimeout(wrapEntryPoint(stringFunction, this.__qp.turn), millisecond);
       };
 
     }
