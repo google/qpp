@@ -20,11 +20,17 @@ obj.prop.subscribe(function(newValue){
 function onClick() {
   foo() + 1;
   var p = 'prop';
-  obj[p](obj[p]()+1);
+  obj[p](obj[p]() + 1);
   bar();
   // lots more code....
   updateButton();
-  setTimeout(function(){console.warn('Asynchronous call');}, 2000);
+  setTimeout(function(){ doSetTimeouts(1)}, 2000);
+}
+
+function doSetTimeouts(number){
+  condition.prop = number;
+  console.warn('Asynchronous call ' + number);
+  if(number < 5) setTimeout(function(){ doSetTimeouts(number + 1)}, 2000);
 }
 
 function updateButton() {

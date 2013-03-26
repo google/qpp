@@ -59,6 +59,10 @@
         }
       });
 
+      this.isNormalTurn = ko.computed(function(){
+          return eventTurn.summary() && (eventTurn.summary().target.indexOf('Turn:') !== 0);
+      });
+
       this.turnMessages = ko.computed(function(){
         var turns = logScrubber.showLoad().turns;
         var messages = [];
@@ -70,6 +74,24 @@
         }
         return messages;
       });
+
+      this.turnChain = ko.computed(function(){
+        if (!eventTurn.summary()) return [];
+        var result = [];
+        var target = eventTurn.summary().target;
+        var turn;
+        while (target.substr(0, 5) === 'Turn:') {
+            turn = target.substr(5);
+            result.push({turnNumber: parseInt(turn, 10)});
+            target = logScrubber.showLoad().turns()[turn - 1].event.target;
+        }
+        return result;
+      });
+
+      this.switchTurn = function(){
+        QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turnNumber);
+        QuerypointPanel.LogScrubber.showMessage(0);
+      }
 
       this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
       this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
