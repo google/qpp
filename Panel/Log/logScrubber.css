@@ -321,6 +321,11 @@ table.messagesByLoadNumber {
     background: #272822;
     border-radius: 5px;
     padding: 3px;
+    padding-right: 10px;
+}
+
+.eventTurn_summary ul li ul{
+    left: -9999px;
 }
 
 .eventTurn_summary ul li {
@@ -332,12 +337,48 @@ table.messagesByLoadNumber {
     white-space: nowrap;
 }
 
-.eventTurn_summary li:hover ul {
+.eventTurn_summary>li:hover>ul {
     left: 0px;
+}
+
+.eventTurn_summary li ul li:hover ul{
+    left: 0px;
+}
+
+.eventTurn_summary li>ul>li:hover>ul.eventInfo_sideMenu{
+    left: 98px;
 }
 
 .eventTurn_summary li:hover a {
     text-decoration: none;
+}
+
+ul li ul .eventInfo_sideMenu{
+    left: -9999px;
+    z-index: 1;
+    top: -3px;
+    margin-right: 5px;
+}
+
+ul.eventInfo_sideMenu li.previous{
+    color: red;
+}
+
+ul.eventInfo_sideMenu li.added{
+    color: yellow;
+}
+
+ul.eventInfo_sideMenu li.fired{
+    color: green;
+}
+
+ul.eventInfo_sideMenu li a{
+    color: inherit;
+}
+
+ul.eventInfo_sideMenu li:hover a{
+    color: inherit;
+    cursor: default;
 }
 
 .eventTurn_summary li:hover ul a {

@@ -95,8 +95,18 @@
               eventType: segments[6],
               target: segments[7],
               eventBubbles: segments[8] === 'true',
-              eventCancels: segments[9] === 'true'
+              eventCancels: segments[9] === 'true',
+              previousTurn: segments[10],
+              firedEvents: [],
+              addedEvents: []
             };
+            if (this._currentEvent.previousTurn !== 'undefined' && this._currentEvent.previousTurn !== '-1') {
+                var previousTurn= this.currentReload.turns()[parseInt(this._currentEvent.previousTurn) - 1];
+                this._currentEvent.previousTurn = previousTurn; 
+                previousTurn.event.firedEvents.push(this._turn);
+            } else {
+                this._currentEvent.previousTurn = null;
+            }
 
             var turnDetail;
             turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
@@ -118,6 +128,12 @@
             this.project.addScript(segments[2]);
             break; 
           case 'debug':
+            break;
+          case 'setTimeout':
+            this._currentEvent.addedEvents.push('Timeout in ' + segments[2] + ' triggers ' + segments[3]);
+            break;
+          case 'addEventListener':
+            this._currentEvent.addedEvents.push('Listener added to ' + segments[3] + ' triggers on ' + segments[2]);
             break;
           default: 
             console.error('unknown keyword: '+messageSource.text);

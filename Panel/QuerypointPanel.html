@@ -111,17 +111,52 @@
                 </li>
                 <li>
                 <a class="eventInfo_target" data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
-                    <!-- ko ifnot: isNormalTurn-->
-                    <ul data-bind="foreach: turnChain">
-                        <li data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></li>
-                    </ul>
-                    <!-- /ko -->
-                    <!-- ko if: isNormalTurn-->
                     <ul>
+                    <!-- ko ifnot: isAsynchronous -->
                         <li class="eventInfo_target_reveal" data-bind="event: {mousedown: revealElement}"><a>Reveal</a></li>
                         <li class="eventInfo_target_trace" data-bind="event: {click: traceElement}"><a>Trace Element</a></li>
-                    </ul>
                     <!-- /ko -->
+                    <li><a>All Turns</a>
+                      <ul class="eventInfo_sideMenu">
+                            <!-- ko foreach: turnChain -->
+                                <li class="previous" data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></li>
+                            <!-- /ko -->
+                            <!-- ko foreach: addedEvents -->
+                                <li class="added"><a data-bind="text: detail"></a></li>
+                            <!-- /ko -->
+                            <!-- ko foreach: triggeredEvents -->
+                                <li class="fired" data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></li>    
+                            <!-- /ko -->
+                      </ul>
+                    </li>
+                    <!-- ko if: turnChain -->
+                        <li><a>Previous Turns</a>
+                            <ul class="eventInfo_sideMenu">
+                            <!-- ko foreach: turnChain -->
+                                <li data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></li>
+                            <!-- /ko -->
+                            </ul>
+                        </li>
+                    <!-- /ko -->
+                    <!-- ko if: addedEvents -->
+                        <li><a>Potential Turns</a>
+                            <ul class="eventInfo_sideMenu">
+                            <!-- ko foreach: addedEvents -->
+                                <li><a data-bind="text: detail"></a></li>
+                            <!-- /ko -->
+                            </ul>
+                        </li>
+                    <!-- /ko -->
+                    <!-- ko if: triggeredEvents -->
+                        <li><a>Next Turns</a>
+                            <ul class="eventInfo_sideMenu">
+                            <!-- ko foreach: triggeredEvents -->
+                                <li data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></li>    
+                            <!-- /ko -->
+                            </ul>
+                        </li>
+                    <!-- /ko -->
+                    </ul>
                 </li>
             </ul>
             <div style="clear: both"></div>

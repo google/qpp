@@ -59,8 +59,9 @@
         }
       });
 
-      this.isNormalTurn = ko.computed(function(){
-          return eventTurn.summary() && (eventTurn.summary().target.indexOf('Turn:') !== 0);
+      this.isAsynchronous = ko.computed(function(){
+          var summary = eventTurn.summary();
+          return summary && summary.eventType === 'Asynchronous';
       });
 
       this.turnMessages = ko.computed(function(){
@@ -76,16 +77,32 @@
       });
 
       this.turnChain = ko.computed(function(){
-        if (!eventTurn.summary()) return [];
+        var summary = eventTurn.summary();
+        if (!summary) return false; 
         var result = [];
-        var target = eventTurn.summary().target;
-        var turn;
-        while (target.substr(0, 5) === 'Turn:') {
-            turn = target.substr(5);
-            result.push({turnNumber: parseInt(turn, 10)});
-            target = logScrubber.showLoad().turns()[turn - 1].event.target;
+        var target = summary.previousTurn;
+        if (!target) return false;
+        while (target) {
+            result.push({turnNumber: target.turn});
+            target = target.event.previousTurn;
         }
         return result;
+      });
+
+      this.triggeredEvents = ko.computed(function(){
+        var summary = eventTurn.summary();
+        if (!summary || summary.firedEvents.length === 0) return false;
+        return summary.firedEvents.map(function(turnNumber){
+            return {turnNumber: turnNumber};
+        });
+      });
+
+      this.addedEvents = ko.computed(function(){
+        var summary = eventTurn.summary();
+        if (!summary || summary.addedEvents.length === 0) return false;
+        return summary.addedEvents.map(function(detail){
+            return {detail: detail};
+        });
       });
 
       this.switchTurn = function(){

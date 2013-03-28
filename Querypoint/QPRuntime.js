@@ -132,7 +132,7 @@
       return startInfo;
     }
 
-    function startTurn(entryPointFunction, args) {
+    function startTurn(entryPointFunction, args, previousTurn) {
       var startInfo = getStartInfo(entryPointFunction, args);
       var eventObject = args[0];    
       var targetSelector = '';
@@ -157,7 +157,8 @@
       var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
       var eventBubbles = eventObject.bubbles;
       var eventCancels = eventObject.cancelable;
-      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo + ' ' + targetSelector + ' ' + eventBubbles + ' ' + eventCancels);
+      var previousTurn = previousTurn;
+      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo + ' ' + targetSelector + ' ' + eventBubbles + ' ' + eventCancels + ' ' + previousTurn);
       return turn;
     }
 
@@ -174,7 +175,7 @@
         if (args.length == 0){
             args = [{type: 'Asynchronous', fakeTarget: wrappedTurn}];
         }
-        var turn = startTurn(entryPointFunction, args);
+        var turn = startTurn(entryPointFunction, args, wrappedTurn);
         entryPointFunction.apply(null, args);  // TODO check |this| maybe use null
         endTurn(turn);
       }
@@ -207,12 +208,15 @@
       }
       
       window.Node.prototype.addEventListener = function(type, listener, useCapture) {
-        window.__qp.intercepts.Node.prototype.addEventListener.call(this, type, wrapEntryPoint(listener), useCapture);
+        console.log('qp| addEventListener ' + type + ' ' + getSelectorUniqueToElement(this));
+        window.__qp.intercepts.Node.prototype.addEventListener.call(this, type, wrapEntryPoint(listener, (function(){return this.__qp ? this.__qp.turn : -1})()), useCapture);
       }
 
       var oldTimeout = window.setTimeout;
       window.setTimeout= function(stringFunction, millisecond){
-          oldTimeout(wrapEntryPoint(stringFunction, this.__qp.turn), millisecond);
+        
+        console.log('qp| setTimeout ' + millisecond + ' ' + (stringFunction.name || '(anonymous)'));
+        oldTimeout(wrapEntryPoint(stringFunction, this.__qp.turn), millisecond);
       };
 
     }
