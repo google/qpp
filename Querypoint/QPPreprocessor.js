@@ -56,11 +56,9 @@
       iframe.setAttribute('src', 'data:text/html,<script>' + encodeURIComponent(src) + '</script>');
       document.body.appendChild(iframe);          
     },
-
-    useAsyncPreprocessor: false,
     
     source: function(descriptors, onSource) {
-      if (this.useAsyncPreprocessor) 
+      if (Querypoint.QPPreprocessor.useAsyncPreprocessor) 
         onSource(this.asyncTranscoder + '');
       else
         this._combineSources(descriptors, this.scripts, onSource);
