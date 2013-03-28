@@ -33,6 +33,7 @@
   
   var createTrueLiteral = ParseTreeFactory.createTrueLiteral;
   var createFalseLiteral = ParseTreeFactory.createFalseLiteral;
+  var createNumberLiteral = ParseTreeFactory.createNumberLiteral;
   var createMemberExpression = ParseTreeFactory.createMemberExpression;
   var createMemberLookupExpression = ParseTreeFactory.createMemberLookupExpression;
   var createIdentifierExpression = ParseTreeFactory.createIdentifierExpression;
@@ -488,6 +489,20 @@
                                         memberExpression);
     },
 
+    _binaryOperatorEquivalentToUnary: function(operator) {
+      if (operator.type === TokenType.PLUS_PLUS)
+        return createOperatorToken(TokenType.PLUS);
+      if (operator.type === TokenType.MINUS_MINUS)
+        return createOperatorToken(TokenType.MINUS);
+      throw new Error("LinearizeTransformer invalid operator " + operator.type);
+    },
+
+    _binaryExpressionEquivalentToUnary: function(tree, preOperationValue) {
+      var operator = this._binaryOperatorEquivalentToUnary(tree.operator);
+      var one =  createNumberLiteral(1);
+      return new BinaryOperator(tree.location, preOperationValue, operator, one);
+    },
+
     // obj.prop++ or obj[prop]++  equiv to (tmp = obj.prop, obj.prop = tmp + 1)
     // 
     transformPostfixExpression: function(tree) {
@@ -500,7 +515,7 @@
       var preOperationValue = this.insertVariableFor(operand);
 
       // ++tmp3
-      var postOperationExpr = new UnaryExpression(tree.location, tree.operator, preOperationValue);
+      var postOperationExpr = this._binaryExpressionEquivalentToUnary(tree, preOperationValue);
 
       // var tmp4 = ++tmp3;
       var postOperationTemp = this.insertVariableFor(postOperationExpr);
@@ -569,9 +584,9 @@
         throw new Error("Not a unary assignment expression");
 
       // var tmp1 = obj.prop; tmp1
-      var preOperationTemp = this.insertVariableFor(operand);
+      var preOperationValue = this.insertVariableFor(operand);
       // ++tmp1
-      var postOperationExpr = new UnaryExpression(operator.location, tree.operator, preOperationTemp);
+      var postOperationExpr = this._binaryExpressionEquivalentToUnary(tree, preOperationValue);
       
       // var tmp2 = ++tmp1; tmp2
       var postOperationTemp = this.insertVariableFor(postOperationExpr);

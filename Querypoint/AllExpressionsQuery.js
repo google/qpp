@@ -106,7 +106,7 @@
       var fileName = fileViewModel.treeRoot().location.start.source.name;
       function onEval(traceData, isException) {
         if (debug)
-          console.log("AllExpressionsQuery.extractTracepoints from " + fileName);
+          console.log("AllExpressionsQuery.extractTracepoints from " + fileName, traceData);
         if (!isException && traceData) {
           traceData.query = this;
           fileViewModel.treeRoot().traceData(traceData);

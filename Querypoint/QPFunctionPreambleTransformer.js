@@ -29,113 +29,133 @@
     this.functionLocations = [];       // tree.location for all functions parsed 
   }
 
-  QPFunctionPreambleTransformer.prototype = Object.create(traceur.codegeneration.ParseTreeTransformer.prototype);
-
   var QP_FUNCTION = '__qp_function';
 
-  QPFunctionPreambleTransformer.prototype.transformTree = function(tree) {
-    return this.transformAny(tree);
-  }
+  QPFunctionPreambleTransformer.prototype = {
+    __proto__: traceur.codegeneration.ParseTreeTransformer.prototype,
 
-  QPFunctionPreambleTransformer.prototype._createFileAccessExpression = function(location) {
-    // window.__qp.functions["<file_name>"]
-    return createMemberLookupExpression(
-      createMemberExpression('window', '__qp', 'functions'),
-      createStringLiteral(Querypoint.generateFileName(location))
-    );
-  }
+    transformTree: function(tree) {
+      return this.transformAny(tree);
+    },
 
-  QPFunctionPreambleTransformer.prototype._createFunctionAccessExpression = function(location) {
-    // window.__qp.functions["<file_name>"]["<functionId>"] 
-    return createMemberLookupExpression(
-      this._createFileAccessExpression(location),
-      createStringLiteral(this.generateFunctionId(location))
-    );
-  }
+    _createFileAccessExpression: function(location) {
+      // window.__qp.functions["<file_name>"]
+      return createMemberLookupExpression(
+        createMemberExpression('window', '__qp', 'functions'),
+        createStringLiteral(Querypoint.generateFileName(location))
+      );
+    },
 
-  QPFunctionPreambleTransformer.prototype.generateFunctionId = function(location) {
-    return location.start.offset;
-  }
+    _createFunctionAccessExpression: function(location) {
+      // window.__qp.functions["<file_name>"]["<functionId>"] 
+      return createMemberLookupExpression(
+        this._createFileAccessExpression(location),
+        createStringLiteral(this.generateFunctionId(location))
+      );
+    },
 
-  QPFunctionPreambleTransformer.prototype._createFileNameStatement = function(tree) {
-    // window.__qp.functions["<filename>"] = {};
-    var statement = 
-      createAssignmentStatement(
-        this._createFileAccessExpression(tree.location),
-        createObjectLiteralExpression([])     
-      )
-    return statement;
-  }
-  
-  QPFunctionPreambleTransformer.prototype._createInitializationStatements = function(tree) {
-    var statements = [];
-    this.functionLocations.forEach(function(location) {
-      // window.__qp.functions["<file_name>"]["<functionId>"] = [];
-      statements.push(
-          createAssignmentStatement(
-            this._createFunctionAccessExpression(location),
-            createArrayLiteralExpression([])
-          )
-        );
-    }.bind(this));
-    return statements;
-  }
+    generateFunctionId: function(location) {
+      return location.start.offset;
+    },
 
+    _createFileNameStatement: function(tree) {
+      // window.__qp.functions["<filename>"] = {};
+      var statement = 
+        createAssignmentStatement(
+          this._createFileAccessExpression(tree.location),
+          createObjectLiteralExpression([])     
+        )
+      return statement;
+    },
+    
+    _createInitializationStatements: function(tree) {
+      var statements = [];
+      this.functionLocations.forEach(function(location) {
+        // window.__qp.functions["<file_name>"]["<functionId>"] = [];
+        statements.push(
+            createAssignmentStatement(
+              this._createFunctionAccessExpression(location),
+              createArrayLiteralExpression([])
+            )
+          );
+      }.bind(this));
+      return statements;
+    },
 
-  QPFunctionPreambleTransformer.prototype._createVarFunctionStatement = function(location) {
-    // var __qp_function = window.__qp.functions["<file_name>"]["<functionId>"];
-    return createVariableStatement(
-      createVariableDeclarationList(
-        TokenType.VAR, 
-        QP_FUNCTION, 
-        this._createFunctionAccessExpression(location)
-      )
-    );
-  }
+    _createVarFunctionStatement: function(location) {
+      // var __qp_function = window.__qp.functions["<file_name>"]["<functionId>"];
+      return createVariableStatement(
+        createVariableDeclarationList(
+          TokenType.VAR, 
+          QP_FUNCTION, 
+          this._createFunctionAccessExpression(location)
+        )
+      );
+    },
 
-  QPFunctionPreambleTransformer.prototype._createIfFunctionCallStatement = function() {
-    // if (__qp_function.redirect) return __qp_function.redirect.apply(this, arguments);
-    return   createIfStatement(
-      createMemberExpression(QP_FUNCTION, 'redirect'),
-      createReturnStatement(
-        createCallExpression(
-          createMemberExpression(QP_FUNCTION, 'redirect', 'apply'),
-          createArgumentList(
-            createIdentifierExpression('this'), 
-            createIdentifierExpression('arguments')
+    _createIfFunctionCallStatement: function() {
+      // if (__qp_function.redirect) return __qp_function.redirect.apply(this, arguments);
+      return   createIfStatement(
+        createMemberExpression(QP_FUNCTION, 'redirect'),
+        createReturnStatement(
+          createCallExpression(
+            createMemberExpression(QP_FUNCTION, 'redirect', 'apply'),
+            createArgumentList(
+              createIdentifierExpression('this'), 
+              createIdentifierExpression('arguments')
+            )
           )
         )
-      )
-    );
-  }
+      );
+    },
 
-  QPFunctionPreambleTransformer.prototype._createPreambleStatements = function(tree) {
-    var var__qp_functionStatement = this._createVarFunctionStatement(tree.location);
-    var if__qp_functionCallStatement = this._createIfFunctionCallStatement(tree.location);
-    return [var__qp_functionStatement, if__qp_functionCallStatement];
-  }
+    _createPreambleStatements: function(tree) {
+      var var__qp_functionStatement = this._createVarFunctionStatement(tree.location);
+      var if__qp_functionCallStatement = this._createIfFunctionCallStatement(tree.location);
+      return [var__qp_functionStatement, if__qp_functionCallStatement];
+    },
 
-  QPFunctionPreambleTransformer.prototype.transformFunctionBody = function(tree) {
-    // We'll use these to build __qp.functions objects in _createInitializationStatements
-    this.functionLocations.push(tree.location);
-    var preamble = this._createPreambleStatements(tree).map(Querypoint.markDoNot);
-    tree = this.transformAny(tree);
-    tree.statements = preamble.concat(tree.statements);
-    return tree;
-  }
+    transformFunctionDeclaration: function(tree) {
+      var name = this.transformAny(tree.name);
+      var formalParameterList = this.transformAny(tree.formalParameterList);
+      var functionBody = this.transformFunctionBody(tree.functionBody);
+      if (name === tree.name && formalParameterList === tree.formalParameterList && functionBody === tree.functionBody) {
+        return tree;
+      }
+      return new FunctionDeclaration(tree.location, name, tree.isGenerator, formalParameterList, functionBody);
+    },
 
-  QPFunctionPreambleTransformer.prototype.transformProgram = function(tree) {
-    var fileFunctionLocation = {
-        start: {source: tree.location.start.source, offset: 'file'}, 
-        end: {source: tree.location.start.source, offset: 'file'}
-    };
-    this.functionLocations.push(fileFunctionLocation);  // the top-level function for this compilation unit
-    var elements = this.transformList(tree.programElements);
-    var prefix = [this._createFileNameStatement(tree)].concat(this._createInitializationStatements(tree));
-    prefix.push(this._createVarFunctionStatement(fileFunctionLocation));
-    prefix = prefix.map(Querypoint.markDoNot);
-    elements = prefix.concat(elements);
-    return new Program(tree.location, elements);
-  }
+    transformFunctionExpression: function(tree) {
+      var name = this.transformAny(tree.name);
+      var formalParameterList = this.transformAny(tree.formalParameterList);
+      var functionBody = this.transformFunctionBody(tree.functionBody);
+      if (name === tree.name && formalParameterList === tree.formalParameterList && functionBody === tree.functionBody) {
+        return tree;
+      }
+      return new FunctionExpression(tree.location, name, tree.isGenerator, formalParameterList, functionBody);
+    },
 
+    transformFunctionBody: function(tree) {
+      // We'll use these to build __qp.functions objects in _createInitializationStatements
+      this.functionLocations.push(tree.location);
+      var preamble = this._createPreambleStatements(tree).map(Querypoint.markDoNot);
+      tree = this.transformAny(tree);
+      tree.statements = preamble.concat(tree.statements);
+      return tree;
+    },
+
+    transformProgram: function(tree) {
+      var fileFunctionLocation = {
+          start: {source: tree.location.start.source, offset: 'file'}, 
+          end: {source: tree.location.start.source, offset: 'file'}
+      };
+      this.functionLocations.push(fileFunctionLocation);  // the top-level function for this compilation unit
+      var elements = this.transformList(tree.programElements);
+      var prefix = [this._createFileNameStatement(tree)].concat(this._createInitializationStatements(tree));
+      prefix.push(this._createVarFunctionStatement(fileFunctionLocation));
+      prefix = prefix.map(Querypoint.markDoNot);
+      elements = prefix.concat(elements);
+      return new Program(tree.location, elements);
+    }
+  }
 }());

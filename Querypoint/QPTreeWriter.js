@@ -87,13 +87,21 @@ var QPTreeWriter = (function() {
       } else {
         ParseTreeWriter.prototype.visitIdentifierExpression.call(this, tree);  
       }
-      
     },
 
-    visitFunction: function(tree) {
+    visitFunctionDeclaration: function(tree) {
+      this._visitFunction(tree);
+      ParseTreeWriter.prototype.visitFunctionDeclaration.call(this, tree);
+    },
+    
+    visitFunctionExpression: function(tree) {
+      this._visitFunction(tree);
+      ParseTreeWriter.prototype.visitFunctionExpression.call(this, tree);
+    },
+    
+    _visitFunction: function(tree) {
       // insert the new activation record statements after the function preamble
       this._insertArrayInArray(tree.functionBody.statements, 2, this._createActivationStatements(tree));
-      ParseTreeWriter.prototype.visitFunction.call(this, tree);
     },
 
     visitProgram: function(tree) {
