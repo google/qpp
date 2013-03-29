@@ -18,13 +18,6 @@
      if (DEBUG)
       console.log('Message.tooltip: total logs : '+totalLogs);
 
-     // To have the scrubberBox focus on the last event the margin property is 
-     // set to the position of that event. This is done keeping track of how
-     // many events there's been and knowing the width of each event.
-     // TODO: Needs test with multiple loads 
-     // var moveScroll = -totalLogs * 9 - this.load * 15 - this.turn * 4 + logFloat.offsetWidth;
-     // if (moveScroll > 0) moveScroll = 0;
-     // logScrubber.style.marginLeft = (moveScroll).toString() + 'px';
      return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
     }
   };
@@ -84,7 +77,7 @@
             this._logScrubber._scale = 1;
             break;
           case 'startTurn': 
-            messageSource.qp = false;
+            messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
             messageSource.severity = 'turn';
             this._turn = parseInt(segments[2], 10);
             this._logScrubber.turnStarted(this._turn);
@@ -100,6 +93,9 @@
               firedEvents: [],
               addedEvents: []
             };
+
+            // If previousTurn is a number, make the structure point to the respective turn and add the current turn to the previos turn's fired events list
+            // If there is no previous turn just set the previousTurn to null
             if (this._currentEvent.previousTurn !== 'undefined' && this._currentEvent.previousTurn !== '-1') {
                 var previousTurn= this.currentReload.turns()[parseInt(this._currentEvent.previousTurn) - 1];
                 this._currentEvent.previousTurn = previousTurn; 
@@ -108,6 +104,7 @@
                 this._currentEvent.previousTurn = null;
             }
 
+            // Turn detail is a string summary of the current event
             var turnDetail;
             turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
             if (this._currentEvent.target !== 'undefined') 
@@ -115,6 +112,8 @@
                 
             messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
 
+            // To play recorded events on new loads we need to know when all the scripts and onload functions finished running
+            // So we keep track of the last turn which needs to occur before playing the recorded events.
             if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
                 this.lastInitialTurn = this._turn - 1;
                 this.lastMessage = this.currentTurn.messages().length;
@@ -144,7 +143,6 @@
       }
       messageSource.load = this._reloadCount;
       messageSource.turn = this._turn;
-//    if (messageSource.load && messageSource.turn == 1) messageSource.load += 1;
       messageSource.event = this._currentEvent;
       return messageSource; 
     },
@@ -173,7 +171,7 @@
       messageSource.severity = messageSource.severity || messageSource.level;
       
       if (this.currentReload.load !== messageSource.load) {
-      this._logScrubber._clearMessages();
+        this._logScrubber._clearMessages();
         this.currentReload = this._reloadRow(messageSource);
         this.currentTurn = this.currentReload.turns()[0];
         this._logScrubber.showLoad().next = this.currentReload;
@@ -187,7 +185,6 @@
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
         if(this.currentReload.load !== this._logScrubber.showLoad().load) this._logScrubber.displayLoad(this.currentReload);
-        //this.currentReload.messages.push({severity: 'turn', turn: this.currentTurn.turn});
         if (DEBUG){
           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }
@@ -200,6 +197,7 @@
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }
 
+      // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
       if (this.lastInitialTurn == this._turn && this.lastMessage == this.currentTurn.messages().length && this._logScrubber.recordData.load !== 0){
           var logScrubber = this._logScrubber;
 

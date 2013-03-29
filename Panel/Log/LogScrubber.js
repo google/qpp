@@ -105,6 +105,7 @@
         });
       });
 
+      // 'this' is an element in the array returned by turnChain or triggeredEvents
       this.switchTurn = function(){
         QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turnNumber);
         QuerypointPanel.LogScrubber.showMessage(0);
@@ -245,22 +246,30 @@
       var recordButton = document.querySelector('.recordIndicator');
       var playButton = document.querySelector('.recordMarker');
 
-      this.preMessages = ko.observableArray();
-      this.postMessages = ko.observableArray();
-      this.recordedMessages = ko.observableArray();
-      this.storedMessages = ko.observableArray();
-      this.messages = this.preMessages;
-      this._scale = 1;
-      this._addedMessages;
+      this.preMessages = ko.observableArray();          // Messages before the play button
+      this.postMessages = ko.observableArray();         // Messages after record button
+      this.recordedMessages = ko.observableArray();     // Messages that occured in recorded turns
+      this.storedMessages = ko.observableArray();       // All messages in a load
+      this.messages = this.preMessages;                 // Points to message array where new messages go
 
+      // To scale messages width of indicator decreases until they are 1 pixel wide
+      // If number of indicators exceed width of window, each indicator will represent more than one message
+      this._scale = 1;                                  // Number of messages in each indicator
+      this._addedMessages;                              // Number of messages added to the last indicator
+
+      // Method adds a message to the array messages
       this._addMessage = function(message){
         if (this._scale == 1) {
+          // If scale is 1 then each message is an indicator, so it is added directly
           self.messages().push(message);
         } else {
           if (this._addedMessages == this._scale) {
+            // If number of messages in last indicator equals the scale factor then a new indicator needs to be added
             self.messages().push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
             self._addedMessages = 0;
           } else {
+            // If not, then merge the message with the last indicator
+            // The color of the indicator depends on the messages that represent the indicator. 'turn' has precedence before 'error' and 'warn' and 'error' has precedence over 'warn'.
             self._addedMessages += 1;
             var lastMessage = self.messages()[self.messages().length - 1];
             if (message.severity === 'warn' && lastMessage.severity === 'log') lastMessage.severity = 'warn';
@@ -274,15 +283,18 @@
         }
       }
 
+      // This method takes an array of messages and if these don't fit in the width of the screen
+      // then we merge messages together in such way to maximize the occupied space in scrubber bar
       this.compressMessages = function(messages){
         var maxMessages = logScrubberElement.offsetWidth - 30;
         if(messages.length < maxMessages) return messages;
+        // perPixel is the ammount of messages that are going to be merged together
         var perPixel = Math.floor(messages.length / maxMessages);
         var result = [];
         var message;
         for (var i = 0; i < messages.length; i++) {
           message = messages[i];
-          if (i % perPixel == 0) {
+          if (i % perPixel == 0) { // every perPixel-th message whe create a new indicator
             result.push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
           } else {
             var lastMessage = result[result.length - 1];
@@ -298,6 +310,8 @@
         return result;
       }
 
+      // Method calculates size of indicator, if the number of indicators exceed the width of the screen arrays get scaled
+      // to half their size.
       this.updateSize = function(){
         self.messages.valueHasMutated();
         var maxMessages = logScrubberElement.offsetWidth - 40;
@@ -317,6 +331,7 @@
         }
       }
 
+      // Method that takes an array of messages and reduces size to half by merging pair of messages together
       this._scaleMessages = function(messages) {
         var len = messages().length;
         if (len % 2 == 1){
@@ -327,15 +342,15 @@
         for (var i = 0; i < len / 2; i++){
             var message = {severity: null, position: null, scroll: null, turn: null};
 
-            message.severity = 'log';   // Defines color of indicator in scrubber bar
+            message.severity = 'log';   // Defines color of indicator in scrubber bar turn>error>warn>log 
             if (messages()[i * 2].severity === 'warn' || messages()[i * 2 + 1].severity === 'warn') message.severity = 'warn';
             if (messages()[i * 2].severity === 'error' || messages()[i * 2 + 1].severity === 'error') message.severity = 'error';
             if (messages()[i * 2].severity === 'turn') message.severity = 'turn';
 
-            message.position = messages()[i * 2].position;
-            message.scroll = messages()[i * 2].scroll; 
-            message.turn = messages()[i * 2].turn; 
-            if (messages()[i * 2 + 1].severity === 'turn'){
+            message.position = messages()[i * 2].position;      // Position is the relative order of the messages among other messages, used to focus message on mouseover.
+            message.scroll = messages()[i * 2].scroll;          // Scroll is the element that gets focused in console when indicator is clicked
+            message.turn = messages()[i * 2].turn;              // Turn number of the indicator
+            if (messages()[i * 2 + 1].severity === 'turn'){     // If a message is a Turn then we'll take it as more relevant than previos messages
                 message.severity = 'turn';
                 message.position = 0;
                 message.turn = messages()[i * 2 + 1].turn;
@@ -346,12 +361,15 @@
         messages.valueHasMutated();
       }
 
+      // Method clears messages arrays
       this._clearMessages = function(){
           self.preMessages([]);
           self.postMessages([]);
           self.messages = self.preMessages;
       }
 
+      // Method that changes css style to change width and border of indicators
+      // This method has hardcoded the rule number and stylesheet number
       this._setMessageWidth = function(width) {
         if (width < 3) document.styleSheets[3].cssRules[30].style.borderLeftWidth = '0px';
         else document.styleSheets[3].cssRules[30].style.borderLeftWidth = '2px';
@@ -363,6 +381,10 @@
           return self.showLoad().load;
       });
 
+      // Method is currently *not* being used
+      // It was replaced by compressMessages and _scaleMessages
+      // Given a floating point value perPixel less than 1 and an array of messages
+      // Returns an array of indicators such that the number of indicators fit in the whole scrubber bar
       this._downSizeMessages = function(perPixel, joinMessages) {
         var last = 0, next = 0;
         var showMessages=[];
@@ -374,7 +396,7 @@
             } else {
                 hasTurn = false;
             }
-            if (last + perPixel > joinMessages.length) 
+            if (last + perPixel > joinMessages.length)
               last = joinMessages.length; 
             else 
               last = last + perPixel;
@@ -421,10 +443,11 @@
 
       this.recordData = {
           load: 0,
-          start: -1,
-          end:   0,
+          start: -1,    // First event recorded
+          end:   0,     // First event not recorced
           play: function(){
             for (var i = self.recordData.start; i < self.recordData.end; i++){
+              // Injects a command that builds and event and dispatches to taget.
               var event = self.recordData.load.turns()[i].event;
               var command = 'var target = document.querySelector("' + event.target + '"); ';
               command += 'var event = document.createEvent("Events"); ';
