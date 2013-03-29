@@ -30,6 +30,7 @@
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
   var Trees = traceur.syntax.trees;
   var TokenType = traceur.syntax.TokenType;
+  var Token = traceur.syntax.Token;
   
   var createTrueLiteral = ParseTreeFactory.createTrueLiteral;
   var createFalseLiteral = ParseTreeFactory.createFalseLiteral;

@@ -38,8 +38,12 @@
     transform: function(tree, transformers) {
       transformers.forEach(function(transformer) {
         tree = transformer.transformTree(tree);
+        // FIXME: Writing hasValueChangeTransform  onto tree is loser.
+        if (tree.hasValueChangeTransform) QPFileCompiler.didValueChange = true;
+        if (QPFileCompiler.didValueChange) tree.hasValueChangeTransform = true;
         console.assert(tree);
       });
+      delete QPFileCompiler.didValueChange;
       return tree;
     },
 
