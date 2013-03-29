@@ -287,8 +287,13 @@
       // Create the reference info according to the type of tree
       var left = this.transformAny(tree.left);
       
-      // Output the write-barrier 
-      this.insertions.push(this.trace(left, tree.right, tree.right.location));   
+      // Output the write-barrier
+      if (left.reference) { 
+        this.insertions.push(this.trace(left, tree.right, tree.right.location));   
+      } else {
+        if (debug)
+          console.warn("ValueChangeQueryTransformer missing tree reference TODO");
+      }
 
       return new BinaryOperator(tree.location, left, tree.operator, tree.right);
     },
