@@ -25,6 +25,8 @@
   var ParseTreeTransformer = traceur.codegeneration.ParseTreeTransformer;
   var ParseTreeType = traceur.syntax.trees.ParseTreeType;
   
+  var ParenExpression = traceur.syntax.trees.ParenExpression;
+  
   var ParseTreeFactory = traceur.codegeneration.ParseTreeFactory;
   var Trees = traceur.syntax.trees;
   var TokenType = traceur.syntax.TokenType;
@@ -37,12 +39,25 @@
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
 
+  function ValidRightHandSideTransformer(){}
+
+  ValidRightHandSideTransformer.prototype = {
+    __proto__: ParseTreeTransformer.prototype,
+    /*
+     * var xx = a, b;  is illegal, convert to
+     * var xx = (a,b);
+     */
+    transformCommaExpression: function(tree) {
+      return new ParenExpression(tree.location, tree);
+    }
+  };
   /**
    * @extends {ParseTreeTransformer}
    * @constructor
    */
   function InsertVariableForExpressionTransformer() {
     Querypoint.InsertingTransformer.call(this);
+    this._rhsTransformer = new ValidRightHandSideTransformer();
   }
 
   InsertVariableForExpressionTransformer.prototype =  {
@@ -66,6 +81,8 @@
         throw new Error(msg);
       }
       
+      tree = this._rhsTransformer.transformAny(tree);
+
       var traceId =  this.generateIdentifier(tree);  // XX in __qp_XX
       var varId = '__qp' + traceId;
       
