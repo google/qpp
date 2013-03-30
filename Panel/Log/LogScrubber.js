@@ -370,11 +370,12 @@
 
       // Method that changes css style to change width and border of indicators
       // This method has hardcoded the rule number and stylesheet number
+      // The modified rule is in a stylesheet by itself eventIndicator.css
       this._setMessageWidth = function(width) {
-        if (width < 3) document.styleSheets[3].cssRules[30].style.borderLeftWidth = '0px';
-        else document.styleSheets[3].cssRules[30].style.borderLeftWidth = '2px';
-        if (width > 10) document.styleSheets[3].cssRules[30].style.width = '10px';
-        else document.styleSheets[3].cssRules[30].style.width = width + 'px';
+        if (width < 3) document.styleSheets[4].cssRules[0].style.borderLeftWidth = '0px';
+        else document.styleSheets[4].cssRules[0].style.borderLeftWidth = '2px';
+        if (width > 10) document.styleSheets[4].cssRules[0].style.width = '10px';
+        else document.styleSheets[4].cssRules[0].style.width = width + 'px';
       }
 
       this.showLoadNumber = ko.computed(function(){
