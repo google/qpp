@@ -82,6 +82,7 @@
   var ArgumentList = Trees.ArgumentList;
   var PropertyNameAssignment = Trees.PropertyNameAssignment;
   var MemberLookupExpression = Trees.MemberLookupExpression;
+  var ConditionalExpression = Trees.ConditionalExpression;
   
   // For dev
   var ParseTreeValidator = traceur.syntax.ParseTreeValidator;
@@ -559,8 +560,11 @@
         
 
     transformUnaryExpression: function(tree) {
-      if (tree.operator.type === TokenType.PLUS_PLUS || tree.operator.type === TokenType.MINUS_MINUS) {
+      var opType = tree.operator.type;
+      if (opType === TokenType.PLUS_PLUS || opType === TokenType.MINUS_MINUS) {
         return this._transformUnaryAssignmentExpression(tree);
+      } else if (opType === TokenType.TYPEOF || opType === TokenType.DELETE) {
+        return this._transformTypeofExpression(tree);
       } else {
         return this._transformSimpleUnaryExpression(tree);
       }
@@ -607,6 +611,28 @@
         )
       );
       return postOperationTemp;
+    },
+    
+    // If the operand is undefined we cannot use it as the RHS of an var declaration of a tmp.
+    _transformTypeofExpression: function(tree) {
+      // We can't linearize the operand without even more typeof tests...
+      var operand = tree.operand;
+      // typeof expr
+      var conditionLeft = new UnaryExpression(tree.location, tree.operator, operand);
+      var literalUndefined = createStringLiteral('undefined');
+      // typeof expr === 'undefined'
+      var conditionalVarDecl = new ConditionalExpression(
+        tree.location, 
+        new BinaryOperator(null, conditionLeft, createOperatorToken(TokenType.EQUAL_EQUAL_EQUAL), literalUndefined),
+        createUndefinedExpression(), 
+        operand
+      );
+      // var __qp_334 = typeof expr === 'undefined' ? undefined : expr;
+      var tmp = this.insertVariableFor(conditionalVarDecl);
+      // __qp_334; // tracable statement
+      this.insertions.push(createExpressionStatement(tmp));
+      // Return the oringal expression to get the correct execution behavior.
+      return tree;
     },
 
     /* 
