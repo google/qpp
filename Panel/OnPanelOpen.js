@@ -51,20 +51,6 @@
         this.panel.project.reload();
         this.close();
       },
-      reloadAndTrace: function() {
-        var fileViewModel = this.panel.fileViewModels()[0];
-        var tree = fileViewModel.treeRoot();
-        var panel = this.panel;
-        var project = panel.project;
-        var queires = project.querypoints.possibleQueries().forEach(function(possibleQuery) {
-          var query = possibleQuery.ifAvailableFor(tree, project);
-          if (query) {
-            var queryVM = new QuerypointPanel.QueryViewModel(query, panel);
-            queryVM.activateQuery(fileViewModel);
-          }
-        });
-        this.close();        
-      },
       noReload: function() {
         this.close();
       }
