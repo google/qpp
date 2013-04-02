@@ -13,15 +13,28 @@
   });
 
 
-  QuerypointPanel.FileViewModel = function(element, panel) {
+  QuerypointPanel.FileViewModel = function(panel, editorViewModel) {
     this._panel = panel;
-      
-    // These will be changed when the file we are viewing changes
+    this.editorViewModel = editorViewModel;
     
-    this.editor = ko.observable();
     this.sourceFile = ko.observable();
-    this.treeRoot = ko.observable({traceData: function(){}});
+    this.treeRoot = ko.computed(function(){
+      var sourceFile = this.sourceFile();
+      var tree = {traceData: function(){}};
+      if (sourceFile) {
+        tree = panel.project.getTreeByName(sourceFile.name);
+        if (tree && !tree.hasOwnProperty('traceData')) {
+            // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
+            tree.traceData = ko.observable();
+        }
+        this.tokenViewModel.followTokens(true);
+      }
+      return tree;
+    }.bind(this));
+
     this.project = panel.project;
+        
+    this.tracepoints = ko.observableArray(); // all of the query results for this file
 
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);        // wired to editor token
     this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);        // wired to token viewed
@@ -39,9 +52,11 @@
         return traceViewLocation;
     }.bind(this));
 
-    // all of the query results for this file
-    this.tracepoints = ko.observableArray();
-    
+    this.filename = ko.computed(function(){
+      var editor = this.editor();
+      return editor && this.editor().name;
+    }.bind(this));
+
     panel.currentTurn.subscribe(function(newValue) {
       if (newValue !== 0) {
         this.update(newValue);
@@ -61,25 +76,8 @@
   QuerypointPanel.FileViewModel.debug = true;
   
   QuerypointPanel.FileViewModel.prototype = {
-    setModel: function(editor, sourceFile, treeRoot) {
-      this.tokenViewModel.followTokens(false);
-      if (this.editor()) 
-        this.editor().hide();
-      
-      this.sourceFile(sourceFile);
-      
-      if (treeRoot && !treeRoot.hasOwnProperty('traceData')) {
-          // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
-          treeRoot.traceData = ko.observable();
-      }
-      this.treeRoot(treeRoot);
-      this.editor(editor);   // editor last to ensure the new tree is consulted when we clone elements from the editor
-         
-      this.editor().show();
-      if (treeRoot) 
-        this.tokenViewModel.followTokens(true);
-
-      if (debug) console.log("FileViewModel.update "+this.editor().name);  
+    editor: function() {
+      return this.editorViewModel.editor();
     },
 
     update: function(turn) {
@@ -100,8 +98,11 @@
       load.tracepoints = this.tracepoints;
       var lastTracequery = tracequeries[tracequeries.length - 1];  
       this.tokenViewModel.setTokenTree(lastTracequery.targetTree());
-    }
+    },
 
+    editorBy: function(element) {
+      return this.editorViewModel.editorBy(element);
+    }
   };
 
 }());

@@ -1,0 +1,6 @@
+http://localhost:8686/test/TwoSourceFiles/qpd2Files.html
+prop in   var message = "I've been clicked " + obj.prop + " times";
+true
+1|0
+http://localhost:8686/test/TwoSourceFiles/updateButton.js?start=55&end=63&|http://localhost:8686/test/TwoSourceFiles/init.js?start=220&end=221&
+

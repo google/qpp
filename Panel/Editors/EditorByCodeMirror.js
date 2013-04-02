@@ -57,7 +57,7 @@
       this.editorImpl.setValue(content);
     },
     resize: function(width, height) {
-      console.log('EditorByCodeMirror.resize: wxh ' + width + 'x' + height); 
+      if (debug) console.log('EditorByCodeMirror.resize: wxh ' + width + 'x' + height); 
       this.editorImpl.setSize(width, height);
     },
     setLineNumberClass: function(lineNumber, className) {
@@ -91,7 +91,14 @@
       this.editorImpl.scrollIntoView(startPos);
       this._container.classList.add('qp-fade');
       var mark = this.editorImpl.markText(startPos, endPos, {className: 'qp-highlight'});
+      this._currentRegion = {start: startIndex, end: endIndex};
       return mark; 
+    },
+    
+    isShowingRegion: function(startIndex, endIndex) {
+      return this._currentRegion &&
+        this._currentRegion.start === startIndex &&
+        this._currentRegion.end == endIndex;
     },
 
     //-------------------------

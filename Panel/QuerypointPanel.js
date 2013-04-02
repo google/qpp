@@ -36,7 +36,6 @@
 QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   this.extensionPanel = extensionPanel;
   this.panel_window = panel_window;
-  this.document = panel_window.document;
   this.project = project;
   var panel = this;
 
@@ -60,8 +59,8 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
   this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
 
-  ko.applyBindings(this.logScrubber , logScrubberElement);
-  ko.applyBindings(this, logElement);
+  ko.applyBindings(this.logScrubber , logScrubberElement);  // TODO move to logScrubber
+  ko.applyBindings(this, logElement);                                   // TODO remove with logElement
 
   // Set max height of trace trable depend on window height
   var traceBody = document.querySelector('.traceBody');
@@ -89,27 +88,20 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
     return turnEnded;
   });
 
-
-  this.fileViews = document.querySelector('.fileViews');
-  this.primaryFileView = this.fileViews.querySelector('.fileView');
-
-  // We view the page through 'files'
-  this.fileViewModels = ko.observableArray([new QuerypointPanel.FileViewModel(this.primaryFileView, this)]);
-
-  this.fileEditor = this.document.querySelector('.fileEditor');
-
   this.commands = new QuerypointPanel.Commands(this);
   this._initModel();
-  this._onResize();  // set initial sizes
-  
-  ko.applyBindings(this, this.fileViews);
 
    $(".panel").live("click", function(jQueryEvent) {
-        jQueryEvent.target.focus();
-        var url = jQueryEvent.target.getAttribute('data-url');
-        if (url) {
-          panel.commands.openChainedEditor(url);
-        } // else the user did not click on something interesting.   
+      var target = jQueryEvent.target;
+      target.focus();
+      var url = target.getAttribute('data-url');
+      if (url) {
+        var fileView = target;
+        while(fileView && !fileView.classList.contains('fileView'))
+          fileView = fileView.parentElement;
+        var fromURL = fileView.getAttribute('name'); 
+        panel.commands.openChainedEditor(url, fromURL);
+      } // else the user did not click on something interesting.   
     });
 }
 
@@ -124,16 +116,6 @@ QuerypointPanel.Panel.prototype = {
     this._isShowing = false;
   },
 
-  showPrimaryFileView: function(editor) {
-    var sourceFile = this.project.getFile(editor.name); 
-    var tree = this.project.getTreeByName(editor.name);  
-    if (tree) {
-      this.fileViewModels()[0].setModel(editor, sourceFile, tree);
-    } else {
-      this.fileViewModels()[0].setModel(editor);
-    }
-  },
-  
   toggleHelp: function() {
     if (this._helping) {
       this._helping = false;
@@ -150,77 +132,19 @@ QuerypointPanel.Panel.prototype = {
   _hideHelp: function() {
       document.body.classList.remove('showHelp');
   },
-
-  _openURL: function(url) {
-    var foundResource = this.project.page.resources.some(function(resource){
-        if (resource.url) this._openResourceAndRefresh(resource);
-    }.bind(this));
-    if (!foundResource) {
-      var sourceFile = this.project.getFile(url);
-      if (sourceFile) {
-        this.openPrimaryFileView(sourceFile);
-      } 
-    }
-  },
-
-  _openResourceAndRefresh: function(resource, item) {
-    var view = this.fileViews.querySelector(".fileEditor");
-    return this._openResource(view, resource, item, this.showPrimaryFileView.bind(this));
-  },
-  
-  _openResource: function(fileEditorView, resource, item, onShown) {
-    resource.getContent(function(content, encoding) {
-      this._editors.openEditorForContent(
-        fileEditorView, 
-        resource.url, 
-        content,
-        this.showPrimaryFileView.bind(this), 
-        onShown
-      );
-    }.bind(this));
-  },
-  
-  openPrimaryFileView: function(sourceFile) {
-    var view = this.fileViews.querySelector(".fileEditor");
-    this._openSourceFile(view, sourceFile, this.showPrimaryFileView.bind(this));
-  },
-  
-  _openSourceFile: function(fileEditorView, sourceFile, onShown) {
-    this._editors.openEditorForContent(
-      fileEditorView, 
-      sourceFile.name, 
-      sourceFile.contents,
-      this.showPrimaryFileView.bind(this),
-      onShown
-    );
-  },
   
   urlFromTreeLocation: function(location) {
     return location.start.source.name + '?start=' + location.start.offset + '&end=' + location.end.offset + '&';
   },
-  
-  linkTargetFromURL: function(url) {
-    var parsedURI = parseUri(url);
-    if (parsedURI) {
-      var name = url.split('?')[0];
-      return {
-        name: name, 
-        start: parseInt(parsedURI.queryKey.start, 10),
-        end: parseInt(parsedURI.queryKey.end, 10),
-      };
-    } else {
-      console.error("linkTargetFromURL failed for "+url)
-    }
+
+  openSourceFileView: function(sourceFile) {
+    this._fileChainViewModel.openSourceFileView(sourceFile);
   },
 
-  getFileViewModelByName: function(name) {
-    var found; 
-    this.fileViewModels().some(function(fileViewModel) {
-      if(fileViewModel.editor().name === name)
-        return found = fileViewModel;
-    });
-    return found;
+  openResourceView: function(resource) {
+    this._fileChainViewModel.openResourceView(resource);
   },
+
 
   _initKeys: function() {
     this.keybindings = new KeyBindings(this.panel_window);
@@ -240,49 +164,10 @@ QuerypointPanel.Panel.prototype = {
       }
     }
   },
-
-  _onResize: function() {
-   // this._setHeight(this._setWidth());
-  },
-  
-  _setWidth: function() {
-    var fileViews = this.document.querySelector('.fileViews'); 
-    var availableWidth = document.body.offsetWidth;
-    var cols = fileViews.children;
-    var width = availableWidth - (availableWidth / 1.618);
-    for (var i = 0; i < cols.length - 1; i++) {
-      cols[i].style.width = width  + 'px';
-      availableWidth = availableWidth - width;
-    }
-    cols[cols.length - 1].style.width = availableWidth + 'px';
-    return availableWidth;
-  },
-  
-  _setHeight: function(width) {
-    var fileViews = this.document.querySelector('.fileViews'); 
-    var availableHeight = fileViews.parentElement.offsetHeight;
-    var rows = fileViews.parentElement.children;
-    for (var i = 0; i < rows.length; i++) {
-      var row = rows[i];
-      if (row.classList.contains('fileViews'))
-        continue;
-      if (debug)
-        console.log("availableHeight: "+availableHeight+" minus "+row.offsetHeight+" = "+(availableHeight - row.offsetHeight), row);
-      availableHeight = availableHeight - row.offsetHeight;
-    }
-    fileViews.style.height = availableHeight + 'px';
-    var cols = fileViews.children;
-    for (var i = 0; i < cols.length; i++) {
-      var col = cols[i];
-      col.style.height = availableHeight + 'px';
-    }
-    this._editors.resize(width, availableHeight);
-  },
   
   _initMouse: function() {
-    this.document.addEventListener('mousedown', this._onClickPanel.bind(this));
-    this.panel_window.addEventListener('resize', this._onResize.bind(this));
-    
+    document.addEventListener('mousedown', this._onClickPanel.bind(this));
+   
     var panel = this;
     $(".hoverDoorTarget .hoverDoor").live("click", function(jQueryEvent) {
       if (debug) console.log("Click ", jQueryEvent.target);
@@ -306,17 +191,16 @@ QuerypointPanel.Panel.prototype = {
   
   _initEditors: function(panelModel) {
     this._statusBar = QuerypointPanel.StatusBar.initialize(this);
-    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._statusBar, this.commands);
-    
+    var workspaceElement = document.querySelector('.workSpace');
+    this._fileChainViewModel = new QuerypointPanel.FileChainViewModel(workspaceElement, this, this._statusBar, panelModel);
     var lastURL = panelModel.buffers.openURLs.pop();
     panelModel.buffers.openURLs = [];  // create an list next time we save
-  //  this._openURL(lastURL);
   },
 
   _restore: function(panelModel) {  
     this._initKeys();
     this._initMouse();
-    this.document.querySelector('.panelInitialization').style.display = 'none';
+    document.querySelector('.panelInitialization').style.display = 'none';
     if (debug) console.log("restore", panelModel);
     this._initEditors(panelModel);
     QuerypointPanel.OnPanelOpen.initialize(this);

@@ -20,11 +20,11 @@
       var names = {};
       panel.project.getSourceFiles().forEach(function(sourceFile){
         names[sourceFile.name] = sourceFile;
-        uriItems.appendItem('open: '+sourceFile.name, panel.openPrimaryFileView.bind(panel, sourceFile));
+        uriItems.appendItem('open: '+sourceFile.name, panel.openSourceFileView.bind(panel, sourceFile));
       }.bind(panel));
       panel.project.page.resources.forEach(function(resource, index) {
         if (!names.hasOwnProperty(resource.url))
-          uriItems.appendItem('open: '+resource.url, panel._openResourceAndRefresh.bind(panel, resource));
+          uriItems.appendItem('open: '+resource.url, panel.openResourceView.bind(panel, resource));
       }.bind(panel));
       uriItems.selectItem();
       return false;
@@ -32,27 +32,8 @@
 
     // Open an editor to view information selected out of another editor
     // e.g. trace with refs to other files or call stack with refs to older frames
-    this.openChainedEditor = function(url) {
-      var linkTarget = panel.linkTargetFromURL(url);
-      var fileViewModel = panel.getFileViewModelByName(linkTarget.name);
-      if (fileViewModel) {
-        var mark = fileViewModel.editor().showRegion(linkTarget.start, linkTarget.end);
-        if (mark) {
-          var clearMark = function(event) {
-            mark.clear();
-            if (debug) console.log("cleared mark because of mouseout on ", event.target);
-            $(panel.document).off('mouseout', clearMark);
-          }
-          $(panel.document).on('mouseout', clearMark);
-        }
-      } else {
-        var sourceFile = panel.project.getFile(linkTarget.name);
-        if (sourceFile) {
-          console.error("QuerypointPanel.onShown");   
-        } else {
-          console.error("QuerypointPanel.openChainedEditor but no sourcefile!");
-        }
-      }
+    this.openChainedEditor = function(url, fromFileView) {
+      panel._fileChainViewModel.openChainedFileView(url, fromFileView);
     };
 
     this.saveFile = function() {

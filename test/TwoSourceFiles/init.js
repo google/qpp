@@ -17,7 +17,6 @@ function foo() {
 function bar() {
   if (!condition.value) {
     obj.prop = 0;
-    console.log("update obj.prop " + ("prop" === "prop"), window.__qp.propertyChanges.prop.push);
   }
   condition.prop = 7;
 }

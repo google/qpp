@@ -33,6 +33,7 @@
 <script src="StatusBar/StatusBar.js"></script>
 
 <script src="Commands.js"></script>
+<script src="Editors/EditorViewModel.js"></script>
 <script src="Editors/Editors.js"></script>
 
 <script src="LineNumberViewModel.js"></script>
@@ -41,6 +42,7 @@
 <script src="QueryViewModel.js"></script>
 <script src="TokenQueryProvider.js"></script>
 <script src="FileViewModel.js"></script>
+<script src="FileChainViewModel.js"></script>
 <script src="QuerypointPanel.js"></script>
 <script src="OnPanelOpen.js"></script>
 
@@ -66,7 +68,6 @@
         <p>Initialize Querypoint Debugging</p>
         <div class="initialOptions">
           <div><button class="initialOptions_justReload">Reload Page with Querypoint Runtime</button></div>
-          <div><button class="initialOptions_reloadAndTrace">Reload Page and Trace Expressions in Opened File</button></div>
           <div><button class="initialOptions_noReload">Do Not Reload</button></div>
         </div>
         <p class="noticeThis">Then reproduce your bug</p>
@@ -192,7 +193,7 @@
     </div>
     <div class="workSpace">
       <div class="fileViews" data-bind="foreach: fileViewModels">
-        <div class="fileView">
+        <div class="fileView" data-bind="attr:{name: filename}">
           <div class="QPOutput hoverDoorTarget">
             <div class="hoverDoorChannel">
               <div class="hoverDoor hoverSpacer"></div>
@@ -253,7 +254,7 @@
             <p><span data-bind="tokenViewModel.tracepoints().length"></span> tracepoints in this file</p>
           </div> -->
           </div>
-          <div class="fileEditor">
+          <div class="fileEditor" data-bind="attr: {managedBy: editorBy($element)}">
              <span class="helpInfo">Editors opened with ItemSelector (control+o)</span>
           </div>
         </div>
