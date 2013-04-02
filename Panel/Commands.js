@@ -22,7 +22,7 @@
         names[sourceFile.name] = sourceFile;
         uriItems.appendItem('open: '+sourceFile.name, panel.openPrimaryFileView.bind(panel, sourceFile));
       }.bind(panel));
-      panel.page.resources.forEach(function(resource, index) {
+      panel.project.page.resources.forEach(function(resource, index) {
         if (!names.hasOwnProperty(resource.url))
           uriItems.appendItem('open: '+resource.url, panel._openResourceAndRefresh.bind(panel, resource));
       }.bind(panel));

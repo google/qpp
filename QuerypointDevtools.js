@@ -17,7 +17,8 @@ function onLoad() {
     model = {};
     model.devtoolsModel = new Querypoint.InspectedPage();  
     model.project = new Querypoint.QPProject(url, loads);  // TODO loads should be zero??
-    model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.devtoolsModel, model.project);
+    model.project.page = model.devtoolsModel;
+    model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.project);
     model.qpPanel.onShown();
   }
     

@@ -33,11 +33,10 @@
  * @param panel_window {Window} the content window of the extension panel
  */
 
-QuerypointPanel.Panel = function (extensionPanel, panel_window, page, project) {
+QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   this.extensionPanel = extensionPanel;
   this.panel_window = panel_window;
   this.document = panel_window.document;
-  this.page = page;
   this.project = project;
   var panel = this;
 
@@ -153,7 +152,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   _openURL: function(url) {
-    var foundResource = this.page.resources.some(function(resource){
+    var foundResource = this.project.page.resources.some(function(resource){
         if (resource.url) this._openResourceAndRefresh(resource);
     }.bind(this));
     if (!foundResource) {
