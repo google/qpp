@@ -127,7 +127,9 @@ export class CloneTreeTransformer extends ParseTreeTransformer {
    * @return {Array.<ParseTree>}
    */
   transformList(list) {
-    if (list == null || list.length == 0) {
+    if (!list) {
+      return null;
+    } else if (list.length == 0) {
       return [];
     } else {
       return super.transformList(list);
