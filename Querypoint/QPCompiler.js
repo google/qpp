@@ -20,6 +20,7 @@ var QPCompiler = (function() {
       traceur.options.harmony = !!opt_options.harmony;
       traceur.options.experimental = !!opt_options.experimental;
     }
+    traceur.options.blockBinding = true;  // https://github.com/google/traceur-compiler/issues/238
   }
 
   QPCompiler.prototype = {

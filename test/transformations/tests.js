@@ -37,12 +37,18 @@ function testForIn() {
   }
 }
 
+function testConst() {
+  const isConst = 5;
+  console.assert(isConst);
+}
+
 function onLoad() {
   testAssignmentInCondition();
   testShortCurcuit();
   testTypeof();
   testConditionalExpression();
   testForIn();
+  testConst();
   console.warn("Tests complete");  
 }
 

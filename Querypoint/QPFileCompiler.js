@@ -8,6 +8,7 @@
  
   function QPFileCompiler(reporter) {
     this.reporter_ = reporter;
+    traceur.options.blockBinding = true;
   }
   
   QPFileCompiler.prototype = {
