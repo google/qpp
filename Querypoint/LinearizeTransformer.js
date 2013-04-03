@@ -52,6 +52,7 @@
   var createVariableStatement = ParseTreeFactory.createVariableStatement;
   var createParenExpression = ParseTreeFactory.createParenExpression;
   var createOperatorToken = ParseTreeFactory.createOperatorToken;
+  var createIdentifierToken = ParseTreeFactory.createIdentifierToken;
 
   var VariableStatement = Trees.VariableStatement;
   var IdentifierExpression = Trees.IdentifierExpression;
@@ -335,7 +336,9 @@
     
     transformForInStatement: function(tree) {
       this.pushIterationLabels(tree);
-      var initializer = this.transformAny(tree.initializer);
+      var initializer = this.transformAnySkipLinearization(tree.initializer);
+      initializer.isReferenceTree = true;
+      
       var collection = this.transformAny(tree.collection);
       var body = this.transformAny(toBlock(tree.body));
       if (initializer !== tree.initializer || 
@@ -345,8 +348,9 @@
           initializer, collection, body);
       }
       var labels = this.getLabels(tree);
+      var breakIdentifier = this.getBreakLabel();
       this.popIterationLabels();
-      return this.wrapInLabels(labels.map(this.createContinueLabel), tree);
+      return this.wrapInLabels(labels.map(this.createContinueLabel).concat(breakIdentifier), tree);
     },
     
     /* Lower a 'for' loop to single line statements  
@@ -457,7 +461,7 @@
       if (tree.name) {  // labeled break ok as is
         return tree;
       } else {          // else unlabeled break 
-        return new BreakStatement(tree.location, this.getBreakLabel());
+        return new BreakStatement(tree.location, createIdentifierToken(this.getBreakLabel()));
       }
     },
 
@@ -491,6 +495,10 @@
       return identifier + '_cont';
     },
     
+    createBreakLabel: function(identifier) {
+      return identifier + '_break';
+    },
+    
     // A ? B : C --> var tmpA = A; if (tmpA) { var tmpB = B; } else { var tmpC = C; }  tmpA ? tmpB : tmpC
     transformConditionalExpression: function(tree) {
       var condition = this.transformAny(tree.condition);
@@ -511,7 +519,7 @@
     transformContinueStatement: function(tree) {
       var label = tree.name || this.getContinueLabel();
       return new ContinueStatement(tree.location, 
-        this.createContinueLabel(label)
+        createIdentifierToken(this.createContinueLabel(label))
       );
     },
 
