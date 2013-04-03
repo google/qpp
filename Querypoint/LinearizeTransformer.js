@@ -403,9 +403,39 @@
       return this.insertVariableFor(left);
     },
 
+    // A || B to var tmpA = A; if (tmpA) {var tmpB = B;} tmpA || tmpB
+    _transformShortCircuitOperator: function(tree, isOR) {
+      // var tmpA = A; tmpA
+      var left = this.transformAny(tree.left);
+      // { var tmpB = B;}
+      var ifClause = new Block(tree.right.location, [
+        new ExpressionStatement(tree.right.location, tree.right)
+      ]);
+      // transform block to put temps inside it.
+      ifClause = this.transformAny(ifClause);
+      ParseTreeValidator.validate(ifClause);
+      // Reach in to get the tmp
+      var tmpStatement = ifClause.statements[ifClause.statements.length - 1];
+      var tmpExpression = tmpStatement.expression;
+      // if (tmpA) {var tmpB = B}
+      var condition = left;
+      if (isOR) {
+        // negate condition
+        condition = new UnaryExpression(left.location, TokenType.BANG, left);
+      }
+      var ifStatement = new IfStatement(null, condition, ifClause, null);
+      this.insertions.push( 
+        ifStatement
+      );
+      return new BinaryOperator(tree.location, left, tree.operator, tmpExpression);
+    },
+
     transformBinaryOperator: function(tree) {
-      if (tree.operator.isAssignmentOperator()) {
+      var operator = tree.operator;
+      if (operator.isAssignmentOperator()) {
         return this._transformBinaryAssignmentOperator(tree);
+      } else if (operator.type === TokenType.OR || operator.type === TokenType.AND ){
+        return this._transformShortCircuitOperator(tree, operator.type === TokenType.OR);
       } else {
         return Querypoint.InsertVariableForExpressionTransformer.prototype.transformBinaryOperator.call(this, tree);
       }
