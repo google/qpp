@@ -28,11 +28,21 @@ function testConditionalExpression() {
   console.assert(isTrue);
 }
 
+function testForIn() {
+  var prop;
+  var loaded = {foo: false};
+  for (prop in loaded) {
+      if (!loaded[prop]) 
+              break;
+  }
+}
+
 function onLoad() {
   testAssignmentInCondition();
   testShortCurcuit();
   testTypeof();
   testConditionalExpression();
+  testForIn();
   console.warn("Tests complete");  
 }
 
