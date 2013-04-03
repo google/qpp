@@ -403,31 +403,43 @@
       return this.insertVariableFor(left);
     },
 
-    // A || B to var tmpA = A; if (tmpA) {var tmpB = B;} tmpA || tmpB
-    _transformShortCircuitOperator: function(tree, isOR) {
-      // var tmpA = A; tmpA
-      var left = this.transformAny(tree.left);
+    _wrapBlockAroundExpression: function(tree) {
       // { var tmpB = B;}
-      var ifClause = new Block(tree.right.location, [
-        new ExpressionStatement(tree.right.location, tree.right)
+      var block = new Block(tree.location, [
+        new ExpressionStatement(tree.location, tree)
       ]);
       // transform block to put temps inside it.
-      ifClause = this.transformAny(ifClause);
-      ParseTreeValidator.validate(ifClause);
+      block = this.transformAny(block);
+      return block;
+    },
+    
+    _extractTempFromBlock: function(block) {
       // Reach in to get the tmp
-      var tmpStatement = ifClause.statements[ifClause.statements.length - 1];
-      var tmpExpression = tmpStatement.expression;
+      var tmpStatement = block.statements[block.statements.length - 1];
+      return tmpStatement.expression;
+    },
+
+    _insertIfAroundExpression: function(condition, tree) {
+      var ifClause = this._wrapBlockAroundExpression(tree);
+      var tmpExpression = this._extractTempFromBlock(ifClause);
       // if (tmpA) {var tmpB = B}
-      var condition = left;
-      if (isOR) {
-        // negate condition
-        condition = new UnaryExpression(left.location, TokenType.BANG, left);
-      }
       var ifStatement = new IfStatement(null, condition, ifClause, null);
       this.insertions.push( 
         ifStatement
       );
-      return new BinaryOperator(tree.location, left, tree.operator, tmpExpression);
+      return tmpExpression;
+    },
+
+    // A || B to var tmpA = A; if (tmpA) {var tmpB = B;} tmpA || tmpB
+    _transformShortCircuitOperator: function(tree, isOR) {
+      // var tmpA = A; tmpA
+      var left = this.transformAny(tree.left);
+      var condition = left;
+      if (isOR) {
+        condition = new UnaryExpression(left.location, TokenType.BANG, left);
+      }
+      var tmpB = this._insertIfAroundExpression(condition, tree.right);
+      return new BinaryOperator(tree.location, left, tree.operator, tmpB);
     },
 
     transformBinaryOperator: function(tree) {
@@ -477,6 +489,23 @@
     
     createContinueLabel: function(identifier) {
       return identifier + '_cont';
+    },
+    
+    // A ? B : C --> var tmpA = A; if (tmpA) { var tmpB = B; } else { var tmpC = C; }  tmpA ? tmpB : tmpC
+    transformConditionalExpression: function(tree) {
+      var condition = this.transformAny(tree.condition);
+      
+      var ifClause = this._wrapBlockAroundExpression(tree.left);
+      var tmpLeft = this._extractTempFromBlock(ifClause);
+      
+      var elseClause = this._wrapBlockAroundExpression(tree.right);
+      var tmpRight = this._extractTempFromBlock(elseClause);
+      
+      var ifStatement = new IfStatement(null, condition, ifClause, elseClause);
+      this.insertions.push( 
+        ifStatement
+      );
+      return new ConditionalExpression(tree.location, condition, tmpLeft, tmpRight);
     },
     
     transformContinueStatement: function(tree) {
