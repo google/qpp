@@ -17,7 +17,7 @@ window.addEventListener('load', function() {
 
 function test_lastChange() {
   console.log("------------test begins------------");
-  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/demoEval.html"');
+  AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/eval/demoEval.html"');
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
   

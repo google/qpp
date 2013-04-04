@@ -52,6 +52,20 @@ function testDoWhile() {
   console.assert(index == 1);
 }
 
+function testSwitch() {
+  var obj = { foo: 5};
+  switch(obj.foo){
+    case 5:
+       obj.ok = true;
+     break;
+    default:
+     obj.ok = false;
+  }
+  console.assert(obj.ok);
+}
+
+}
+
 function onLoad() {
   testAssignmentInCondition();
   testShortCurcuit();
