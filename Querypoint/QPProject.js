@@ -167,7 +167,7 @@
 
       var reloadOptions = {
         ignoreCache: true, 
-        injectedScript:  Querypoint.QPRuntime.runtimeSource(numberOfReloads), 
+        injectedScript:  Querypoint.QPRuntime.runtimeSource(numberOfReloads, Querypoint.QPPreprocessor.useAsyncPreprocessor), 
         preprocessingScript: '(' + transcoder + ')'
       };
       if (debug) console.log("reloadOptions ", reloadOptions);

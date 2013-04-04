@@ -12,7 +12,7 @@
   /** 
    * A function that runs in the debuggee web page before any other JavaScript
    */
-  function define__qp(debug_in_page) {
+  function define__qp(debug_in_page, useAsync) {
 
     var fireLoadTrigger = null;
     var beforeArtificalLoadEvent = true;
@@ -192,8 +192,9 @@
       window.addEventListener = function(type, listener, useCapture) {
        if (debug_in_page) 
           console.log("qp| debug addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
+        
         var wrapped = wrapEntryPoint(listener);
-        if (beforeArtificalLoadEvent) {
+        if (useAsync && beforeArtificalLoadEvent) {
           var handlers = window.__qp.artificalLoadEventHandlers;
           if (!handlers[type]) {
             handlers[type] = [wrapped];
@@ -387,7 +388,9 @@
      
     initializeHiddenGlobalState();
     // Hacks on global built-ins
-    grabLoadEvent();
+    if (useAsync) {
+      grabLoadEvent();
+    }
     recordEntryPoints();
     interceptEntryPoints();
     
