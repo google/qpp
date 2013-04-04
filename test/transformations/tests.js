@@ -64,8 +64,6 @@ function testSwitch() {
   console.assert(obj.ok);
 }
 
-}
-
 function onLoad() {
   testAssignmentInCondition();
   testShortCurcuit();
