@@ -42,6 +42,16 @@ function testConst() {
   console.assert(isConst);
 }
 
+function testDoWhile() {
+  var index = 0;
+  do {
+      if (index === 1)
+          break;
+      index++;
+  } while (index <= 2);
+  console.assert(index == 1);
+}
+
 function onLoad() {
   testAssignmentInCondition();
   testShortCurcuit();
@@ -49,6 +59,7 @@ function onLoad() {
   testConditionalExpression();
   testForIn();
   testConst();
+  testDoWhile();
   console.warn("Tests complete");  
 }
 

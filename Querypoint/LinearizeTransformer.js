@@ -326,10 +326,11 @@
       block = new Block(block.location, statements);
       
       this.popInsertions();
+      var breakIdentifier = this.getBreakLabel();
       this.popIterationLabels();
       
       return this.wrapInLabels(
-        labels.map(this.createContinueLabel),
+        labels.map(this.createContinueLabel).concat(breakIdentifier),
         new DoWhileStatement(tree.location, block, condition)
       );
     },
