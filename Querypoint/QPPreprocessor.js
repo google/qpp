@@ -113,18 +113,24 @@
       // Beware: all lines must have semicolons
       // Maybe we can use this someday: /* || escape('data:text/html,<script>' + encodeURIComponent(input.contents) + '</script>') + '.js'; */
       function transformAndGenerate(descriptorsJSON) {
-          var descriptors = JSON.parse(descriptorsJSON);
+          if (typeof input !== 'object')
+            throw new Error('transformAndGenerate requires JS object named |input|');
           var reporter = new Querypoint.QPErrorReporter();
           var fileCompiler = new Querypoint.QPFileCompiler(reporter);
-          var name = input.name || toBase64DataURI(generatedSource);
+          var name = input.name || 'unnamedSource.js';
           var file = new traceur.syntax.SourceFile(name, input.contents);
           var tree = fileCompiler.parse(file);
-          var generatedFileName = file.name + ".js";
-          var turnIndicator = "window.__qp._theTurn = window.__qp.startTurn('ScriptBody', [{name: \"" + file.name + "\"}]);\n"
-          var generatedSource = fileCompiler.generateSourceFromTree(tree, generatedFileName, descriptors); 
-          var endTurnIndicator = "window.__qp.endTurn(window.__qp._theTurn);\n";
+          var descriptors = JSON.parse(descriptorsJSON);
+          var generatedSource = fileCompiler.generateSourceFromTree(tree, name, descriptors); 
+          var generatedFileName = input.name ? (input.name  + ".js") : toBase64DataURI(generatedSource);
           var sourceURL =  '//@ sourceURL=' + generatedFileName + '\n';
-          return turnIndicator + generatedSource + endTurnIndicator + sourceURL;
+          if (input.name) {
+            var turnIndicator = "window.__qp._theTurn = window.__qp.startTurn('ScriptBody', [{name: \"" + file.name + "\"}]);\n"
+            var endTurnIndicator = "window.__qp.endTurn(window.__qp._theTurn);\n";
+            return turnIndicator + generatedSource + endTurnIndicator + sourceURL;
+          } else {
+            return generatedSource + sourceURL;
+          }
       }
       var json = JSON.stringify(descriptors);
       return toBase64DataURI + '\n' + transformAndGenerate + '\n return transformAndGenerate(\'' + json + '\');\n';

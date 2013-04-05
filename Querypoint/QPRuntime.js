@@ -73,12 +73,16 @@
       }
     }
 
-    function grabLoadEvent() {
+    function grabLoadEvent(useAsync) {
       window.addEventListener('load', function grabbedLoadEvent(event) {
-        window.__qp.loadEvent = event;
-        if (debug_in_page) 
-          console.log("qp| debug  grabLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
-        fireLoadAfterRealLoad();
+        if (useAsync) {
+          window.__qp.loadEvent = event;
+          if (debug_in_page) 
+            console.log("qp| debug  grabLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
+          fireLoadAfterRealLoad();
+        } else {
+          console.log("qp| loadEvent " + window.__qp_reloads);
+        }
       });
       window.addEventListener('DOMContentLoaded', function(event) {
         window.__qp.DOMContentLoaded = event;
@@ -216,7 +220,6 @@
 
       var oldTimeout = window.setTimeout;
       window.setTimeout= function(stringFunction, millisecond){
-        
         console.log('qp| setTimeout ' + millisecond + ' ' + (stringFunction.name || '(anonymous)'));
         oldTimeout(wrapEntryPoint(stringFunction, this.__qp.turn), millisecond);
       };
@@ -388,9 +391,7 @@
      
     initializeHiddenGlobalState();
     // Hacks on global built-ins
-    if (useAsync) {
-      grabLoadEvent();
-    }
+    grabLoadEvent(useAsync);
     recordEntryPoints();
     interceptEntryPoints();
     

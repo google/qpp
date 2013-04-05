@@ -67,7 +67,9 @@ function testSwitch() {
 function testEval() {
   'use strict';
 
-  var global = ('global', eval)('this');
+  // LHS for the compile context of the devtools script preprocessor,
+  // RHS for the runtime context of the devtools script preprocessor...
+  var global = ('global', eval)('this') || window;
 
   global.Querypoint = {};
   console.assert(typeof global.Querypoint === 'object');
