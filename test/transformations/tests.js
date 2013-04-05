@@ -64,6 +64,15 @@ function testSwitch() {
   console.assert(obj.ok);
 }
 
+function testEval() {
+  'use strict';
+
+  var global = ('global', eval)('this');
+
+  global.Querypoint = {};
+  console.assert(typeof global.Querypoint === 'object');
+}
+
 function onLoad() {
   testAssignmentInCondition();
   testShortCurcuit();
@@ -72,6 +81,7 @@ function onLoad() {
   testForIn();
   testConst();
   testDoWhile();
+  testEval();
   console.warn("Tests complete");  
 }
 
