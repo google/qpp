@@ -1,0 +1,55 @@
+/*
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+*/
+
+.traceView {
+  padding-left: 4px;
+  position: relative;
+}
+.traceView .fileName {
+
+}
+
+.traceView {
+  display: none;
+}
+
+.traceView[hasTraceData="true"] {
+  display: block;
+}
+
+.activation {
+  color: #75715e;
+  height: 1.2em;
+  line-height: 1.2;
+}
+
+.activation span {
+    line-height: 1.0;
+}
+
+.traceBody::-webkit-scrollbar{
+    width: 8px;
+    height: 16px;
+}
+
+.traceBody::-webkit-scrollbar-thumb{
+    background-color: rgba(248,248,242,0.4);
+    -webkit-box-shadow: inset 1px 1px 0 rgba(39,40,34,0.10),inset 0 -1px 0 rgba(39,40,34,0.07);
+}
+
+.traceBody::-webkit-scrollbar-button{
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.traceBody::-webkit-scrollbar-corner{
+    background-color: transparent;
+}
+
+.traceBody{
+  overflow-y: scroll;
+  display: block;
+}

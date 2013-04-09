@@ -14,10 +14,12 @@
     
 	-webkit-flex: none;
 }
+
 .statusBar .commandLine {
   background-color: #75715E;
   color: #d0d0d0;
 }
+
 .statusBar .commandInput {
   height: 17px; 
   border-radius: 7px;
@@ -46,10 +48,10 @@
 .statusBar .turnNumber {
   color: rgb(26, 6, 255);
 }
-.statusBar .turnNumber[active='true'] {
-  background=color: black;
-}
 
+.statusBar .turnNumber[active='true'] {
+  background: color: black;
+}
 
 .statusBar .changedOptionsIcon {
   font-size: x-large; /* our funky gear unicode is too small */
