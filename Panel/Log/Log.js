@@ -60,6 +60,74 @@
     
     _currentEvent: 'none yet',
     
+    _onLoadEvent: function(segments) {
+     this._logScrubber.loadEnded(parseInt(segments[2], 10));
+     this.finishedLoadingScripts = true;
+    },    
+
+    _onReload: function(segments) {
+      this._reloadCount = parseInt(segments[2], 10);
+      this._logScrubber.loadStarted(this._reloadCount);
+      this._logScrubber._scale = 1;
+    },    
+    
+    _onStartTurn: function(segments, messageSource) {
+      messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
+      messageSource.severity = 'turn';
+      this._turn = parseInt(segments[2], 10);
+      this._logScrubber.turnStarted(this._turn);
+      this._currentEvent = {
+        functionName: segments[3],
+        filename: segments[4],
+        offset: segments[5],
+        eventType: segments[6],
+        target: segments[7],
+        eventBubbles: segments[8] === 'true',
+        eventCancels: segments[9] === 'true',
+        previousTurn: segments[10],
+        firedEvents: [],
+        addedEvents: []
+      };
+
+      // If previousTurn is a number, make the structure point to the respective turn and add the current turn to the previos turn's fired events list
+      // If there is no previous turn just set the previousTurn to null
+      if (this._currentEvent.previousTurn !== 'undefined' && this._currentEvent.previousTurn !== '-1') {
+          var previousTurn= this.currentReload.turns()[parseInt(this._currentEvent.previousTurn) - 1];
+          this._currentEvent.previousTurn = previousTurn; 
+          previousTurn.event.firedEvents.push(this._turn);
+      } else {
+          this._currentEvent.previousTurn = null;
+      }
+
+      // Turn detail is a string summary of the current event
+      var turnDetail;
+      turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
+      if (this._currentEvent.target !== 'undefined') 
+          turnDetail += '|' + this._currentEvent.target;
+          
+      messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
+
+      // To play recorded events on new loads we need to know when all the scripts and onload functions finished running
+      // So we keep track of the last turn which needs to occur before playing the recorded events.
+      if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
+          this.lastInitialTurn = this._turn - 1;
+          this.lastMessage = this.currentTurn.messages().length;
+      }
+    },
+
+    _onEndTurn: function(segments) {
+      this._logScrubber.turnEnded(parseInt(segments[2], 10));
+      this._logScrubber.updateSize();
+    },
+
+    _onSetTimeout: function(segments) {
+      this._currentEvent.addedEvents.push('Timeout in ' + segments[2] + ' triggers ' + segments[3]);
+    },
+
+    _onAddEventListener: function(segments) {
+      this._currentEvent.addedEvents.push('Listener added to ' + segments[3] + ' triggers on ' + segments[2]);      
+    },
+
     _parse: function(messageSource) {
       var mark = messageSource.text.indexOf('qp|');
       if (mark === 0) {
@@ -67,79 +135,20 @@
         var segments = messageSource.text.split(' ');
         var keyword = segments[1];
         switch(keyword) {
-          case 'loadEvent':
-            this._logScrubber.loadEnded(parseInt(segments[2], 10));
-            this.finishedLoadingScripts = true;
-            break;
-          case 'reload': 
-            this._reloadCount = parseInt(segments[2], 10);
-            this._logScrubber.loadStarted(this._reloadCount);
-            this._logScrubber._scale = 1;
-            break;
-          case 'startTurn': 
-            messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
-            messageSource.severity = 'turn';
-            this._turn = parseInt(segments[2], 10);
-            this._logScrubber.turnStarted(this._turn);
-            this._currentEvent = {
-              functionName: segments[3],
-              filename: segments[4],
-              offset: segments[5],
-              eventType: segments[6],
-              target: segments[7],
-              eventBubbles: segments[8] === 'true',
-              eventCancels: segments[9] === 'true',
-              previousTurn: segments[10],
-              firedEvents: [],
-              addedEvents: []
-            };
-
-            // If previousTurn is a number, make the structure point to the respective turn and add the current turn to the previos turn's fired events list
-            // If there is no previous turn just set the previousTurn to null
-            if (this._currentEvent.previousTurn !== 'undefined' && this._currentEvent.previousTurn !== '-1') {
-                var previousTurn= this.currentReload.turns()[parseInt(this._currentEvent.previousTurn) - 1];
-                this._currentEvent.previousTurn = previousTurn; 
-                previousTurn.event.firedEvents.push(this._turn);
-            } else {
-                this._currentEvent.previousTurn = null;
-            }
-
-            // Turn detail is a string summary of the current event
-            var turnDetail;
-            turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
-            if (this._currentEvent.target !== 'undefined') 
-                turnDetail += '|' + this._currentEvent.target;
-                
-            messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
-
-            // To play recorded events on new loads we need to know when all the scripts and onload functions finished running
-            // So we keep track of the last turn which needs to occur before playing the recorded events.
-            if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
-                this.lastInitialTurn = this._turn - 1;
-                this.lastMessage = this.currentTurn.messages().length;
-            }
-            break;
-          case 'endTurn':
-            this._logScrubber.turnEnded(parseInt(segments[2], 10));
-            this._logScrubber.updateSize();
-            break; 
-          case 'script':
-            this.project.addScript(segments[2]);
-            break; 
-          case 'debug':
-            break;
-          case 'setTimeout':
-            this._currentEvent.addedEvents.push('Timeout in ' + segments[2] + ' triggers ' + segments[3]);
-            break;
-          case 'addEventListener':
-            this._currentEvent.addedEvents.push('Listener added to ' + segments[3] + ' triggers on ' + segments[2]);
-            break;
-          default: 
-            console.error('unknown keyword: '+messageSource.text);
-            break;
+          case 'loadEvent': this._onLoadEvent(segments); break;
+          case 'reload': this._onReload(segments); break;
+          case 'startTurn': this._onStartTurn(segments, messageSource); break;
+          case 'endTurn': this._onEndTurn(segments); break;
+          case 'script': this.project.addScript(segments[2]); break; 
+          case 'debug': break;
+          case 'setTimeout': this._onSetTimeout(segments); break;
+          case 'addEventListener': this._onAddEventListener(segments); break;
+          default: console.error('Log._parse: unknown keyword: '+messageSource.text); break;
         }
-      } else {
-          if (this._logScrubber.turnStarted() === this._logScrubber.turnEnded()) console.error('QPRuntime error: No turn for message after turn %o', this._turn);
+      } else {  // not a qp message
+          var started = this._logScrubber.turnStarted();
+          if ( started && started === this._logScrubber.turnEnded()) 
+              console.error('QPRuntime error: No turn for message after turn %o', this._turn);
       }
       messageSource.load = this._reloadCount;
       messageSource.turn = this._turn;
@@ -220,6 +229,10 @@
       var visibleMessages = [];
       //messageSource.odd = (--visibleLines) % 2;
       return this._logScrubber.loads();
+    },
+    pageWasExternallyReloaded: function() {
+      this._logScrubber.turnStarted(0);
+      this._logScrubber.turnEnded(0);
     }
   };
 

@@ -23,7 +23,7 @@ function onLoad() {
   }
     
   function onNavigated(url) {
-    if (!view.window)
+    if (!view.window)  // Then our panel was never opened.
       return; 
     loads += 1;
     if (!model.project || model.project.url !== url) {

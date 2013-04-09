@@ -221,6 +221,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   pageWasExternallyReloaded: function() {
+    this._log.pageWasExternallyReloaded();
     QuerypointPanel.OnPanelOpen.open();
   },
 
