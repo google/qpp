@@ -111,7 +111,7 @@
       // So we keep track of the last turn which needs to occur before playing the recorded events.
       if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
           this.lastInitialTurn = this._turn - 1;
-          this.lastMessage = this.currentTurn.messages().length;
+          this.lastMessage = this.currentTurn.messages && this.currentTurn.messages().length;
       }
     },
 
