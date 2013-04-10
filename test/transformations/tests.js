@@ -75,7 +75,19 @@ function testEval() {
   console.assert(typeof global.Querypoint === 'object');
 }
 
+function testTypeofInSwitch(GeneratorReturn) {
+  switch (typeof GeneratorReturn) {
+    case 'function':
+      return;
+    case 'undefined':
+      return;
+    default:
+      throw new Error('FAIL testTypeofInSwitch');
+  }
+}
+
 function onLoad() {
+  testTypeofInSwitch();
   testAssignmentInCondition();
   testShortCurcuit();
   testTypeof();
