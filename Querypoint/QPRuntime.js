@@ -78,7 +78,7 @@
         if (useAsync) {
           window.__qp.loadEvent = event;
           if (debug_in_page) 
-            console.log("qp| debug  grabLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
+            console.log("qp| debug  grabbedLoadEvent; beforeArtificalLoadEvent: " + beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
           fireLoadAfterRealLoad();
         } else {
           console.log("qp| loadEvent " + window.__qp_reloads);
@@ -410,7 +410,7 @@
     runtimeSource: function(numberOfReloads) {
       if (debug) console.log("qp| debug QPRuntime creating runtime for load #" + numberOfReloads);
       var fncs = this.runtime.map(function(fnc) {
-        return '(' + fnc + '(' + debug + '));\n';
+        return '(' + fnc + '(' + !!debug + ',' + !!Querypoint.QPPreprocessor.useAsyncPreprocessor + '));\n';
       });
       var reload = 'window.__qp_reloads = ' + numberOfReloads + ';\n';  
       return reload + fncs + '\n' + this.source.join('\n') + "//@ sourceURL='QPRuntime.js'\n";
