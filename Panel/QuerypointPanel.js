@@ -99,8 +99,12 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
         var fileView = target;
         while(fileView && !fileView.classList.contains('fileView'))
           fileView = fileView.parentElement;
-        var fromURL = fileView.getAttribute('name'); 
-        panel.commands.openChainedEditor(url, fromURL);
+        if (fileView) {
+          var fromURL = fileView.getAttribute('name'); 
+          panel.commands.openChainedEditor(url, fromURL);
+        } else {
+          console.error("open editor for " + url);
+        }
       } // else the user did not click on something interesting.   
     });
 }
