@@ -105,8 +105,10 @@
     },
     
     transformDefaultClause: function(tree) {
+      this.pushInsertions();
       var statements =  this.transformListInsertEach(tree.statements, 
         this.insertAbove);
+      this.popInsertions();
       if (statements === tree.statements) {
         return tree;
       }

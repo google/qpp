@@ -613,21 +613,16 @@
     transformSwitchStatement: function(tree) {
       // transform the expression outside of the case stack
       var expression = this.transformAny(tree.expression);
-      this.pushInsertions();
       // the last label acts like 'empty' in ecma242 12.12
       // Any unlabeled break in the tree directly below here will use it.
       this.pushSwitchLabel(tree);
-      var caseClauses = this.transformListInsertEach(
-        tree.caseClauses, 
-        this.insertAbove
-      );
+      var caseClauses = this.transformList(tree.caseClauses);
       var expressionChanged = expression !== tree.expression;
       var caseClauseChanged = caseClauses !== tree.caseClauses;
       if ( expressionChanged || caseClauseChanged ) {
         tree = new SwitchStatement(tree.location, expression, caseClauses);
       }
       var labels = [this.popSwitchLabel()];
-      this.popInsertions();
       return this.wrapInLabels(labels, tree);
     },
         
