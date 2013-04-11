@@ -369,15 +369,34 @@
       }
 
       // Method that changes css style to change width and border of indicators
-      // This method has hardcoded the rule number and stylesheet number
       // The modified rule is in a stylesheet by itself eventIndicator.css
       this._setMessageWidth = function(width) {
-        if (width < 3) document.styleSheets[4].cssRules[0].style.borderLeftWidth = '0px';
-        else document.styleSheets[4].cssRules[0].style.borderLeftWidth = '2px';
-        if (width > 10) document.styleSheets[4].cssRules[0].style.width = '10px';
-        else document.styleSheets[4].cssRules[0].style.width = width + 'px';
+        var eventIndicatorSheet;
+        for (var i = 0; i < document.styleSheets.length; i++) {
+          var styleSheet = document.styleSheets[i]
+          if (styleSheet.href.indexOf('eventIndicator.css') !== -1) {
+            eventIndicatorSheet = styleSheet;
+            break;
+          }
+        }
+        var eventIndicatorRule;
+        for (var i = 0; i < eventIndicatorSheet.cssRules.length; i++) {
+            var cssRule = eventIndicatorSheet.cssRules[i];
+            if (cssRule.selectorText.indexOf('.eventIndicator') !== -1) {
+                eventIndicatorRule = cssRule;
+                break;
+            }
+        }
+        if (width < 3) 
+            eventIndicatorRule.style.borderLeftWidth = '0px';
+        else 
+            eventIndicatorRule.style.borderLeftWidth = '2px';
+            
+        if (width > 10)
+            eventIndicatorRule.style.width = '10px';
+        else 
+            eventIndicatorRule.style.width = width + 'px';
       }
-
       this.showLoadNumber = ko.computed(function(){
           return self.showLoad().load;
       });
