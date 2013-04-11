@@ -95,17 +95,23 @@ function testPropertyAccessInCase() {
   }
 }
 
+function test(aTestCase) {
+  console.log('start ' + aTestCase);
+  window[aTestCase]();
+  console.log('end ' + aTestCase);
+}
+
 function onLoad() {
-  testPropertyAccessInCase();
-  testTypeofInSwitch();
-  testAssignmentInCondition();
-  testShortCurcuit();
-  testTypeof();
-  testConditionalExpression();
-  testForIn();
-  testConst();
-  testDoWhile();
-  testEval();
+  test('testTypeofInSwitch');
+  test('testPropertyAccessInCase');
+  test('testAssignmentInCondition');
+  test('testShortCurcuit');
+  test('testTypeof');
+  test('testConditionalExpression');
+  test('testForIn');
+  test('testConst');
+  test('testDoWhile');
+  test('testEval');
   console.warn("Tests complete");  
 }
 
