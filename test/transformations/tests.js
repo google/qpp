@@ -86,7 +86,17 @@ function testTypeofInSwitch(GeneratorReturn) {
   }
 }
 
+function testPropertyAccessInCase() {
+  var v = 1;
+  var obj = {prop: 1};
+  switch(v) {
+    case obj.prop: return;
+    default: throw new Error('FAIL testPropertyAccessInCase');
+  }
+}
+
 function onLoad() {
+  testPropertyAccessInCase();
   testTypeofInSwitch();
   testAssignmentInCondition();
   testShortCurcuit();
