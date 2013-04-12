@@ -1,4 +1,17 @@
-
+function testGetterAssignment() {
+  function Foo(x) {
+    this.message = x;
+  }
+  function Bar(x) {
+    Foo.call(this, x);
+  }
+  Bar.prototype = {
+    get message() {
+      throw new Error('Do not call getters in assignments');
+    }
+  };
+  return new Bar('good');
+}
 
 function testAssignmentInCondition() {
     var other = 'prop';
@@ -102,6 +115,7 @@ function test(aTestCase) {
 }
 
 function onLoad() {
+  test('testGetterAssignment');
   test('testTypeofInSwitch');
   test('testPropertyAccessInCase');
   test('testAssignmentInCondition');
