@@ -71,7 +71,7 @@
     ** @return {ParseTree}
     ** side-effect: this.insertions.length++
     */
-    insertVariableFor: function(tree) {
+    insertVariableFor: function(tree, givenTraceId) {
       if (!tree.location || tree.doNotTransform)
         return tree;
       
@@ -83,7 +83,7 @@
       
       tree = this._rhsTransformer.transformAny(tree);
 
-      var traceId =  this.generateIdentifier(tree);  // XX in __qp_XX
+      var traceId =  givenTraceId || this.generateIdentifier(tree);  // XX in __qp_XX
       var varId = '__qp' + traceId;
       
       var loc = tree.location;

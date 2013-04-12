@@ -117,7 +117,6 @@
             startInfo.filename = '?';
             startInfo.name = entryPointFunction.name || '(anonymous)';
           }
-          if (debug_in_page) console.log('qp| debug QPRuntime.appendFileInfoFromPreamble preamble ' + preamble + ': ' + entryPointFunction);
         }
         return startInfo;
     }

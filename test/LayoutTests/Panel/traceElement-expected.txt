@@ -3,6 +3,6 @@ prop in   var message = "I've been clicked " + obj.prop + " times";
 true
 true
 I am not a bug|I've been clicked 0 times
-http://localhost:8686/test/demo.js?start=638&end=654&|http://localhost:8686/test/demo.js?start=392&end=399&
+http://localhost:8686/test/demo.js?start=692&end=708&|http://localhost:8686/test/demo.js?start=392&end=399&
 I am not a bug|I've been clicked 0 times
 

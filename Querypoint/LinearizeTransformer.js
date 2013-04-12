@@ -134,7 +134,7 @@
               (tree.type !== ParseTreeType.FUNCTION_DECLARATION) &&  // TODO function expression
               (tree.type !== ParseTreeType.POSTFIX_EXPRESSION) && // already linearized below
               (tree.type !== ParseTreeType.MEMBER_LOOKUP_EXPRESSION) &&
-              (tree.type !== ParseTreeType.LITERAL_EXPRESSION) && 
+              (tree.type !== ParseTreeType.LITERAL_EXPRESSION) &&
               tree.location && 
               !tree.doNotTrace;
   }
@@ -160,8 +160,8 @@
       return output_tree;
     },
     
-    insertVariableFor: function(tree) {
-      var linearExpression = Querypoint.InsertVariableForExpressionTransformer.prototype.insertVariableFor.call(this, tree);
+    insertVariableFor: function(tree, traceId) {
+      var linearExpression = Querypoint.InsertVariableForExpressionTransformer.prototype.insertVariableFor.call(this, tree, traceId);
       return linearExpression; 
     }, 
     
@@ -381,31 +381,31 @@
       // the reference. For example, we cannot substitute a temp for obj.prop in
       // obj.prop = 5;
       // Another issue is that assignment is not like other binary  operators that 
-      // create values. For c*(a+b), the sum is value that we want to trace.
+      // create values. For c*(a+b), the sum or pdt is the value that we want to trace 
       // For c.b = a, the value we want to trace is c.b, the LHS after the assignment.
-      //   c.b = a;  // for lastChange write-barrier
-      //   __qp_558_14 = c.b;  // trace LHS
+      //  __qp_558_14 = a; // trace value
+      //   c.b = __qp_558_14;  // for lastChange write-barrier
       // What about c.b = a = 5; ?
-      //   a = 5;   // emit assignment statement for lastChange write-barrier
-      //   __qp_xx = a;  // emit temp for LHS
-      //   c.b = (trace __qp_xx, _qp_xx)  // return temp, next call: emit assignment statement
-      //   __qp_yy = c.b;    //  emit temp for LHS
-      //   (trace __qp_yy, _qp_yy)  // return temp
-      // Thus we want to return the linearExpression (eg __qp_xx) and let it get traced.
+      //  __qp_xx = 5;  // Not if it is a Literal!
+      //   a = (trace __qp_xx, _qp_xx);   // emit assignment statement for lastChange write-barrier
+      //  __qp_yy = a;
+      //   c.b = (trace __qp_yy, _qp_yy);  // return temp, next call: emit assignment statement
       // Another case is an expression computing to an object ref in a property lookup:
       // someObject().foo = 5;
       // We linearize the ref, emit the assignment, then the LHS and trace:
-      //   __qp_559_10 = someObject();     // trace this to get value of object
-      //   __qp_559_10.foo = 5;            // add write-barrier for lastChange
-      //   __qp_559_15 = __qp_559_10.foo;  // tace for the value of LHS
+      //   __qp_559_10 = someObject();    
+      //   __qp_559_15 = 5;  
+      //   (trace __qp_559_10, __qp_559_10).foo = (trace __qp_559_15, __qp_559_15);     
+
       var left = this.transformAnySkipLinearization(tree.left);
       left.isReferenceTree = true;
       var right = this.transformAny(tree.right);
-      right.location = tree.right.location;
-      var assignmentExpression = new BinaryOperator(tree.location, left, tree.operator, right);
-      var assigmentStatement = createExpressionStatement(assignmentExpression);
-      this.insertions.push(assigmentStatement);
-      return this.insertVariableFor(left);
+      delete right.doNotTransform;
+      // use offsets from LHS to form the temp name
+      var tmp = this.insertVariableFor(right, this.generateIdentifier(tree.left));
+      right.doNotTransform = true;
+      tmp.location = tree.right.location;
+      return new BinaryOperator(tree.location, left, tree.operator, tmp);
     },
 
     _wrapBlockAroundExpression: function(tree) {
