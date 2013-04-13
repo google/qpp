@@ -38,6 +38,10 @@
   }
 
   QuerypointPanel.EditorViewModel.prototype = {
+    name: function() {
+      return this.editor().name;
+    },
+
     editorBy: function(element) {
       this.editorElement(element);
       return 'CodeMirror';

@@ -5,28 +5,28 @@
 
 (function() {
 
-  QuerypointPanel.LineNumberViewModel = function(fileViewModel, panel) {
-    this._fileViewModel = fileViewModel;
+  QuerypointPanel.LineNumberViewModel = function(querypointViewModel, panel) {
+    this._querypointViewModel = querypointViewModel;
     
     this._viewportData = ko.observable();
     
     this.traceVisitor = ko.computed(function() {
-        var editor = this._fileViewModel.editor();
+        var editor = this._querypointViewModel.editor();
         if (editor) {  // TODO where is the remove?
           editor.addListener('onViewportChange', this.updateViewport.bind(this));
           this.updateViewport(editor.getViewport());
         }
-        return this._fileViewModel.project.lineModelTraceVisitor(this._fileViewModel.sourceFile());
+        return this._querypointViewModel.project.lineModelTraceVisitor(this._querypointViewModel.sourceFile());
     }.bind(this));
     
     this.lineModel = ko.computed(function(){
-      var treeRoot = this._fileViewModel.treeRoot();
+      var treeRoot = this._querypointViewModel.treeRoot();
       var traceData = treeRoot && treeRoot.traceData();
       if(!traceData)
         return;
         
       var visitor = this.traceVisitor();
-      visitor.visitTrace(this._fileViewModel.treeRoot(), traceData);
+      visitor.visitTrace(this._querypointViewModel.treeRoot(), traceData);
       return {
         tracedOffsetsByLine: visitor.tracedOffsetsByLine,
         latestTraceByOffset: visitor.latestTraceByOffset
@@ -39,7 +39,7 @@
       }      
       var i_viewport = 0;
       var viewportData = this._viewportData();
-      var editor = this._fileViewModel.editor();
+      var editor = this._querypointViewModel.editor();
       // Use the viewport to limit our work
       for (var line = viewportData.start; line < viewportData.end; line++, i_viewport++) {
         var offsets = this.getTracedOffsetByLine(line);
@@ -69,7 +69,7 @@
 
     // Manually update to avoid having ko.observables() all over the tree
     update: function(traceData, viewportData) {
-        this.traceVisitor.visitTrace(this._fileViewModel.treeRoot(), traceData);
+        this.traceVisitor.visitTrace(this._querypointViewModel.treeRoot(), traceData);
         this.updateLineNumberHighlights(viewportData);
     },
 
@@ -83,7 +83,7 @@
 
     showTraceDataForLine: function(clickData) {
       var line = clickData.line;
-      var offsetOfLine = this._fileViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
+      var offsetOfLine = this._querypointViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
       var offsets = this.getTracedOffsetByLine(line);
       if (offsets) {
         var expressionOffsets = offsets.expressionOffsets;

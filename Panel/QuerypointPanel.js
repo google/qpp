@@ -100,8 +100,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
         while(fileView && !fileView.classList.contains('fileView'))
           fileView = fileView.parentElement;
         if (fileView) {
-          var fromURL = fileView.getAttribute('name'); 
-          panel.commands.openChainedEditor(url, fromURL);
+          panel.commands.openChainedEditor(url, fileView);
         } else {
           console.error("open editor for " + url);
         }
@@ -195,8 +194,10 @@ QuerypointPanel.Panel.prototype = {
   
   _initEditors: function(panelModel) {
     this._statusBar = QuerypointPanel.StatusBar.initialize(this);
+    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._statusBar, this.commands);
+    QuerypointPanel.FileViewModel.initialize(this._editors, this);
     var workspaceElement = document.querySelector('.workSpace');
-    this._fileChainViewModel = new QuerypointPanel.FileChainViewModel(workspaceElement, this, this._statusBar, panelModel);
+    this._fileChainViewModel = new QuerypointPanel.FileChainViewModel(workspaceElement, this);
     var lastURL = panelModel.buffers.openURLs.pop();
     panelModel.buffers.openURLs = [];  // create an list next time we save
   },

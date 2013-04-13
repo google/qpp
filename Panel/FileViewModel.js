@@ -1,9 +1,6 @@
  // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// Binds the tracuer SourceFile, Tree, and Editor to interactively
-// update the Tree with trace data as the user explores the source
-// in the editor
 
 (function() {
   'use strict';
@@ -13,93 +10,51 @@
   });
 
 
-  QuerypointPanel.FileViewModel = function(panel, editorViewModel) {
-    this._panel = panel;
+  QuerypointPanel.FileViewModel = function(querypointViewModel, editorViewModel) {
+    // public: 
+    this.querypointViewModel = querypointViewModel;  // maybe undefined
     this.editorViewModel = editorViewModel;
     
     this.sourceFile = ko.observable();
-    this.treeRoot = ko.computed(function(){
-      var sourceFile = this.sourceFile();
-      var tree = {traceData: function(){}};
-      if (sourceFile) {
-        tree = panel.project.getTreeByName(sourceFile.name);
-        if (tree && !tree.hasOwnProperty('traceData')) {
-            // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
-            tree.traceData = ko.observable();
-        }
-        this.tokenViewModel.followTokens(true);
-      }
-      return tree;
-    }.bind(this));
-
-    this.project = panel.project;
-        
-    this.tracepoints = ko.observableArray(); // all of the query results for this file
-
-    this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, panel);        // wired to editor token
-    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);        // wired to token viewed
-    this.queryProvider = new QuerypointPanel.TokenQueryProvider(this.tokenViewModel, this.project);  // wired to token viewed.
-    this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this.queryProvider, panel);  
-    this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, panel);
-
-    this.currentLocation = ko.computed(function() {
-      var tokenViewLocation = this.tokenViewModel.currentLocation();
-      if (!this.traceViewModel.currentTraces())
-        return tokenViewLocation;
-
-      var traceViewLocation = this.traceViewModel.currentLocation();
-      if (traceViewLocation === tokenViewLocation) 
-        return traceViewLocation;
-    }.bind(this));
 
     this.filename = ko.computed(function(){
       var editor = this.editor();
       return editor && this.editor().name;
     }.bind(this));
 
-    panel.currentTurn.subscribe(function(newValue) {
-      if (newValue !== 0) {
-        this.update(newValue);
-      }
-    }.bind(this));
-    
-    this.door = ko.computed(function() {      
-      if (this.editor() && this.treeRoot()) {
-        var hoverDoorChannel = document.querySelector('.fileViews .hoverDoorChannel');
-        hoverDoorChannel.classList.remove('closed');
-      }
-    }.bind(this)).extend({ throttle: 1 });
+    this.hasQuerypointViewModel = ko.observable(this.querypointViewModel);
+  }
 
-    this.tokenViewModel.initialize();
+  QuerypointPanel.FileViewModel.initialize = function(editors, panel) {
+    this._editors = editors;
+    this._panel = panel;
   }
   
-  QuerypointPanel.FileViewModel.debug = true;
+  QuerypointPanel.FileViewModel.openResourceView = function(resource) {
+    var editorViewModel = this._editors.openResourceView(resource);
+    var fileViewModel = new QuerypointPanel.FileViewModel(null, editorViewModel);
+    return fileViewModel;
+  }
+    
+  QuerypointPanel.FileViewModel.openSourceFileView = function(sourceFile) {
+    var editorViewModel = this._editors.openSourceFileView(sourceFile);
+    var querypointViewModel = new QuerypointPanel.QuerypointViewModel(this._panel, sourceFile, editorViewModel);
+    var fileViewModel =   new QuerypointPanel.FileViewModel(querypointViewModel, editorViewModel);
+    return fileViewModel;
+  }
   
+  QuerypointPanel.FileViewModel.openErrorFileView = function(message) {
+    var editorViewModel = this._editors.openErrorMessage(message);
+    var fileViewModel =   new QuerypointPanel.FileViewModel(null, editorViewModel);
+    return fileViewModel;
+  }
+    
+
   QuerypointPanel.FileViewModel.prototype = {
+
     editor: function() {
       return this.editorViewModel.editor();
     },
-
-    update: function(turn) {
-      var tracequeries = this._panel.tracequeries();
-      if (!tracequeries.length)
-        return;
-      
-      this.tracepoints = ko.observableArray([]);
-        
-      tracequeries.forEach(function(tq){
-        tq.extractTracepoints(this, function (tracepoint){
-          if (tracepoint) {
-            this.tracepoints.push(tracepoint);
-          } 
-        }.bind(this), this._panel.logScrubber);
-      }.bind(this));    
-      var load = this._panel.logScrubber.showLoad();
-      load.tracepoints = this.tracepoints;
-      var lastTracequery = tracequeries[tracequeries.length - 1];  
-      this.tokenViewModel.setTokenTree(lastTracequery.targetTree());
-    },
-
     editorBy: function(element) {
       return this.editorViewModel.editorBy(element);
     }

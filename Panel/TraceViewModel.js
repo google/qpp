@@ -5,23 +5,23 @@
 (function() {
   "use strict";
   
-  QuerypointPanel.TraceViewModel = function(fileViewModel, panel) {
-    this._fileViewModel = fileViewModel;
+  QuerypointPanel.TraceViewModel = function(querypointViewModel, panel) {
+    this._querypointViewModel = querypointViewModel;
     this._panel = panel;
 
     this.rootTreeData = ko.computed(function(){
-      var treeRoot = fileViewModel.treeRoot();
+      var treeRoot = querypointViewModel.treeRoot();
       var traceData = treeRoot && treeRoot.traceData();
       if (traceData) {
         // TODO we should only visit the tree in view, not the entire tree
-        var treeHanger = this._treeHanger(fileViewModel.project);
-        treeHanger.visitTrace(fileViewModel.treeRoot(), traceData);
+        var treeHanger = this._treeHanger(querypointViewModel.project);
+        treeHanger.visitTrace(querypointViewModel.treeRoot(), traceData);
       }
       return traceData;
     }.bind(this)).extend({ throttle: 1 });
 
     this.currentTreeTrace = ko.computed(function(){
-      var currentTree =  fileViewModel.tokenViewModel.tokenTree();
+      var currentTree =  querypointViewModel.tokenViewModel.tokenTree();
       if (currentTree) {
         var rootTreeData = this.rootTreeData();
         if (rootTreeData) {
@@ -37,9 +37,9 @@
              if (!('tracepoints' in this._panel.logScrubber.showLoad())) return [];
              tracepoints = this._panel.logScrubber.showLoad().tracepoints();
          } else {
-             tracepoints = this._fileViewModel.tracepoints();
+             tracepoints = this._querypointViewModel.tracepoints();
          }
-         var tree = fileViewModel.tokenViewModel.tokenTree();
+         var tree = querypointViewModel.tokenViewModel.tokenTree();
          if (tree) {
           
           var treeTracepoints = [];
@@ -80,7 +80,7 @@
 
     // Query results for the current token in this file.
     this.currentTraces = ko.computed(function() {
-        var tree = fileViewModel.tokenViewModel.tokenTree();
+        var tree = querypointViewModel.tokenViewModel.tokenTree();
 
         if (tree && panel.tracequeries().length) {
           var traces = this.treeTraces();
@@ -91,7 +91,7 @@
                 traceViewModel[prop] = trace[prop];
               });
               traceViewModel.tooltip = trace.query.title() + " found in " + trace.file;
-              traceViewModel.url = fileViewModel.project.createFileURL(trace.file, trace.startOffset, trace.endOffset);
+              traceViewModel.url = querypointViewModel.project.createFileURL(trace.file, trace.startOffset, trace.endOffset);
               traceViewModel.iconText = trace.query.iconText();
               return traceViewModel;
             });

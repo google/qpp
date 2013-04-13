@@ -33,7 +33,7 @@
       return emptyTrace;
     },
 
-    activateQuery: function(fileViewModel) {
+    activateQuery: function(querypointViewModel) {
       if (this.isActive()) return;
       // tree -> query
 

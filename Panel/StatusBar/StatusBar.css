@@ -27,6 +27,13 @@
   color: #d0d0d0;
 }
 
+.statusBar .counters {
+  background-color: #f8f8f2;
+  border-radius: 7px;
+  padding-left: 7px;
+  margin-right: 1em;
+}
+
 .statusBar .counters span {
   margin-left: auto;
   margin-right: 2px;

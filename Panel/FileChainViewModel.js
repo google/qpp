@@ -8,10 +8,8 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  QuerypointPanel.FileChainViewModel = function(containerElement, panel, statusBar, panelModel) {
+  QuerypointPanel.FileChainViewModel = function(containerElement, panel) {
     this._panel = panel;
-    // Editors and FileViewModels communicate via EditorViewModel
-    this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, statusBar, panel.commands);
     this.fileViewModels = ko.observableArray();
     ko.applyBindings(this, containerElement);
   }
@@ -20,17 +18,18 @@
 
     openChainedFileView: function(url, fromFileView) {
       var linkTarget = this._nameAndOffsetsFromURL(url);
-      var fileViewModel = this._getFileViewModelByName(linkTarget.name);
       var editorViewModel;
-      if (true || !fileViewModel) {  // no link in the current chain contains this URL, start fresh
-        editorViewModel = this.openURL(linkTarget.name).editorViewModel;
-      } else {
-        var editor = fileViewModel.editor();
-        if (!editor.isShowingRegion(linkTarget.start, linkTarget.end)) {  
-          fileViewModel = this._appendFileChain(linkTarget, fromFileView);
-          editorViewModel = this.openURL(linkTarget.name);
-        }  else { //  we are already showing it
+      if (!fromFileView) {  // no link in the current chain contains this URL, start new chain
+           editorViewModel = this.openURL(linkTarget.name).editorViewModel;
+      } else {  // we are opening a new link in an existing chain
+        var fromFileViewModel = this.fileViewModels()[fromFileView.getAttribute('chainIndex')];
+        var editor = fromFileViewModel.editor();
+        if (!editor.isShowingRegion(linkTarget.start, linkTarget.end)) {
+          var fileViewModel = this.openURL(linkTarget.name);   
+          this._appendFileChain(fileViewModel, fromFileViewModel);
           editorViewModel = fileViewModel.editorViewModel;
+        }  else { //  we are already showing it
+          editorViewModel = fromFileViewModel.editorViewModel;
         }
       }
       editorViewModel.mark(linkTarget);
@@ -41,46 +40,34 @@
     openURL: function(url) {
       var sourceFile = this._panel.project.getFile(url);
       if (sourceFile) {
-        return this.openSourceFileView(sourceFile);
+        return QuerypointPanel.FileViewModel.openSourceFileView(sourceFile);
       } else {
         var fileViewModel;
         var foundResource = this._panel.page.resources.some(function(resource){
             if (resource.url) 
-              fileViewModel = this.openResourceView(resource);
+              fileViewModel = QuerypointPanel.FileViewModel.openResourceView(resource);
         }.bind(this));
         if (!fileViewModel)
-          fileViewModel = this.openErrorMessage("Found no source file or resource named " + url);
+          fileViewModel = QuerypointPanel.FileViewModel.openErrorMessage("Found no source file or resource named " + url);
         return fileViewModel;
       }
     },
 
     /* Start a new chain for a resource */
     openResourceView: function(resource) {
-      var editorViewModel = this._editors.openResourceView(resource);
-      return this._createFileChain(editorViewModel);
+      var fileViewModel = QuerypointPanel.FileViewModel.openResourceView(resource);
+      return this._createFileChain(fileViewModel);
     },
     
     /* Start a new chain for a (traceur) sourceFile */
     openSourceFileView: function(sourceFile) {
-      var editorViewModel = this._editors.openSourceFileView(sourceFile);
-      var fileViewModel = this._createFileChain(editorViewModel);
-      fileViewModel.sourceFile(sourceFile);
-      return fileViewModel;
+      var fileViewModel = QuerypointPanel.FileViewModel.openSourceFileView(sourceFile);
+      return this._createFileChain(fileViewModel);
     },
       
     //------------------------------------------------------------------------------------------------------------------  
     project: function() {
       return this._panel.project;
-    },
-
-    _getFileViewModelByName: function(name) {
-      var found; 
-      this.fileViewModels().some(function(fileViewModel) {
-        var editor = fileViewModel.editor();
-        if(editor && editor.name === name)
-          return found = fileViewModel;
-      });
-      return found;
     },
     
     _nameAndOffsetsFromURL: function(url) {
@@ -93,20 +80,19 @@
           end: parseInt(parsedURI.queryKey.end, 10),
         };
       } else {
-        console.error("_nameAndOffsetsFromURL failed for "+url)
+        console.error("_nameAndOffsetsFromURL failed for "+url);
       }
     },
-    
-    _createFileChain: function(editorViewModel) {
-      var fileViewModel = new QuerypointPanel.FileViewModel(this._panel, editorViewModel);
+
+    //------- Chain
+
+    _createFileChain: function(fileViewModel) {
       this.fileViewModels([fileViewModel]);
       return fileViewModel;
     },
 
-    _appendFileChain: function(linkTarget, fromFileView) {
-      var editorViewModel = this._editors.openURL(this._panel.project, linkTarget.name);
-      var fileViewModel = new QuerypointPanel.FileViewModel(this._panel, editorViewModel);
-      this.fileViewModels.unshift(fileViewModel);
+    _appendFileChain: function(fileViewModel, fromFileViewModel) {
+      this.fileViewModels([fileViewModel, fromFileViewModel]);
       return fileViewModel;
     },
 

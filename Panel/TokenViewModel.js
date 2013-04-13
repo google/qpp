@@ -9,39 +9,40 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   })
 
-  QuerypointPanel.TokenViewModel = function(fileViewModel, panel) {
-    this._fileViewModel = fileViewModel;
+  QuerypointPanel.TokenViewModel = function(querypointViewModel, editorViewModel, panel) {
+    this._querypointViewModel = querypointViewModel;
+    this._editorViewModel = editorViewModel;
 
     this.tokenEvent = ko.observable();
     this.followTokens = ko.observable(false);
 
     this.followingTokens = ko.computed(function() {
-      if (!this._fileViewModel.editor()) {
+      var editor = this.editor();
+      if (editor) {
+        if (this.followTokens()) {          
+          if (!editor.hasListener('onTokenOver')) {
+            editor.addListener('onTokenOver', this.tokenEvent);
+            return true;
+          }
+        } else {
+          editor.removeListener('onTokenOver', this.tokenEvent);
           return false;
+        }  
       }
-      if (this.followTokens()) {          
-        if (!this._fileViewModel.editor().hasListener('onTokenOver')) {
-          this._fileViewModel.editor().addListener('onTokenOver', this.tokenEvent);
-          return true;
-        }
-      } else {
-        this._fileViewModel.editor().removeListener('onTokenOver', this.tokenEvent);
-        return false;
-      }
-
+      
     }.bind(this));  // do not throttle
     
     this.setTokenTree = ko.observable();
     
     this.eventedTokenTree = ko.computed(function() {
       var tokenEvent = this.tokenEvent();
-      if (!tokenEvent || !this._fileViewModel.sourceFile())
+      if (!tokenEvent || !this._querypointViewModel.sourceFile())
           return; 
           
       var line = this.tokenEvent().start.line;
-      var offsetOfLine = this._fileViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
+      var offsetOfLine = this._querypointViewModel.sourceFile().lineNumberTable.offsetOfLine(line);
       var tokenOffset = offsetOfLine + tokenEvent.start.column;
-      var eventedTokenTree = this._fileViewModel.project.treeFinder().byOffset(this._fileViewModel.treeRoot(), tokenOffset);
+      var eventedTokenTree = this._querypointViewModel.project.treeFinder().byOffset(this._querypointViewModel.treeRoot(), tokenOffset);
       if (debug && eventedTokenTree) {
         var traces = eventedTokenTree.location.trace;
         var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
@@ -64,7 +65,7 @@
           start: tokenTree.location.start, 
           end: tokenTree.location.end
         };
-        this._fileViewModel.editor().drawTokenBox(tokenBoxData);
+        this.editor().drawTokenBox(tokenBoxData);
       } 
       return tokenTree;
     }.bind(this)).extend({ throttle: 1 });
@@ -146,20 +147,24 @@
   }
   
   QuerypointPanel.TokenViewModel.prototype = {
+    
+    editor: function() {
+      return this._editorViewModel.editor();
+    },
 
     initialize: function() {
-      // The FileViewModel constructs the TokenViewModel; we use the fileViewModel 
+      // The QuerypointViewModel constructs the TokenViewModel; we use the querypointViewModel 
       // in computing currentExpression. Thus we cannot create the currentExpression
       // function in the TokenViewModel constructor, we have to wait until the 
-      // fileViewModel is constructed.
+      // querypointViewModel is constructed.
       this.currentExpression = ko.computed(function() {
         // only write the current expression once the entire view is synchronized.
-        var location = this._fileViewModel.currentLocation(); 
+        var location = this._querypointViewModel.currentLocation(); 
         if (!location) return "";
         
         var clone = this._cloneEditorLineByLocation(location);
         if (clone) {
-          var box = this._fileViewModel.editor().createTokenBox(location);
+          var box = this.editor().createTokenBox(location);
           box.style.top = "0px";
           clone.appendChild(box);
           clone.style.left = this.expressionViewLeftOffset(this.pxToNumber(box.style.left) + this.pxToNumber(box.style.width)) + 'px';
@@ -172,9 +177,9 @@
 
     _cloneEditorLineByLocation: function(location) {
       var line = location.start.line;
-      this._fileViewModel.editor().setLineNumberClass(line, 'traceViewedLine');
+      this.editor().setLineNumberClass(line, 'traceViewedLine');
       var traceViewedLine = document.querySelector('.traceViewedLine');
-      this._fileViewModel.editor().removeLineNumberClass(line, 'traceViewedLine');
+      this.editor().removeLineNumberClass(line, 'traceViewedLine');
       
       if (!traceViewedLine) {
           console.error("editor out of sync");
