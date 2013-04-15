@@ -45,7 +45,9 @@
       if (debug && eventedTokenTree) {
         var traces = eventedTokenTree.location.trace;
         var tokenLog = tokenEvent.token + '@' + tokenOffset + '-' + (offsetOfLine + tokenEvent.end.column);
-        var treeLog = eventedTokenTree.type + '@' + eventedTokenTree.location.start.offset + '-' + eventedTokenTree.location.end.offset;
+        var treeEnd = eventedTokenTree.location.end.offset;
+        var treeStart = eventedTokenTree.location.start.offset;
+        var treeLog = eventedTokenTree.type + '@' + (treeEnd - 1) + '_' + (treeEnd - treeStart);
         var varIdLog =  traces ? " varId " + eventedTokenTree.location.varId : "";
         console.log("tokenEvent " + tokenLog + ' ' + treeLog + varIdLog, (traces ? traces : ''));
       } else if (debug) {
@@ -73,6 +75,21 @@
         return tree.location;
     }.bind(this));
     
+    this.currentLocationId = ko.computed(function(){
+      var loc = this.currentLocation();
+      if (loc) {
+        var id = this.tokenTree().type;
+        if (debug) {
+          var end = loc.end.offset;
+          var start = loc.start.offset;
+          id += ': ' + (end - 1) + '_' + (end - start);
+        }
+        return id;  
+      } else {
+        return 'updating';
+      }
+    }.bind(this));
+
     this.scopes = ko.computed(function() {
       var tree = this.tokenTree();
       if (!tree)

@@ -257,7 +257,7 @@ window.PatientSelector = (function(){
             }
             tokenElt.addEventListener('mousemove', onMouseMove);
             var xy = getPosition(tokenElt);
-            xy.x = xy.x + Math.round(tokenElt.offsetWidth/2);
+            xy.x = xy.x + Math.round(tokenElt.offsetWidth/2) + 1;
             xy.y = xy.y + Math.round(tokenElt.offsetHeight/2);
             var mousemove = document.createEvent("MouseEvent");
             mousemove.initMouseEvent('mousemove', true, true, window, 0, 
@@ -291,7 +291,11 @@ window.PatientSelector = (function(){
                             callback();
                         }
                         // select within the previous hit
-                        var tokenElt = PatientSelector._querySelectorAll('| ' + selector, text)[0];
+                        var tokenElts = PatientSelector._querySelectorAll('| ' + selector, text);
+                        var tokenElt = tokenElts[0];
+                        if (tokenElts.length > 1) {
+                            console.log("tokenElts", tokenElts);
+                        }
                         PatientSelector._fireMouseMove(tokenElt, callback);
                     });
                 }
