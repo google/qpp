@@ -20,7 +20,6 @@
       var contents = this.editorContents();
       if (fileEditorView && contents) {   
         var editor = new QuerypointPanel.EditorByCodeMirror(fileEditorView, contents.url, contents.content);
-        editor.resize(this._editorWidth, this._editorHeight);
         editor.addListener('onChange', this._onChange.bind(this, editor));
         return editor;
       }    

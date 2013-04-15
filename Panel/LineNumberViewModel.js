@@ -5,13 +5,14 @@
 
 (function() {
 
-  QuerypointPanel.LineNumberViewModel = function(querypointViewModel, panel) {
+  QuerypointPanel.LineNumberViewModel = function(querypointViewModel, editorViewModel, panel) {
     this._querypointViewModel = querypointViewModel;
+    this._editorViewModel = editorViewModel;
     
     this._viewportData = ko.observable();
     
     this.traceVisitor = ko.computed(function() {
-        var editor = this._querypointViewModel.editor();
+        var editor = this.editor();
         if (editor) {  // TODO where is the remove?
           editor.addListener('onViewportChange', this.updateViewport.bind(this));
           this.updateViewport(editor.getViewport());
@@ -39,7 +40,7 @@
       }      
       var i_viewport = 0;
       var viewportData = this._viewportData();
-      var editor = this._querypointViewModel.editor();
+      var editor = this.editor();
       // Use the viewport to limit our work
       for (var line = viewportData.start; line < viewportData.end; line++, i_viewport++) {
         var offsets = this.getTracedOffsetByLine(line);
@@ -62,6 +63,9 @@
   QuerypointPanel.LineNumberViewModel.debug = false;
   
   QuerypointPanel.LineNumberViewModel.prototype = {
+    editor: function() {
+      return this._editorViewModel.editor();
+    },
       
     updateViewport: function(viewportData) {
       this._viewportData(viewportData);
@@ -92,7 +96,7 @@
             var trace = this.getTraceByOffset(offset);
             var column = parseInt(offset) - offsetOfLine;
             var element = this.getTraceDataElement(line, column, index, trace);
-            editor.insertElement(line, column, element, true);
+            this.editor().insertElement(line, column, element, true);
           }.bind(this));
         }
       }

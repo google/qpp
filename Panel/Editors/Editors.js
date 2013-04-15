@@ -16,24 +16,12 @@
       this.commands = commands;
       
       this._editors = [];  // co-indexed with _statusBar.openURLs
-
       this._statusBar.savedEditors = ko.observableArray();
 
       chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this._onResourceUpdate.bind(this));
       window.onbeforeunload = this._beforeUnload.bind(this);
-      
-      this._editorWidth = "100%";
-      this._editorHeight = "100%";
         
       return this;
-    },
-
-    resize: function(width, height) {
-      this._editorWidth = width;  // save to new editors
-      this._editorHeight = height;
-      this._editors.forEach(function(editor) {
-        editor.resize(width, height);
-      });
     },
 
     /*

@@ -29,9 +29,9 @@
     this._container = containerElement;
     containerElement.filename = name;
     
-    window.addEventListener('resize', this._setSize.bind(this));
+    window.addEventListener('resize', this.setSize.bind(this));
     /* Set an initial size heusitically */
-    setTimeout( this._setSize.bind(this) ); 
+    setTimeout( this.setSize.bind(this) ); 
     this._onMouseOver = this._onMouseOver.bind(this);
     
     this._addUniqueClassName();
@@ -56,7 +56,11 @@
     resetContent: function(content) {
       this.editorImpl.setValue(content);
     },
-    resize: function(width, height) {
+    setSize: function() {
+      // Trial and error soln.
+      this._resize(this._container.offsetWidth, this._container.parentElement.offsetHeight - 1);
+    },
+    _resize: function(width, height) {
       if (debug) console.log('EditorByCodeMirror.resize: wxh ' + width + 'x' + height); 
       this.editorImpl.setSize(width, height);
     },
@@ -212,10 +216,6 @@
       }.bind(this));
     },
     
-    _setSize: function() {
-      // Trial and error soln.
-      this.resize(this._container.offsetWidth, this._container.parentElement.offsetHeight);
-    }
   }
 
   QuerypointPanel.addEventFunctions(EditorByCodeMirror.prototype);

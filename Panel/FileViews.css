@@ -32,6 +32,7 @@
   -webkit-flex-direction: row;
   -webkit-flex: 1;  /* Each file gets the same space */
   min-height: 1em;
+  border-bottom: 1px solid #75715E;
 }
 
 .box {
