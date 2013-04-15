@@ -1,6 +1,0 @@
-http://localhost:8686/test/qpd.html
-prop in   condition.prop = 7;
-true
-7
-7 in   condition.prop = 7;
-
