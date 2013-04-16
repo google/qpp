@@ -76,8 +76,10 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
 
   window.onresize = function(){
     var traceBody = document.querySelector('.traceBody');
-    traceBody.style.maxHeight = traceBodySpace() + 'px';
-    panel.logScrubber.showLoad.valueHasMutated();
+    if (traceBody) {
+      traceBody.style.maxHeight = traceBodySpace() + 'px';
+      panel.logScrubber.showLoad.valueHasMutated();
+    }
   }
 
   // Turns in the current load are synced back to the project
