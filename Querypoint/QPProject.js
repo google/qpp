@@ -11,6 +11,9 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+  var useAsyncPreprocessor = DebugLogger.register('useAsyncPreprocessor', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
 
   var RemoteWebPageProject = Querypoint.RemoteWebPageProject;
 
@@ -29,9 +32,9 @@
     
     this.runtime = Querypoint.QPRuntime.initialize();
 
-    //Querypoint.QPPreprocessor.useAsyncPreprocessor = true;
+    Querypoint.QPPreprocessor.useAsyncPreprocessor = useAsyncPreprocessor;
     
-    if (debug) console.log("QPProject ctor using " + (Querypoint.QPPreprocessor.useAsyncPreprocessor?'async':'sync') +" preprocessor for "+url);
+    if (useAsyncPreprocessor) console.warn("QPProject ctor using " + (Querypoint.QPPreprocessor.useAsyncPreprocessor?'async':'sync') +" preprocessor for "+url);
   }
 
   QPProject.prototype = {
