@@ -148,6 +148,9 @@ QuerypointPanel.Panel.prototype = {
     this._fileChainViewModel.openResourceView(resource);
   },
 
+  resetChain: function(fileViewModel) {
+    this._fileChainViewModel.showFileViewModel(fileViewModel);
+  },
 
   _initKeys: function() {
     this.keybindings = new KeyBindings(this.panel_window);

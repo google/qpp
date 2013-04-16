@@ -33,7 +33,7 @@
       return emptyTrace;
     },
 
-    activateQuery: function(querypointViewModel) {
+    activateQuery: function(fileViewModel) {
       if (this.isActive()) return;
       // tree -> query
 
@@ -46,6 +46,7 @@
 
       // project -> query
       this.panel.tracequeries.push(this.query);
+      this.panel.resetChain(fileViewModel);
     },
   };
 

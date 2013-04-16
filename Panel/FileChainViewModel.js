@@ -13,7 +13,7 @@
     this.fileViewModels = ko.observableArray();
     this.editorSizes = ko.computed(function() {
       this.fileViewModels().forEach(function(fileViewModel){
-        var editor = fileViewModel.editorViewModel.editor();
+        var editor = fileViewModel.editorViewModel && fileViewModel.editorViewModel.editor();
         if (editor)
           editor.setSize();
       });
@@ -71,6 +71,10 @@
     openSourceFileView: function(sourceFile) {
       var fileViewModel = QuerypointPanel.FileViewModel.openSourceFileView(sourceFile);
       return this._createFileChain(fileViewModel);
+    },
+
+    showFileViewModel: function(fileViewModel) {
+      this.fileViewModels([fileViewModel]);
     },
       
     //------------------------------------------------------------------------------------------------------------------  
