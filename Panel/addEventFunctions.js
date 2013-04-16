@@ -3,10 +3,6 @@
 
 (function() {
 
-  var global = ('global', eval)('this');
-
-  global.QuerypointPanel = {};
-
   QuerypointPanel.addEventFunctions = function(prototype) {
     
     prototype._getEventHandlers = function(eventName) {
