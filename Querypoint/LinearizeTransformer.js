@@ -649,9 +649,9 @@
       operand.isReferenceTree = true;
       
       var operator = tree.operator;
-      if (operator.type = TokenType.PLUS_PLUS) 
+      if (operator.type === TokenType.PLUS_PLUS) 
         operator = new Token(TokenType.PLUS, operator.location);
-      else if (operator.type = TokenType.MINUS_MINUS) 
+      else if (operator.type === TokenType.MINUS_MINUS) 
         operator = new Token(TokenType.MINUS, operator.location);
       else 
         throw new Error("Not a unary assignment expression");

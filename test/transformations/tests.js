@@ -1,3 +1,10 @@
+function testPrefixDecrement() {
+  var i = 1;
+  --i;
+  if (i !== 0)
+    throw new Error('1 - 1 should equal 0');
+}
+
 function testGetterAssignment() {
   function Foo(x) {
     this.message = x;
@@ -115,6 +122,7 @@ function test(aTestCase) {
 }
 
 function onLoad() {
+  test('testPrefixDecrement');
   test('testGetterAssignment');
   test('testTypeofInSwitch');
   test('testPropertyAccessInCase');
