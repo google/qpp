@@ -8,7 +8,8 @@
 	background-color: #75715E;
 	position: relative;
 	font-size: 15px;
-    display: -webkit-flex;
+    
+	display: -webkit-flex;
     -webkit-flex-direction: row;
     -webkit-justify-content: space-between;
     
@@ -32,12 +33,13 @@
   border-radius: 7px;
   padding-left: 7px;
   margin-right: 1em;
+  display: -webkit-flex;
 }
 
 .statusBar .counters span {
-  margin-left: auto;
-  margin-right: 2px;
+  margin: auto;
   cursor: pointer;
+  padding-right: 1ex;
 } 
 
 .statusBar .tracequeries {
@@ -60,14 +62,16 @@
   background: color: black;
 }
 
-.statusBar .changedOptionsIcon {
+.statusBar span.changedOptionsIcon {
   font-size: x-large; /* our funky gear unicode is too small */
+;
+  padding-right: 0px;
+  margin-right: -4px;
 }
 
 .statusBar .changedOptions {
   color: rgb(255, 208, 69);
 }
 
-.statusBar .centeringHack {
-   	padding-top: 2px; 
+.statusBar .centeringHack { 
 }
