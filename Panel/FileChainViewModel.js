@@ -99,14 +99,22 @@
     //------- Chain
 
     _createFileChain: function(fileViewModel) {
+      this._dispose();
       this.fileViewModels([fileViewModel]);
       return fileViewModel;
     },
 
     _appendFileChain: function(fileViewModel, fromFileViewModel) {
+      this._dispose();
       this.fileViewModels([fileViewModel, fromFileViewModel]);
       return fileViewModel;
     },
+
+    _dispose: function(){
+      this.fileViewModels().forEach(function(fileViewModel){
+        fileViewModel.dispose();
+      });
+    }
 
   }
 }());

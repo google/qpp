@@ -78,8 +78,9 @@
     _createEditor: function(editorViewModel, url, content) {
       this._statusBar.openURLs.push(url);
       this._editors.push(editorViewModel);
-      editorViewModel.status.subscribe(this._updateStatusBar.bind(this, editorViewModel));
+      editorViewModel.statusSubscription = editorViewModel.status.subscribe(this._updateStatusBar.bind(this, editorViewModel));
       editorViewModel.editorContents({content: content, url: url});
+      // TODO editorViewModel.dispose() 
     },
 
     _updateStatusBar: function(editorViewModel, status) {

@@ -57,6 +57,9 @@
     },
     editorBy: function(element) {
       return this.editorViewModel.editorBy(element);
+    },
+    dispose: function() {
+      this.querypointViewModel.dispose();
     }
   };
 

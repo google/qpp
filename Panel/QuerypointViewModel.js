@@ -50,7 +50,7 @@
     }.bind(this));
 
 
-    panel.currentTurn.subscribe(function(newValue) {
+    this._turnSubscription = panel.currentTurn.subscribe(function(newValue) {
       if (newValue !== 0) {
         this.update(newValue);
       }
@@ -94,6 +94,9 @@
       this.tokenViewModel.setTokenTree(lastTracequery.targetTree());
     },
 
+    dispose: function() {
+      this._turnSubscription.dispose(); //TODO avoiding this is exactly why we started using ko :-(
+    }
   };
 
 }());
