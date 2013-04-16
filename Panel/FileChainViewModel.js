@@ -11,9 +11,6 @@
   QuerypointPanel.FileChainViewModel = function(containerElement, panel) {
     this._panel = panel;
     this.fileViewModels = ko.observableArray();
-    this.fileViewModels.subscribe(function(){
-      console.log('fileViewModels length ' + this.fileViewModels().length)
-    }.bind(this));
     this.editorSizes = ko.computed(function() {
       this.fileViewModels().forEach(function(fileViewModel){
         var editor = fileViewModel.editorViewModel && fileViewModel.editorViewModel.editor();
