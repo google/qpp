@@ -11,14 +11,17 @@
   QuerypointPanel.FileChainViewModel = function(containerElement, panel) {
     this._panel = panel;
     this.fileViewModels = ko.observableArray();
+    this.fileViewModels.subscribe(function(){
+      console.log('fileViewModels length ' + this.fileViewModels().length)
+    }.bind(this));
     this.editorSizes = ko.computed(function() {
       this.fileViewModels().forEach(function(fileViewModel){
         var editor = fileViewModel.editorViewModel && fileViewModel.editorViewModel.editor();
         if (editor)
           editor.setSize();
-      });
+      }); 
+    }.bind(this)).extend({throttle: 1}); // delay to prevent sizing on N+1 views
 
-    }.bind(this));
     ko.applyBindings(this, containerElement);
   }
   
@@ -106,7 +109,7 @@
 
     _appendFileChain: function(fileViewModel, fromFileViewModel) {
       this._dispose();
-      this.fileViewModels([fileViewModel, fromFileViewModel]);
+      this.fileViewModels([fromFileViewModel, fileViewModel]);
       return fileViewModel;
     },
 
