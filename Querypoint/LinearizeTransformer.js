@@ -573,7 +573,7 @@
       return new BinaryOperator(tree.location, preOperationValue, operator, one);
     },
 
-    // obj.prop++ or obj[prop]++  equiv to (tmp = obj.prop, obj.prop = tmp + 1)
+    // obj.prop++ or obj[prop]++  equiv to (tmp = obj.prop, obj.prop = tmp + 1, tmp)
     // 
     transformPostfixExpression: function(tree) {
       // Leave the structure of the reference but replace components with temps, 
@@ -607,7 +607,7 @@
           assignment
         )
       );
-      return postOperationTemp;  // eg __qp_11;
+      return preOperationValue;  // eg tmp3
     },
 
     transformSwitchStatement: function(tree) {

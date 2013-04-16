@@ -1,3 +1,13 @@
+function testPostfixIncrement() {
+  var i = 0;
+  var ary = [];
+  ary[i++] = "Zero";
+  if (!ary[0])
+    throw new Error('PostfixIncrement should evaluate to pre-value');
+  if (i !== 1)
+    throw new Error('PostfixIncrement should increment');
+}
+
 function testPrefixDecrement() {
   var i = 1;
   --i;
@@ -122,6 +132,7 @@ function test(aTestCase) {
 }
 
 function onLoad() {
+  test('testPostfixIncrement');
   test('testPrefixDecrement');
   test('testGetterAssignment');
   test('testTypeofInSwitch');
