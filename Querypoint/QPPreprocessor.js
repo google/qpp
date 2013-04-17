@@ -117,11 +117,13 @@
             throw new Error('transformAndGenerate requires JS object named |input|');
           var reporter = new Querypoint.QPErrorReporter();
           var fileCompiler = new Querypoint.QPFileCompiler(reporter);
-          var name = input.name || 'unnamedSource.js';
+          input.name = input.name === 'undefined' ? undefined : input.name; 
+          var name = input.name || 'eval_' + Math.random().toString().split('.')[1] + '.js';
+
           var file = new traceur.syntax.SourceFile(name, input.contents);
           var tree = fileCompiler.parse(file);
           var descriptors = JSON.parse(descriptorsJSON);
-          var generatedSource = fileCompiler.generateSourceFromTree(tree, name, descriptors); 
+          var generatedSource = fileCompiler.generateSourceFromTree(tree, name, descriptors);
           var generatedFileName = input.name ? (input.name  + ".js") : toBase64DataURI(generatedSource);
           var sourceURL =  '//@ sourceURL=' + generatedFileName + '\n';
           if (input.name) {
