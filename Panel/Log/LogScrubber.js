@@ -59,9 +59,9 @@
         }
       });
 
-      this.isAsynchronous = ko.computed(function(){
+      this.hasTargetElement = ko.computed(function(){
           var summary = eventTurn.summary();
-          return summary && summary.eventType === 'Asynchronous';
+          return summary && summary.target !== 'none';
       });
 
       this.turnMessages = ko.computed(function(){

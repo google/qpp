@@ -152,7 +152,7 @@
           });
         }
       } else {
-          if (eventObject.fakeTarget) targetSelector = 'Turn:' + eventObject.fakeTarget;
+          targetSelector = 'none';
       }
 
       window.__qp.turns.push(startInfo); 
@@ -192,11 +192,13 @@
 
     // This function will run just before the traced source is compiled in the page.
     function interceptEntryPoints() {
+
       window.addEventListener = function(type, listener, useCapture) {
        if (debug_in_page) 
           console.log("qp| debug addEventListener "+type + " beforeArtificalLoadEvent "+ !!beforeArtificalLoadEvent + ' loaded: ' + !!window.__qp.loadEvent);
         
-        var wrapped = wrapEntryPoint(listener);
+        var wrapped = wrapEntryPoint(listener, this.__qp.turn);
+
         if (useAsync && beforeArtificalLoadEvent) {
           var handlers = window.__qp.artificalLoadEventHandlers;
           if (!handlers[type]) {
@@ -214,7 +216,7 @@
       
       window.Node.prototype.addEventListener = function(type, listener, useCapture) {
         console.log('qp| addEventListener ' + type + ' ' + getSelectorUniqueToElement(this));
-        window.__qp.intercepts.Node.prototype.addEventListener.call(this, type, wrapEntryPoint(listener, (function(){return this.__qp ? this.__qp.turn : -1})()), useCapture);
+        window.__qp.intercepts.Node.prototype.addEventListener.call(this, type, wrapEntryPoint(listener, window.__qp.turn), useCapture);
       }
 
       var oldTimeout = window.setTimeout;
