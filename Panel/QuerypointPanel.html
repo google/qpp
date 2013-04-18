@@ -118,7 +118,7 @@
                 </li>
                 <li>
                 <a class="eventInfo_target" data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
-                    <ul>
+                    <ul class="eventInfo_menu">
                     <!-- ko ifnot: hasTargetElement -->
                         <li class="eventInfo_target_reveal" data-bind="event: {mousedown: revealElement}"><a>Reveal</a></li>
                         <li class="eventInfo_target_trace" data-bind="event: {click: traceElement}"><a>Trace Element</a></li>

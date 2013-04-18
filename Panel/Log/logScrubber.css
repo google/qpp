@@ -311,8 +311,17 @@ table.messagesByLoadNumber {
     left: -9999px;
     background: #272822;
     border-radius: 5px;
-    padding: 3px;
+    padding: 1px;
     padding-right: 10px;
+}
+
+.eventInfo_menu li {
+    border: 1px solid #75715E;
+    border-radius: 7px;
+    padding-left: 0.5ex;
+    padding-right: 0.5ex;
+    margin-left: 0px;
+    margin-right: 0px;
 }
 
 .eventTurn_summary ul li ul{
