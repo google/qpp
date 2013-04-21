@@ -9,187 +9,6 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  QuerypointPanel.EventTurn = {
-    initialize: function(logScrubber, project, tracequeries) {
-      
-      var eventTurn = this;
-
-      this.showTurn = ko.observable(0);
-      
-      this.turnInformation = ko.computed(function(){
-        return 'Turn ' + eventTurn.showTurn() + ' on load ' + logScrubber.showLoad().load + '.';
-      });
-
-      this.createFileURL = function(eventInfo) {
-        // the QPRuntime only has the function start offset.
-        var offset = parseInt(eventInfo.offset, 10);
-        var functionTree = project.find(eventInfo.filename, offset);
-        var startOffset = 0;
-        var endOffset = 0;
-        if (functionTree) {
-          startOffset = functionTree.location.start.offset;
-          endOffset = functionTree.location.end.offset;
-        }
-        return project.createFileURL(eventInfo.filename, startOffset, endOffset);
-      }
-
-      this.summary = ko.computed(function(){
-        try {
-            var currentTurnNumber = eventTurn.showTurn(); // updated by user interaction
-            if (currentTurnNumber) {  
-              var load = logScrubber.showLoad();
-              if (load.turns) {
-                var turn = load.turns()[currentTurnNumber - 1];
-                if (turn) {
-                  if (!turn.event.url) {
-                    turn.event.url = eventTurn.createFileURL(turn.event);
-                  }
-                  return turn.event;
-                } else {
-                  console.warn('LogScrubber.summary no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
-                }
-              } else {
-                if (load.load !== '-') {
-                  console.warn('LogScrubber.summary no .turns in load', load);
-                }
-              }
-            } 
-        } catch(err) {
-          console.warn('LogScrubber.summary fails ' + err, err);
-        }
-      });
-
-      this.hasTargetElement = ko.computed(function(){
-          var summary = eventTurn.summary();
-          return summary && summary.target !== 'none';
-      });
-
-      this.turnMessages = ko.computed(function(){
-        var turns = logScrubber.showLoad().turns;
-        var messages = [];
-        if (turns) {
-          var turnIndex = eventTurn.showTurn() - 1;
-          var turn = turns()[turnIndex];
-          if (turn)
-            return turn.messages();
-        }
-        return messages;
-      });
-
-      this.turnChain = ko.computed(function(){
-        var summary = eventTurn.summary();
-        if (!summary) return false; 
-        var result = [];
-        var target = summary.previousTurn;
-        if (!target) return false;
-        while (target) {
-            result.push({turnNumber: target.turn});
-            target = target.event.previousTurn;
-        }
-        return result;
-      });
-
-      this.triggeredEvents = ko.computed(function(){
-        var summary = eventTurn.summary();
-        if (!summary || summary.firedEvents.length === 0) return false;
-        return summary.firedEvents.map(function(turnNumber){
-            return {turnNumber: turnNumber};
-        });
-      });
-
-      this.addedEvents = ko.computed(function(){
-        var summary = eventTurn.summary();
-        if (!summary || summary.addedEvents.length === 0) return false;
-        return summary.addedEvents.map(function(detail){
-            return {detail: detail};
-        });
-      });
-
-      // 'this' is an element in the array returned by turnChain or triggeredEvents
-      this.switchTurn = function(){
-        QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turnNumber);
-        QuerypointPanel.LogScrubber.showMessage(0);
-      }
-
-      // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
-      this.onLoadCompleted = function() {
-       if(this.recordData.load !== 0){
-          var logScrubber = this;
-
-          logScrubber.recordedMessages([]);
-          logScrubber.messages = logScrubber.recordedMessages;
-
-          logScrubber.recordData.play();
-
-          // Play events are sent by eval to the inspected window.
-          // We need to change where messages are stored after all play events occur.
-          setTimeout(function(){
-            logScrubber.messages = logScrubber.postMessages;
-            logScrubber.displayLoad(logScrubber.showLoad());
-          },100);
-        }
-      }
-
-      this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
-      this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
-    },    
-
-    revealElement: function(){
-        console.error("TODO reveal element");
-    },
-
-    traceElement: function(eventTurn){
-      console.log("trace target of turn " + this.showTurn(), eventTurn);
-      var summary = eventTurn.summary(); 
-      var selector = summary.target;
-      var functionURL = summary.url;
-      this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
-      if (this.query && !this.query.isActive()) {
-        this.query.activate(this._tracequeries().length);
-        this._tracequeries.push(this.query);        
-      }
-      // User has asked for an action, now show them where the results will appear.
-      eventTurn.close();
-    },
-
-    highlightElement: function(){
-        var DOM, highlightConfig, selector;
-        selector = this.summary().target;
-        if (!selector) {
-          return;
-        }
-        DOM = chrome.devtools.protocol.DOM.prototype;
-        highlightConfig = {
-            contentColor: {r: 0, g: 0, b: 255, a: 0.4},
-            borderColor: {r: 0, g: 0, b: 255, a: 0.4},
-            marginColor: {r: 0, g: 0, b: 255, a: 0.4},
-            paddingColor: {r: 0, g: 0, b: 255, a: 0.4},
-        }
-        DOM.getDocument(function(error, root){
-            if (selector === '#document'){
-                DOM.highlightNode(highlightConfig, root.nodeId, '');
-            } else {
-                DOM.querySelector(root.nodeId, selector, function(error, node){
-                    DOM.highlightNode(highlightConfig, node, '', function(error){
-                        if (debug && error) console.error('LogScrubber.highlightElement FAILED:', error);
-                        // else just ignore the error, occurs in testing
-                    });
-                });
-            }
-        });
-    },
-
-    unhighlight: function(){
-        chrome.devtools.protocol.DOM.prototype.hideHighlight( );
-    },
-
-    close: function() {      
-      var eventTurnInfo = document.querySelector('.eventTurn');
-      eventTurnInfo.style.display = 'none';
-    }
-
-  }
-
   QuerypointPanel.LogScrubber = {
     
     initialize: function(logElement, project, tracequeries) {
@@ -201,6 +20,8 @@
         if (debug) console.log('LogScrubber.lastShown ' + this.loads().length + " loads");
         return this.loads().length;
       }.bind(this));
+
+      this.recorder = QuerypointPanel.Recorder;
       
       var self = this;
       this.lastLoad = 0;
@@ -223,11 +44,7 @@
       }.bind(this));
 
       this.displayLoad = function(object){
-        var button = document.querySelector('.recordIndicator');
-        var marker = document.querySelector('.recordMarker');
-        if (button && button.classList.contains('on')) {
-            self.recordData.stopRecording(button, marker);
-        }
+        recorder.stopIfRecording();
 
         var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
@@ -238,11 +55,7 @@
 
         if (self.isCurrentLoad() ){
             self.storedMessages([]);
-            if (self.recordData.start !== -1) {
-              marker = document.querySelector('.recordMarker');
-              marker.style.display = 'block';
-              marker.innerHTML = '&#x25B6';
-            }
+            recoder.showPlay();
             self.updateSize();
         } else {
           self.storedMessages(self.compressMessages(object.messages));
@@ -266,8 +79,6 @@
       var dropDown = document.querySelector('.eventTurn');
       var currentLoad = document.querySelector('.currentLoad');
       var nextLoad = document.querySelector('.nextLoad');
-      var recordButton = document.querySelector('.recordIndicator');
-      var playButton = document.querySelector('.recordMarker');
 
       this.preMessages = ko.observableArray();          // Messages before the play button
       this.postMessages = ko.observableArray();         // Messages after record button
@@ -338,7 +149,7 @@
       this.updateSize = function(){
         self.messages.valueHasMutated();
         var maxMessages = logScrubberElement.offsetWidth - 40;
-        if (self.recordData.start !== -1) maxMessages -= 10;
+        if (self.recorder.start !== -1) maxMessages -= 10;
         var joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
 
         if (joinMessages < maxMessages) {
@@ -484,34 +295,6 @@
         return self.loadStarted() && (self.showLoad().load != self.loadStarted());
       });
 
-      this.recordData = {
-          load: 0,
-          start: -1,    // First event recorded
-          end:   0,     // First event not recorced
-          play: function(){
-            for (var i = self.recordData.start; i < self.recordData.end; i++){
-              // Injects a command that builds and event and dispatches to taget.
-              var event = self.recordData.load.turns()[i].event;
-              var command = 'var target = document.querySelector("' + event.target + '"); ';
-              command += 'var event = document.createEvent("Events"); ';
-              command += 'event.initEvent("' + event.eventType + '", ' + event.eventBubbles + ', ' + event.eventCancels + '); ';
-              command += 'target.dispatchEvent(event); ';
-              chrome.devtools.inspectedWindow.eval(command);
-            }
-          },
-          stopRecording: function(button, marker) {
-            if (arguments.length == 0){
-              self.recordData.end = self.showLoad().turns().length;
-            } else {
-              marker.innerHTML = '&#x25B6';
-              self.recordData.end = self.showLoad().turns().length;
-              self.messages = self.postMessages;
-              marker.classList.remove('on');
-              button.classList.remove('on');
-              marker.onmousedown = null;
-            }
-          }
-      }
 
       dropDown.onmouseout = function(event) {
           var e = event.toElement || event.relatedTarget;

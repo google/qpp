@@ -27,6 +27,8 @@
 <script src="KeyBindings.js"></script>
 <script src="URISelector.js"></script>
 <script src="ElementQueryProvider.js"></script>
+<script src="Log/TurnViewModel.js"></script>
+<script src="Log/Recorder.js"></script>
 <script src="Log/LogScrubber.js"></script>
 <script src="Log/Log.js"></script>
 <script src="Log/LogViewModel.js"></script>
@@ -184,11 +186,11 @@
             <!-- ko foreach: preMessages -->
             <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
             <!-- /ko -->
-            <div class="recordMarker" data-bind="event:{mousedown: recordData.play }">x</div>
+            <div class="recordMarker" data-bind="event:{mousedown: recorder.play.bind(recorder) }">x</div>
             <!-- ko foreach: recordedMessages -->
              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
             <!-- /ko -->
-            <div class="recordIndicator" data-bind="event:{mousedown: startRecord }">&#9679;</div>
+            <div class="recordIndicator" data-bind="event:{mousedown: recorder.startRecord.bind(recorder) }">&#9679;</div>
             <!-- ko foreach: postMessages -->
             <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
             <!-- /ko -->

@@ -52,8 +52,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   var dropDown = document.querySelector('.eventTurn');
   var currentLoad = document.querySelector('.currentLoad');
   var nextLoad = document.querySelector('.nextLoad');
-  var recordButton = document.querySelector('.recordIndicator');
-  var playButton = document.querySelector('.recordMarker');
 
   this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project, this.tracequeries);
   this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
