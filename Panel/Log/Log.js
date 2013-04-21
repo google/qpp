@@ -43,10 +43,7 @@
     initialize: function(project, logScrubber) {
       this.project = project;
       this._logScrubber = logScrubber;
-      this.lastInitialTurn = -1;
-      this.lastMessage = -1;
-      this.finishedLoadingScripts = false;
-
+      
       QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
 
@@ -62,7 +59,6 @@
     
     _onLoadEvent: function(segments) {
      this._logScrubber.loadEnded(parseInt(segments[2], 10));
-     this.finishedLoadingScripts = true;
     },    
 
     _onReload: function(segments) {
@@ -106,13 +102,6 @@
           turnDetail += '|' + this._currentEvent.target;
           
       messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
-
-      // To play recorded events on new loads we need to know when all the scripts and onload functions finished running
-      // So we keep track of the last turn which needs to occur before playing the recorded events.
-      if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
-          this.lastInitialTurn = this._turn - 1;
-          this.lastMessage = this.currentTurn.messages && this.currentTurn.messages().length;
-      }
     },
 
     _onEndTurn: function(segments) {
@@ -204,24 +193,6 @@
       this._logScrubber._addMessage(messageSource);
       if (DEBUG){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
-      }
-
-      // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
-      if (this.lastInitialTurn == this._turn && this.lastMessage == this.currentTurn.messages().length && this._logScrubber.recordData.load !== 0){
-          var logScrubber = this._logScrubber;
-
-          logScrubber.recordedMessages([]);
-          logScrubber.messages = logScrubber.recordedMessages;
-
-          logScrubber.recordData.play();
-
-          // Play events are sent by eval to the inspected window.
-          // We need to change where messages are stored after all play events occur.
-          setTimeout(function(){
-            logScrubber.messages = logScrubber.postMessages;
-            logScrubber.displayLoad(logScrubber.showLoad());
-          },100);
-
       }
     },
     

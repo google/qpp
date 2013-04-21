@@ -111,6 +111,25 @@
         QuerypointPanel.LogScrubber.showMessage(0);
       }
 
+      // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
+      this.onLoadCompleted = function() {
+       if(this.recordData.load !== 0){
+          var logScrubber = this;
+
+          logScrubber.recordedMessages([]);
+          logScrubber.messages = logScrubber.recordedMessages;
+
+          logScrubber.recordData.play();
+
+          // Play events are sent by eval to the inspected window.
+          // We need to change where messages are stored after all play events occur.
+          setTimeout(function(){
+            logScrubber.messages = logScrubber.postMessages;
+            logScrubber.displayLoad(logScrubber.showLoad());
+          },100);
+        }
+      }
+
       this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
       this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
     },    
