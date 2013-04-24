@@ -55,7 +55,7 @@
       this._reformatMessage(this._parse(message));
     },
     
-    _currentEvent: 'none yet',
+    _currentTurn: 'none yet',
     
     _onLoadEvent: function(segments) {
      this._logScrubber.loadEnded(parseInt(segments[2], 10));
@@ -70,9 +70,18 @@
     _onStartTurn: function(segments, messageSource) {
       messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
       messageSource.severity = 'turn';
-      this._turn = parseInt(segments[2], 10);
-      this._logScrubber.turnStarted(this._turn);
-      this._currentEvent = {
+      this._currentTurnNumber = parseInt(segments[2], 10);
+      this._logScrubber.turnStarted(this._currentTurnNumber);
+
+      var registrationTurnNumber = parseInt(segments[10]);
+      var registrationTurn; 
+      if (registrationTurnNumber !== registrationTurnNumber)
+        registrationTurn = null;
+      else
+        registrationTurn = this.currentReload.turns()[registrationTurnNumber];
+
+      this._currentTurn = new QuerypointPanel.Turn({
+        turnNumber: this._currentTurnNumber,
         functionName: segments[3],
         filename: segments[4],
         offset: segments[5],
@@ -80,28 +89,10 @@
         target: segments[7],
         eventBubbles: segments[8] === 'true',
         eventCancels: segments[9] === 'true',
-        previousTurn: segments[10],
-        firedEvents: [],
-        addedEvents: []
-      };
+        registrationTurn: registrationTurn
+      });
 
-      // If previousTurn is a number, make the structure point to the respective turn and add the current turn to the previos turn's fired events list
-      // If there is no previous turn just set the previousTurn to null
-      if (this._currentEvent.previousTurn !== 'undefined' && this._currentEvent.previousTurn !== '-1') {
-          var previousTurn= this.currentReload.turns()[parseInt(this._currentEvent.previousTurn) - 1];
-          this._currentEvent.previousTurn = previousTurn; 
-          previousTurn.event.firedEvents.push(this._turn);
-      } else {
-          this._currentEvent.previousTurn = null;
-      }
-
-      // Turn detail is a string summary of the current event
-      var turnDetail;
-      turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
-      if (this._currentEvent.target !== 'undefined') 
-          turnDetail += '|' + this._currentEvent.target;
-          
-      messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
+      messageSource.text = 'Turn ' + this._currentTurnNumber + ' started. (' + this._currentTurn.detail() + ')';
     },
 
     _onEndTurn: function(segments) {
@@ -110,11 +101,11 @@
     },
 
     _onSetTimeout: function(segments) {
-      this._currentEvent.addedEvents.push('Timeout in ' + segments[2] + ' triggers ' + segments[3]);
+      this._currentTurn.onSetTimeout( segments[2], segments[3] );
     },
 
     _onAddEventListener: function(segments) {
-      this._currentEvent.addedEvents.push('Listener added to ' + segments[3] + ' triggers on ' + segments[2]);      
+      this._currentTurn.onAddEventListener( segments[2], segments[3] );      
     },
 
     _parse: function(messageSource) {
@@ -137,11 +128,11 @@
       } else {  // not a qp message
           var started = this._logScrubber.turnStarted();
           if ( started && started === this._logScrubber.turnEnded()) 
-              console.error('QPRuntime error: No turn for message after turn %o', this._turn);
+              console.error('QPRuntime error: No turn for message after turn %o', this._currentTurnNumber);
       }
       messageSource.load = this._reloadCount;
-      messageSource.turn = this._turn;
-      messageSource.event = this._currentEvent;
+      messageSource.turn = this._currentTurnNumber;
+      messageSource.event = this._currentTurn;
       return messageSource; 
     },
 

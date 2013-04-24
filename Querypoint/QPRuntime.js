@@ -153,7 +153,7 @@
       return startInfo;
     }
 
-    function startTurn(entryPointFunction, args, previousTurn) {
+    function startTurn(entryPointFunction, args, registrationTurnNumber) {
       var startInfo = getStartInfo(entryPointFunction, args);
       var eventObject = args[0];    
       var targetSelector = '';
@@ -178,8 +178,7 @@
       var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
       var eventBubbles = eventObject.bubbles;
       var eventCancels = eventObject.cancelable;
-      var previousTurn = previousTurn;
-      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo + ' ' + targetSelector + ' ' + eventBubbles + ' ' + eventCancels + ' ' + previousTurn);
+      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo + ' ' + targetSelector + ' ' + eventBubbles + ' ' + eventCancels + ' ' + registrationTurnNumber);
       return turn;
     }
 
@@ -187,16 +186,16 @@
       console.log("qp| endTurn " + turn); 
     }
 
-    function wrapEntryPoint(entryPointFunction, wrappedTurn) {
+    function wrapEntryPoint(entryPointFunction, registrationTurnNumber) {
       if (!entryPointFunction)
         return function noop(){};
       //entryPointFunction.wrappedAt = (new Date()).getTime();
       return function wrapperOnEntryPoint() {
         var args = Array.prototype.slice.apply(arguments);
         if (args.length == 0){
-            args = [{type: 'Asynchronous', fakeTarget: wrappedTurn}];
+            args = [{type: 'Asynchronous', fakeTarget: registrationTurnNumber}];
         }
-        var turn = startTurn(entryPointFunction, args, wrappedTurn);
+        var turn = startTurn(entryPointFunction, args, registrationTurnNumber);
         entryPointFunction.apply(null, args);  // TODO check |this| maybe use null
         endTurn(turn);
       }
