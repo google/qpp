@@ -123,9 +123,10 @@
                     Function <a data-bind="text: summary().functionName, attr:{'data-url': summary().url}"></a>
                 </li>
                 <li>
-                triggered by <a data-bind="text: summary().eventType"></a> on target
+                triggered by <a data-bind="text: summary().eventType"></a>
                 </li>
-                <li>
+                <li data-bind="if: summary().target !== 'none'">
+                  on target
                 <a class="eventInfo_target" data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
                     <ul class="eventInfo_menu">
                     <!-- ko if: hasTargetElement -->
