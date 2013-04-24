@@ -341,11 +341,11 @@ table.messagesByLoadNumber {
     left: 0px;
 }
 
-.eventTurn_summary li ul li:hover ul{
+.eventTurn_summary li ul li ul{
     left: 0px;
 }
 
-.eventTurn_summary li>ul>li:hover>ul.eventInfo_sideMenu{
+/*.eventTurn_summary li>ul>li:hover>ul.eventInfo_sideMenu {
     left: 98px;
 }
 
@@ -353,18 +353,18 @@ table.messagesByLoadNumber {
     text-decoration: none;
 }
 
-ul li ul .eventInfo_sideMenu{
+ul li ul .eventInfo_sideMenu {
     left: -9999px;
     z-index: 1;
     top: -3px;
     margin-right: 5px;
 }
-
-ul.eventInfo_sideMenu li.previous{
+*/
+ul.eventInfo_sideMenu li.previous {
     color: red;
 }
 
-ul.eventInfo_sideMenu li.added{
+ul.eventInfo_sideMenu li.added {
     color: yellow;
 }
 
@@ -376,12 +376,12 @@ ul.eventInfo_sideMenu li a{
     color: inherit;
 }
 
-ul.eventInfo_sideMenu li:hover a{
+ul.eventInfo_sideMenu li a{
     color: inherit;
     cursor: default;
 }
 
-.eventTurn_summary li:hover ul a {
+.eventTurn_summary li ul a {
     text-decoration: none;
 }
 
