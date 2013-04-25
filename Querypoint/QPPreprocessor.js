@@ -16,13 +16,6 @@
   function toHTMLDataURL(scriptSrcHref) {
     return 'data:text/html,<script src=\"' + scriptSrcHref + '\"></script>';
   }
-  
-  Querypoint.Base64 = Base64;
-
-  function toBase64DataURI(src) {
-    //data:[<MIME-type>][;charset=<encoding>][;base64],<data>
-    return 'data:application/javascript;base64,' + Querypoint.Base64.encode(src);
-  }
 
   var QPPreprocessor = {
     scripts: [
@@ -42,7 +35,8 @@
       "Querypoint/QPErrorReporter.js",
       "Querypoint/QPFileCompiler.js",
       "Querypoint/QPTreeWriter.js",
-      "Querypoint/Base64.js"
+      "Querypoint/Base64.js",
+      "Querypoint/transformAndGenerate.js"
     ],
     functions: [],
 
@@ -72,7 +66,7 @@
       var transcoderTestSrc = '\n(' + transcoderTest + '());';
       src += transcoderTestSrc; 
       
-      iframe.setAttribute('src', toHTMLDataURL(toBase64DataURI(src)));
+      iframe.setAttribute('src', toHTMLDataURL(Querypoint.toBase64DataURI(src)));
       document.body.appendChild(iframe);          
     },
     
@@ -84,9 +78,9 @@
     },
 
     _combineSources: function(descriptors, scripts, onSource) {
-      this._scriptSource(scripts, function(src) {
-        
-        var transcoderInvoke = QPPreprocessor._functionSource(descriptors);
+      this._scriptSource(scripts, function(concatentatedScripts) {
+
+        var json = JSON.stringify(descriptors);
 
         var wrapper = 'function transcoder(src, name){\n';
         // Hack for WebInspector evaluations
@@ -97,45 +91,14 @@
         wrapper += '  var traceur = this.traceur;\n';
         wrapper += '  if (!traceur) {  // once only\n';
         wrapper += '    traceur = this.traceur = {};\n';
-        wrapper += src + '\n';
+        wrapper += concatentatedScripts + '\n';
         wrapper += '    this.traceur = traceur;\n';
-        wrapper += '    this.Querypoint.Base64 = Base64;\n';
         wrapper += '  }\n';  
-        wrapper += transcoderInvoke;
+        wrapper += 'return Querypoint.transformAndGenerate(input, \'' + json + '\');\n';
         wrapper += '}\n';
         
         onSource(wrapper);
       });
-    },
-
-    _functionSource: function(descriptors) {
-      // Expects environment to supply 'input.name' and 'input.contents'
-      // Beware: all lines must have semicolons
-      // Maybe we can use this someday: /* || escape('data:text/html,<script>' + encodeURIComponent(input.contents) + '</script>') + '.js'; */
-      function transformAndGenerate(descriptorsJSON) {
-          if (typeof input !== 'object')
-            throw new Error('transformAndGenerate requires JS object named |input|');
-          var reporter = new Querypoint.QPErrorReporter();
-          var fileCompiler = new Querypoint.QPFileCompiler(reporter);
-          input.name = input.name === 'undefined' ? undefined : input.name; 
-          var name = input.name || 'eval_' + Math.random().toString().split('.')[1] + '.js';
-
-          var file = new traceur.syntax.SourceFile(name, input.contents);
-          var tree = fileCompiler.parse(file);
-          var descriptors = JSON.parse(descriptorsJSON);
-          var generatedSource = fileCompiler.generateSourceFromTree(tree, name, descriptors);
-          var generatedFileName = input.name ? (input.name  + ".js") : toBase64DataURI(generatedSource);
-          var sourceURL =  '//@ sourceURL=' + generatedFileName + '\n';
-          if (input.name) {
-            var turnIndicator = "window.__qp._theTurn = window.__qp.startTurn('ScriptBody', [{name: \"" + file.name + "\"}]);\n"
-            var endTurnIndicator = "window.__qp.endTurn(window.__qp._theTurn);\n";
-            return turnIndicator + generatedSource + endTurnIndicator + sourceURL;
-          } else {
-            return generatedSource + sourceURL;
-          }
-      }
-      var json = JSON.stringify(descriptors);
-      return toBase64DataURI + '\n' + transformAndGenerate + '\n return transformAndGenerate(\'' + json + '\');\n';
     },
 
     _scriptSource: function(scripts, onSource) {
