@@ -288,7 +288,7 @@ table.messagesByLoadNumber {
     z-index: 100;
 }
 
-.eventTurn_summary li {
+.eventTurn_summary > li {
     margin-left: 8px;
     float: left;
     position: relative;
@@ -305,7 +305,7 @@ table.messagesByLoadNumber {
     text-decoration: underline;
 }
 
-.eventTurn_summary ul {
+.eventTurn_summary > ul {
     list-style: none;
     position: absolute;
     left: -9999px;
@@ -313,15 +313,6 @@ table.messagesByLoadNumber {
     border-radius: 5px;
     padding: 1px;
     padding-right: 10px;
-}
-
-.eventInfo_menu li {
-    border: 1px solid #75715E;
-    border-radius: 7px;
-    padding-left: 0.5ex;
-    padding-right: 0.5ex;
-    margin-left: 0px;
-    margin-right: 0px;
 }
 
 .eventTurn_summary ul li ul{
@@ -360,6 +351,16 @@ ul li ul .eventInfo_sideMenu {
     margin-right: 5px;
 }
 */
+
+.eventInfo_menu {
+    list-style: none;
+    position: absolute;
+    background: #272822;
+    border-radius: 5px;
+    padding: 7px;
+    padding-right: 10px;
+}
+
 ul.eventInfo_sideMenu li.previous {
     color: red;
 }
