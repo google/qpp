@@ -141,10 +141,16 @@
     function getStartInfo(entryPointFunction, args) {
       var startInfo = {fnc: entryPointFunction, args: args};
       if (typeof entryPointFunction === 'string') {
-        entryPointFunction = function ScriptBody(){};
-        startInfo.name = '[[ScriptBody]]';
-        startInfo.filename = args[0].name;
-        startInfo.offset = 0; // outer function
+        if (entryPointFunction === '_pageNavigation') {
+          startInfo.name = '[[Navigation]]';
+          startInfo.fileName = window.location.href;
+          startInfo.offset = 0;
+        } else {
+          entryPointFunction = function ScriptBody(){};
+          startInfo.name = '[[ScriptBody]]';
+          startInfo.filename = args[0].name;
+          startInfo.offset = 0; // outer function          
+        }
       } else if (typeof entryPointFunction === 'function') {
         startInfo = appendFileInfoFromPreamble(entryPointFunction, startInfo);
       } else {
@@ -415,7 +421,9 @@
     
     console.log("qp| reload " + window.__qp_reloads + " ----------------------- Querypoint Runtime Initialized ---------------------------------");
 
-    if (debug_in_page) console.log("qp| debug runtime initialized: window.__qp: %o", window.__qp);    
+    if (debug_in_page) console.log("qp| debug runtime initialized: window.__qp: %o", window.__qp);
+    
+    endTurn(startTurn('_pageNavigation', [{}])); // define turn zero, it appears to create script tag outer functions.    
   }; 
 
   Querypoint.QPRuntime = {
