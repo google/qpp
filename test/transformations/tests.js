@@ -1,3 +1,13 @@
+function testBind() {
+  this.foo = true;
+  var onNavigated = function(url) {
+    return this.foo;
+  }.bind(this);
+  if (!onNavigated('foo'))
+    throw new Error("bind this should bind this");
+  return true;    
+}
+
 function testPostfixIncrement() {
   var i = 0;
   var ary = [];
@@ -6,6 +16,7 @@ function testPostfixIncrement() {
     throw new Error('PostfixIncrement should evaluate to pre-value');
   if (i !== 1)
     throw new Error('PostfixIncrement should increment');
+  return true;    
 }
 
 function testPrefixDecrement() {
@@ -13,6 +24,7 @@ function testPrefixDecrement() {
   --i;
   if (i !== 0)
     throw new Error('1 - 1 should equal 0');
+  return true;    
 }
 
 function testGetterAssignment() {
@@ -27,13 +39,15 @@ function testGetterAssignment() {
       throw new Error('Do not call getters in assignments');
     }
   };
-  return new Bar('good');
+  var bar = new Bar('good');
+  return true;    
 }
 
 function testAssignmentInCondition() {
     var other = 'prop';
     var name = 'value';
     console.assert((other = name) === 'value');
+    return true;    
 }
 
 function testShortCurcuit() {
@@ -45,17 +59,20 @@ function testShortCurcuit() {
     // LHS is true, RHS is not evaluated, result is true
     var isTrue = lhs || console.error('|| Not shortCurcuited');
     console.assert(isTrue);
+    return true;    
 }
 
 function testTypeof() {
     var isAnUndefined = typeof anUndefined !== "undefined";
     console.assert(!isAnUndefined);
+    return true;    
 }
 
 function testConditionalExpression() {
   var isNull = null;
   var isTrue = isNull ? isNull.name() : true;
   console.assert(isTrue);
+  return true;    
 }
 
 function testForIn() {
@@ -65,11 +82,13 @@ function testForIn() {
       if (!loaded[prop]) 
               break;
   }
+  return true;    
 }
 
 function testConst() {
   const isConst = 5;
   console.assert(isConst);
+  return true;    
 }
 
 function testDoWhile() {
@@ -80,6 +99,7 @@ function testDoWhile() {
       index++;
   } while (index <= 2);
   console.assert(index == 1);
+  return true;    
 }
 
 function testSwitch() {
@@ -92,6 +112,7 @@ function testSwitch() {
      obj.ok = false;
   }
   console.assert(obj.ok);
+  return true;    
 }
 
 function testEval() {
@@ -103,14 +124,15 @@ function testEval() {
 
   global.Querypoint = {};
   console.assert(typeof global.Querypoint === 'object');
+  return true;    
 }
 
 function testTypeofInSwitch(GeneratorReturn) {
   switch (typeof GeneratorReturn) {
     case 'function':
-      return;
+      return false;
     case 'undefined':
-      return;
+      return true;
     default:
       throw new Error('FAIL testTypeofInSwitch');
   }
@@ -120,18 +142,21 @@ function testPropertyAccessInCase() {
   var v = 1;
   var obj = {prop: 1};
   switch(v) {
-    case obj.prop: return;
+    case obj.prop: return true;
     default: throw new Error('FAIL testPropertyAccessInCase');
   }
 }
 
 function test(aTestCase) {
   console.log('start ' + aTestCase);
-  window[aTestCase]();
-  console.log('end ' + aTestCase);
+  if (window[aTestCase]()) 
+    console.log('end ' + aTestCase);
+  else
+    console.error('FAIL ' + aTestCase);
 }
 
 function onLoad() {
+  test('testBind');
   test('testPostfixIncrement');
   test('testPrefixDecrement');
   test('testGetterAssignment');
