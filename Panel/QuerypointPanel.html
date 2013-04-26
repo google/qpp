@@ -119,7 +119,7 @@
                 <li>
                 <a class="eventInfo_target" data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
                     <ul class="eventInfo_menu">
-                    <!-- ko ifnot: hasTargetElement -->
+                    <!-- ko if: hasTargetElement -->
                         <li class="eventInfo_target_reveal" data-bind="event: {mousedown: revealElement}"><a>Reveal</a></li>
                         <li class="eventInfo_target_trace" data-bind="event: {click: traceElement}"><a>Trace Element</a></li>
                     <!-- /ko -->
@@ -225,7 +225,7 @@
                   <th title="Expression value during specific activation">Value</th>
                 </tr>
                 </thead> 
-                <tbody class="traceBody" data-bind="foreach: {data: querypointViewModel.traceViewModel.currentTraces, afterRender: function(){ document.querySelector('.traceBody').scrollTop = 9999;}}">
+                <tbody class="traceBody" data-bind="foreach: {data: querypointViewModel.traceViewModel.currentTraces, afterRender: querypointViewModel.traceViewModel.afterRender}">
                 <tr >
                   <td class="activation">
                     <span class="command" data-bind="html: iconText, attr: {title: tooltip, 'data-url': url}"></span>

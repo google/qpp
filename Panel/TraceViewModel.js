@@ -78,6 +78,29 @@
 
     this.currentLocation = ko.observable(); // used to ensure that the UI is in sync during testing
 
+    function traceBodySpace(){
+        var hoverDoorTarget = document.querySelector('.hoverDoorTarget');
+        var tokenView = 110; // size depends on selected token
+        var explainTokenPanel = document.querySelector('.explainTokenPanel');
+        var queryView = document.querySelector('.queryView');
+        return hoverDoorTarget.offsetHeight - tokenView - explainTokenPanel.offsetHeight - queryView.offsetHeight;
+    }
+
+    window.onresize = function(){
+      this.afterRender();
+      panel.logScrubber.showLoad.valueHasMutated();
+    }.bind(this);
+
+    this.afterRender = function() {
+      // Set max height of trace table depend on window height
+      var traceBody = document.querySelector('.traceBody');
+      if (!this.maxSizeSet) {
+        traceBody.style.maxHeight = traceBodySpace() + 'px';
+        this.maxSizeSet = true;  
+      }
+      traceBody.scrollTop = 9999;
+    }
+
     // Query results for the current token in this file.
     this.currentTraces = ko.computed(function() {
         var tree = querypointViewModel.tokenViewModel.tokenTree();
