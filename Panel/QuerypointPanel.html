@@ -125,9 +125,9 @@
                 <li>
                 triggered by <a data-bind="text: summary().eventType"></a>
                 </li>
-                <li data-bind="if: summary().target !== 'none'">
+                <li data-bind="if: summary().targetSelector !== 'none'">
                   on target
-                <a class="eventInfo_target" data-bind="text: summary().target, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
+                <a class="eventInfo_target" data-bind="text: summary().targetSelector, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
                     <ul class="eventInfo_menu">
                     <!-- ko if: hasTargetElement -->
                         <li class="eventInfo_target_reveal" data-bind="event: {mousedown: revealElement}"><a>Reveal</a> in Elements Panel (TODO)</li>

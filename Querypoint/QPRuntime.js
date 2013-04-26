@@ -178,12 +178,14 @@
       } else {
           targetSelector = 'none';
       }
-      var turn  = window.__qp.turn = window.__qp.turns.length;
       window.__qp.turns.push(startInfo); 
+      var turn  = window.__qp.turn = window.__qp.turns.length;
       var reportStartTurn = {
         turnNumber: turn,
-        functionInfo: startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset,
-        eventInfo: eventObject.type || eventObject.name || eventObject.constructor.name,
+        functionName: startInfo.name,
+        filename: startInfo.filename || '?',
+        offset: startInfo.offset,
+        eventType: eventObject.type || eventObject.name || eventObject.constructor.name,
         targetSelector: targetSelector, 
         eventBubbles: eventObject.bubbles,
         eventCancels: eventObject.cancelable,
@@ -429,7 +431,7 @@
 
     if (debug_in_page) console.log("qp| debug runtime initialized: window.__qp: %o", window.__qp);
     
-    endTurn(startTurn('_pageNavigation', [{}])); // define turn zero, it appears to create script tag outer functions.    
+    endTurn(startTurn('_pageNavigation', [{type: (window.__qp_reloads ? 'reload' : 'openWebPage') }])); // define turn zero, it appears to create script tag outer functions.    
   }; 
 
   Querypoint.QPRuntime = {
