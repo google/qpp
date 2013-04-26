@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>Querypoint Transformation Standalone Test</title>
+<script src="../../Querypoint/GlobalSymbols.js"></script>
+<script src="../../DebugLogger.js"></script>
+
+<!-- Used in preprocessor -->
+<script src="../../traceur/bin/traceur.js"></script>
+<script src="../../Querypoint/ScopeAttacher.js"></script>
+<script src="../../Querypoint/InsertingTransformer.js"></script>
+<script src="../../Querypoint/InsertVariableForExpressionTransformer.js"></script>
+<script src="../../Querypoint/AllInFileTransformer.js"></script>
+<script src="../../Querypoint/LinearizeTransformer.js"></script>
+<script src="../../Querypoint/QPFunctionPreambleTransformer.js"></script>
+<script src="../../Querypoint/SetTracedElementTransformer.js"></script>
+<script src="../../Querypoint/ValueChangeQueryTransformer.js"></script>
+<script src="../../Querypoint/QPErrorReporter.js"></script>
+<script src="../../Querypoint/QPFileCompiler.js"></script>
+<script src="../../Querypoint/QPTreeWriter.js"></script>
+<script src="../../Querypoint/Base64.js"></script>
+<script src="../../Querypoint/transformAndGenerate.js"></script>
+<!-- End used in preprocessor -->
+
+<script src="../../Querypoint/QPPreprocessor.js"></script>
+
+<script src="../../Querypoint/QPRuntime.js"></script>
+<script>
+var XHR = {
+      asyncLoadText: function(url, callback, errback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          if (xhr.status == 200 || xhr.status == 0) {
+            callback(xhr.responseText);
+          } else {
+            errback();
+          }
+          xhr = null;
+        };
+        xhr.onerror = function() {
+          errback();
+        };
+        xhr.open('GET', url, true);
+        xhr.send();
+        return xhr;
+      },
+};
+
+Querypoint.QPPreprocessor._scriptSource(["tests.js"], function(srcs){
+  
+  var inputMock = {name: "tests.js", contents: srcs};
+  var descriptorsMock =[{ctor: 'LinearizeTransformer'}, {ctor: 'QPFunctionPreambleTransformer'}];
+
+  var json = JSON.stringify(descriptorsMock);
+  var generatedSource = Querypoint.transformAndGenerate(inputMock, json);
+  console.log("generatedSource: ", generatedSource);
+
+  Querypoint.QPRuntime.initialize();
+  eval.call(window, (Querypoint.QPRuntime.runtimeSource(1)));
+  eval.call(window, (generatedSource));
+  onLoad();
+});
+</script>
+</head>
+<body>
+  <h1>Querypoint Test</h1>
+  <p></p>
+</body>
