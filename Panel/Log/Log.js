@@ -70,27 +70,13 @@
     _onStartTurn: function(segments, messageSource) {
       messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
       messageSource.severity = 'turn';
-      this._currentTurnNumber = parseInt(segments[2], 10);
+      this._currentTurn = new QuerypointPanel.Turn(JSON.parse(unescape(segments[2])));
+      this._currentTurnNumber = this._currentTurn.turnNumber;
       this._logScrubber.turnStarted(this._currentTurnNumber);
 
-      var registrationTurnNumber = parseInt(segments[10]);
-      var registrationTurn; 
-      if (registrationTurnNumber !== registrationTurnNumber)
-        registrationTurn = null;
-      else
-        registrationTurn = this.currentReload.turns()[registrationTurnNumber];
-
-      this._currentTurn = new QuerypointPanel.Turn({
-        turnNumber: this._currentTurnNumber,
-        functionName: segments[3],
-        filename: segments[4],
-        offset: segments[5],
-        eventType: segments[6],
-        target: segments[7],
-        eventBubbles: segments[8] === 'true',
-        eventCancels: segments[9] === 'true',
-        registrationTurn: registrationTurn
-      });
+      var registrationTurn;
+      if (this._currentTurn.registrationTurnNumber)
+        registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
 
       messageSource.text = 'Turn ' + this._currentTurnNumber + ' started. (' + this._currentTurn.detail() + ')';
     },

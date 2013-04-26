@@ -142,8 +142,9 @@
       var startInfo = {fnc: entryPointFunction, args: args};
       if (typeof entryPointFunction === 'string') {
         if (entryPointFunction === '_pageNavigation') {
+          entryPointFunction = function openWebPage(){};
           startInfo.name = '[[Navigation]]';
-          startInfo.fileName = window.location.href;
+          startInfo.filename = window.location.href;
           startInfo.offset = 0;
         } else {
           entryPointFunction = function ScriptBody(){};
@@ -177,14 +178,19 @@
       } else {
           targetSelector = 'none';
       }
-
+      var turn  = window.__qp.turn = window.__qp.turns.length;
       window.__qp.turns.push(startInfo); 
-      var turn = window.__qp.turn = window.__qp.turns.length; 
-      var functionInfo = startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset;
-      var eventInfo = eventObject.type || eventObject.name || eventObject.constructor.name;
-      var eventBubbles = eventObject.bubbles;
-      var eventCancels = eventObject.cancelable;
-      console.log("qp| startTurn " + turn + ' ' + functionInfo + ' ' + eventInfo + ' ' + targetSelector + ' ' + eventBubbles + ' ' + eventCancels + ' ' + registrationTurnNumber);
+      var reportStartTurn = {
+        turnNumber: turn,
+        functionInfo: startInfo.name + ' ' + (startInfo.filename || '?') + ' ' + startInfo.offset,
+        eventInfo: eventObject.type || eventObject.name || eventObject.constructor.name,
+        targetSelector: targetSelector, 
+        eventBubbles: eventObject.bubbles,
+        eventCancels: eventObject.cancelable,
+        registrationTurnNumber: registrationTurnNumber
+      };
+      
+      console.log("qp| startTurn " + escape(JSON.stringify(reportStartTurn)));
       return turn;
     }
 
