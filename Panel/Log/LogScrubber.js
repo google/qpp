@@ -404,16 +404,16 @@
       }
     },
   
-    turnInfo: function(){
+    turnInfo: function(message){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
         var dropDown = document.querySelector('.eventTurn');
         var loadElement = document.querySelector('.loadList');
         var messages = document.querySelector('.eventTurn .messages');
         dropDown.style.display = 'block';
         loadElement.style.display = 'none';
-        QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turn);
-        QuerypointPanel.LogScrubber.showMessage(this.position);
-        messages.scrollTop = 15 * this.position;
+        QuerypointPanel.LogScrubber.eventTurn.showTurn(message.turn);
+        QuerypointPanel.LogScrubber.showMessage(message.position);
+        messages.scrollTop = 15 * message.position;
     },
   
     startRecord: function(){
