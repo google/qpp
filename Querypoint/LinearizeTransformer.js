@@ -466,25 +466,36 @@
       }
     },
 
-    transformCallExpressionOperand: function(tree) {
-      if (
-        tree.type === ParseTreeType.MEMBER_EXPRESSION ||
-        tree.type === ParseTreeType.MEMBER_LOOKUP_EXPRESSION
-      ) {
-        // eg insert var __qp_11 = obj.foo.bind(obj) and return traced __qp_11
-        var boundMemberFunction = new CallExpression(
-          tree.location,
-          new MemberExpression(tree.location, tree, 'bind'),
-          new ArgumentList(tree.location, [tree.operand]) 
-          );
-        return this.insertVariableFor(Querypoint.markDoNot(boundMemberFunction));
+    _transformObjectMethodCallExpression: function(tree) {
+      // insert var __qp_11 = __qp_10.foo.bind(__qp_10) and return traced __qp_11
+      var boundMemberFunction = new CallExpression(
+        tree.location,
+        new MemberExpression(tree.location, tree, 'bind'),  // __qp_10.foo.bind
+        new ArgumentList(tree.location, [tree.operand])       // __qp_10
+        );
+      return this.insertVariableFor(Querypoint.markDoNot(boundMemberFunction));
+    },
+
+    // function foo(){}.foo(arg) -> var __qp_10 = function foo(){}; a.foo.bind(__qp_10)(arg);
+    _transformCallExpressionOperand: function(tree) {
+      if ( tree.type === ParseTreeType.MEMBER_EXPRESSION ) {
+        // function foo(){}-> var __qp_10 = function foo(){}; __qp_10
+        var operand = this.transformAny(tree.operand);
+        tree = new MemberExpression(tree.location, operand, tree.memberName);
+        return this._transformObjectMethodCallExpression(tree);
+      } else if (tree.type === ParseTreeType.MEMBER_LOOKUP_EXPRESSION) {
+        // function foo(){}-> var __qp_10 = function foo(){}; __qp_10
+        var operand = this.transformAny(tree.operand);
+        var memberExpression = this.transformAny(tree.memberExpression);
+        tree = new MemberLookupExpression(tree.location, operand, memberExpression);
+        return this._transformObjectMethodCallExpression(tree);
       } else {
         return this.transformAny(tree);
       }
     },
 
     transformCallExpression: function(tree) {
-      var operand = this.transformCallExpressionOperand(tree.operand);
+      var operand = this._transformCallExpressionOperand(tree.operand);
       var args = this.transformAny(tree.args);
       if (operand == tree.operand && args == tree.args) {
         return tree;
