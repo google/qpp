@@ -277,6 +277,20 @@ table.messagesByLoadNumber {
     margin-top: 500px;
 }
 
+.hoverMenuTrigger {
+  position: relative;
+}
+
+.hoverMenuTrigger > .hoverMenu  {
+  left: -9999px;
+  position: absolute;
+}
+
+.hoverMenuTrigger:hover > .hoverMenu {
+  left: 0px;
+  position: absolute;
+}
+
 .eventTurn_summary {
     margin-bottom: 15px;
     margin-left: -10px;
@@ -354,7 +368,6 @@ ul li ul .eventInfo_sideMenu {
 
 .eventInfo_menu {
     list-style: none;
-    position: absolute;
     background: #272822;
     border-radius: 5px;
     padding: 7px;

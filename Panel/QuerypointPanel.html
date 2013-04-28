@@ -125,10 +125,11 @@
                 <li>
                 triggered by <a data-bind="text: summary().eventType"></a>
                 </li>
-                <li data-bind="if: summary().targetSelector !== 'none'">
+                <li class="hoverMenuTrigger" data-bind="if: summary().targetSelector !== 'none'">
                   on target
-                <a class="eventInfo_target" data-bind="text: summary().targetSelector, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
-                    <ul class="eventInfo_menu">
+                  <span class="hoverMenuTrigger">
+                    <a class="eventInfo_target" data-bind="text: summary().targetSelector, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
+                    <ul class="hoverMenu eventInfo_menu">
                     <!-- ko if: hasTargetElement -->
                         <li class="eventInfo_target_reveal" data-bind="event: {mousedown: revealElement}"><a>Reveal</a> in Elements Panel (TODO)</li>
                         <li class="eventInfo_target_trace" data-bind="event: {click: traceElement}"><a>Trace Writes to Element</a></li>
@@ -161,6 +162,7 @@
                         </li>
                     <!-- /ko -->
                     </ul>
+                  </span>
                 </li>
             </ul>
             <div style="clear: both"></div>
