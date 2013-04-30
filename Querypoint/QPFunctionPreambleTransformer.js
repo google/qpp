@@ -26,7 +26,7 @@
   var Program = traceur.syntax.trees.Program;
 
   var QPFunctionPreambleTransformer = Querypoint.QPFunctionPreambleTransformer = function() {
-    this.functionLocations = [];       // tree.location for all functions parsed 
+    this.functionLocations = [];       // tree.location for all functions parsed
   }
 
   var QP_FUNCTION = '__qp_function';
@@ -36,6 +36,10 @@
 
     transformTree: function(tree) {
       return this.transformAny(tree);
+    },
+
+    _encodedSource: function(location) {
+      return escape(location.start.source.contents.substring(location.start.offset, location.end.offset));
     },
 
     _createFileAccessExpression: function(location) {
@@ -82,7 +86,7 @@
       return statements;
     },
 
-    _createVarFunctionStatement: function(location) {
+    _create__qp_functionStatement: function(location) {
       // var __qp_function = window.__qp.functions["<file_name>"]["<functionId>"];
       return createVariableStatement(
         createVariableDeclarationList(
@@ -93,7 +97,18 @@
       );
     },
 
-    _createIfFunctionCallStatement: function() {
+    _create__qp_functionToStringStatement: function(location) {
+      // var __qp_functionToString = "<source>"
+      return createVariableStatement(
+        createVariableDeclarationList(
+          TokenType.VAR, 
+          QP_FUNCTION + 'ToString', 
+          createStringLiteral(this._encodedSource(location))
+        )
+      );
+    },
+
+    _createIfRedirectStatement: function() {
       // if (__qp_function.redirect) return __qp_function.redirect.apply(this, arguments);
       return   createIfStatement(
         createMemberExpression(QP_FUNCTION, 'redirect'),
@@ -109,13 +124,20 @@
       );
     },
 
+    _preparePreamble: function(tree) {
+      // tree here is a function expr or decl
+      this.__qp_functionToStringStatement = this._create__qp_functionToStringStatement(tree.location);
+    },
+
     _createPreambleStatements: function(tree) {
-      var var__qp_functionStatement = this._createVarFunctionStatement(tree.location);
-      var if__qp_functionCallStatement = this._createIfFunctionCallStatement(tree.location);
-      return [var__qp_functionStatement, if__qp_functionCallStatement];
+      // tree here is function body
+      var var__qp_functionStatement = this._create__qp_functionStatement(tree.location);
+      var if__qp_functionCallStatement = this._createIfRedirectStatement(tree.location);
+      return [var__qp_functionStatement, this.__qp_functionToStringStatement, if__qp_functionCallStatement];
     },
 
     transformFunctionDeclaration: function(tree) {
+      this._preparePreamble(tree);
       var name = this.transformAny(tree.name);
       var formalParameterList = this.transformAny(tree.formalParameterList);
       var functionBody = this.transformFunctionBody(tree.functionBody);
@@ -126,6 +148,7 @@
     },
 
     transformFunctionExpression: function(tree) {
+      this._preparePreamble(tree);
       var name = this.transformAny(tree.name);
       var formalParameterList = this.transformAny(tree.formalParameterList);
       var functionBody = this.transformFunctionBody(tree.functionBody);
@@ -152,7 +175,7 @@
       this.functionLocations.push(fileFunctionLocation);  // the top-level function for this compilation unit
       var elements = this.transformList(tree.programElements);
       var prefix = [this._createFileNameStatement(tree)].concat(this._createInitializationStatements(tree));
-      prefix.push(this._createVarFunctionStatement(fileFunctionLocation));
+      prefix.push(this._create__qp_functionStatement(fileFunctionLocation));
       prefix = prefix.map(Querypoint.markDoNot);
       elements = prefix.concat(elements);
       return new Program(tree.location, elements);

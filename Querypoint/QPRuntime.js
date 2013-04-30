@@ -72,6 +72,22 @@
         return expr + '';  
       }
     }
+    
+    var _FunctionPrototypeToString = Function.prototype.toString;
+    var _FunctionToStringStringRe = /__qp_functionToString = "([^"]*)"/;
+    
+    function overrideFunctionToString() {
+      Function.prototype.toString = function() {
+        //console.warn("Function.toString is not correct in the Querypoint Runtime", this);
+        var transcodedFunctionString = _FunctionPrototypeToString.call(this);
+        var m = _FunctionToStringStringRe.exec(transcodedFunctionString);
+        if (m) {
+          return unescape(m[1]);
+        } else {
+          return transcodedFunctionString;  
+        }
+      }
+    }
 
     function grabLoadEvent(useAsync) {
       window.addEventListener('load', function grabbedLoadEvent(event) {
@@ -99,7 +115,8 @@
               startInfo[key] = entryPointFunction.__qp[key];
           });
         } else {
-          var preamble = reTranscodedFunctionPreamble.exec(entryPointFunction + '');
+          var transcodedFunctionString = _FunctionPrototypeToString.call(entryPointFunction);
+          var preamble = reTranscodedFunctionPreamble.exec(transcodedFunctionString + '');
           if (preamble) {
             var functionsData = reFunctionsData.exec(preamble[1]);
             if (functionsData) {
@@ -392,6 +409,7 @@
      
     initializeHiddenGlobalState();
     // Hacks on global built-ins
+    overrideFunctionToString();
     grabLoadEvent(useAsync);
     recordEntryPoints();
     interceptEntryPoints();

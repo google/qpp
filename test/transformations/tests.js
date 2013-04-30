@@ -1,3 +1,13 @@
+function testFunctionToString() {
+  function testMe() {
+    return true;
+  }
+  var testMeString = '(' + testMe + ")();";
+  var testMeFunction = ('global', eval)(testMeString);
+  return testMeFunction;
+}
+
+
 function testBind() {
   this.foo = true;
   var onNavigated = function(url) {
@@ -156,6 +166,7 @@ function test(aTestCase) {
 }
 
 function onLoad() {
+  test('testFunctionToString');
   test('testBind');
   test('testPostfixIncrement');
   test('testPrefixDecrement');

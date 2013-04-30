@@ -54,7 +54,7 @@ Querypoint.QPPreprocessor._scriptSource(["tests.js"], function(srcs){
   var generatedSource = Querypoint.transformAndGenerate(inputMock, json);
   console.log("generatedSource: ", generatedSource);
 
-  Querypoint.QPRuntime.initialize();
+  Querypoint.QPRuntime.initialize(true);
   eval.call(window, (Querypoint.QPRuntime.runtimeSource(1)));
   eval.call(window, (generatedSource));
   onLoad();
