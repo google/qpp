@@ -63,14 +63,21 @@
 
     /* Start a new chain for a resource */
     openResourceView: function(resource) {
-      var fileViewModel = QuerypointPanel.FileViewModel.openResourceView(resource);
-      return this._createFileChain(fileViewModel);
+      if (/\.js$/.test(resource.url)) {
+        resource.getContent(function(content) {
+            var file = this._panel.project.addFileFromContent(resource.url, content);
+            this.openSourceFileView(file);    
+        }.bind(this));
+      } else {
+        var fileViewModel = QuerypointPanel.FileViewModel.openResourceView(resource);
+        this._createFileChain(fileViewModel);  
+      }      
     },
     
     /* Start a new chain for a (traceur) sourceFile */
     openSourceFileView: function(sourceFile) {
       var fileViewModel = QuerypointPanel.FileViewModel.openSourceFileView(sourceFile);
-      return this._createFileChain(fileViewModel);
+      this._createFileChain(fileViewModel);
     },
 
     showFileViewModel: function(fileViewModel) {

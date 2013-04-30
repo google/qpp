@@ -139,6 +139,12 @@
       if (debug) console.log("QPProject got new script " + url);
     },
 
+    addFileFromContent: function(name, content) {
+      var file = new traceur.syntax.SourceFile(name, content);
+      this.addFile(file);
+      return file;
+    },
+
     reload: function() {    
       this.querypoints.tracequeries.forEach(function(tq) {
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());

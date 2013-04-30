@@ -64,7 +64,6 @@
 
 .statusBar span.changedOptionsIcon {
   font-size: x-large; /* our funky gear unicode is too small */
-;
   padding-right: 0px;
   margin-right: -4px;
 }
