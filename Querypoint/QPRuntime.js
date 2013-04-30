@@ -122,7 +122,7 @@
             if (functionsData) {
               startInfo.filename = functionsData[1];
               startInfo.offset = functionsData[2];
-              startInfo.name = entryPointFunction.name || '(anonymous)';
+              startInfo.functionName = entryPointFunction.name || '(anonymous)';
               entryPointFunction.__qp = {
                 filename: startInfo.filename,
                 offset: startInfo.offset,
@@ -138,17 +138,20 @@
         return startInfo;
     }
 
-    function getStartInfo(entryPointFunction, args) {
-      var startInfo = {fnc: entryPointFunction, args: args};
+    function storeEntryPoint(entryPointFunction, args) {
+      window.__qp.turns.push({fnc: entryPointFunction, args: args});
+    }
+
+    function appendEntryPointInfo(startInfo, entryPointFunction, args) {
       if (typeof entryPointFunction === 'string') {
         if (entryPointFunction === '_pageNavigation') {
           entryPointFunction = function openWebPage(){};
-          startInfo.name = '[[Navigation]]';
+          startInfo.functionName = '[[Navigation]]';
           startInfo.filename = window.location.href;
           startInfo.offset = 0;
         } else {
           entryPointFunction = function ScriptBody(){};
-          startInfo.name = '[[ScriptBody]]';
+          startInfo.functionName = '[[ScriptBody]]';
           startInfo.filename = args[0].name;
           startInfo.offset = 0; // outer function          
         }
@@ -160,13 +163,10 @@
       return startInfo;
     }
 
-    function startTurn(entryPointFunction, args, registrationTurnNumber) {
-      var startInfo = getStartInfo(entryPointFunction, args);
-      var eventObject = args[0];    
+    function appendElementInfo(startInfo, eventObject) {
       var targetSelector = '';
       if (eventObject.target) {
         var element = eventObject.target;
-        startInfo.target = element;
         targetSelector = getSelectorUniqueToElement(element);
         if (targetSelector in window.__qp._traceSettersBySelector) {
           var setters = window.__qp._traceSettersBySelector[targetSelector];
@@ -178,22 +178,27 @@
       } else {
           targetSelector = 'none';
       }
-      window.__qp.turns.push(startInfo); 
-      var turn  = window.__qp.turn = window.__qp.turns.length;
-      var reportStartTurn = {
-        turnNumber: turn,
-        functionName: startInfo.name,
-        filename: startInfo.filename || '?',
-        offset: startInfo.offset,
-        eventType: eventObject.type || eventObject.name || eventObject.constructor.name,
-        targetSelector: targetSelector, 
-        eventBubbles: eventObject.bubbles,
-        eventCancels: eventObject.cancelable,
-        registrationTurnNumber: registrationTurnNumber
+      startInfo.targetSelector = targetSelector;
+      startInfo.eventType = eventObject.type || eventObject.name || eventObject.constructor.name;
+      startInfo.eventBubbles = eventObject.bubbles;
+      startInfo.eventCancels = eventObject.cancelable;
+    }
+
+    function startTurn(entryPointFunction, args, registrationTurnNumber) {
+       // Full copies that we cannot serialize
+      storeEntryPoint(entryPointFunction, args);
+
+      // serializeable copy for UI
+      var startInfo = {
+        turnNumber: window.__qp.turns.length,
+        registrationTurnNumber: registrationTurnNumber,
       };
-      
-      console.log("qp| startTurn " + escape(JSON.stringify(reportStartTurn)));
-      return turn;
+      appendEntryPointInfo(startInfo, entryPointFunction, args);
+      appendElementInfo(startInfo, args[0]);
+
+      console.log("startInfo", startInfo);
+      console.log("qp| startTurn " + escape(JSON.stringify(startInfo)));
+      return window.__qp.turn = startInfo.turnNumber;;
     }
 
     function endTurn(turn) {
