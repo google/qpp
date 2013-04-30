@@ -1,12 +1,16 @@
 SRC = \
-  src/traceur.js \
-  src/runtime/runtime.js
+  src/runtime/runtime.js \
+  src/runtime/runtime-modules.js \
+  src/traceur.js
+TPL_GENSRC = \
+  src/outputgeneration/SourceMapIntegration.js
 GENSRC = \
+  $(TPL_GENSRC) \
   src/codegeneration/ParseTreeTransformer.js \
-  src/outputgeneration/SourceMapIntegration.js \
   src/syntax/trees/ParseTreeType.js \
   src/syntax/trees/ParseTrees.js \
   src/syntax/ParseTreeVisitor.js
+TPL_GENSRC_DEPS = $(addsuffix -template.js.dep, $(TPL_GENSRC))
 
 TFLAGS = --
 
@@ -34,7 +38,7 @@ clean:
 
 distclean: clean
 	rm -f build/dep.mk
-	rm -f $(GENSRC)
+	rm -f $(GENSRC) $(TPL_GENSRC_DEPS)
 
 initbench:
 	rm -rf test/bench/esprima
@@ -71,10 +75,10 @@ src/codegeneration/ParseTreeTransformer.js: \
 	node $^ > $@
 
 %.js: %.js-template.js
-	node build/expand-js-template.js $< $@
+	node build/expand-js-template.js --nolint=^node_modules $< $@
 
-src/outputgeneration/SourceMapIntegration.js: \
-  node_modules/source-map/lib/source-map/*.js
+%.js-template.js.dep: | %.js-template.js
+	node build/expand-js-template.js --deps $| > $@
 
 NPM_INSTALL = npm install --local && touch node_modules
 
@@ -90,4 +94,5 @@ bin/traceur.ugly.js: bin/traceur.js
 .PHONY: build min test test-list force boot clean distclean
 
 -include build/dep.mk
+-include $(TPL_GENSRC_DEPS)
 -include build/local.mk

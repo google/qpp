@@ -17,7 +17,7 @@ var path = require('path');
 
 var generateNameForUrl = traceur.generateNameForUrl;
 var ErrorReporter = traceur.util.ErrorReporter;
-var InternalLoader = traceur.runtime.internals.InternalLoader;
+var InternalLoader = traceur.modules.internals.InternalLoader;
 var ModuleAnalyzer = traceur.semantics.ModuleAnalyzer;
 var ModuleDefinition = traceur.syntax.trees.ModuleDefinition;
 var ModuleRequireVisitor = traceur.codegeneration.module.ModuleRequireVisitor;
@@ -146,6 +146,10 @@ InlineCodeLoader.prototype = {
       },
       abort: function() {}
     };
+  },
+
+  loadTextFileSync: function(url) {
+    return fs.readFileSync(url, 'utf8');
   }
 };
 
@@ -212,4 +216,23 @@ function inlineAndCompile(filenames, options, reporter, callback, errback) {
   loadNext();
 }
 
+function inlineAndCompileSync(filenames, options, reporter) {
+  // The caller needs to do a chdir.
+  var basePath = './';
+  var depTarget = options && options.depTarget;
+
+  var loadCount = 0;
+  var elements = [];
+  var project = new Project(basePath);
+  var loader = new InlineCodeLoader(reporter, project, elements, depTarget);
+
+  filenames.forEach(function(filename) {
+    filename = resolveUrl(basePath, filename);
+    startCodeUnit = loader.getCodeUnit(filename);
+    loader.loadSync(filename);
+  });
+  return allLoaded(basePath, reporter, elements);
+}
+
 exports.inlineAndCompile = inlineAndCompile;
+exports.inlineAndCompileSync = inlineAndCompileSync;

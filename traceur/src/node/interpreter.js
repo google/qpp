@@ -15,38 +15,19 @@
 'use strict';
 
 var fs = require('fs');
-var Module = require('module');
 var traceur = require('./traceur.js');
-var util = require('./file-util.js');
-var inlineAndCompile = require('./inline-module.js').inlineAndCompile;
-
-var ErrorReporter = traceur.util.ErrorReporter;
-var TreeWriter = traceur.outputgeneration.TreeWriter;
-
-var ext = '.traceur-compiled';
-
-Module._extensions[ext] = function(module, filename) {
-  module.filename = filename.slice(0, -ext.length);
-  module._compile(module.compiledCode, module.filename);
-};
 
 function interpret(filename, argv, flags) {
-  var reporter = new ErrorReporter();
   var execArgv = [require.main.filename].concat(flags || []);
 
   filename = fs.realpathSync(filename);
   process.argv = ['traceur', filename].concat(argv || []);
   process.execArgv = process.execArgv.concat(execArgv);
 
-  inlineAndCompile([filename], {}, reporter, function(tree) {
-    var module = new Module(filename, require.main);
+  if (traceur.options.deferredFunctions)
+    require('./deferred.js').wrap();
 
-    module.compiledCode = TreeWriter.write(tree);
-    module.load(filename + ext);
-  }, function(err) {
-    console.error(err);
-    process.exit(1);
-  });
+  return traceur.require(filename);
 }
 
 module.exports = interpret;

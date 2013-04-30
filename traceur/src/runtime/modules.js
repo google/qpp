@@ -23,7 +23,14 @@ import {ProgramTransformer} from '../codegeneration/ProgramTransformer.js';
 import {Project} from '../semantics/symbols/Project.js';
 import {SourceFile} from '../syntax/SourceFile.js';
 import {TreeWriter} from '../outputgeneration/TreeWriter.js';
+import {getUid} from '../util/uid.js';
 import {resolveUrl} from '../util/url.js';
+import {
+  standardModuleUrlRegExp,
+  getModuleInstanceByUrl,
+  getCurrentCodeUnit,
+  setCurrentCodeUnit
+} from './get-module.js';
 
 // TODO(arv): I stripped the resolvers to make this simpler for now.
 
@@ -73,7 +80,7 @@ class CodeUnit {
     this.loader = loader;
     this.url = url;
     this.state = state;
-    this.uid = traceur.getUid();
+    this.uid = getUid();
     this.state_ = NOT_STARTED;
   }
 
@@ -268,6 +275,7 @@ class InternalLoader {
     this.project = project;
     this.cache = new ArrayMap();
     this.urlToKey = Object.create(null);
+    this.sync_ = false;
   }
 
   get url() {
@@ -292,6 +300,18 @@ class InternalLoader {
     return xhr;
   }
 
+  loadTextFileSync(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.onerror = function(e) {
+      throw new Error(xhr.statusText);
+    };
+    xhr.open('GET', url, false);
+    xhr.send();
+    if (xhr.status == 200 || xhr.status == 0) {
+      return xhr.responseText;
+    }
+  }
+
   load(url) {
     url = resolveUrl(this.url, url);
     var codeUnit = this.getCodeUnit(url);
@@ -300,6 +320,17 @@ class InternalLoader {
     }
 
     codeUnit.state = LOADING;
+    if (this.sync_) {
+      try {
+        codeUnit.text = this.loadTextFileSync(url);
+        codeUnit.state = LOADED;
+        this.handleCodeUnitLoaded(codeUnit);
+      } catch(e) {
+        codeUnit.state = ERROR;
+        this.handleCodeUnitLoadError(codeUnit);
+      }
+      return codeUnit;
+    }
     var loader = this;
     codeUnit.xhr = this.loadTextFile(url, function(text) {
       codeUnit.text = text;
@@ -310,6 +341,13 @@ class InternalLoader {
       loader.handleCodeUnitLoadError(codeUnit);
     });
     return codeUnit;
+  }
+
+  loadSync(url) {
+    this.sync_ = true;
+    var loaded = this.load(url);
+    this.sync_ = false;
+    return loaded;
   }
 
   evalLoad(code) {
@@ -364,7 +402,10 @@ class InternalLoader {
     var baseUrl = codeUnit.url;
     codeUnit.dependencies = requireVisitor.requireUrls.map((url) => {
       url = resolveUrl(baseUrl, url);
-      return this.load(url);
+      return this.getCodeUnit(url);
+    });
+    codeUnit.dependencies.forEach((dependency) => {
+      this.load(dependency.url);
     });
 
     if (this.areAll(PARSED)) {
@@ -477,8 +518,8 @@ class InternalLoader {
         continue;
       }
 
-      traceur.assert(currentCodeUnit === undefined);
-      currentCodeUnit = codeUnit;
+      traceur.assert(getCurrentCodeUnit() === undefined);
+      setCurrentCodeUnit(codeUnit);
       var result;
 
       try {
@@ -489,8 +530,8 @@ class InternalLoader {
         return;
       } finally {
         // Ensure that we always clean up currentCodeUnit.
-        traceur.assert(currentCodeUnit === codeUnit);
-        currentCodeUnit = undefined;
+        traceur.assert(getCurrentCodeUnit() === codeUnit);
+        setCurrentCodeUnit(undefined);
       }
 
       codeUnit.result = result;
@@ -514,34 +555,6 @@ class InternalLoader {
     return ('global', eval)("'use strict';" +
         TreeWriter.write(codeUnit.transformedTree));
   }
-}
-
-/**
- * This is the current code unit object being evaluated.
- */
-var currentCodeUnit;
-
-var standardModuleUrlRegExp = /^@\w+$/;
-
-/**
- * This is used to find the module for a require url ModuleExpression.
- * @param {string} url
- * @return {Object} A module instance object for the given url in the current
- *     code loader.
- */
-export function getModuleInstanceByUrl(url) {
-  if (standardModuleUrlRegExp.test(url))
-    return traceur.runtime.modules[url] || null;
-
-  traceur.assert(currentCodeUnit);
-  url = resolveUrl(currentCodeUnit.url, url);
-  for (var i = 0; i < currentCodeUnit.dependencies.length; i++) {
-    if (currentCodeUnit.dependencies[i].url == url) {
-      return currentCodeUnit.dependencies[i].result;
-    }
-  }
-
-  return null;
 }
 
 export class CodeLoader {
