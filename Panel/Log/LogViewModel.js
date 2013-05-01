@@ -13,7 +13,7 @@
     initialize: function(log, logScrubber) {
       this.log = log;
       this.logScrubber = logScrubber;
-     
+
       this.messagesByLoadNumber = ko.computed(function() {
         var last = logScrubber.lastShown();
         var first = last - logScrubber.rangeShowable();
@@ -24,6 +24,23 @@
       
       return this;
     },
+
+    setScroll: function(node, elem) {
+      // close over the most recent message element
+      this._scrollIntoView = function scrollIntoView() {
+        elem.scroll = node[1];
+        elem.scroll.scrollIntoView(false);  
+      }
+      if (!this._delayScrollIntoView) {    // then we need to plan to scroll
+        this._delayScrollIntoView = true;   // only one plan in flight at at time
+        var doScrollCurrent = function doScrollCurrent() { 
+          this._delayScrollIntoView = false;  // plan complete
+          this._scrollIntoView();             
+        }
+        setTimeout(doScrollCurrent.bind(this), 100);
+      }
+    },
+
   };
   
 }());
