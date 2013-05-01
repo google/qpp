@@ -47,7 +47,7 @@
       }
     },
     initialOptions: {
-      justReload: function () {
+      reloadWithQP: function () {
         this.panel.project.reload();
         this.close();
       },

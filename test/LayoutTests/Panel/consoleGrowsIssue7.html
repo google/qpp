@@ -21,7 +21,7 @@ function test_lastChange() {
 
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'consoleTest.html');
-  AsyncMachine.pushOp(clickSelector, '.initialOptions_justReload', '');
+  AsyncMachine.pushOp(clickSelector, '.initialOptions_reloadWithQP', '');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
   
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleFirst").dispatchEvent(new MouseEvent("click"))');

@@ -19,7 +19,7 @@ function test_lastChange() {
 
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'tests.js');
-  AsyncMachine.pushOp(clickSelector, '.initialOptions_justReload', '');
+  AsyncMachine.pushOp(clickSelector, '.initialOptions_reloadWithQP', '');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
   
   AsyncMachine.pushOp(whenSelectorAll, 'td.messages', 'Tests complete');
