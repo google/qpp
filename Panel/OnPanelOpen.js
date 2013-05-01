@@ -29,9 +29,13 @@
       logView.classList.remove('initialView');
     },
 
-    open: function() {
+    open: function(runtimeInstalled) {
       var logView = document.querySelector('div.logView');
       logView.classList.add('initialView');
+      if (runtimeInstalled)
+        logView.classList.add('QPInstalled');
+      else
+        logView.classList.remove('QPInstalled');
     },
 
     // Functions wired to eg hint_overview
@@ -49,6 +53,10 @@
     initialOptions: {
       reloadWithQP: function () {
         this.panel.project.reload();
+        this.close();
+      },
+      reloadWithoutQP: function() {
+        this.panel.project.reloadWithoutRuntime();
         this.close();
       },
       noReload: function() {

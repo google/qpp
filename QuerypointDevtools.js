@@ -15,8 +15,9 @@ function onLoad() {
 
   function resetProject(url) {
     model = {};
+    loads = 0;
     model.devtoolsModel = new Querypoint.InspectedPage();  
-    model.project = new Querypoint.QPProject(url, loads);  // TODO loads should be zero??
+    model.project = new Querypoint.QPProject(url, loads); 
     model.project.page = model.devtoolsModel;
     model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.project);
     model.qpPanel.onShown();
@@ -26,6 +27,7 @@ function onLoad() {
     if (!view.window)  // Then our panel was never opened.
       return; 
     loads += 1;
+    var QPRuntimeInstalled = model.project && model.project.qpRuntimeInstalled;
     if (!model.project || model.project.url !== url) {
       if (model.qpPanel)
         model.qpPanel.save();
@@ -33,9 +35,11 @@ function onLoad() {
     } else {
       // Same url, but maybe the user reloaded the page without us.
       model.project.onReload( 
-        model.qpPanel.pageWasExternallyReloaded.bind(model.qpPanel)
+        model.qpPanel.pageWasReloaded.bind(model.qpPanel)
       );
     }
+    if (QPRuntimeInstalled && model.project && !model.project.qpRuntimeInstalling)
+      model.project.reload();
   }
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);

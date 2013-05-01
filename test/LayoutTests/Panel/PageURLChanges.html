@@ -35,13 +35,24 @@ function test_lastChange() {
   AsyncMachine.pushOp(extractText, 'td.traceValue');
   // Change the viewed page
   AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/switch.html"');
+  // Wait for the auto-reload
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
   // The new html should be available
   AsyncMachine.pushOp(openSourceFile, 'switch.html');
-  // The onOpenPanel dialog should be up
-  AsyncMachine.pushOp(clickSelector, '.initialOptions_noReload', '');
+  // The qp runtime should still be loaded
+  AsyncMachine.pushOp(evaluateInPage, 'window.__qp_reloads', function(text) {
+    return 'window.__qp_reloads:' + (text ? text : "no text");
+  });
   // The trace should be gone
   AsyncMachine.pushOp(extractText, 'td.traceValue');
-  
+  // The onPanelOpen dialog should be up
+  AsyncMachine.pushOp(clickSelector, '.initialOptions_reloadWithoutQP', '');
+  // Wait for the reload
+  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '0');
+    // The qp runtime should still be loaded
+  AsyncMachine.pushOp(evaluateInPage, 'window.__qp_reloads', function(text) {
+    return 'window.__qp_reloads:' + (text ? text : "no text");
+  });
   AsyncMachine.runOp();
 }
 

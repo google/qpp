@@ -62,20 +62,26 @@
 <body class="cm-s-monokai">
   <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
   <div class="panel">
-    <div class='logView initialView'>
+    <div class="logView initialView">
       <span class="helpInfo">console.log and tracing status output</span>
-      <div class="onPanelOpen">
+      <div class="onPanelOpen ">
         <div class="hint">
           <div><button class="hint_overview">Show Overview Help</button></div>
           <div><button class="hint_documentation">Open Documentation Page</button></div>
           <div><button class="hint_feedback">Feedback</button></div>
         </div>
-        <p>Initialize Querypoint Debugging</p>
-        <div class="initialOptions">
-          <div><button class="initialOptions_reloadWithQP">Reload Page with Querypoint Runtime</button></div>
-          <div><button class="initialOptions_noReload">Do Not Reload</button></div>
+        <div class="IfQPNotInstalled">
+          <p>Initialize Querypoint Debugging</p>
+          <div class="initialOptions">
+            <div><button class="initialOptions_reloadWithQP">Reload Page with Querypoint Runtime</button></div>
+            <div><button class="initialOptions_noReload">Do Not Reload</button></div>
+          </div>
+          <p class="noticeThis">Then reproduce your bug</p>
+        </div>  
+        <div class="IfQPInstalled">
+            <div><button class="initialOptions_reloadWithoutQP">Reload Page, remove Querypoint Runtime</button></div>
+            <div><button class="initialOptions_noReload">Do Not Reload</button></div>
         </div>
-        <p class="noticeThis">Then reproduce your bug</p>
       </div>  
       <div class="logContainer" style="height: 200px;">
         <table class="messagesByLoadNumber">

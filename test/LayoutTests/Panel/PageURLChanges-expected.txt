@@ -3,4 +3,5 @@ prop in     obj.prop = 0;
 true
 1|0
 http://localhost:8686/test/switch.html
-
+window.__qp_reloads:1
+window.__qp_reloads:no text

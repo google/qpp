@@ -230,9 +230,9 @@
       //messageSource.odd = (--visibleLines) % 2;
       return this._logScrubber.loads();
     },
-    pageWasExternallyReloaded: function() {
-      this._logScrubber.turnStarted(0);
-      this._logScrubber.turnEnded(0);
+    
+    pageWasReloaded: function(runtimeInstalled) {
+      this.initialize(this.project, this._logScrubber);
     }
   };
 

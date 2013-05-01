@@ -210,9 +210,10 @@ QuerypointPanel.Panel.prototype = {
     return undefined;
   },
 
-  pageWasExternallyReloaded: function() {
-    this._log.pageWasExternallyReloaded();
-    QuerypointPanel.OnPanelOpen.open();
+  pageWasReloaded: function(runtimeInstalled) {
+    this._log.pageWasReloaded(runtimeInstalled);
+    this.logScrubber.pageWasReloaded(runtimeInstalled)
+    QuerypointPanel.OnPanelOpen.open(runtimeInstalled);
   },
 
   _initModel: function() {

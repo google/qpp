@@ -55,6 +55,22 @@ body {
     min-height: 200px;
 }
 
+.IfQPNotInstalled {
+    display: block;
+}
+
+.IfQPInstalled {
+    display: none;
+}
+
+.QPInstalled .IfQPNotInstalled {
+    display: none;
+}
+
+.QPInstalled .IfQPInstalled {
+    display: block;
+}
+
 .onPanelOpen .hint {
     float: right;
 }

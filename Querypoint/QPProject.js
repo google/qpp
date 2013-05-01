@@ -145,12 +145,12 @@
       return file;
     },
 
-    reload: function() {    
+    reload: function() {  
       this.querypoints.tracequeries.forEach(function(tq) {
         Querypoint.QPRuntime.appendSource(tq.runtimeSource());
       });
       
-      this._reloading = true;
+      this.qpRuntimeInstalling = true;
       
       var onNavigated = function(url) {
         chrome.devtools.network.onNavigated.removeListener(onNavigated);
@@ -158,7 +158,7 @@
           console.error("QPProject reload failed: url mismatch: " + url + '!==' + this.url);
         }
         this.runInWebPage(this.parseTrees_);
-        delete this._reloading;        
+        delete this.qpRuntimeInstalling;        
       }.bind(this);
           
       chrome.devtools.network.onNavigated.addListener(onNavigated);
@@ -180,14 +180,20 @@
         preprocessingScript: '(' + transcoder + ')'
       };
       if (debug) console.log("reloadOptions ", reloadOptions);
+      this.qpRuntimeInstalled = true; 
       chrome.devtools.inspectedWindow.reload(reloadOptions);
     },
     
+    reloadWithoutRuntime: function() {
+      this.qpRuntimeInstalled = false; 
+      chrome.devtools.inspectedWindow.reload();
+    },
+
     onReload: function(callback) {
-      if (this._reloading)
+      if (this.qpRuntimeInstalling)
         return;
      
-      callback();  // allow the UI to update
+      callback(this.qpRuntimeInstalled);  // allow the UI to update
     },
     
     // These functions hide features depending on traceur and running in this window from

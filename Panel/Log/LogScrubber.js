@@ -230,7 +230,11 @@
           var maxMessages = logScrubberElement.offsetWidth - 30;
           self._setMessageWidth( maxMessages / self.storedMessages().length );
         }
-        object.messages[object.messages.length - 1].scroll.scrollIntoView(false);
+        if (object.messages.length) {
+          var lastLogElement = object.messages[object.messages.length - 1].logElement;
+          if (lastLogElement)
+            lastLogElement.scrollIntoView(false);
+        }
       }
 
       this._initMouse();
@@ -641,6 +645,15 @@
           marker.style.display = 'block';
           marker.classList.add('on');
           button.classList.add('on');
+      }
+    },
+    
+    pageWasReloaded: function(runtimeInstalled) {
+      this.turnStarted(0);
+      this.turnEnded(0);
+      if (!runtimeInstalled) {
+        this.loadStarted(0);    
+        this.loadEnded(0);
       }
     }
   };
