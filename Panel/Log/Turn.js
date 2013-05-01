@@ -12,16 +12,16 @@
       this[key] = initialValues[key];
     }.bind(this));
 
-    this.addedEvents = [];
+    this.registeredEntryPoints = [];
   }
 
   QuerypointPanel.Turn.prototype = { 
     onSetTimeout: function(millis, target) {
-      this.addedEvents.push('Timeout in ' + millis + ' triggers ' + target);
+      this.registeredEntryPoints.push('Timeout in ' + millis + ' triggers ' + target);
     },
 
     onAddEventListener: function(eventType, target) {
-      this.addedEvents.push('Listener added to ' + target + ' triggers on ' + eventType);      
+      this.registeredEntryPoints.push('Listener added to ' + target + ' triggers on ' + eventType);      
     },
 
     detail: function() {

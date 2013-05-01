@@ -11,6 +11,9 @@
 
   QuerypointPanel.EventTurn = {
     initialize: function(logScrubber, project, tracequeries) {
+      this._project = project;
+      this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
+      this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
       
       var eventTurn = this;
 
@@ -19,19 +22,6 @@
       this.turnInformation = ko.computed(function(){
         return 'Turn ' + eventTurn.showTurn() + ' on load ' + logScrubber.showLoad().load + '.';
       });
-
-      this.createFileURL = function(eventInfo) {
-        // the QPRuntime only has the function start offset.
-        var offset = parseInt(eventInfo.offset, 10);
-        var functionTree = project.find(eventInfo.filename, offset);
-        var startOffset = 0;
-        var endOffset = 0;
-        if (functionTree) {
-          startOffset = functionTree.location.start.offset;
-          endOffset = functionTree.location.end.offset;
-        }
-        return project.createFileURL(eventInfo.filename, startOffset, endOffset);
-      }
 
       this.summary = ko.computed(function(){
         try {
@@ -97,26 +87,38 @@
         });
       });
 
-      this.addedEvents = ko.computed(function(){
+      this.registeredEntryPoints = ko.computed(function(){
         var summary = eventTurn.summary();
-        if (!summary || summary.addedEvents.length === 0) return false;
-        return summary.addedEvents.map(function(detail){
-            return {detail: detail};
-        });
+        if (summary && summary.registeredEntryPoints) {
+            return summary.registeredEntryPoints.map(function(detail){
+                return {detail: detail};
+            });
+        }
       });
-
-      // 'this' is an element in the array returned by turnChain or triggeredEvents
-      this.switchTurn = function(){
-        QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turnNumber);
-        QuerypointPanel.LogScrubber.showMessage(0);
-      }
-
-      this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
-      this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
+      
     },    
 
+    switchTurn: function(){
+      // FIXME: move to LogScrubber and pass turnNumber arg
+      QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turnNumber);
+      QuerypointPanel.LogScrubber.showMessage(0);
+    },
+
+    createFileURL: function(eventInfo) {
+      // the QPRuntime only has the function start offset.
+      var offset = parseInt(eventInfo.offset, 10);
+      var functionTree = this._project.find(eventInfo.filename, offset);
+      var startOffset = 0;
+      var endOffset = 0;
+      if (functionTree) {
+        startOffset = functionTree.location.start.offset;
+        endOffset = functionTree.location.end.offset;
+      }
+      return this._project.createFileURL(eventInfo.filename, startOffset, endOffset);
+    },
+
     revealElement: function(){
-        console.error("TODO reveal element");
+      console.error("TODO reveal element");
     },
 
     traceElement: function(eventTurn){

@@ -406,13 +406,13 @@
   
     turnInfo: function(message){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
+        QuerypointPanel.LogScrubber.eventTurn.showTurn(message.turn);
+        QuerypointPanel.LogScrubber.showMessage(message.position);
         var dropDown = document.querySelector('.eventTurn');
         var loadElement = document.querySelector('.loadList');
         var messages = document.querySelector('.eventTurn .messages');
         dropDown.style.display = 'block';
         loadElement.style.display = 'none';
-        QuerypointPanel.LogScrubber.eventTurn.showTurn(message.turn);
-        QuerypointPanel.LogScrubber.showMessage(message.position);
         messages.scrollTop = 15 * message.position;
     },
   

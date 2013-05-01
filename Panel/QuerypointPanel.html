@@ -116,14 +116,15 @@
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
             </div>
         </div>
+        <!-- ko if: eventTurn.showTurn -->
         <div class="eventTurn" data-bind="with: eventTurn">
             <p data-bind="text: turnInformation"> </p>
             <ul class="eventTurn_summary" data-bind="if: summary">
                 <li>
-                    Function <a data-bind="text: summary().functionName, attr:{'data-url': summary().url}"></a>
+                  Function <a data-bind="text: summary().functionName, attr:{'data-url': summary().url}"></a>
                 </li>
                 <li>
-                triggered by <a data-bind="text: summary().eventType"></a>
+                  triggered by <a data-bind="text: summary().eventType"></a>
                 </li>
                 <li class="hoverMenuTrigger" data-bind="if: summary().targetSelector !== 'none'">
                   on target
@@ -146,9 +147,9 @@
                   <!-- /ko -->    
               </div>
               <!-- /ko -->
-              <!-- ko if: addedEvents -->
+              <!-- ko if: registeredEntryPoints.length -->
               <div>Registered Entry Points:
-                  <!-- ko foreach: addedEvents -->
+                  <!-- ko foreach: registeredEntryPoints -->
                       <div class="turnList"><a data-bind="text: detail"></a></div>
                   <!-- /ko -->
               </div>
@@ -167,6 +168,7 @@
                 </p>
             </div>
         </div>
+        <!-- /ko -->
         <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoadNumber}"></div>
         <div class="overviewLog">
             <!-- ko if: isCurrentLoad -->

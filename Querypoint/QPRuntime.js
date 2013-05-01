@@ -152,6 +152,7 @@
         } else {
           entryPointFunction = function ScriptBody(){};
           startInfo.functionName = '[[ScriptBody]]';
+          startInfo.registrationTurnNumber = 1;  // a small lie for now
           startInfo.filename = args[0].name;
           startInfo.offset = 0; // outer function          
         }
@@ -196,7 +197,6 @@
       appendEntryPointInfo(startInfo, entryPointFunction, args);
       appendElementInfo(startInfo, args[0]);
 
-      console.log("startInfo", startInfo);
       console.log("qp| startTurn " + escape(JSON.stringify(startInfo)));
       return window.__qp.turn = startInfo.turnNumber;;
     }

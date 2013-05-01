@@ -77,6 +77,8 @@
       var registrationTurn;
       if (this._currentTurn.registrationTurnNumber)
         registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
+      else if (this._currentTurn.turnNumber !== 1)
+        console.error("No registrationTurnNumber for turn " + this._currentTurn.turnNumber, this._currentTurn);
 
       messageSource.text = 'Turn ' + this._currentTurnNumber + ' started. (' + this._currentTurn.detail() + ')';
     },
