@@ -44,7 +44,7 @@
       }.bind(this));
 
       this.displayLoad = function(object){
-        recorder.stopIfRecording();
+        this.recorder.stopIfRecording();
 
         var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
@@ -55,7 +55,7 @@
 
         if (self.isCurrentLoad() ){
             self.storedMessages([]);
-            recoder.showPlay();
+            self.recorder.showPlay();
             self.updateSize();
         } else {
           self.storedMessages(self.compressMessages(object.messages));

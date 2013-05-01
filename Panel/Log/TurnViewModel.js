@@ -93,6 +93,8 @@
             return summary.registeredEntryPoints.map(function(detail){
                 return {detail: detail};
             });
+        } else {
+          return [];
         }
       });
       

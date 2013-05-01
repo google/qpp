@@ -116,7 +116,6 @@
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
             </div>
         </div>
-        <!-- ko if: eventTurn.showTurn -->
         <div class="eventTurn" data-bind="with: eventTurn">
             <p class="turnInformation" data-bind="text: turnInformation"> </p>
             <ul class="eventTurn_summary" data-bind="if: summary">
@@ -167,7 +166,6 @@
                 <p class="message" data-bind="text: text, attr:{severity: severity}"></p>
             </div>
         </div>
-        <!-- /ko -->
         <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoadNumber}"></div>
         <div class="overviewLog">
             <!-- ko if: isCurrentLoad -->
