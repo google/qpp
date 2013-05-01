@@ -59,6 +59,7 @@
     
     _onLoadEvent: function(segments) {
      this._logScrubber.loadEnded(parseInt(segments[2], 10));
+     this._logScrubber.recorder.onLoadEvent(this._logScrubber);
     },    
 
     _onReload: function(segments) {

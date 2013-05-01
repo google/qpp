@@ -88,17 +88,15 @@
       
     showPlay: function() {
       if (this.start !== -1) {
-        marker = document.querySelector('.recordMarker');
+        var marker = document.querySelector('.recordMarker');
         marker.style.display = 'block';
         marker.innerHTML = '&#x25B6';
       }
     },
 
     // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
-    onLoadCompleted: function() {
-     if(this.load !== 0){
-        var logScrubber = this;
-
+    onLoadEvent: function(logScrubber) {
+     if (this.load !== 0) {
         logScrubber.recordedMessages([]);
         logScrubber.messages = logScrubber.recordedMessages;
 
