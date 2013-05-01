@@ -153,9 +153,9 @@
         this.currentTurn = this.currentReload.turns()[0];
         this._logScrubber.showLoad().next = this.currentReload;
         this._logScrubber.showLoad(this.currentReload);
-        this._logScrubber.loads.push(this.currentReload);
+        this._logScrubber.pageLoads.push(this.currentReload);
         if (DEBUG){
-          console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.loads().length);
+          console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.pageLoads().length);
         }
       }  
       if (this.currentTurn.turn !== messageSource.turn) {
@@ -178,7 +178,7 @@
     extractMessages: function(first, last) {
       var visibleMessages = [];
       //messageSource.odd = (--visibleLines) % 2;
-      return this._logScrubber.loads();
+      return this._logScrubber.pageLoads();
     },
     
     pageWasReloaded: function(runtimeInstalled) {

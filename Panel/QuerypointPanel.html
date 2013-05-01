@@ -112,8 +112,8 @@
         <span class="helpInfo">
           Log Scrubber: click or drag to change log viewport
         </span>
-        <div class="loadList" data-bind="foreach: {data: loads, afterAdd: selectLast}">
-            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad}">
+        <div class="loadList" data-bind="foreach: {data: pageLoads, afterAdd: selectLast}">
+            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad.bind($parent)}">
             </div>
         </div>
         <div class="eventTurn" data-bind="with: eventTurn">

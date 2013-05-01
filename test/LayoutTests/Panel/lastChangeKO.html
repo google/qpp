@@ -30,7 +30,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:6:0');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:7:0');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
   AsyncMachine.pushOp(extractAttr, 'span.command', 'data-url');
 

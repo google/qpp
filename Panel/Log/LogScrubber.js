@@ -12,13 +12,13 @@
   QuerypointPanel.LogScrubber = {
     
     initialize: function(logElement, project, tracequeries) {
-      this.loads = ko.observableArray();
+      this.pageLoads = ko.observableArray();
 
       this.trackLatestMessage = ko.observable(true);
       
       this.lastShown = ko.computed(function() {
-        if (debug) console.log('LogScrubber.lastShown ' + this.loads().length + " loads");
-        return this.loads().length;
+        if (debug) console.log('LogScrubber.lastShown ' + this.pageLoads().length + " loads");
+        return this.pageLoads().length;
       }.bind(this));
 
       this.recorder = QuerypointPanel.Recorder;
@@ -55,7 +55,7 @@
 
         if (self.isCurrentLoad() ){
             self.storedMessages([]);
-            self.recorder.showPlay();
+            this.recorder.showPlay();
             self.updateSize();
         } else {
           self.storedMessages(self.compressMessages(object.messages));

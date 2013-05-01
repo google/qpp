@@ -33,12 +33,12 @@ function test_lastChange() {
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
 
-  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '6');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '7');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
 
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:10:5');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:11:5');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
   AsyncMachine.runOp();
 }

@@ -126,7 +126,7 @@
     traceElement: function(eventTurn){
       console.log("trace target of turn " + this.showTurn(), eventTurn);
       var summary = eventTurn.summary(); 
-      var selector = summary.target;
+      var selector = summary.targetSelector;
       var functionURL = summary.url;
       this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
       if (this.query && !this.query.isActive()) {

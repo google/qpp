@@ -55,9 +55,9 @@
 
     play: function(){
       for (var i = this.start; i < this.end; i++){
-        // Injects a command that builds and event and dispatches to taget.
+        // Injects a command that builds and event and dispatches to target.
         var event = this.load.turns()[i].event;
-        var command = 'var target = document.querySelector("' + event.target + '"); ';
+        var command = 'var target = document.querySelector("' + event.targetSelector + '"); ';
         command += 'var event = document.createEvent("Events"); ';
         command += 'event.initEvent("' + event.eventType + '", ' + event.eventBubbles + ', ' + event.eventCancels + '); ';
         command += 'target.dispatchEvent(event); ';
