@@ -584,20 +584,15 @@
     },
   
     selectLast: function(node){
-        if(!node.classList) return;
+        if (!node.classList) return;
         var element = document.querySelector('.selectedLoad');
         if(element) element.classList.remove('selectedLoad');
         node.classList.add('selectedLoad');
     },
   
-    focusLog: function (elem) {
-      if(typeof(elem.scroll) == 'undefined'){
-          // Clicked on Turn Indicator
-          // Focus on some element of the turn or ignore?
-          // What if no messages appeared in this turn?
-          document.querySelector().scrollIntoView(false);
-      } else {
-        elem.scroll.scrollIntoView(false);
+    focusLog: function (message) {
+      if (message.logElement) {
+        message.logElement.scrollIntoView(false);
         var logFloat = document.querySelector('.logContainer');
         logFloat.scrollTop += logFloat.offsetHeight / 2 ;
       }

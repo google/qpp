@@ -25,11 +25,11 @@
       return this;
     },
 
-    setScroll: function(node, elem) {
+    setMessageLogElement: function(node, message) {
+      message.logElement = node[1];
       // close over the most recent message element
       this._scrollIntoView = function scrollIntoView() {
-        elem.scroll = node[1];
-        elem.scroll.scrollIntoView(false);  
+        message.logElement.scrollIntoView(false);  
       }
       if (!this._delayScrollIntoView) {    // then we need to plan to scroll
         this._delayScrollIntoView = true;   // only one plan in flight at at time
