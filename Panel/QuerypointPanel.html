@@ -118,7 +118,7 @@
         </div>
         <!-- ko if: eventTurn.showTurn -->
         <div class="eventTurn" data-bind="with: eventTurn">
-            <p data-bind="text: turnInformation"> </p>
+            <p class="turnInformation" data-bind="text: turnInformation"> </p>
             <ul class="eventTurn_summary" data-bind="if: summary">
                 <li>
                   Function <a data-bind="text: summary().functionName, attr:{'data-url': summary().url}"></a>
@@ -147,8 +147,8 @@
                   <!-- /ko -->    
               </div>
               <!-- /ko -->
-              <!-- ko if: registeredEntryPoints.length -->
-              <div>Registered Entry Points:
+              <!-- ko if: registeredEntryPoints().length -->
+              <div class="registeredEntryPointsHeader">Registered Entry Points:
                   <!-- ko foreach: registeredEntryPoints -->
                       <div class="turnList"><a data-bind="text: detail"></a></div>
                   <!-- /ko -->
@@ -162,10 +162,9 @@
               </div>
               <!-- /ko -->
             </div>
-            <div style="clear: both"></div>
+            <div class="messagesHeader" data-bind="if: turnMessages().length">Messages In This Turn</div>
             <div class="messages" data-bind="foreach: turnMessages">
-                <p class="message" data-bind="text: text, attr:{severity: severity}">
-                </p>
+                <p class="message" data-bind="text: text, attr:{severity: severity}"></p>
             </div>
         </div>
         <!-- /ko -->

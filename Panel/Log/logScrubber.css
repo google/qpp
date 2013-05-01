@@ -232,17 +232,33 @@
     color: #f8f8f2;
     font-size: 12px;
     padding: 8px;
+    font-style: italic;
 }
 
-.eventTurn .messages{
+.eventTurn .registeredEntryPointsHeader {
+  color: #75715e;
+}
+
+.eventTurn .messagesHeader {
+  padding-top: 1ex;
+  color: #75715e;
+}
+
+.eventTurn .messages {
     max-height: 150px;
     overflow-y: scroll;
+    font-style: normal;
+    padding-left: 3ex;
 }
 
-.eventTurn p.message{
+.eventTurn p.message {
   margin: 0;
   color: rgb(141, 141, 134);
   font-size: small;
+}
+
+.eventTurn p.message[severity="turn"] {
+  display: none;
 }
 
 .eventTurn p.message[severity="error"] {
@@ -301,7 +317,6 @@ table.messagesByLoadNumber {
 
 .eventTurn_summary {
     margin-bottom: 15px;
-    margin-left: -10px;
     padding: 0;
     list-style: none;
     width: 100%;
@@ -317,6 +332,7 @@ table.messagesByLoadNumber {
 
 .eventTurn_summary a {
     color: #f8f8f2;
+    font-style: normal;
 }
 
 .eventTurn_summary a:hover {
