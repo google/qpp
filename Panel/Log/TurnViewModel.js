@@ -36,7 +36,7 @@
                   }
                   return turn.event;
                 } else {
-                  console.warn('LogScrubber.summary no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
+                  console.error('LogScrubber.summary no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
                 }
               } else {
                 if (load.load !== '-') {

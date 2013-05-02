@@ -77,7 +77,7 @@
       this._logScrubber.turnStarted(this._currentTurnNumber);
 
       if (this._currentTurn.registrationTurnNumber)
-        this._currentTurrn.registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
+        this._currentTurn.registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
       else if (this._currentTurn.turnNumber !== 1)
         console.error("No registrationTurnNumber for turn " + this._currentTurn.turnNumber, this._currentTurn);
 
