@@ -4,9 +4,10 @@
 (function() {
 
   'use strict';   
-
-  var DEBUG = false;
-
+ 
+  var debug = DebugLogger.register('Log', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
   var totalLogs = 0;
   
   var messagePrototype = {
@@ -15,7 +16,7 @@
      var logScrubber = document.querySelector('.logScrubber');
      this.scroll = logFloat.scrollHeight;
      totalLogs++;
-     if (DEBUG)
+     if (debug)
       console.log('Message.tooltip: total logs : '+totalLogs);
 
      return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
@@ -75,9 +76,8 @@
       this._currentTurnNumber = this._currentTurn.turnNumber;
       this._logScrubber.turnStarted(this._currentTurnNumber);
 
-      var registrationTurn;
       if (this._currentTurn.registrationTurnNumber)
-        registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
+        this._currentTurrn.registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
       else if (this._currentTurn.turnNumber !== 1)
         console.error("No registrationTurnNumber for turn " + this._currentTurn.turnNumber, this._currentTurn);
 
@@ -155,7 +155,7 @@
         this._logScrubber.showLoad().next = this.currentReload;
         this._logScrubber.showLoad(this.currentReload);
         this._logScrubber.pageLoads.push(this.currentReload);
-        if (DEBUG){
+        if (debug){
           console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.pageLoads().length);
         }
       }  
@@ -163,7 +163,7 @@
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
         if(this.currentReload.load !== this._logScrubber.showLoad().load) this._logScrubber.displayLoad(this.currentReload);
-        if (DEBUG){
+        if (debug){
           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }
       } 
@@ -171,7 +171,7 @@
       this.currentTurn.messages.push(messageSource);
       this.currentReload.messages.push(messageSource);
       this._logScrubber._addMessage(messageSource);
-      if (DEBUG){
+      if (debug){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }
     },
