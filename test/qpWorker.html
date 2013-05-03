@@ -1,0 +1,14 @@
+<html>
+<head>
+<script>
+        function startWorker()
+        {
+            var worker = new Worker("dedicatedWorker.js");
+            worker.onmessage = function(event) { };
+            worker.postMessage(1);
+            console.log("Started worker");
+        }
+</script>
+<body onload="startWorker()">
+</body>
+</html>
