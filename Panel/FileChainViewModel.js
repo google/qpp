@@ -28,7 +28,9 @@
       var linkTarget = this._nameAndOffsetsFromURL(url);
       var editorViewModel;
       if (!fromFileView) {  // no link in the current chain contains this URL, start new chain
-           editorViewModel = this.openURL(linkTarget.name).editorViewModel;
+           fileViewModel = this.openURL(linkTarget.name);
+           editorViewModel = fileViewModel.editorViewModel;
+           this._createFileChain(fileViewModel);
       } else {  // we are opening a new link in an existing chain
         var fromFileViewModel = this.fileViewModels()[fromFileView.getAttribute('chainIndex')];
         var editor = fromFileViewModel.editor();
