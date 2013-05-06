@@ -1,3 +1,20 @@
+function testDoubleCalls() {
+  var shouldBeOne = 0;
+  function foo() {
+    shouldBeOne++;
+    return false;
+  }
+  if (!foo()) {
+    if (shouldBeOne !== 1)
+      throw new Error("Double Calls");
+    else
+      return true;
+  } else {
+       throw new Error("We have no foo here");
+  }
+}
+
+
 function testFunctionToString() {
   function testMe() {
     return true;
@@ -166,6 +183,7 @@ function test(aTestCase) {
 }
 
 function onLoad() {
+  test('testDoubleCalls');
   test('testFunctionToString');
   test('testBind');
   test('testPostfixIncrement');

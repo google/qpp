@@ -722,7 +722,7 @@
     _transformSimpleUnaryExpression: function(tree) {
       var operand = this.transformAny(tree.operand);
       if (operand !== tree.operand) {
-        tree = new UnaryExpression(tree.location, tree.operator, tree.operand);
+        tree = new UnaryExpression(tree.location, tree.operator, operand);
       }
       tree = this.insertVariableFor(tree);
       return tree;
