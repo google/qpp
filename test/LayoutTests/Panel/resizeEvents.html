@@ -39,7 +39,7 @@ function test_resizeEvents10() {
   var strClick = ' && document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))';
   var passed = 1;
   function functionchange(current){
-      var ans = '((function (){ var change = (document.querySelector(".logScrubber").offsetWidth - 40 - ';
+      var ans = '((function (){ var change = (document.querySelector(".sessionView").offsetWidth - 40 - ';
           ans+= (current * 3).toString() + ') / ' + (current * 3).toString() + ';';
           ans+= 'if(change>40) return 0;';
           ans+= 'var clicks = \'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))\';';

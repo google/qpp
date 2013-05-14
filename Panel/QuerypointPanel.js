@@ -46,27 +46,18 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
     runPage: this.project
   });
 
-  var logElement = document.querySelector('.logView');
-  var logScrubberElement = document.querySelector('.logScrubber');
-  var loadElement = document.querySelector('.loadList');
+  var logView = document.querySelector('.logView');
   var dropDown = document.querySelector('.eventTurn');
-  var currentLoad = document.querySelector('.currentLoad');
-  var nextLoad = document.querySelector('.nextLoad');
 
-  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project, this.tracequeries);
-  this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
-  this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
-
-  ko.applyBindings(this.logScrubber , logScrubberElement);  // TODO move to logScrubber
-  ko.applyBindings(this, logElement);                                   // TODO remove with logElement
+  this.sessionViewModel = QuerypointPanel.SessionViewModel.initialize(project);
 
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
   
   this.currentTurn = ko.computed(function() {
-    var turnEnded = panel.logScrubber.turnEnded();
+    var turnEnded = this.sessionViewModel.turnEnded();
     return turnEnded;
-  });
+  }.bind(this));
 
   this.commands = new QuerypointPanel.Commands(this);
   this._initModel();
@@ -80,6 +71,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
         while(fileView && !fileView.classList.contains('fileView'))
           fileView = fileView.parentElement;
         panel.commands.openChainedEditor(url, fileView);
+        target.dispatchEvent(new CustomEvent('navigatedFrom', {bubbles: true})); 
       } // else the user did not click on something interesting.   
     });
 }
@@ -172,7 +164,7 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _initEditors: function(panelModel) {
-    this._statusBar = QuerypointPanel.StatusBar.initialize(this);
+    this._statusBar = QuerypointPanel.StatusBar.initialize(this, this.sessionViewModel);
     this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._statusBar, this.commands);
     QuerypointPanel.FileViewModel.initialize(this._editors, this);
     var workspaceElement = document.querySelector('.workSpace');
@@ -205,8 +197,7 @@ QuerypointPanel.Panel.prototype = {
   },
 
   pageWasReloaded: function(runtimeInstalled) {
-    this._log.pageWasReloaded(runtimeInstalled);
-    this.logScrubber.pageWasReloaded(runtimeInstalled)
+    this.sessionViewModel.pageWasReloaded(runtimeInstalled)
     QuerypointPanel.OnPanelOpen.open(runtimeInstalled);
   },
 
@@ -222,10 +213,6 @@ QuerypointPanel.Panel.prototype = {
         panel._restore(new QuerypointModel.PanelModel(panel.project.url));
       }
     );
-  },
-
-  tooltip: function(turn){
-    return this._log.currentTurn.event;
   },
 
   clear: function() {

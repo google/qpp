@@ -12,8 +12,7 @@
   
   var messagePrototype = {
     tooltip: function() {
-     var logFloat = document.querySelector('.logContainer');
-     var logScrubber = document.querySelector('.logScrubber');
+     var logFloat = document.querySelector('.messageView');
      this.scroll = logFloat.scrollHeight;
      totalLogs++;
      if (debug)
@@ -41,9 +40,10 @@
     currentReload: {},
     currentTurn: {},
 
-    initialize: function(project, logScrubber) {
+    initialize: function(project, loadListViewModel, turnScrubber) {
       this.project = project;
-      this._logScrubber = logScrubber;
+      this._loadListViewModel = loadListViewModel;
+      this._turnScrubber = turnScrubber;
       
       QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
@@ -59,14 +59,14 @@
     _currentTurn: 'none yet',
     
     _onLoadEvent: function(segments) {
-     this._logScrubber.loadEnded(parseInt(segments[2], 10));
-     this._logScrubber.recorder.onLoadEvent(this._logScrubber);
+     this._loadListViewModel.loadEnded(parseInt(segments[2], 10));
+     this._turnScrubber.recorder.onLoadEvent(this._turnScrubber);
     },    
 
     _onReload: function(segments) {
       this._reloadCount = parseInt(segments[2], 10);
-      this._logScrubber.loadStarted(this._reloadCount);
-      this._logScrubber._scale = 1;
+      this._loadListViewModel.loadStarted(this._reloadCount);
+      this._turnScrubber._scale = 1;
     },    
     
     _onStartTurn: function(segments, messageSource) {
@@ -74,7 +74,7 @@
       messageSource.severity = 'turn';
       this._currentTurn = new QuerypointPanel.Turn(JSON.parse(unescape(segments[2])));
       this._currentTurnNumber = this._currentTurn.turnNumber;
-      this._logScrubber.turnStarted(this._currentTurnNumber);
+      this._turnScrubber.turnStarted(this._currentTurnNumber);
 
       if (this._currentTurn.registrationTurnNumber)
         this._currentTurn.registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
@@ -85,8 +85,8 @@
     },
 
     _onEndTurn: function(segments) {
-      this._logScrubber.turnEnded(parseInt(segments[2], 10));
-      this._logScrubber.updateSize();
+      this._turnScrubber.turnEnded(parseInt(segments[2], 10));
+      this._turnScrubber.updateSize();
     },
 
     _onSetTimeout: function(segments) {
@@ -115,8 +115,8 @@
           default: console.error('Log._parse: unknown keyword: '+messageSource.text); break;
         }
       } else {  // not a qp message
-          var started = this._logScrubber.turnStarted();
-          if ( started && started === this._logScrubber.turnEnded()) 
+          var started = this._turnScrubber.turnStarted();
+          if ( started && started === this._turnScrubber.turnEnded()) 
               console.error('QPRuntime error: No turn for message after turn %o', this._currentTurnNumber);
       }
       messageSource.load = this._reloadCount;
@@ -149,20 +149,20 @@
       messageSource.severity = messageSource.severity || messageSource.level;
       
       if (this.currentReload.load !== messageSource.load) {
-        this._logScrubber._clearMessages();
+        this._turnScrubber._clearMessages();
         this.currentReload = this._reloadRow(messageSource);
         this.currentTurn = this.currentReload.turns()[0];
-        this._logScrubber.showLoad().next = this.currentReload;
-        this._logScrubber.showLoad(this.currentReload);
-        this._logScrubber.pageLoads.push(this.currentReload);
+        this._loadListViewModel.showLoad().next = this.currentReload;
+        this._loadListViewModel.showLoad(this.currentReload);
+        this._loadListViewModel.pageLoads.push(this.currentReload);
         if (debug){
-          console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.pageLoads().length);
+          console.log('QuerypointPanel.Log._reformat loads.length '+ this._loadListViewModel.pageLoads().length);
         }
       }  
       if (this.currentTurn.turn !== messageSource.turn) {
         this.currentTurn = this._turnRow(messageSource)
         this.currentReload.turns.push(this.currentTurn);
-        if(this.currentReload.load !== this._logScrubber.showLoad().load) this._logScrubber.displayLoad(this.currentReload);
+        if(this.currentReload.load !== this._loadListViewModel.showLoad().load) this._loadListViewModel.displayLoad(this.currentReload);
         if (debug){
           console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
         }
@@ -170,7 +170,7 @@
       messageSource.position = this.currentTurn.messages().length;
       this.currentTurn.messages.push(messageSource);
       this.currentReload.messages.push(messageSource);
-      this._logScrubber._addMessage(messageSource);
+      this._turnScrubber._addMessage(messageSource);
       if (debug){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }
@@ -179,11 +179,11 @@
     extractMessages: function(first, last) {
       var visibleMessages = [];
       //messageSource.odd = (--visibleLines) % 2;
-      return this._logScrubber.pageLoads();
+      return this._loadListViewModel.pageLoads();
     },
     
     pageWasReloaded: function(runtimeInstalled) {
-      this.initialize(this.project, this._logScrubber);
+      this.initialize(this.project, this._loadListViewModel, this._turnScrubber);
     }
   };
 

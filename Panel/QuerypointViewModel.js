@@ -34,7 +34,7 @@
     this.tracepoints = ko.observableArray(); // all of the query results for this file
 
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, this._editorViewModel, panel);        // wired to editor token
-    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel);        // wired to token viewed
+    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel.sessionViewModel.loadListViewModel, panel.tracequeries);        // wired to token viewed
     this.queryProvider = new QuerypointPanel.TokenQueryProvider(this.tokenViewModel, this.project);  // wired to token viewed.
     this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this.queryProvider, panel);  
     this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, editorViewModel, panel);
@@ -86,9 +86,9 @@
           if (tracepoint) {
             this.tracepoints.push(tracepoint);
           } 
-        }.bind(this), this._panel.logScrubber);
+        }.bind(this), this._panel.sessionViewModel);
       }.bind(this));    
-      var load = this._panel.logScrubber.showLoad();
+      var load = this._panel.sessionViewModel.loadListViewModel.showLoad();
       load.tracepoints = this.tracepoints;
       var lastTracequery = tracequeries[tracequeries.length - 1];  
       this.tokenViewModel.setTokenTree(lastTracequery.targetTree());

@@ -8,7 +8,7 @@
   var statusBarSelector = ".statusBar";
   
   QuerypointPanel.StatusBar = {
-    initialize: function(panel) {
+    initialize: function(panel, sessionViewModel) {
       this.exploringMode = ko.observable(false);
       this.openURLs = ko.observableArray();
       this.unsavedEditors = ko.observableArray();
@@ -16,8 +16,8 @@
       this.savedEditors = ko.observableArray();
       
       this.currentLoadNumber = ko.computed(function() {
-        var started = panel.logScrubber.loadStarted();
-        var ended = panel.logScrubber.loadEnded();
+        var started = sessionViewModel.loadListViewModel.loadStarted();
+        var ended = sessionViewModel.loadListViewModel.loadEnded();
         if (started === ended)
           return started;
         else
@@ -25,7 +25,7 @@
       });  // don't throttle load, needed for testing 
 
       this.currentTurnNumber = ko.computed(function() {
-        return panel.logScrubber.turnStarted();
+        return sessionViewModel.turnScrubberViewModel.turnStarted();
       }).extend({ throttle: 50 });
 
       this.numberOfTracequeries = ko.computed(function(){

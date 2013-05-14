@@ -27,12 +27,15 @@
 <script src="KeyBindings.js"></script>
 <script src="URISelector.js"></script>
 <script src="ElementQueryProvider.js"></script>
+<script src="Log/LoadListViewModel.js"></script>
+<script src="Log/MessageViewModel.js"></script>
 <script src="Log/Turn.js"></script>
 <script src="Log/TurnViewModel.js"></script>
 <script src="Log/Recorder.js"></script>
-<script src="Log/LogScrubber.js"></script>
+<script src="Log/TurnScrubberViewModel.js"></script>
 <script src="Log/Log.js"></script>
-<script src="Log/LogViewModel.js"></script>
+<script src="Log/SessionViewModel.js"></script>
+
 <script src="Editors/EditorByCodeMirror.js"></script>
 <script src="StatusBar/StatusBar.js"></script>
 
@@ -57,7 +60,7 @@
 <link rel="stylesheet" href="FileViews.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="QPOutput.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="TraceView.css"><!-- after codemirror.css -->
-<link rel="stylesheet" href="Log/logScrubber.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="Log/turnScrubberView.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="Log/eventIndicator.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="StatusBar/StatusBar.css"><!-- after codemirror.css -->
 <script src="../mirror/CodeMirror/mode/javascript/javascript.js"></script>
@@ -86,9 +89,9 @@
             <div><button class="initialOptions_noReload">Do Not Reload</button></div>
         </div>
       </div>  
-      <div class="logContainer" style="height: 200px;">
+      <div class="messageView" style="height: 200px;">
         <table class="messagesByLoadNumber">
-          <tbody data-bind="foreach: logViewModel.messagesByLoadNumber">
+          <tbody data-bind="foreach: messagesByLoadNumber">
           <tr>
             <td class="loadNumber" title="Reload number" data-bind="text: load"></td>
             <td>
@@ -96,7 +99,7 @@
                 <tbody class='turns' data-bind="foreach: turns">
                   <tr>
                     <td class="turnNumber" title="Event turn number" data-bind="text: turn"></td>
-                    <td class="messages" title="console output" data-bind="foreach: {data: messages, afterRender: $root.logViewModel.setMessageLogElement}">
+                    <td class="messages" title="console output" data-bind="foreach: {data: messages, afterRender: $root.setMessageLogElement}">
                           <div data-bind="text: text, attr:{severity: severity}"></div>
                     </td>
                   </tr>
@@ -108,11 +111,11 @@
         </table>
      </div>
     </div>
-    <div class="logScrubber">
+    <div class="sessionView">
         <span class="helpInfo">
           Log Scrubber: click or drag to change log viewport
         </span>
-        <div class="loadList" data-bind="foreach: {data: pageLoads, afterAdd: selectLast}">
+        <div class="loadListView" data-bind="foreach: {data: pageLoads, afterAdd: selectLoad}">
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad.bind($parent)}">
             </div>
         </div>
@@ -162,29 +165,30 @@
                 <p class="message" data-bind="text: text, attr:{severity: severity}"></p>
             </div>
         </div>
-        <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoadNumber}"></div>
-        <div class="overviewLog">
-            <!-- ko if: isCurrentLoad -->
-            <!-- ko foreach: preMessages -->
-            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
-            <!-- /ko -->
-            <div class="recordMarker" data-bind="event:{mousedown: recorder.play.bind(recorder) }">x</div>
-            <!-- ko foreach: recordedMessages -->
-             <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
-            <!-- /ko -->
-            <div class="recordIndicator" data-bind="event:{mousedown: recorder.startRecord.bind(recorder) }">&#9679;</div>
-            <!-- ko foreach: postMessages -->
-            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
-            <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko if: isPastLoad -->
-            <!-- ko foreach: storedMessages -->
-            <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
-            <!-- /ko -->
-            <!-- /ko -->
-        </div>
-        <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: showNext}"></div>
-      <!-- <span class="scrubberIndicator" title="TODO slide sideways to select visible log entries, up/down to resize log view"></span> -->
+        <div class="turnScrubberView">
+          <div class="currentLoad loadNumber" title="Reload Number" data-bind="attr: {load: showLoadNumber}"></div>
+          <div class="overviewLog">
+              <!-- ko if: sessionViewModel.loadListViewModel.currentLoadIsSelected -->
+              <!-- ko foreach: preMessages -->
+              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- /ko -->
+              <div class="beginRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{mousedown: recorder.onBeginRecorded.bind(recorder) }">x</div>
+              <!-- ko foreach: recordedMessages -->
+               <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- /ko -->
+              <div class="endRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{mousedown: recorder.onEndRecorded.bind(recorder) }">&#9679;</div>
+              <!-- ko foreach: postMessages -->
+              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- /ko -->
+              <!-- /ko -->
+              <!-- ko if: sessionViewModel.loadListViewModel.isPastLoad -->
+              <!-- ko foreach: storedMessages -->
+              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- /ko -->
+              <!-- /ko -->
+          </div>
+          <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: sessionViewModel.loadListViewModel.showNextLoad}"></div>
+      </div>
     </div>
     <div class="workSpace">
       <div class="fileViews" data-bind="foreach: fileViewModels">

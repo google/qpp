@@ -86,12 +86,12 @@
       return src;
     },
 
-    extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
+    extractTracepoints: function(fileViewModel, onTracepoint, sessionViewModel) {
       var query = this;
       function onEval(result, isException) {
-         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === logScrubber.loadStarted()) return;
+         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStarted()) return;
          query._lastEvaluated = result.turn;
-         query._lastLoadEvaluated = logScrubber.loadStarted();
+         query._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStarted();
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
@@ -107,8 +107,8 @@
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var previousTurn = logScrubber.turnStarted() - 1;
-      var thisLoad = logScrubber.loadStarted();
+      var previousTurn = sessionViewModel.turnScrubberViewModel.turnStarted() - 1;
+      var thisLoad = sessionViewModel.loadListViewModel.loadStarted();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = query._queryIndex;

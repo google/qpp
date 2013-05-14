@@ -5,9 +5,9 @@
 (function() {
   "use strict";
   
-  QuerypointPanel.TraceViewModel = function(querypointViewModel, panel) {
+  QuerypointPanel.TraceViewModel = function(querypointViewModel, loadListViewModel, tracequeries) {
     this._querypointViewModel = querypointViewModel;
-    this._panel = panel;
+
 
     this.rootTreeData = ko.computed(function(){
       var treeRoot = querypointViewModel.treeRoot();
@@ -33,9 +33,9 @@
     
     this.treeTraces = ko.computed(function() {
          var tracepoints;
-         if (this._panel.logScrubber.showLoad().load !== this._panel.logScrubber.loadStarted()){
-             if (!('tracepoints' in this._panel.logScrubber.showLoad())) return [];
-             tracepoints = this._panel.logScrubber.showLoad().tracepoints();
+         if (loadListViewModel.showLoad().load !== loadListViewModel.loadStarted()){
+             if (!('tracepoints' in loadListViewModel.showLoad())) return [];
+             tracepoints = loadListViewModel.showLoad().tracepoints();
          } else {
              tracepoints = this._querypointViewModel.tracepoints();
          }
@@ -52,7 +52,7 @@
           traces = traces.concat(treeTracepoints);
           
           var prompts = [];
-          this._panel.tracequeries().reduce(function(prompts, query) {
+          tracequeries().reduce(function(prompts, query) {
               if (query.targetTree() === tree) prompts.push(query.tracePrompt());
               return prompts;
           }, prompts);
@@ -88,7 +88,7 @@
 
     window.onresize = function(){
       this.afterRender();
-      panel.logScrubber.showLoad.valueHasMutated();
+      loadListViewModel.showLoad.valueHasMutated();
     }.bind(this);
 
     this.afterRender = function() {
@@ -105,7 +105,7 @@
     this.currentTraces = ko.computed(function() {
         var tree = querypointViewModel.tokenViewModel.tokenTree();
 
-        if (tree && panel.tracequeries().length) {
+        if (tree && tracequeries().length) {
           var traces = this.treeTraces();
           if (traces && traces.length) {
             var traceViewModels = traces.map(function(trace) {

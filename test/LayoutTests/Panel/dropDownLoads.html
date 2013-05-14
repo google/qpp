@@ -45,16 +45,32 @@ function test_dropDown() {
   AsyncMachine.pushOp(verifyTokenView, 'condition.value');
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');  
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '2');
-  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(){
+    return "turnScrubber should show currentLoadNumber";
+  });  
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load', function(){
+    return "nextLoad should be dash";
+  });     
   
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.loadNumber").dispatchEvent(new MouseEvent("mousedown"))', function(text){} );
-  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.loadNumber").dispatchEvent(new MouseEvent("mousedown"))', function(text){
+    return "mousedown on loadNumber";
+  } );
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(){
+    return "currentLoad should be one less now";
+  });
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load', function(){
+    return "nextLoad should be previous currentLoad";
+  });
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoad").dispatchEvent(new MouseEvent("mousedown"))', function(text){} );
-  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoad").dispatchEvent(new MouseEvent("mousedown"))', function(text){
+    return "mousedown on nextLoad";
+  } );
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(){
+    return "currentLoad returns to original value";
+  });
+  AsyncMachine.pushOp(extractAttr, '.nextLoad','load', function(){
+    return "nextLoad should be dash";
+  });
   AsyncMachine.runOp();
 }
 

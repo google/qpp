@@ -132,17 +132,17 @@
     },
 
     // Pull trace results out of the page for this querypoint
-    extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
+    extractTracepoints: function(fileViewModel, onTracepoint, sessionViewModel) {
       function onEval(result, exception) {
          if (exception) {
            console.error("ValueChangeQuery extractTracepoints eval failed", exception);
            return; 
          }
-         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === logScrubber.loadStarted()) 
+         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStarted()) 
            return;
            
          this._lastEvaluated = result.turn;
-         this._lastLoadEvaluated = logScrubber.loadStarted();
+         this._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStarted();
          
          if (result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
@@ -157,8 +157,8 @@
           }.bind(this));      
          }
       }
-      var previousTurn = logScrubber.turnStarted() - 1;
-      var thisLoad = logScrubber.loadStarted();
+      var previousTurn = sessionViewModel.turnScrubberViewModel.turnStarted() - 1;
+      var thisLoad = sessionViewModel.loadListViewModel.loadStarted();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = this._queryIndex;

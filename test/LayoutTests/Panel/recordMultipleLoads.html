@@ -28,16 +28,16 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".beginRecorded").dispatchEvent(new MouseEvent("mousedown"))');
 
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
 
   AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:7:1');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".endRecorded").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".endRecorded").dispatchEvent(new MouseEvent("mousedown"))');
   AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:9:3');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".endRecorded").dispatchEvent(new MouseEvent("mousedown"))');
 
   AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:11:5');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
@@ -57,7 +57,7 @@ function test_lastChange() {
   
   AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '2:6');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".beginRecorded").dispatchEvent(new MouseEvent("mousedown"))');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '2:7');
 

@@ -10,104 +10,117 @@
   });
 
   QuerypointPanel.Recorder = {
-    load: 0,
     start: -1,    // First event recorded
     end:   0,     // First event not recorded
 
-    startRecord: function(logScrubber){
-      if (logScrubber.showLoad().load != logScrubber.loadStarted()) return;
-      var button = document.querySelector('.recordIndicator');
-      var marker = document.querySelector('.recordMarker');
-      if (button.classList.contains('on')) {
-          this.stopRecording(logScrubber, button, marker);
-      } else {
-          try{
-            var current = logScrubber.showLoad().messages.length;
-          } catch (err) {
-              return;             // Load hasn't started
-          }
-          for (var i = 0; i < logScrubber.recordedMessages().length; i++) 
-            logScrubber.preMessages().push(logScrubber.recordedMessages()[i]);
-          for (var i = 0; i < logScrubber.postMessages().length; i++) 
-            logScrubber.preMessages().push(logScrubber.postMessages()[i]);
+    initialize: function(loadListViewModel, turnScrubberViewModel) {
+      this._loadListViewModel = loadListViewModel;
+      this._turnScrubberViewModel = turnScrubberViewModel;
+      this.recordingState = ko.observable('off'); // 'off' || 'play' || 'record' || 'recorded'
+      this._showDot();
+      return this;
+    },
 
-          logScrubber.preMessages.valueHasMutated();
-          logScrubber.recordedMessages([]);
-          logScrubber.postMessages([]);
-          logScrubber.updateSize();
-  
-          logScrubber.messages = logScrubber.recordedMessages;
-  
-          this.load = logScrubber.showLoad();
-          this.start = logScrubber.showLoad().turns().length;
-          this.end = -1;
-          
-          marker.onmousedown = function(){ 
-            this.stopRecording(logScrubber, button, marker);
-          }.bind(this);
-
-          marker.innerHTML = '&#9679;';
-          marker.style.display = 'block';
-          marker.classList.add('on');
-          button.classList.add('on');
+    onBeginRecorded: function(event) {
+      var state = this.recordingState();
+      switch(state) {
+        case 'record': this._stopRecording(); break;
+        case 'off': this._startRecording(); break;
+        case 'recorded': this.play(); break;
+        case 'play': this._stopPlayback(); break;
+        default: throw new Error('Unknown recording state');
       }
     },
 
+    onEndRecorded: function(event) {
+      var state = this.recordingState();
+      switch(state) {
+        case 'record': this._stopRecording(); break;
+        case 'off': break;  // not visible in UI
+        case 'recorded': this._eraseRecording(); break;
+        case 'play':  this._stopPlayback(); break;
+        default: throw new Error('Unknown recording state');
+      }
+    },
+
+    // 'off' -> 'record'
+    _startRecording: function(){
+      console.assert(this.recordingState() === 'off');
+      if (!this._loadListViewModel.loadStarted()) return;
+      if (!this._loadListViewModel.currentLoadIsSelected()) return;
+     
+      this._turnScrubberViewModel.onStartRecording();
+
+      this.load = this._loadListViewModel.showLoad();
+      this.start = this._loadListViewModel.showLoad().turns().length;
+      this.end = -1;
+      this._showDot();
+      this.recordingState('record');
+    },
+
+    // 'record' -> 'recorded'
+    _stopRecording: function() {
+      console.assert(this.recordingState() === 'record');
+      this.recordingState('recorded');
+      this._showPlay(); 
+      this.end = this._loadListViewModel.showLoad().turns().length;
+      this._turnScrubberViewModel.onStopRecording();
+    },
+    
+    // 'recorded' -> 'play' -> 'recorded'
     play: function(){
+      console.assert(this.recordingState() === 'recorded');
+      this.recordingState('play');
       for (var i = this.start; i < this.end; i++){
-        // Injects a command that builds and event and dispatches to target.
-        var event = this.load.turns()[i].event;
+        // Injects a command that builds and event and dispatches to taget.
+        var event = this._loadListViewModel.showLoad().turns()[i].event;
         var command = 'var target = document.querySelector("' + event.targetSelector + '"); ';
         command += 'var event = document.createEvent("Events"); ';
         command += 'event.initEvent("' + event.eventType + '", ' + event.eventBubbles + ', ' + event.eventCancels + '); ';
         command += 'target.dispatchEvent(event); ';
         chrome.devtools.inspectedWindow.eval(command);
       }
+      chrome.devtools.inspectedWindow.eval('console.log("qp| replayComplete");');
+      this.recordingState('recorded');
     },
 
-    stopRecording: function(logScrubber, button, marker) {
-      if (arguments.length == 0){
-        this.end = logScrubber.showLoad().turns().length;
-      } else {
-        marker.innerHTML = '&#x25B6';
-        this.end = logScrubber.showLoad().turns().length;
-        this.messages = logScrubber.postMessages;
-        marker.classList.remove('on');
-        button.classList.remove('on');
-        marker.onmousedown = null;
-      }
+    // 'recorded' -> 'off'
+    _eraseRecording: function() {
+      console.assert(this.recordingState() === 'recorded');
+      this.recordingState('off');
+      this.start = -1;
+      this.end = 0;
+      this._showDot();
+      this._turnScrubberViewModel.onEraseRecording();
     },
 
-    stopIfRecording: function(logScrubber) {
-      var button = document.querySelector('.recordIndicator');
-      var marker = document.querySelector('.recordMarker');
-      if (button && button.classList.contains('on')) {
-          this.stopRecording(logScrubber, button, marker);
-      }
+    stopIfRecording: function() {
+      this.onBeginRecorded();
     },
-      
-    showPlay: function() {
+    
+    _showDot: function() {
+      var endRecorded = document.querySelector('.endRecorded');
+      endRecorded.innerHTML = '&#9679;';  // dot
+      var beginRecorded = document.querySelector('.beginRecorded');
+      beginRecorded.innerHTML = '&#9679;';  // dot
+    },
+
+    _showPlay: function() {
       if (this.start !== -1) {
-        var marker = document.querySelector('.recordMarker');
-        marker.style.display = 'block';
-        marker.innerHTML = '&#x25B6';
+        var beginRecorded = document.querySelector('.beginRecorded');
+        beginRecorded.innerHTML = '&#x25B6';   // Arrowish
+        var endRecorded = document.querySelector('.endRecorded');
+        endRecorded.innerHTML = 'x'; 
       }
     },
 
     // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
-    onLoadEvent: function(logScrubber) {
-     if (this.load !== 0) {
-        logScrubber.recordedMessages([]);
-        logScrubber.messages = logScrubber.recordedMessages;
+    onLoadEvent: function() {
+     if(this.autoReplay){
+        this._turnScrubberViewModel.recordedMessages([]);
+        this._turnScrubberViewModel.messages = this._turnScrubberViewModel.recordedMessages;
 
         this.play();
-
-        // Play events are sent by eval to the inspected window.
-        // We need to change where messages are stored after all play events occur.
-        setTimeout(function(){
-          logScrubber.messages = logScrubber.postMessages;
-          logScrubber.displayLoad(logScrubber.showLoad());
-        },100);
       }
     }
 

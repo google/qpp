@@ -5,80 +5,45 @@
 
   'use strict';
 
-  var debug = DebugLogger.register('LogScrubber', function(flag){
+  var debug = DebugLogger.register('TurnScrubberViewModel', function(flag){
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  QuerypointPanel.LogScrubber = {
+  QuerypointPanel.TurnScrubberViewModel = {
     
-    initialize: function(logElement, project, tracequeries) {
-      this.pageLoads = ko.observableArray();
-
-      this.trackLatestMessage = ko.observable(true);
+    initialize: function(project, tracequeries, sessionViewModel) {
+      this.sessionViewModel = sessionViewModel;
+      this.recorder = QuerypointPanel.Recorder.initialize(sessionViewModel.loadListViewModel, this);
       
-      this.lastShown = ko.computed(function() {
-        if (debug) console.log('LogScrubber.lastShown ' + this.pageLoads().length + " loads");
-        return this.pageLoads().length;
-      }.bind(this));
-
-      this.recorder = QuerypointPanel.Recorder;
+      this.trackLatestMessage = ko.observable(true);
       
       var self = this;
       this.lastLoad = 0;
-      this.loadStarted = ko.observable(0);
-      this.loadEnded = ko.observable(0);
       this.turnStarted = ko.observable(0);
       this.turnEnded = ko.observable(0);
-      this.showLoad = ko.observable({load: '-'});
       this.showMessage = ko.observable(0);
 
       this.eventTurn = QuerypointPanel.EventTurn;
-      this.eventTurn.initialize(this, project, tracequeries);
+      this.eventTurn.initialize(sessionViewModel.loadListViewModel, project, tracequeries);
 
-      // TODO depends on resize of logElement
+      var logView = document.querySelector('.logView');
+      
+      // TODO depends on resize of logView
       this.rangeShowable = ko.computed(function(){
-        var height = logElement.clientHeight;
+        var height = logView.clientHeight;
         var lineHeight = 13;
         var lines = Math.ceil(height / lineHeight) + 1;
         return lines;
       }.bind(this));
 
-      this.displayLoad = function(object){
-        this.recorder.stopIfRecording();
-
-        var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
-        if (loadElement) loadElement.classList.remove('selectedLoad');
-        self.showLoad(object);
-
-        loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
-        if (loadElement) loadElement.classList.add('selectedLoad');
-
-        if (self.isCurrentLoad() ){
-            self.storedMessages([]);
-            this.recorder.showPlay();
-            self.updateSize();
-        } else {
-          self.storedMessages(self.compressMessages(object.messages));
-          var maxMessages = logScrubberElement.offsetWidth - 30;
-          self._setMessageWidth( maxMessages / self.storedMessages().length );
-        }
-        if (object.messages.length) {
-          var lastLogElement = object.messages[object.messages.length - 1].logElement;
-          if (lastLogElement)
-            lastLogElement.scrollIntoView(false);
-        }
-      }
-
       this._initMouse();
 
       var panel =  document.querySelector('.panel');
-      var logScrubberElement = document.querySelector('.logScrubber');
-      var logFloat = document.querySelector('.logContainer');
-      var logElement = document.querySelector('.logView');
-      var loadElement = document.querySelector('.loadList');
+      var sessionView = document.querySelector('.sessionView');
+      var logFloat = document.querySelector('.messageView');
+      var loadElement = document.querySelector('.loadListView');
       var dropDown = document.querySelector('.eventTurn');
       var currentLoad = document.querySelector('.currentLoad');
-      var nextLoad = document.querySelector('.nextLoad');
 
       this.preMessages = ko.observableArray();          // Messages before the play button
       this.postMessages = ko.observableArray();         // Messages after record button
@@ -90,6 +55,19 @@
       // If number of indicators exceed width of window, each indicator will represent more than one message
       this._scale = 1;                                  // Number of messages in each indicator
       this._addedMessages;                              // Number of messages added to the last indicator
+
+      this.updateOnLoadSelection = function(currentLoadIsSelected, load) { // TODO MDV
+        this.recorder.stopIfRecording();
+
+        if (currentLoadIsSelected) {
+          self.storedMessages([]);
+          self.updateSize();
+        } else {
+          self.storedMessages(self.compressMessages(load.messages));
+          var maxMessages = sessionView.offsetWidth - 30;           // FIXME
+          self._setMessageWidth( maxMessages / self.storedMessages().length );
+        }
+      }
 
       // Method adds a message to the array messages
       this._addMessage = function(message){
@@ -120,7 +98,7 @@
       // This method takes an array of messages and if these don't fit in the width of the screen
       // then we merge messages together in such way to maximize the occupied space in scrubber bar
       this.compressMessages = function(messages){
-        var maxMessages = logScrubberElement.offsetWidth - 30;
+        var maxMessages = sessionView.offsetWidth - 30;
         if(messages.length < maxMessages) return messages;
         // perPixel is the ammount of messages that are going to be merged together
         var perPixel = Math.floor(messages.length / maxMessages);
@@ -148,8 +126,7 @@
       // to half their size.
       this.updateSize = function(){
         self.messages.valueHasMutated();
-        var maxMessages = logScrubberElement.offsetWidth - 40;
-        if (self.recorder.start !== -1) maxMessages -= 10;
+        var maxMessages = sessionView.offsetWidth - 40;
         var joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
 
         if (joinMessages < maxMessages) {
@@ -231,8 +208,9 @@
         else 
             eventIndicatorRule.style.width = width + 'px';
       }
+
       this.showLoadNumber = ko.computed(function(){
-          return self.showLoad().load;
+          return sessionViewModel.loadListViewModel.showLoad().load;
       });
 
       // Method is currently *not* being used
@@ -270,35 +248,10 @@
         }
       }
 
-      this.showNext = ko.computed( function(){
-          var load = self.showLoad().load;
-          if (load === '-' || load == self.loadStarted()) {
-              nextLoad.onmousedown = null;
-              return '-';
-          } else {
-              nextLoad.onmousedown = function() {
-                  var next = self.showLoad().next;
-                  if (next) 
-                    self.displayLoad(next);
-                  else 
-                    self.displayLoad({load: '-'});
-              };
-              return self.showLoad().load+1;
-          }
-      });
-
-      this.isCurrentLoad = ko.computed( function(){
-        return self.showLoad().load == self.loadStarted();
-      });
-
-      this.isPastLoad = ko.computed( function(){
-        return self.loadStarted() && (self.showLoad().load != self.loadStarted());
-      });
-
 
       dropDown.onmouseout = function(event) {
           var e = event.toElement || event.relatedTarget;
-          if (self.isOurRelatedTarget(e, this)) return false;
+          if (sessionViewModel.isOurRelatedTarget(e, this)) return false;
           dropDown.style.display = 'none';
       }
     
@@ -309,14 +262,17 @@
     
       loadElement.onmouseout = function(event) {
           var e = event.toElement || event.relatedTarget;
-          if (self.isOurRelatedTarget(e, loadElement)) return false;
+          if (sessionViewModel.isOurRelatedTarget(e, loadElement)) return false;
           loadElement.style.display = 'none';
       }
     
-      logElement.onmouseout = function(){
+      logView.onmouseout = function(){
           dropDown.style.display = 'none';
           loadElement.style.display = 'none';
       };
+    
+      var turnScrubberView = document.querySelector('.turnScrubberView');
+      ko.applyBindings(this, turnScrubberView);
 
       return this;
     },
@@ -372,91 +328,68 @@
       // There's an issue where elements in scrubberBox are displayed in wrong order
       // Redrawing scrubberbox fixes this. There should be a better solution.
       // TODO: Avoid redrawing scrubberbox
-      document.querySelector('.logScrubber').style.display = 'none';
-      setTimeout( function(){ document.querySelector('.logScrubber').style.display = 'block'; } , 1);
+      document.querySelector('.turnScrubberView').style.display = 'none';
+      setTimeout( function(){ document.querySelector('.turnScrubberView').style.display = 'block'; } , 1);
     },
 
-    // Event mouseout triggers when mouse goes into child nodes
-    // If we are looking to hide target, we must assure element focused isn't a descendant
-    isOurRelatedTarget: function(element, target) {
-      while (element && element.parentNode) {
-        if (element.parentNode === target ||  element === target) {
-            if (element.preventDefault) element.preventDefault();
-            return true;
-        }
-        element = element.parentNode;
-      }
-      return false;
+    onLoad: function() {
+
+    },
+
+    _resetMessages: function() {
+      for (var i = 0; i < this.recordedMessages().length; i++) 
+        this.preMessages().push(this.recordedMessages()[i]);
+      for (var i = 0; i < this.postMessages().length; i++) 
+        this.preMessages().push(this.postMessages()[i]);
+
+      this.preMessages.valueHasMutated();
+      this.recordedMessages([]);
+      this.postMessages([]);
+      this.updateSize();
+    },
+
+    onStartRecording: function() {
+      this._resetMessages();
+      this.messages = this.recordedMessages;
     },
   
-    selectLast: function(node){
-        if (!node.classList) return;
-        var element = document.querySelector('.selectedLoad');
-        if(element) element.classList.remove('selectedLoad');
-        node.classList.add('selectedLoad');
+    onStopRecording: function() {
+      this.messages = this.postMessages;
     },
-  
+
+    onReplayComplete: function() {
+      this.messages = this.postMessages;
+      this._loadListViewModel.displayLoad(this._loadListViewModel.showLoad());
+    },
+
+    onEraseRecording: function() {
+      this._resetMessages();
+      this.messages = this.preMessages;
+    },
+
     focusLog: function (message) {
-      if (message.logElement) {
-        message.logElement.scrollIntoView(false);
-        var logFloat = document.querySelector('.logContainer');
+      if (message.logView) {
+        message.logView.scrollIntoView(false);
+        var logFloat = document.querySelector('.messageView');
         logFloat.scrollTop += logFloat.offsetHeight / 2 ;
       }
     },
   
     turnInfo: function(message){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-        QuerypointPanel.LogScrubber.eventTurn.showTurn(message.turn);
-        QuerypointPanel.LogScrubber.showMessage(message.position);
+        QuerypointPanel.TurnScrubberViewModel.eventTurn.showTurn(message.turn);
+        QuerypointPanel.TurnScrubberViewModel.showMessage(message.position);
         var dropDown = document.querySelector('.eventTurn');
-        var loadElement = document.querySelector('.loadList');
+        var loadElement = document.querySelector('.loadListView');
         var messages = document.querySelector('.eventTurn .messages');
         dropDown.style.display = 'block';
         loadElement.style.display = 'none';
         messages.scrollTop = 15 * message.position;
     },
-  
-    startRecord: function(){
-      var logScrubber = this;
-      if (logScrubber.showLoad().load != logScrubber.loadStarted()) return;
-      var button = document.querySelector('.recordIndicator');
-      var marker = document.querySelector('.recordMarker');
-      if (button.classList.contains('on')) {
-          logScrubber.recordData.stopRecording(button, marker);
-      } else {
-          try{
-            var current = logScrubber.showLoad().messages.length;
-          } catch (err) {
-              return;             // Load hasn't started
-          }
-          for (var i = 0; i < logScrubber.recordedMessages().length; i++) logScrubber.preMessages().push(logScrubber.recordedMessages()[i]);
-          for (var i = 0; i < logScrubber.postMessages().length; i++) logScrubber.preMessages().push(logScrubber.postMessages()[i]);
-          logScrubber.preMessages.valueHasMutated();
-          logScrubber.recordedMessages([]);
-          logScrubber.postMessages([]);
-          logScrubber.updateSize();
-  
-          logScrubber.messages = logScrubber.recordedMessages;
-  
-          logScrubber.recordData.load = logScrubber.showLoad();
-          logScrubber.recordData.start = logScrubber.showLoad().turns().length;
-          logScrubber.recordData.end = -1;
-          
-          marker.onmousedown = function(){ logScrubber.recordData.stopRecording(button, marker);};
-          marker.innerHTML = '&#9679;';
-          marker.style.display = 'block';
-          marker.classList.add('on');
-          button.classList.add('on');
-      }
-    },
     
     pageWasReloaded: function(runtimeInstalled) {
       this.turnStarted(0);
       this.turnEnded(0);
-      if (!runtimeInstalled) {
-        this.loadStarted(0);    
-        this.loadEnded(0);
-      }
     }
   };
 }());

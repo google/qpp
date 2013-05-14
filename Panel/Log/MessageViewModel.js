@@ -5,31 +5,33 @@
   
   'use strict';
 
-  QuerypointPanel.LogViewModel = {
+  QuerypointPanel.MessageViewModel = {
 
     _reloadCount: 0,
     _turn: 0,
 
-    initialize: function(log, logScrubber) {
+    initialize: function(log, loadListViewModel, turnScrubber) {
       this.log = log;
-      this.logScrubber = logScrubber;
-
+      
       this.messagesByLoadNumber = ko.computed(function() {
-        var last = logScrubber.lastShown();
-        var first = last - logScrubber.rangeShowable();
+        var last = loadListViewModel.lastLoad();
+        var first = last - turnScrubber.rangeShowable();
         if (first < 0)
           first = 0;
         return this.log.extractMessages(first, last);
       }.bind(this)).extend({throttle: 10}); // enough time to shift the array
       
+      var messageView = document.querySelector('.messageView');
+      ko.applyBindings(this, messageView);
+
       return this;
     },
 
     setMessageLogElement: function(node, message) {
-      message.logElement = node[1];
+      message.logView = node[1];
       // close over the most recent message element
       this._scrollIntoView = function scrollIntoView() {
-        message.logElement.scrollIntoView(false);  
+        message.logView.scrollIntoView(false);  
       }
       if (!this._delayScrollIntoView) {    // then we need to plan to scroll
         this._delayScrollIntoView = true;   // only one plan in flight at at time

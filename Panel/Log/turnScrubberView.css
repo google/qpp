@@ -3,7 +3,7 @@
 // Copyright 2011 Google Inc. johnjbarton@google.com
 */
 
-.logScrubber {
+.sessionView {
     color: #272822; /* reverse from cm-s */
     /*background: -webkit-radial-gradient(black 15%, transparent 16%) 0 0, -webkit-radial-gradient(black 15%, transparent 16%) 4px 4px, -webkit-radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 0 1px, -webkit-radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 4px 4.5px;
     background-color:#272822;
@@ -19,12 +19,12 @@
     -webkit-flex-shrink: 0;
 }
 
-.logScrubber span {
+.sessionView span {
   display: inline-block;
   line-height: normal;
 }
 
-.logScrubber .messages span {  /* spans to have width and height */
+.sessionView .messages span {  /* spans to have width and height */
   height: 11px;
   width: 9px;
   border-width: 1px;
@@ -32,7 +32,7 @@
   border-color: #75715E;
 }
 
-.logScrubber .loadNumber:before {
+.sessionView .loadNumber:before {
     content: attr(load);
     font-size: 10px;
     color: #d0d0d0;
@@ -48,37 +48,37 @@
     top: 0px;
 }
 
-.logScrubber span.hiddenTurn {
+.sessionView span.hiddenTurn {
     display: none;
 }
 
 /* http://colorschemedesigner.com/#1q11T6ieGw0w0 */
-.logScrubber span.turnNumber:nth-child(even) {
+.sessionView span.turnNumber:nth-child(even) {
     border-width: 2px;
     border-style: solid;
     border-color: #1D1E1B;
 }
-.logScrubber span.turnNumber:nth-child(odd) {
+.sessionView span.turnNumber:nth-child(odd) {
     border-width: 2px;
     border-style: solid;
     border-color: #919483;
 }
 
-.logScrubber span.turns {
+.sessionView span.turns {
     border: none;
     margin-left: 15px;
 }
 
-.logScrubber .error {
+.sessionView .error {
     background-color: red;
 }
-.logScrubber .warning {
+.sessionView .warning {
     background-color: rgb(255, 208, 69);
 }
-.logScrubber .log {
+.sessionView .log {
   background-color: #272822;
 }
-.logScrubber:hover span.scrubberIndicator {
+.sessionView:hover span.scrubberIndicator {
   position: absolute;
   width: 30ex;
   height: 15px;
@@ -90,7 +90,7 @@
   border-style: solid;
   left: 400px;
 }
-.logScrubber span.scrubberIndicator:hover {
+.sessionView span.scrubberIndicator:hover {
   opacity: .8;
 }
 
@@ -102,7 +102,7 @@
     padding-right: .3em;
 }
 
-.logContainer {
+.messageView {
   overflow-y: hidden;
   overflow-x: auto;
   min-height: 200px;
@@ -110,7 +110,7 @@
   resize: vertical;
 }
 
-.initialView .logContainer {
+.initialView .messageView {
   display: none;
 }
 
@@ -190,25 +190,25 @@
     background-color: #d0d0d0;
 }
 
-.eventIndicator[severity="error"]{
+.eventIndicator[severity="error"] {
     background-color: #F00;
 }
 
-.eventIndicator[severity="hide"]{
+.eventIndicator[severity="hide"] {
     display: none;
 }
 
-.nextLoad{
+.nextLoad {
     position: absolute;
     right: 0px;
     top: 0px;
 }
 
-.currentLoad{
+.currentLoad {
     float: left;
 }
 
-.loadList{
+.loadListView {
     position: absolute;
     top: 15px;
     height: auto;
@@ -218,7 +218,7 @@
     display: none;
 }
 
-.eventTurn{
+.eventTurn {
     line-height: 15px;
     position: absolute;
     top: 15px;
@@ -422,7 +422,7 @@ ul.eventInfo_sideMenu li a{
     text-decoration: none;
 }
 
-.recordIndicator, .recordMarker{
+.beginRecorded, .endRecorded {
     float: left;
     width: 10px;
     height: 15px;
@@ -435,12 +435,13 @@ ul.eventInfo_sideMenu li a{
     color: #272822;
 }
 
-.recordMarker{
+.endRecorded[state="off"] {
     display: none;
 }
 
-.recordIndicator.on, .recordMarker.on{
+.beginRecorded[state="record"], .endRecorded[state="record"]{
     color: #F00;
+    display: inline;
 }
 
 .selectedLoad{

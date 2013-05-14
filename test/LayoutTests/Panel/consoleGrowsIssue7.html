@@ -29,7 +29,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(extractText, 'td div[severity="log"]');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector(".consoleAction").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(whenSelectorAll, 'div[severity="error"]', 'Error 29');
-  AsyncMachine.pushOp(getBoundingClientRect, '.logContainer', '', function (rects) {
+  AsyncMachine.pushOp(getBoundingClientRect, '.messageView', '', function (rects) {
     // I expected an array but only an object comes back....
     return rects.height;
   });

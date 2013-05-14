@@ -10,24 +10,34 @@
   });
 
   QuerypointPanel.EventTurn = {
-    initialize: function(logScrubber, project, tracequeries) {
-      this._project = project;
-      this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
-      this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
-      
+    initialize: function(loadListViewModel, project, tracequeries) {
       var eventTurn = this;
 
       this.showTurn = ko.observable(0);
       
       this.turnInformation = ko.computed(function(){
-        return 'Turn ' + eventTurn.showTurn() + ' on load ' + logScrubber.showLoad().load + '.';
+        var info = 'Turn ' + eventTurn.showTurn() + ' on load ' + loadListViewModel.showLoad().load + '.';
+        return info;
       });
+
+      this.createFileURL = function(eventInfo) {
+        // the QPRuntime only has the function start offset.
+        var offset = parseInt(eventInfo.offset, 10);
+        var functionTree = project.find(eventInfo.filename, offset);
+        var startOffset = 0;
+        var endOffset = 0;
+        if (functionTree) {
+          startOffset = functionTree.location.start.offset;
+          endOffset = functionTree.location.end.offset;
+        }
+        return project.createFileURL(eventInfo.filename, startOffset, endOffset);
+      }
 
       this.summary = ko.computed(function(){
         try {
             var currentTurnNumber = eventTurn.showTurn(); // updated by user interaction
             if (currentTurnNumber) {  
-              var load = logScrubber.showLoad();
+              var load = loadListViewModel.showLoad();
               if (load.turns) {
                 var turn = load.turns()[currentTurnNumber - 1];
                 if (turn) {
@@ -36,16 +46,16 @@
                   }
                   return turn.event;
                 } else {
-                  console.error('LogScrubber.summary no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
+                  console.warn('loadListViewModelViewModel.summary no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
                 }
               } else {
                 if (load.load !== '-') {
-                  console.warn('LogScrubber.summary no .turns in load', load);
+                  console.warn('loadListViewModelViewModel.summary no .turns in load', load);
                 }
               }
             } 
         } catch(err) {
-          console.warn('LogScrubber.summary fails ' + err, err);
+          console.warn('loadListViewModelViewModel.summary fails ' + err, err);
         }
       });
 
@@ -55,7 +65,7 @@
       });
 
       this.turnMessages = ko.computed(function(){
-        var turns = logScrubber.showLoad().turns;
+        var turns = loadListViewModel.showLoad().turns;
         var messages = [];
         if (turns) {
           var turnIndex = eventTurn.showTurn() - 1;
@@ -87,46 +97,32 @@
         });
       });
 
-      this.registeredEntryPoints = ko.computed(function(){
+      this.addedEvents = ko.computed(function(){
         var summary = eventTurn.summary();
-        if (summary && summary.registeredEntryPoints) {
-            return summary.registeredEntryPoints.map(function(detail){
-                return {detail: detail};
-            });
-        } else {
-          return [];
-        }
+        if (!summary || !summary.addedEvents || summary.addedEvents.length === 0) return false;
+        return summary.addedEvents.map(function(detail){
+            return {detail: detail};
+        });
       });
-      
+
+      // 'this' is an element in the array returned by turnChain or triggeredEvents
+      this.switchTurn = function(){
+        QuerypointPanel.loadListViewModelViewModel.eventTurn.showTurn(this.turnNumber);
+        QuerypointPanel.loadListViewModelViewModel.showMessage(0);
+      }
+
+      this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
+      this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
     },    
 
-    switchTurn: function(){
-      // FIXME: move to LogScrubber and pass turnNumber arg
-      QuerypointPanel.LogScrubber.eventTurn.showTurn(this.turnNumber);
-      QuerypointPanel.LogScrubber.showMessage(0);
-    },
-
-    createFileURL: function(eventInfo) {
-      // the QPRuntime only has the function start offset.
-      var offset = parseInt(eventInfo.offset, 10);
-      var functionTree = this._project.find(eventInfo.filename, offset);
-      var startOffset = 0;
-      var endOffset = 0;
-      if (functionTree) {
-        startOffset = functionTree.location.start.offset;
-        endOffset = functionTree.location.end.offset;
-      }
-      return this._project.createFileURL(eventInfo.filename, startOffset, endOffset);
-    },
-
     revealElement: function(){
-      console.error("TODO reveal element");
+        console.error("TODO reveal element");
     },
 
     traceElement: function(eventTurn){
       console.log("trace target of turn " + this.showTurn(), eventTurn);
       var summary = eventTurn.summary(); 
-      var selector = summary.targetSelector;
+      var selector = summary.target;
       var functionURL = summary.url;
       this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
       if (this.query && !this.query.isActive()) {
@@ -156,7 +152,7 @@
             } else {
                 DOM.querySelector(root.nodeId, selector, function(error, node){
                     DOM.highlightNode(highlightConfig, node, '', function(error){
-                        if (debug && error) console.error('LogScrubber.highlightElement FAILED:', error);
+                        if (debug && error) console.error('loadListViewModelViewModel.highlightElement FAILED:', error);
                         // else just ignore the error, occurs in testing
                     });
                 });

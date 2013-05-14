@@ -38,8 +38,8 @@ function test_clickMessage() {
 
   function checkTurnNumber(turnNumber) {
     var turnNumberOffsetTop = document.querySelectorAll("td.turnNumber")[turnNumber].offsetTop;
-    var scrollTop = document.querySelector(".logContainer").scrollTop;
-    var offsetHeight = document.querySelector(".logContainer").offsetHeight;
+    var scrollTop = document.querySelector(".messageView").scrollTop;
+    var offsetHeight = document.querySelector(".messageView").offsetHeight;
     var offsetTop = document.querySelector(".messagesByLoadNumber").offsetTop;
     var delta  = turnNumberOffsetTop -  scrollTop + offsetTop;
     console.log("checkTurnNumber turnNumberOffsetTop " + turnNumberOffsetTop + " scrollTop " + scrollTop);
