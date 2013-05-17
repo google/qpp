@@ -47,7 +47,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   });
 
   var logView = document.querySelector('.logView');
-  var dropDown = document.querySelector('.eventTurn');
+  var dropDown = document.querySelector('.turnView');
 
   this.sessionViewModel = QuerypointPanel.SessionViewModel.initialize(project);
 
@@ -55,9 +55,9 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
   
   this.currentTurn = ko.computed(function() {
-    var turnEnded = this.sessionViewModel.turnEnded();
+    var turnEnded = panel.sessionViewModel.turnScrubberViewModel.turnEnded();
     return turnEnded;
-  }.bind(this));
+  });
 
   this.commands = new QuerypointPanel.Commands(this);
   this._initModel();

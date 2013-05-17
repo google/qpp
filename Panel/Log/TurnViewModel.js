@@ -5,62 +5,49 @@
 
   'use strict';
 
-  var debug = DebugLogger.register('EventTurn', function(flag){
+  var debug = DebugLogger.register('TurnViewModel', function(flag){
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  QuerypointPanel.EventTurn = {
+  QuerypointPanel.TurnViewModel = {
     initialize: function(loadListViewModel, project, tracequeries) {
-      var eventTurn = this;
+      var turnViewModel = this;
 
       this.showTurn = ko.observable(0);
       
-      this.turnInformation = ko.computed(function(){
-        var info = 'Turn ' + eventTurn.showTurn() + ' on load ' + loadListViewModel.showLoad().load + '.';
+      this.turnSummary = ko.computed(function(){
+        var info = 'Turn ' + turnViewModel.showTurn() + ' on load ' + loadListViewModel.showLoad().load + '.';
         return info;
       });
 
-      this.createFileURL = function(eventInfo) {
-        // the QPRuntime only has the function start offset.
-        var offset = parseInt(eventInfo.offset, 10);
-        var functionTree = project.find(eventInfo.filename, offset);
-        var startOffset = 0;
-        var endOffset = 0;
-        if (functionTree) {
-          startOffset = functionTree.location.start.offset;
-          endOffset = functionTree.location.end.offset;
-        }
-        return project.createFileURL(eventInfo.filename, startOffset, endOffset);
-      }
-
-      this.summary = ko.computed(function(){
+      this.turn = ko.computed(function(){
         try {
-            var currentTurnNumber = eventTurn.showTurn(); // updated by user interaction
+            var currentTurnNumber = turnViewModel.showTurn(); // updated by user interaction
             if (currentTurnNumber) {  
               var load = loadListViewModel.showLoad();
               if (load.turns) {
                 var turn = load.turns()[currentTurnNumber - 1];
                 if (turn) {
-                  if (!turn.event.url) {
-                    turn.event.url = eventTurn.createFileURL(turn.event);
+                  if (!turn.url) {
+                    turn.url = turnViewModel.createFileURL(turn);
                   }
-                  return turn.event;
+                  return turn;
                 } else {
-                  console.warn('loadListViewModelViewModel.summary no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
+                  console.warn('loadListViewModelViewModel.turn no entry in load.turns() for ' + (currentTurnNumber - 1), Object.keys(load.turns()));
                 }
               } else {
                 if (load.load !== '-') {
-                  console.warn('loadListViewModelViewModel.summary no .turns in load', load);
+                  console.warn('loadListViewModelViewModel.turn no .turns in load', load);
                 }
               }
             } 
         } catch(err) {
-          console.warn('loadListViewModelViewModel.summary fails ' + err, err);
+          console.warn('loadListViewModelViewModel.turn fails ' + err, err);
         }
       });
 
       this.hasTargetElement = ko.computed(function(){
-          var summary = eventTurn.summary();
+          var summary = turnViewModel.turn();
           return summary && summary.target !== 'none';
       });
 
@@ -68,7 +55,7 @@
         var turns = loadListViewModel.showLoad().turns;
         var messages = [];
         if (turns) {
-          var turnIndex = eventTurn.showTurn() - 1;
+          var turnIndex = turnViewModel.showTurn() - 1;
           var turn = turns()[turnIndex];
           if (turn)
             return turn.messages();
@@ -77,7 +64,7 @@
       });
 
       this.turnChain = ko.computed(function(){
-        var summary = eventTurn.summary();
+        var summary = turnViewModel.turn();
         if (!summary) return false; 
         var result = [];
         var target = summary.previousTurn;
@@ -90,7 +77,7 @@
       });
 
       this.triggeredEvents = ko.computed(function(){
-        var summary = eventTurn.summary();
+        var summary = turnViewModel.turn();
         if (!summary || !summary.firedEvents || summary.firedEvents.length === 0) return false;
         return summary.firedEvents.map(function(turnNumber){
             return {turnNumber: turnNumber};
@@ -98,7 +85,7 @@
       });
 
       this.addedEvents = ko.computed(function(){
-        var summary = eventTurn.summary();
+        var summary = turnViewModel.turn();
         if (!summary || !summary.addedEvents || summary.addedEvents.length === 0) return false;
         return summary.addedEvents.map(function(detail){
             return {detail: detail};
@@ -107,21 +94,37 @@
 
       // 'this' is an element in the array returned by turnChain or triggeredEvents
       this.switchTurn = function(){
-        QuerypointPanel.loadListViewModelViewModel.eventTurn.showTurn(this.turnNumber);
+        QuerypointPanel.loadListViewModelViewModel.turnViewModel.showTurn(this.turnNumber);
         QuerypointPanel.loadListViewModelViewModel.showMessage(0);
       }
 
       this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);
       this._tracequeries = tracequeries; // TODO encapsulate in panel and pass query vai appendQuery
-    },    
+
+      var turnView = document.querySelector('.turnView');
+      ko.applyBindings(this, turnView);
+    },
+
+    createFileURL: function(eventInfo) {
+      // the QPRuntime only has the function start offset.
+      var offset = parseInt(eventInfo.offset, 10);
+      var functionTree = project.find(eventInfo.filename, offset);
+      var startOffset = 0;
+      var endOffset = 0;
+      if (functionTree) {
+        startOffset = functionTree.location.start.offset;
+        endOffset = functionTree.location.end.offset;
+      }
+      return project.createFileURL(eventInfo.filename, startOffset, endOffset);
+    },
 
     revealElement: function(){
         console.error("TODO reveal element");
     },
 
-    traceElement: function(eventTurn){
-      console.log("trace target of turn " + this.showTurn(), eventTurn);
-      var summary = eventTurn.summary(); 
+    traceElement: function(turnViewModel){
+      console.log("trace target of turn " + this.showTurn(), turnViewModel);
+      var summary = turnViewModel.turn(); 
       var selector = summary.target;
       var functionURL = summary.url;
       this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
@@ -130,12 +133,12 @@
         this._tracequeries.push(this.query);        
       }
       // User has asked for an action, now show them where the results will appear.
-      eventTurn.close();
+      turnViewModel.close();
     },
 
     highlightElement: function(){
         var DOM, highlightConfig, selector;
-        selector = this.summary().target;
+        selector = this.turn().target;
         if (!selector) {
           return;
         }
@@ -165,8 +168,8 @@
     },
 
     close: function() {      
-      var eventTurnInfo = document.querySelector('.eventTurn');
-      eventTurnInfo.style.display = 'none';
+      var turnViewModelInfo = document.querySelector('.turnViewModel');
+      turnViewModelInfo.style.display = 'none';
     }
 
   };

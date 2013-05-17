@@ -23,8 +23,8 @@
       this.turnEnded = ko.observable(0);
       this.showMessage = ko.observable(0);
 
-      this.eventTurn = QuerypointPanel.EventTurn;
-      this.eventTurn.initialize(sessionViewModel.loadListViewModel, project, tracequeries);
+      this.turnViewModel = QuerypointPanel.TurnViewModel;
+      this.turnViewModel.initialize(sessionViewModel.loadListViewModel, project, tracequeries);
 
       var logView = document.querySelector('.logView');
       
@@ -42,7 +42,7 @@
       var sessionView = document.querySelector('.sessionView');
       var logFloat = document.querySelector('.messageView');
       var loadElement = document.querySelector('.loadListView');
-      var dropDown = document.querySelector('.eventTurn');
+      var dropDown = document.querySelector('.turnView');
       var currentLoad = document.querySelector('.currentLoad');
 
       this.preMessages = ko.observableArray();          // Messages before the play button
@@ -180,33 +180,33 @@
       }
 
       // Method that changes css style to change width and border of indicators
-      // The modified rule is in a stylesheet by itself eventIndicator.css
+      // The modified rule is in a stylesheet by itself turnIndicator.css
       this._setMessageWidth = function(width) {
-        var eventIndicatorSheet;
+        var turnIndicatorSheet;
         for (var i = 0; i < document.styleSheets.length; i++) {
           var styleSheet = document.styleSheets[i]
-          if (styleSheet.href.indexOf('eventIndicator.css') !== -1) {
-            eventIndicatorSheet = styleSheet;
+          if (styleSheet.href.indexOf('turnIndicator.css') !== -1) {
+            turnIndicatorSheet = styleSheet;
             break;
           }
         }
-        var eventIndicatorRule;
-        for (var i = 0; i < eventIndicatorSheet.cssRules.length; i++) {
-            var cssRule = eventIndicatorSheet.cssRules[i];
-            if (cssRule.selectorText.indexOf('.eventIndicator') !== -1) {
-                eventIndicatorRule = cssRule;
+        var turnIndicatorRule;
+        for (var i = 0; i < turnIndicatorSheet.cssRules.length; i++) {
+            var cssRule = turnIndicatorSheet.cssRules[i];
+            if (cssRule.selectorText.indexOf('.turnIndicator') !== -1) {
+                turnIndicatorRule = cssRule;
                 break;
             }
         }
         if (width < 3) 
-            eventIndicatorRule.style.borderLeftWidth = '0px';
+            turnIndicatorRule.style.borderLeftWidth = '0px';
         else 
-            eventIndicatorRule.style.borderLeftWidth = '2px';
+            turnIndicatorRule.style.borderLeftWidth = '2px';
             
         if (width > 10)
-            eventIndicatorRule.style.width = '10px';
+            turnIndicatorRule.style.width = '10px';
         else 
-            eventIndicatorRule.style.width = width + 'px';
+            turnIndicatorRule.style.width = width + 'px';
       }
 
       this.showLoadNumber = ko.computed(function(){
@@ -336,6 +336,11 @@
 
     },
 
+    onBeginLoad: function() {
+      this._scale = 1;
+      this._clearMessages();
+    },
+
     _resetMessages: function() {
       for (var i = 0; i < this.recordedMessages().length; i++) 
         this.preMessages().push(this.recordedMessages()[i]);
@@ -377,11 +382,11 @@
   
     turnInfo: function(message){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-        QuerypointPanel.TurnScrubberViewModel.eventTurn.showTurn(message.turn);
+        QuerypointPanel.TurnScrubberViewModel.turnViewModel.showTurn(message.turn);
         QuerypointPanel.TurnScrubberViewModel.showMessage(message.position);
-        var dropDown = document.querySelector('.eventTurn');
+        var dropDown = document.querySelector('.turnView');
         var loadElement = document.querySelector('.loadListView');
-        var messages = document.querySelector('.eventTurn .messages');
+        var messages = document.querySelector('.turnView .messages');
         dropDown.style.display = 'block';
         loadElement.style.display = 'none';
         messages.scrollTop = 15 * message.position;

@@ -53,12 +53,12 @@ function test_resizeEvents10() {
 
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){ return "";} );
   AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '⇵6');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").offsetWidth');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".turnIndicator").offsetWidth');
   AsyncMachine.pushOp(evaluateInPanel, functionchange(10), function(ans){ if(ans=='0'){ AsyncMachine.ops=[]; return "Window too wide to run test case" ;} passed+=ans; });
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){ return "";} );
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("span.turnNumber").textContent = 100', function(text){ return "";} );
   AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '100');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".eventIndicator").offsetWidth');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".turnIndicator").offsetWidth');
  // AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '⇵'+i);
   AsyncMachine.runOp();
 }

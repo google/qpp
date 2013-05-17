@@ -61,7 +61,7 @@
 <link rel="stylesheet" href="QPOutput.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="TraceView.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="Log/turnScrubberView.css"><!-- after codemirror.css -->
-<link rel="stylesheet" href="Log/eventIndicator.css"><!-- after codemirror.css -->
+<link rel="stylesheet" href="Log/turnIndicator.css"><!-- after codemirror.css -->
 <link rel="stylesheet" href="StatusBar/StatusBar.css"><!-- after codemirror.css -->
 <script src="../mirror/CodeMirror/mode/javascript/javascript.js"></script>
 </head>
@@ -98,7 +98,7 @@
               <table>
                 <tbody class='turns' data-bind="foreach: turns">
                   <tr>
-                    <td class="turnNumber" title="Event turn number" data-bind="text: turn"></td>
+                    <td class="turnNumber" title="Event turn number" data-bind="text: turnNumber"></td>
                     <td class="messages" title="console output" data-bind="foreach: {data: messages, afterRender: $root.setMessageLogElement}">
                           <div data-bind="text: text, attr:{severity: severity}"></div>
                     </td>
@@ -119,15 +119,15 @@
             <div class="loadNumber" title="Reload Number" data-bind="attr: {load: load}, event:{mousedown: $parent.displayLoad.bind($parent)}">
             </div>
         </div>
-        <div class="eventTurn" data-bind="with: eventTurn">
-            <p class="turnInformation" data-bind="text: turnInformation"> </p>
-            <ul class="eventTurn_summary" data-bind="if: summary">
-                <li>Function <a data-bind="text: summary().functionName, attr:{'data-url': summary().url}"></a></li>
-                <li>registered on turn <a data-bind="text: summary().registrationTurnNumber, click: $parent.switchTurn"></a>, then</li>
-                <li>triggered by <a data-bind="text: summary().eventType"></a></li>
-                <li class="hoverMenuTrigger" data-bind="if: summary().targetSelector !== 'none'"><span>on target</span>
+        <div class="turnView" data-bind="if: turn">
+            <p class="turnSummary" data-bind="text: turnSummary"> vvvvv </p>
+            <ul class="turnInformation">
+                <li>Function <a data-bind="text: turn().functionName, attr:{'data-url': turn().url}"></a></li>
+                <li>registered on turn <a data-bind="text: turn().registrationTurnNumber, click: $parent.switchTurn"></a>, then</li>
+                <li>triggered by <a data-bind="text: turn().eventType"></a></li>
+                <li class="hoverMenuTrigger" data-bind="if: turn().targetSelector !== 'none'"><span>on target</span>
                   <span class="hoverMenuTrigger">
-                    <a class="eventInfo_target" data-bind="text: summary().targetSelector, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
+                    <a class="eventInfo_target" data-bind="text: turn().targetSelector, event:{mouseover: highlightElement, mouseout: unhighlight}"></a>
                     <ul class="hoverMenu eventInfo_menu">
                     <!-- ko if: hasTargetElement -->
                         <li class="eventInfo_target_reveal" data-bind="event: {mousedown: revealElement}"><a>Reveal</a> in Elements Panel (TODO)</li>
@@ -145,7 +145,7 @@
                   <!-- /ko -->    
               </div>
               <!-- /ko -->
-              <!-- ko if: registeredEntryPoints().length -->
+              <!-- ko if: turn().registeredEntryPoints().length -->
               <div class="registeredEntryPointsHeader">Registered Entry Points:
                   <!-- ko foreach: registeredEntryPoints -->
                       <div class="turnList"><a data-bind="text: detail"></a></div>
@@ -170,20 +170,20 @@
           <div class="overviewLog">
               <!-- ko if: sessionViewModel.loadListViewModel.currentLoadIsSelected -->
               <!-- ko foreach: preMessages -->
-              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <div class="beginRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{mousedown: recorder.onBeginRecorded.bind(recorder) }">x</div>
               <!-- ko foreach: recordedMessages -->
-               <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+               <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <div class="endRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{mousedown: recorder.onEndRecorded.bind(recorder) }">&#9679;</div>
               <!-- ko foreach: postMessages -->
-              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <!-- /ko -->
               <!-- ko if: sessionViewModel.loadListViewModel.isPastLoad -->
               <!-- ko foreach: storedMessages -->
-              <div class="eventIndicator" data-bind="attr:{severity: severity, turn: turn}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <!-- /ko -->
           </div>

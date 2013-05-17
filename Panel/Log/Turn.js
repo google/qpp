@@ -13,6 +13,7 @@
     }.bind(this));
 
     this.registeredEntryPoints = [];
+    this.messages = ko.observableArray();
   }
 
   QuerypointPanel.Turn.prototype = { 

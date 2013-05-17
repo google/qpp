@@ -178,23 +178,23 @@
     margin-right: 15px;
 }
 
-.eventIndicator[severity="turn"]{
+.turnIndicator[severity="turn"]{
     background-color: #f8f8f2;
 }
 
-.eventIndicator[severity="warning"] {
+.turnIndicator[severity="warning"] {
     background-color: rgb(255, 208, 69);
 }
 
-.eventIndicator[severity="log"] {
+.turnIndicator[severity="log"] {
     background-color: #d0d0d0;
 }
 
-.eventIndicator[severity="error"] {
+.turnIndicator[severity="error"] {
     background-color: #F00;
 }
 
-.eventIndicator[severity="hide"] {
+.turnIndicator[severity="hide"] {
     display: none;
 }
 
@@ -218,7 +218,7 @@
     display: none;
 }
 
-.eventTurn {
+.turnView {
     line-height: 15px;
     position: absolute;
     top: 15px;
@@ -237,16 +237,16 @@
     font-weight: lighter;
 }
 
-.eventTurn .registeredEntryPointsHeader {
+.turnView .registeredEntryPointsHeader {
   color: #75715e;
 }
 
-.eventTurn .messagesHeader {
+.turnView .messagesHeader {
   padding-top: 1ex;
   color: #75715e;
 }
 
-.eventTurn .messages {
+.turnView .messages {
     max-height: 150px;
     overflow-y: scroll;
     font-style: normal;
@@ -254,41 +254,41 @@
     font-family: monospace;
 }
 
-.eventTurn p.message {
+.turnView p.message {
   margin: 0;
   color: rgb(141, 141, 134);
   font-size: small;
 }
 
-.eventTurn p.message[severity="turn"] {
+.turnView p.message[severity="turn"] {
   display: none;
 }
 
-.eventTurn p.message[severity="error"] {
+.turnView p.message[severity="error"] {
   color: rgb(255, 0, 0);
 }
 
-.eventTurn p.message[severity="warning"] {
+.turnView p.message[severity="warning"] {
   color: rgb(255, 208, 69);
 }
 
-.eventTurn .messages::-webkit-scrollbar{
+.turnView .messages::-webkit-scrollbar{
     width: 8px;
     height: 16px;
 }
 
-.eventTurn .messages::-webkit-scrollbar-thumb{
+.turnView .messages::-webkit-scrollbar-thumb{
     background-color: rgba(248,248,242,0.5);
     -webkit-box-shadow: inset 1px 1px 0 rgba(39,40,34,0.10),inset 0 -1px 0 rgba(39,40,34,0.07);
 }
 
-.eventTurn .messages::-webkit-scrollbar-button{
+.turnView .messages::-webkit-scrollbar-button{
     width: 0;
     height: 0;
     display: none;
 }
 
-.eventTurn .messages::-webkit-scrollbar-corner{
+.turnView .messages::-webkit-scrollbar-corner{
     background-color: rgba(248,248,242,0.2);
 }
 
@@ -318,7 +318,7 @@ table.messagesByLoadNumber {
   color: #f8f8f2;
 }
 
-.eventTurn_summary {
+.turnInformation {
     margin-bottom: 15px;
     padding: 0;
     list-style: none;
@@ -326,23 +326,23 @@ table.messagesByLoadNumber {
     z-index: 100;
 }
 
-.eventTurn_summary > li {
+.turnInformation > li {
     display: inline;
     -webkit-user-select: none;
     cursor: default;
 }
 
-.eventTurn_summary a {
+.turnInformation a {
     color: #f8f8f2;
     font-style: normal;
 }
 
-.eventTurn_summary a:hover {
+.turnInformation a:hover {
     color: #f8f8f2;
     text-decoration: underline;
 }
 
-.eventTurn_summary > ul {
+.turnInformation > ul {
     list-style: none;
     position: absolute;
     left: -9999px;
@@ -352,32 +352,32 @@ table.messagesByLoadNumber {
     padding-right: 10px;
 }
 
-.eventTurn_summary ul li ul{
+.turnInformation ul li ul{
     left: -9999px;
 }
 
-.eventTurn_summary ul li {
+.turnInformation ul li {
     padding-top: 1px;
     float: none;
 }
 
-.eventTurn_summary ul a {
+.turnInformation ul a {
     white-space: nowrap;
 }
 
-.eventTurn_summary>li:hover>ul {
+.turnInformation>li:hover>ul {
     left: 0px;
 }
 
-.eventTurn_summary li ul li ul{
+.turnInformation li ul li ul{
     left: 0px;
 }
 
-/*.eventTurn_summary li>ul>li:hover>ul.eventInfo_sideMenu {
+/*.turnInformation li>ul>li:hover>ul.eventInfo_sideMenu {
     left: 98px;
 }
 
-.eventTurn_summary li:hover a {
+.turnInformation li:hover a {
     text-decoration: none;
 }
 
@@ -418,7 +418,7 @@ ul.eventInfo_sideMenu li a{
     cursor: default;
 }
 
-.eventTurn_summary li ul a {
+.turnInformation li ul a {
     text-decoration: none;
 }
 

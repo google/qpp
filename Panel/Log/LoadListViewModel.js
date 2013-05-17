@@ -109,6 +109,12 @@
         this.loadStarted(0);    
         this.loadEnded(0);
       }
+    },
+
+    onBeginLoad: function(loadViewModel) {
+      this.showLoad().next = loadViewModel;
+      this.showLoad(loadViewModel);
+      this.pageLoads.push(loadViewModel);
     }
   };
 }());

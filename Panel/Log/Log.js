@@ -18,7 +18,7 @@
      if (debug)
       console.log('Message.tooltip: total logs : '+totalLogs);
 
-     return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
+     return 'load: ' + this.load + ' turn: ' + this.turnNumber + '| ' + this.text;
     }
   };
   
@@ -37,7 +37,7 @@
 
   QuerypointPanel.Log = {
 
-    currentReload: {},
+    currentLoad: {},
     currentTurn: {},
 
     initialize: function(project, loadListViewModel, turnScrubber) {
@@ -48,7 +48,7 @@
       QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
       this._reloadBase = this.project.numberOfReloads + 1;
 
-      this.currentReload.messages = [];
+      this.currentLoad.messages = [];
       return this;
     },
     
@@ -58,30 +58,30 @@
     
     _currentTurn: 'none yet',
     
-    _onLoadEvent: function(segments) {
-     this._loadListViewModel.loadEnded(parseInt(segments[2], 10));
-     this._turnScrubber.recorder.onLoadEvent(this._turnScrubber);
-    },    
-
     _onReload: function(segments) {
-      this._reloadCount = parseInt(segments[2], 10);
-      this._loadListViewModel.loadStarted(this._reloadCount);
-      this._turnScrubber._scale = 1;
+      var loadNumber = parseInt(segments[2], 10);
+      this._loadListViewModel.loadStarted(loadNumber);
+      this._turnScrubber.onBeginLoad(loadNumber);
+    },  
+
+    _onLoadEvent: function(segments) {
+      var loadNumber = parseInt(segments[2], 10);
+      this._loadListViewModel.loadEnded(loadNumber);
+      this._turnScrubber.recorder.onLoadEvent(this._turnScrubber);
     },    
     
     _onStartTurn: function(segments, messageSource) {
       messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
       messageSource.severity = 'turn';
-      this._currentTurn = new QuerypointPanel.Turn(JSON.parse(unescape(segments[2])));
-      this._currentTurnNumber = this._currentTurn.turnNumber;
-      this._turnScrubber.turnStarted(this._currentTurnNumber);
+      this._turnInProgress = new QuerypointPanel.Turn(JSON.parse(unescape(segments[2])));
+      this._turnScrubber.turnStarted(this._turnInProgress.turnNumber);
 
-      if (this._currentTurn.registrationTurnNumber)
-        this._currentTurn.registrationTurn = this.currentReload.turns()[this._currentTurn.registrationTurnNumber];
-      else if (this._currentTurn.turnNumber !== 1)
-        console.error("No registrationTurnNumber for turn " + this._currentTurn.turnNumber, this._currentTurn);
+      if (this._turnInProgress.registrationTurnNumber)
+        this._turnInProgress.registrationTurn = this.currentLoad.turns()[this._turnInProgress.registrationTurnNumber];
+      else if (this._turnInProgress.turnNumber !== 1)
+        console.error("No registrationTurnNumber for turn " + this._turnInProgress.turnNumber, this._turnInProgress);
 
-      messageSource.text = 'Turn ' + this._currentTurnNumber + ' started. (' + this._currentTurn.detail() + ')';
+      messageSource.text = 'Turn ' + this._turnInProgress.turnNumber + ' started. (' + this._turnInProgress.detail() + ')';
     },
 
     _onEndTurn: function(segments) {
@@ -90,11 +90,11 @@
     },
 
     _onSetTimeout: function(segments) {
-      this._currentTurn.onSetTimeout( segments[2], segments[3] );
+      this._turnInProgress.onSetTimeout( segments[2], segments[3] );
     },
 
     _onAddEventListener: function(segments) {
-      this._currentTurn.onAddEventListener( segments[2], segments[3] );      
+      this._turnInProgress.onAddEventListener( segments[2], segments[3] );      
     },
 
     _parse: function(messageSource) {
@@ -117,60 +117,46 @@
       } else {  // not a qp message
           var started = this._turnScrubber.turnStarted();
           if ( started && started === this._turnScrubber.turnEnded()) 
-              console.error('QPRuntime error: No turn for message after turn %o', this._currentTurnNumber);
+              console.error('QPRuntime error: No turn for message after turn %o', this._turnInProgress.turnNumber);
       }
-      messageSource.load = this._reloadCount;
-      messageSource.turn = this._currentTurnNumber;
-      messageSource.event = this._currentTurn;
+      messageSource.load = this._loadListViewModel.loadStarted();
+      messageSource.turn = this._turnInProgress;
       return messageSource; 
     },
 
-    _reloadRow: function(messageSource) {
+    _createLoadViewModel: function() {
       return {
-        load: messageSource.load, 
-        turns: ko.observableArray([this._turnRow(messageSource)]), 
+        load: this._loadListViewModel.loadStarted(), 
+        turns: ko.observableArray(), 
         messages: []
       };
     },
-    
-    _turnRow: function(messageSource) {
-      return {
-        turn: messageSource.turn, 
-        messages: ko.observableArray(),
-        event: messageSource.event
-      };
-    },
+
 
     _reformatMessage: function(messageSource) {
       if (messageSource.qp) return;
-      if (typeof messageSource.load === 'undefined') messageSource.load = this._reloadBase;
-      if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
       messageSource.__proto__ = messagePrototype;
       messageSource.severity = messageSource.severity || messageSource.level;
       
-      if (this.currentReload.load !== messageSource.load) {
-        this._turnScrubber._clearMessages();
-        this.currentReload = this._reloadRow(messageSource);
-        this.currentTurn = this.currentReload.turns()[0];
-        this._loadListViewModel.showLoad().next = this.currentReload;
-        this._loadListViewModel.showLoad(this.currentReload);
-        this._loadListViewModel.pageLoads.push(this.currentReload);
+      if (this.currentLoad.load !== messageSource.load) {
+        this.currentLoad = this._createLoadViewModel();
+        
+        this._loadListViewModel.onBeginLoad(this.currentLoad);
         if (debug){
           console.log('QuerypointPanel.Log._reformat loads.length '+ this._loadListViewModel.pageLoads().length);
         }
       }  
-      if (this.currentTurn.turn !== messageSource.turn) {
-        this.currentTurn = this._turnRow(messageSource)
-        this.currentReload.turns.push(this.currentTurn);
-        if(this.currentReload.load !== this._loadListViewModel.showLoad().load) this._loadListViewModel.displayLoad(this.currentReload);
+      if (this.currentTurn.turnNumber !== messageSource.turn.turnNumber) {
+        this.currentTurn = messageSource.turn;
+        this.currentLoad.turns.push(this.currentTurn);
         if (debug){
-          console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
+          console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentLoad.turns.length);
         }
       } 
       messageSource.position = this.currentTurn.messages().length;
-      this.currentTurn.messages.push(messageSource);
-      this.currentReload.messages.push(messageSource);
-      this._turnScrubber._addMessage(messageSource);
+      this.currentTurn.messages.push(messageSource);  // per turn view under turnScrubber
+      this.currentLoad.messages.push(messageSource);  // console-like view
+      this._turnScrubber._addMessage(messageSource);  // do we really need three!
       if (debug){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
       }
