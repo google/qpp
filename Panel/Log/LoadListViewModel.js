@@ -118,7 +118,7 @@
         node.classList.add('selectedLoad');
     },
 
-    pageWasReloaded: function(runtimeInstalled) {
+    pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
       if (!runtimeInstalled) {
         this.loadStarted(0);    
         this.loadEnded(0);

@@ -1,10 +1,14 @@
 http://localhost:8686/test/qpd.html
 prop in   var message = "I've been clicked " + obj.prop + " times";
+record pressed
+record
 true
 true
-true
-true
-true
-true
-1|0|1|0|1|0|1|0|1|0|1|0
+stop pressed
+recorded
+play pressed
+recorded
+1|0|1|0|1|0|1|0
+erase pressed
+off
 

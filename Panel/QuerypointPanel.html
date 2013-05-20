@@ -172,11 +172,11 @@
               <!-- ko foreach: preMessages -->
               <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
-              <div class="beginRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{mousedown: recorder.onBeginRecorded.bind(recorder) }">x</div>
+              <div class="beginRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{click: recorder.onBeginRecorded.bind(recorder) }">x</div>
               <!-- ko foreach: recordedMessages -->
                <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
-              <div class="endRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{mousedown: recorder.onEndRecorded.bind(recorder) }">&#9679;</div>
+              <div class="endRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{click: recorder.onEndRecorded.bind(recorder) }">&#9679;</div>
               <!-- ko foreach: postMessages -->
               <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->

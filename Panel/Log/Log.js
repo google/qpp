@@ -67,7 +67,6 @@
     _onLoadEvent: function(segments) {
       var loadNumber = parseInt(segments[2], 10);
       this._loadListViewModel.loadEnded(loadNumber);
-      this._turnScrubber.recorder.onLoadEvent(this._turnScrubber);
     },    
     
     _onStartTurn: function(segments, messageSource) {
@@ -158,7 +157,7 @@
       return this._loadListViewModel.pageLoads();
     },
     
-    pageWasReloaded: function(runtimeInstalled) {
+    pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
       this.initialize(this.project, this._loadListViewModel, this._turnScrubber);
     }
   };

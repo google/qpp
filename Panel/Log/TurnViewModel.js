@@ -17,13 +17,13 @@
       this.showTurn = ko.observable(0);
       
       this.turnSummary = ko.computed(function(){
-        var info = 'Turn ' + turnViewModel.showTurn() + ' on load ' + loadListViewModel.showLoad().load + '.';
+        var info = 'Turn ' + turnViewModel.showTurn() + ' on load ' + loadListViewModel.showLoad().loadNumber + '.';
         return info;
       });
 
       this.turn = ko.computed(function(){
         try {
-            var currentTurnNumber = turnViewModel.showTurn().turnNumber; // updated by user interaction
+            var currentTurnNumber = turnViewModel.showTurn(); // updated by user interaction
             if (currentTurnNumber) {  
               var load = loadListViewModel.showLoad();
               if (load.turns) {

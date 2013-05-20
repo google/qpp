@@ -143,7 +143,7 @@
       var loc = expressionTree.location;
       var trace = {
         query: this.query,
-        load: this._project.numberOfReloads,
+        loadNumber: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
         value: trace,

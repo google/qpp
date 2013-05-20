@@ -210,7 +210,7 @@
       }
 
       this.showLoadNumber = ko.computed(function(){
-          return sessionViewModel.loadListViewModel.showLoad().load;
+          return sessionViewModel.loadListViewModel.showLoad().loadNumber;
       });
 
       // Method is currently *not* being used
@@ -362,9 +362,13 @@
       this.messages = this.postMessages;
     },
 
+   onReplayBegins: function() {
+      this._resetMessages();
+      this.messages = this.recordedMessages;
+    },
+
     onReplayComplete: function() {
       this.messages = this.postMessages;
-      this._loadListViewModel.displayLoad(this._loadListViewModel.showLoad());
     },
 
     onEraseRecording: function() {
@@ -382,19 +386,21 @@
   
     turnInfo: function(message){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-        QuerypointPanel.TurnScrubberViewModel.turnViewModel.showTurn(message.turn);
+        QuerypointPanel.TurnScrubberViewModel.turnViewModel.showTurn(message.turn.turnNumber);
         QuerypointPanel.TurnScrubberViewModel.showMessage(message.position);
         var dropDown = document.querySelector('.turnView');
         var loadElement = document.querySelector('.loadListView');
         var messages = document.querySelector('.turnView .messages');
         dropDown.style.display = 'block';
         loadElement.style.display = 'none';
-        messages.scrollTop = 15 * message.position;
+        if (messages)
+          messages.scrollTop = 15 * message.position;
     },
     
-    pageWasReloaded: function(runtimeInstalled) {
+    pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
       this.turnStarted(0);
       this.turnEnded(0);
+      this.recorder.pageWasReloaded(runtimeInstalled, runtimeInstalling);
     }
   };
 }());

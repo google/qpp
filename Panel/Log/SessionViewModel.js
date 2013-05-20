@@ -44,10 +44,10 @@
       return false;
     },
 
-    pageWasReloaded: function(runtimeInitialized) {
-      this.loadListViewModel.pageWasReloaded(runtimeInitialized);
-      this.turnScrubberViewModel.pageWasReloaded(runtimeInitialized);
-      this._log.pageWasReloaded(runtimeInitialized);
+    pageWasReloaded: function(runtimeInitialized,  runtimeInstalling) {
+      this.loadListViewModel.pageWasReloaded(runtimeInitialized, runtimeInstalling);
+      this.turnScrubberViewModel.pageWasReloaded(runtimeInitialized, runtimeInstalling);
+      this._log.pageWasReloaded(runtimeInitialized, runtimeInstalling);
     },
 
     turnEnded: function() {
