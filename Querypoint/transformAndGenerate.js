@@ -27,7 +27,20 @@
       var tree = fileCompiler.parse(file);
       var descriptors = JSON.parse(descriptorsJSON);
       var generatedSource = fileCompiler.generateSourceFromTree(tree, name, descriptors);
-      var generatedFileName = input.name ? (input.name  + ".js") : toBase64DataURI(generatedSource);
+      var generatedFileName;
+      if (input.name) {
+        if (/\.js$/.test(input.name)) {
+          generatedFileName = input.name  + ".js";
+        } else {
+          // .html.js does not work in devtools, so use .random.js
+          var segments = input.name.split('.');
+          segments.pop();
+          generatedFileName = segments.join('.') + '_' + Math.random().toString().split('.')[1] + '.js'
+        }
+      } else {
+          generatedFileName = toBase64DataURI(generatedSource); 
+      }
+       
       var sourceURL =  '//@ sourceURL=' + generatedFileName + '\n';
       if (input.name) {
         var turnIndicator = "window.__qp._theTurn = window.__qp.startTurn('ScriptBody', [{name: \"" + file.name + "\"}]);\n"
