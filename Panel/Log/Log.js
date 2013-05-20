@@ -18,7 +18,7 @@
      if (debug)
       console.log('Message.tooltip: total logs : '+totalLogs);
 
-     return 'load: ' + this.load + ' turn: ' + this.turnNumber + '| ' + this.text;
+     return 'load: ' + this.loadNumber + ' turn: ' + this.turnNumber + '| ' + this.text;
     }
   };
   
@@ -81,7 +81,7 @@
       else if (this._turnInProgress.turnNumber !== 1)
         console.error("No registrationTurnNumber for turn " + this._turnInProgress.turnNumber, this._turnInProgress);
 
-      messageSource.text = 'Turn ' + this._turnInProgress.turnNumber + ' started. (' + this._turnInProgress.detail() + ')';
+      messageSource.text = 'Turn ' + this._turnInProgress.turnNumber + ' started. (' + this._turnInProgress.summary() + ')';
     },
 
     _onEndTurn: function(segments) {
@@ -119,28 +119,18 @@
           if ( started && started === this._turnScrubber.turnEnded()) 
               console.error('QPRuntime error: No turn for message after turn %o', this._turnInProgress.turnNumber);
       }
-      messageSource.load = this._loadListViewModel.loadStarted();
+      messageSource.loadNumber = this._loadListViewModel.loadStarted();
       messageSource.turn = this._turnInProgress;
       return messageSource; 
     },
-
-    _createLoadViewModel: function() {
-      return {
-        load: this._loadListViewModel.loadStarted(), 
-        turns: ko.observableArray(), 
-        messages: []
-      };
-    },
-
 
     _reformatMessage: function(messageSource) {
       if (messageSource.qp) return;
       messageSource.__proto__ = messagePrototype;
       messageSource.severity = messageSource.severity || messageSource.level;
       
-      if (this.currentLoad.load !== messageSource.load) {
-        this.currentLoad = this._createLoadViewModel();
-        
+      if (this.currentLoad.loadNumber !== messageSource.loadNumber) {
+        this.currentLoad = new QuerypointPanel.LoadModel(this._loadListViewModel.loadStarted());
         this._loadListViewModel.onBeginLoad(this.currentLoad);
         if (debug){
           console.log('QuerypointPanel.Log._reformat loads.length '+ this._loadListViewModel.pageLoads().length);
@@ -162,7 +152,7 @@
       }
     },
     
-    extractMessages: function(first, last) {
+    extractMessages: function(first, last) {  // TODO remove
       var visibleMessages = [];
       //messageSource.odd = (--visibleLines) % 2;
       return this._loadListViewModel.pageLoads();

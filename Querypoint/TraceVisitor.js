@@ -120,7 +120,7 @@
         ) return false;
         
         var same = 
-          trace.load === existingTrace.load && 
+          trace.loadNumber === existingTrace.loadNumber && 
           trace.turn === existingTrace.turn &&
           trace.activation === existingTrace.activation &&
           trace.value === trace.value;

@@ -11,7 +11,7 @@
   Querypoint.Query.prototype = {
     tracePrompt: function() {
       var emptyTrace = {
-        load: '_',
+        loadNumber: '_',
         turn: '_',
         activation: '_',
         value: this.tracePromptText(),

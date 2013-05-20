@@ -33,7 +33,7 @@
     
     this.treeTraces = ko.computed(function() {
          var tracepoints;
-         if (loadListViewModel.showLoad().load !== loadListViewModel.loadStarted()){
+         if (loadListViewModel.showLoad().loadNumber !== loadListViewModel.loadStarted()){
              if (!('tracepoints' in loadListViewModel.showLoad())) return [];
              tracepoints = loadListViewModel.showLoad().tracepoints();
          } else {

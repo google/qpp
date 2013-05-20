@@ -9,6 +9,52 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+  QuerypointPanel.TurnReplayTrigger = function(turnsToReplay, allTurns, onReoccurance) {
+    // The first turn we want to replay must be preceded by its causes.
+    this.causalChains = [turnsToReplay[0]];
+    
+    // Don't track causes of turns caused by turns in the recording.
+    var replayStart = turnsToReplay[0].turnNumber;
+    var replayEnd = turnsToReplay[turnsToReplay.length - 1];
+    var potentialChainHeads = turnsToReplay.slice(1);
+    while(potentialChainHeads.length) {
+      var chainHead = potentialChainHeads.shift();
+      var chainHeadCauseNumber = chainHead.registrationTurnNumber;
+
+      if (replayStart >= chainHeadCauseNumber && chainHeadCauseNumber <= replayEnd)
+        continue;
+      else
+        this.causalChains.push(chainHead);
+    }
+    // get ready to track turns as they end 
+    this.progressMarkers = this.causalChains.map(function(causalChain) {
+      return 0;
+    });
+    // and callback when they all occur
+    this._onReoccurance = onReoccurance;
+  }
+
+  QuerypointPanel.TurnReplayTrigger.prototype = {
+    fire: function() {
+      console.error("allCausesReoccurred!");
+      this._onReoccurance();
+    },
+
+    onTurnEnded: function(turn) {
+      var allCausesReoccurred = true;
+      // move the markers forward if this turn looks like a cause in a chain
+      this.progressMarkers = this.causalChain.map(function(chain, index) {
+        if (chain[this.progressMarkers[index]].equivalentTo(turn))
+          this.progressMarkers[index]++;
+        if (this.progressMarkers[index] !== chain.length)
+          allCausesReoccurred = false;
+      }.bind(this));
+      if (allCausesReoccurred)
+        this.fire();
+    }
+  };
+
+
   QuerypointPanel.Recorder = {
     start: -1,    // First event recorded
     end:   0,     // First event not recorded
@@ -51,7 +97,7 @@
      
       this._turnScrubberViewModel.onStartRecording();
 
-      this.load = this._loadListViewModel.showLoad();
+      this.loadNumber = this._loadListViewModel.showLoad();
       this.start = this._loadListViewModel.showLoad().turns().length;
       this.end = -1;
       this._showDot();
@@ -62,8 +108,11 @@
     _stopRecording: function() {
       console.assert(this.recordingState() === 'record');
       this.recordingState('recorded');
-      this._showPlay(); 
-      this.end = this._loadListViewModel.showLoad().turns().length;
+      this._showPlay();
+      var allTurns = this._loadListViewModel.showLoad().turns(); 
+      this.end = allTurns.length;
+      var recordedTurns = allTurns.slice(this.start, this.end);
+      this._replayTrigger = new QuerypointPanel.TurnReplayTrigger(allTurns, recordedTurns, this.autoReplay.bind(this));
       this._turnScrubberViewModel.onStopRecording();
     },
     
@@ -114,14 +163,15 @@
       }
     },
 
-    // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
-    onLoadEvent: function() {
-     if(this.autoReplay){
-        this._turnScrubberViewModel.recordedMessages([]);
-        this._turnScrubberViewModel.messages = this._turnScrubberViewModel.recordedMessages;
+    autoReplay: function() {
+      this._turnScrubberViewModel.recordedMessages([]);
+      this._turnScrubberViewModel.messages = this._turnScrubberViewModel.recordedMessages;
 
-        this.play();
-      }
+      this.play();
+    },
+    
+    onLoadEvent: function() {
+  
     }
 
   };

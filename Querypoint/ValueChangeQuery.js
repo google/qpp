@@ -151,7 +151,7 @@
             if (trace.valueType === 'undefined')
               trace.value = 'undefined';
             trace.query = this;
-            trace.load = fileViewModel.project.numberOfReloads;
+            trace.loadNumber = fileViewModel.project.numberOfReloads;
             trace.activation = change.activationCount;
             onTracepoint(trace);  
           }.bind(this));      

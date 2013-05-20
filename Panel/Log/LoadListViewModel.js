@@ -15,10 +15,24 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  QuerypointPanel.LoadModel = function() {  // TODO replace ad-hoc objects with LoadModel
-    this.load = '-';
+  QuerypointPanel.LoadModel = function(loadNumber) { 
+    this.loadNumber = loadNumber || '-';
     this.messages = [];
+    this.turns = ko.observableArray();
   }
+
+  QuerypointPanel.LoadModel.prototype = {
+    causalChain: function(turn) {
+      var causedBy = this.turns()[turn.registrationTurnNumber];
+      if (causedBy) {
+        var chain = this.causalChain(causedBy);
+        chain.push(causedBy);
+        return chain;
+      } else {
+        return [];
+      }
+    }
+  };
 
   QuerypointPanel.LoadListViewModel = {
     
@@ -43,11 +57,11 @@
       var sessionView = document.querySelector('.sessionView');  // Remove afer FIXME
       
       this.displayLoad = function(loadModel){
-        var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
+        var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().loadNumber + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
         self.showLoad(loadModel);
 
-        loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().load + '"]');
+        loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().loadNumber + '"]');
         if (loadElement) loadElement.classList.add('selectedLoad');
 
         sessionViewModel.turnScrubberViewModel.updateOnLoadSelection(self.currentLoadIsSelected(), loadModel);
@@ -62,8 +76,8 @@
       var nextLoad = document.querySelector('.nextLoad');
 
       this.showNextLoad = ko.computed( function(){
-          var load = self.showLoad().load;
-          if (load === '-' || load == self.loadStarted()) {
+          var loadNumber = self.showLoad().loadNumber;
+          if (loadNumber === '-' || loadNumber == self.loadStarted()) {
               nextLoad.onmousedown = null;
               return '-';
           } else {
@@ -74,16 +88,16 @@
                   else 
                     self.displayLoad(new QuerypointPanel.LoadModel());
               };
-              return self.showLoad().load+1;
+              return self.showLoad().loadNumber + 1;
           }
       }.bind(this));
 
       this.currentLoadIsSelected = ko.computed( function(){
-        return self.showLoad().load == self.loadStarted();
+        return self.showLoad().loadNumber == self.loadStarted();
       });
 
       this.isPastLoad = ko.computed( function(){
-        return self.loadStarted() && (self.showLoad().load != self.loadStarted());
+        return self.loadStarted() && (self.showLoad().loadNumber != self.loadStarted());
       });
 
       currentLoad.onmouseover = function(){

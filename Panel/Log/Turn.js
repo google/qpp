@@ -7,11 +7,19 @@
 
   var DEBUG = false;
 
-  QuerypointPanel.Turn = function(initialValues) {
-    Object.keys(initialValues).forEach(function(key){
-      this[key] = initialValues[key];
+  QuerypointPanel.Turn = function(runtimeData) {
+    Object.keys(runtimeData).forEach(function(key){
+      this[key] = runtimeData[key];
     }.bind(this));
-
+    console.log("Turn runtimeData", runtimeData);
+    
+    this.turnNumber = runtimeData.turnNumber;
+    this.eventType = runtimeData.eventType;
+    this.functionName = runtimeData.functionName;
+    this.filename = runtimeData.filename;
+    this.targetSelector = runtimeData.targetSelector;
+    this.registrationTurnNumber = runtimeData.registrationTurnNumber;
+    
     this.registeredEntryPoints = [];
     this.messages = ko.observableArray();
   }
@@ -25,13 +33,18 @@
       this.registeredEntryPoints.push('Listener added to ' + target + ' triggers on ' + eventType);      
     },
 
-    detail: function() {
-      // Turn detail is a string summary of the current event
-      var turnDetail = this.functionName + '|' + this.eventType;
-      if (this.target !== 'undefined') 
-          turnDetail += '|' + this.target;
-      return turnDetail;    
-    }
+    summary: function() {
+      var summary = this.functionName + '|' + this.eventType;
+      summary += this.targetSelector ? '|' + this.target : '';
+      return summary;    
+    },
+
+    equivalentTo: function(turn) {
+      return (turn.eventType === this.eventType) &&
+          (turn.functionName === turn.functionName) &&
+          (turn.targetSelector === turn.targetSelector);
+    },
+
   };
 
 }());
