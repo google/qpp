@@ -43,8 +43,7 @@
       var logFloat = document.querySelector('.messageView');
       var loadElement = document.querySelector('.loadListView');
       var dropDown = document.querySelector('.turnView');
-      var currentLoad = document.querySelector('.currentLoad');
-
+      
       this.preMessages = ko.observableArray();          // Messages before the play button
       this.postMessages = ko.observableArray();         // Messages after record button
       this.recordedMessages = ko.observableArray();     // Messages that occured in recorded turns
@@ -253,11 +252,6 @@
           var e = event.toElement || event.relatedTarget;
           if (sessionViewModel.isOurRelatedTarget(e, this)) return false;
           dropDown.style.display = 'none';
-      }
-    
-      currentLoad.onmouseover = function(){
-          dropDown.style.display = 'none';
-          loadElement.style.display = 'block';
       }
     
       loadElement.onmouseout = function(event) {

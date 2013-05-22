@@ -138,11 +138,11 @@
            console.error("ValueChangeQuery extractTracepoints eval failed", exception);
            return; 
          }
-         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStarted()) 
+         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStartedNumber()) 
            return;
            
          this._lastEvaluated = result.turn;
-         this._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStarted();
+         this._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStartedNumber();
          
          if (result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
@@ -158,7 +158,7 @@
          }
       }
       var previousTurn = sessionViewModel.turnScrubberViewModel.turnStarted() - 1;
-      var thisLoad = sessionViewModel.loadListViewModel.loadStarted();
+      var thisLoad = sessionViewModel.loadListViewModel.loadStartedNumber();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = this._queryIndex;

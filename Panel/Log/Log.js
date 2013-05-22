@@ -60,13 +60,13 @@
     
     _onReload: function(segments) {
       var loadNumber = parseInt(segments[2], 10);
-      this._loadListViewModel.loadStarted(loadNumber);
+      this._loadListViewModel.loadStartedNumber(loadNumber);
       this._turnScrubber.onBeginLoad(loadNumber);
     },  
 
     _onLoadEvent: function(segments) {
       var loadNumber = parseInt(segments[2], 10);
-      this._loadListViewModel.loadEnded(loadNumber);
+      this._loadListViewModel.loadEndedNumber(loadNumber);
     },    
     
     _onStartTurn: function(segments, messageSource) {
@@ -123,7 +123,7 @@
           if ( started && started === this._turnScrubber.turnEnded()) 
               console.error('QPRuntime error: No turn for message after turn %o', this._turnInProgress.turnNumber);
       }
-      messageSource.loadNumber = this._loadListViewModel.loadStarted();
+      messageSource.loadNumber = this._loadListViewModel.loadStartedNumber();
       messageSource.turn = this._turnInProgress;
       return messageSource; 
     },
@@ -134,7 +134,7 @@
       messageSource.severity = messageSource.severity || messageSource.level;
       
       if (this.currentLoad.loadNumber !== messageSource.loadNumber) {
-        this.currentLoad = new QuerypointPanel.LoadModel(this._loadListViewModel.loadStarted());
+        this.currentLoad = new QuerypointPanel.LoadModel(this._loadListViewModel.loadStartedNumber());
         this._loadListViewModel.onBeginLoad(this.currentLoad);
         if (debug){
           console.log('QuerypointPanel.Log._reformat loads.length '+ this._loadListViewModel.pageLoads().length);

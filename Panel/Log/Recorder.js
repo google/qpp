@@ -122,7 +122,7 @@
     // 'off' -> 'record'
     _startRecording: function(){
       console.assert(this.recordingState() === 'off');
-      if (!this._loadListViewModel.loadStarted()) return;
+      if (!this._loadListViewModel.loadStartedNumber()) return;
       if (!this._loadListViewModel.currentLoadIsSelected()) return;
      
       this._turnScrubberViewModel.onStartRecording();
@@ -202,8 +202,7 @@
     _autoReplay: function() {
       this._turnScrubberViewModel.onReplayBegins();
       this.play();
-      // The eval commands for playback are now queued, 
-      // replay will be complete when we get the replayComplete event. 
+      this._turnScrubberViewModel.onReplayComplete();
     },
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {

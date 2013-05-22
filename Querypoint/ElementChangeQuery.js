@@ -89,9 +89,9 @@
     extractTracepoints: function(fileViewModel, onTracepoint, sessionViewModel) {
       var query = this;
       function onEval(result, isException) {
-         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStarted()) return;
+         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStartedNumber()) return;
          query._lastEvaluated = result.turn;
-         query._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStarted();
+         query._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStartedNumber();
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
@@ -108,7 +108,7 @@
         }
       }
       var previousTurn = sessionViewModel.turnScrubberViewModel.turnStarted() - 1;
-      var thisLoad = sessionViewModel.loadListViewModel.loadStarted();
+      var thisLoad = sessionViewModel.loadListViewModel.loadStartedNumber();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = query._queryIndex;

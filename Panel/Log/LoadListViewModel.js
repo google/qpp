@@ -40,7 +40,6 @@
       this.pageLoads = ko.observableArray();
 
       var loadListView = document.querySelector('.loadListView');
-      var currentLoad = document.querySelector('.currentLoad');
       
       this.lastLoad = ko.computed(function() {
         if (debug) console.log('LoadListViewModel.lastLoad ' + this.pageLoads().length + " loads");
@@ -49,8 +48,8 @@
 
       
       var self = this;
-      this.loadStarted = ko.observable(0);
-      this.loadEnded = ko.observable(0);
+      this.loadStartedNumber = ko.observable(0);
+      this.loadEndedNumber = ko.observable(0);
       this.showLoad = ko.observable(new QuerypointPanel.LoadModel());
       this.showMessage = ko.observable(0);
 
@@ -77,7 +76,7 @@
 
       this.showNextLoad = ko.computed( function(){
           var loadNumber = self.showLoad().loadNumber;
-          if (loadNumber === '-' || loadNumber == self.loadStarted()) {
+          if (loadNumber === '-' || loadNumber == self.loadStartedNumber()) {
               nextLoad.onmousedown = null;
               return '-';
           } else {
@@ -93,14 +92,15 @@
       }.bind(this));
 
       this.currentLoadIsSelected = ko.computed( function(){
-        return self.showLoad().loadNumber == self.loadStarted();
+        return self.showLoad().loadNumber == self.loadStartedNumber();
       });
 
       this.isPastLoad = ko.computed( function(){
-        return self.loadStarted() && (self.showLoad().loadNumber != self.loadStarted());
+        return self.loadStartedNumber() && (self.showLoad().loadNumber != self.loadStartedNumber());
       });
 
-      currentLoad.onmouseover = function(){
+      var currentLoadView = document.querySelector('.currentLoadView');
+      currentLoadView.onmouseover = function(){
           dropDown.style.display = 'none';
           loadListView.style.display = 'block';
       }
@@ -120,8 +120,8 @@
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
       if (!runtimeInstalled) {
-        this.loadStarted(0);    
-        this.loadEnded(0);
+        this.loadStartedNumber(0);    
+        this.loadEndedNumber(0);
       }
     },
 

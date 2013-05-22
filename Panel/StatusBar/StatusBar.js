@@ -16,8 +16,8 @@
       this.savedEditors = ko.observableArray();
       
       this.currentLoadNumber = ko.computed(function() {
-        var started = sessionViewModel.loadListViewModel.loadStarted();
-        var ended = sessionViewModel.loadListViewModel.loadEnded();
+        var started = sessionViewModel.loadListViewModel.loadStartedNumber();
+        var ended = sessionViewModel.loadListViewModel.loadEndedNumber();
         if (started === ended)
           return started;
         else
