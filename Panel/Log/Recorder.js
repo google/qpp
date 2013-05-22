@@ -202,7 +202,8 @@
     _autoReplay: function() {
       this._turnScrubberViewModel.onReplayBegins();
       this.play();
-      this._turnScrubberViewModel.onReplayComplete();
+      // The eval commands for playback are now queued, 
+      // replay will be complete when we get the replayComplete event. 
     },
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {

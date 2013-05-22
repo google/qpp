@@ -172,11 +172,11 @@
         messages.valueHasMutated();
       }
 
-      // Method clears messages arrays
-      this._clearMessages = function(){
-          self.preMessages([]);
-          self.postMessages([]);
-          self.messages = self.preMessages;
+      this._clearMessages = function(){  // TODO vs resetMessages
+          this.preMessages([]);
+          this.postMessages([]);
+          this.recordedMessages([]);
+          this.messages = self.preMessages;
       }
 
       // Method that changes css style to change width and border of indicators
@@ -400,6 +400,7 @@
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
       this.turnStarted(0);
       this.turnEnded(0);
+      this.turnViewModel.showTurn(0);
       this.recorder.pageWasReloaded(runtimeInstalled, runtimeInstalling);
     }
   };

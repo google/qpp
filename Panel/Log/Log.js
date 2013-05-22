@@ -95,6 +95,10 @@
     _onAddEventListener: function(segments) {
       this._turnInProgress.onAddEventListener( segments[2], segments[3] );      
     },
+    
+    _onReplayComplete: function() {
+      this._turnScrubber.onReplayComplete();
+    },
 
     _parse: function(messageSource) {
       var mark = messageSource.text.indexOf('qp|');
@@ -111,6 +115,7 @@
           case 'debug': break;
           case 'setTimeout': this._onSetTimeout(segments); break;
           case 'addEventListener': this._onAddEventListener(segments); break;
+          case 'replayComplete': this._onReplayComplete(); break;
           default: console.error('Log._parse: unknown keyword: '+messageSource.text); break;
         }
       } else {  // not a qp message
