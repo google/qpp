@@ -137,7 +137,7 @@
         this.currentLoad = new QuerypointPanel.LoadModel(this._loadListViewModel.loadStartedNumber());
         this._loadListViewModel.onBeginLoad(this.currentLoad);
         if (debug){
-          console.log('QuerypointPanel.Log._reformat loads.length '+ this._loadListViewModel.pageLoads().length);
+          console.log('QuerypointPanel.Log._reformat loads.length '+ this._loadListViewModel.loadViewModels().length);
         }
       }  
       if (this.currentTurn.turnNumber !== messageSource.turn.turnNumber) {
@@ -159,7 +159,7 @@
     extractMessages: function(first, last) {  // TODO remove
       var visibleMessages = [];
       //messageSource.odd = (--visibleLines) % 2;
-      return this._loadListViewModel.pageLoads();
+      return this._loadListViewModel.loadViewModels();
     },
     
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {

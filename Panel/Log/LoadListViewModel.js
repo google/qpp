@@ -37,13 +37,13 @@
   QuerypointPanel.LoadListViewModel = {
     
     initialize: function(sessionViewModel) {
-      this.pageLoads = ko.observableArray();
+      this.loadViewModels = ko.observableArray();
 
       var loadListView = document.querySelector('.loadListView');
       
       this.lastLoad = ko.computed(function() {
-        if (debug) console.log('LoadListViewModel.lastLoad ' + this.pageLoads().length + " loads");
-        return this.pageLoads().length;
+        if (debug) console.log('LoadListViewModel.lastLoad ' + this.loadViewModels().length + " loads");
+        return this.loadViewModels().length;
       }.bind(this));
 
       
@@ -128,7 +128,7 @@
     onBeginLoad: function(loadViewModel) {
       this.showLoad().next = loadViewModel;
       this.showLoad(loadViewModel);
-      this.pageLoads.push(loadViewModel);
+      this.loadViewModels.push(loadViewModel);
     }
   };
 }());
