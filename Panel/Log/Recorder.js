@@ -19,7 +19,9 @@
     return chain;
   }
 
-  QuerypointPanel.TurnReplayTrigger = function(turnsToReplay, loadModel, onReoccurance) {
+  QuerypointPanel.TurnReplayTrigger = function(turnsToReplay, loadListViewModel, onReoccurance) {
+    var loadModel = loadListViewModel.showLoad();  
+      
     // The first turn we want to replay must be preceded by its causes.
     this.causalChains = [buildCausalChain(loadModel.turns(), turnsToReplay[0])];
     
@@ -41,14 +43,21 @@
       return 0;
     });
     // when a turn ends, update
-    this.active = ko.observable(false);
     this.currentTurnInReload = ko.computed(function() {
-      if (!this.active())
+      if (this._replayTriggered)
+        return;
+      var reloadModel = loadListViewModel.showLoad(); 
+      if (reloadModel === loadModel)
         return;
          
-      var turns = loadModel.turns();
-      var turnEnded = turns[turns.length - 1];
-      this.onTurnEnded(turnEnded);
+      var turns = reloadModel.turns();
+      if (turns.length) {
+        var turnEnded = turns[turns.length - 1];
+        if (this.onTurnEnded(turnEnded)){
+          this._onReoccurance();
+          this._replayTriggered = true;
+        }
+      }
     }.bind(this));
     // and callback when they all occur
     this._onReoccurance = onReoccurance;
@@ -60,21 +69,18 @@
       this._onReoccurance();
     },
 
-    activate: function() {
-      this.active(true);
-    },
-
-    onTurnEnded: function(turn) {
-      var allCausesReoccurred = true;
-      // move the markers forward if this turn looks like a cause in a chain
-      this.progressMarkers = this.causalChains.map(function(chain, index) {
-        if (chain[this.progressMarkers[index]].equivalentTo(turn))
+    onTurnEnded: function(turnInReload) {
+      var allCausesReoccurred = false;
+      // move the markers forward if this turnInReload looks like a cause in a chain
+      this.causalChains.forEach(function(chain, index) {
+        if (chain[this.progressMarkers[index]].equivalentTo(turnInReload))
           this.progressMarkers[index]++;
-        if (this.progressMarkers[index] !== chain.length)
-          allCausesReoccurred = false;
+        // A chain of 4 turns is ready to replay when we get to its 3rd entry,
+        // since the 4th entry is the turn we want to emulate.
+        if (this.progressMarkers[index] >= (chain.length - 1))
+          allCausesReoccurred = true;
       }.bind(this));
-      if (allCausesReoccurred)
-        this.fire();
+      return allCausesReoccurred;
     }
   };
 
@@ -140,7 +146,7 @@
 
       this._replayTrigger = new QuerypointPanel.TurnReplayTrigger(
         this._recordedTurns,
-        this._loadListViewModel.showLoad(),
+        this._loadListViewModel,
         this._autoReplay.bind(this)
       );
     },
@@ -185,7 +191,7 @@
 
     _showPlay: function() {  
       if (this.start !== -1) {
-        // TODO replay with CSS content
+        // TODO use CSS content
         var beginRecorded = document.querySelector('.beginRecorded');
         beginRecorded.innerHTML = '&#x25B6';   // Arrowish
         var endRecorded = document.querySelector('.endRecorded');
@@ -193,21 +199,14 @@
       }
     },
 
-    _autoReplay: function() {            
+    _autoReplay: function() {
       this._turnScrubberViewModel.onReplayBegins();
       this.play();
       this._turnScrubberViewModel.onReplayComplete();
     },
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-      if (!this._replayTrigger)
-        return;
-        
-      var state = this.recordingState();
-      if (state !== 'recorded')
-        return;
-        
-      this._replayTrigger.activate();
+      
     }
 
   };
