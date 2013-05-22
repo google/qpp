@@ -11,13 +11,10 @@ var view = {};
 //-----------------------------------------------------------------------------
 function onLoad() {
 
-  var loads = 0;
-
   function resetProject(url) {
     model = {};
-    loads = 0;
     model.devtoolsModel = new Querypoint.InspectedPage();  
-    model.project = new Querypoint.QPProject(url, loads); 
+    model.project = new Querypoint.QPProject(url); 
     model.project.page = model.devtoolsModel;
     model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.project);
     model.qpPanel.onShown();
@@ -26,7 +23,6 @@ function onLoad() {
   function onNavigated(url) {
     if (!view.window)  // Then our panel was never opened.
       return; 
-    loads += 1;
     var QPRuntimeInstalled = model.project && model.project.qpRuntimeInstalled;
     if (!model.project || model.project.url !== url) {
       if (model.qpPanel)

@@ -20,7 +20,7 @@
   function QPProject(url, loads) {
     RemoteWebPageProject.call(this, url);
 
-    this.numberOfReloads = loads; 
+    this.numberOfReloads = 0; 
 
     // FIXME override parent __getter__ for reporter
     this.reporter_ = new Querypoint.QPErrorReporter();

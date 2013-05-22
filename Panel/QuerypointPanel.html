@@ -148,7 +148,7 @@
               <!-- ko if: turn().registeredEntryPoints.length -->
               <div class="registeredEntryPointsHeader">Registered Entry Points:
                   <!-- ko foreach: turn().registeredEntryPoints -->
-                      <div class="turnList"><a data-bind="text: summary"></a></div>
+                      <div class="turnList"><a data-bind="text: $data"></a></div>
                   <!-- /ko -->
               </div>
               <!-- /ko -->
@@ -187,7 +187,7 @@
               <!-- /ko -->
               <!-- /ko -->
           </div>
-          <div class="nextLoad loadNumber" title="Reload Number" data-bind="attr: {load: sessionViewModel.loadListViewModel.showNextLoad}"></div>
+          <div class="nextLoadView loadNumber" title="Reload Number" data-bind="attr: {load: sessionViewModel.loadListViewModel.shownextLoadView}"></div>
       </div>
     </div>
     <div class="workSpace">
@@ -263,6 +263,7 @@
       <div class="commandLine">
         <span>&#x1433;</span><input class="commandInput" type="search" size="70" value="Eventual home of command line">
       </div>
+      <div class="runtimeStatus" data-bind="visible: runtimeNotInstalled">QP runtime is not installed.</div>
       <div class="counters">
         <span
           title="Number of active queries"

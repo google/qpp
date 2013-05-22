@@ -19,9 +19,25 @@
     this.loadNumber = loadNumber || '-';
     this.messages = [];
     this.turns = ko.observableArray();
+    this.turnStarted = ko.observable(0);
+    this.turnEnded = ko.observable(0);
+    this.currentTurn = ko.computed(function() {
+      return this.turns()[this.turnStarted() - 1];
+    }.bind(this));
+    this.turnStarted = ko.computed(function() {
+      return this.turns().length;
+    }.bind(this));
   }
 
   QuerypointPanel.LoadModel.prototype = {
+    onTurnStarted: function(turnInfo) {
+      this.turns.push(new QuerypointPanel.Turn(turnInfo));
+      console.assert(this.turns().length = turnInfo.turnNumber);
+    },
+    onTurnEnded: function(turnNumber) {
+      console.assert(this.turnStarted() === turnNumber);
+      this.turnEnded(turnNumber);
+    },
     causalChain: function(turn) {
       var causedBy = this.turns()[turn.registrationTurnNumber];
       if (causedBy) {
@@ -42,28 +58,30 @@
       var loadListView = document.querySelector('.loadListView');
       
       this.lastLoad = ko.computed(function() {
-        if (debug) console.log('LoadListViewModel.lastLoad ' + this.loadViewModels().length + " loads");
-        return this.loadViewModels().length;
+        var last = this.loadViewModels().length - 1;
+        if (debug) console.log('LoadListViewModel.lastLoad ' +last + " loads");
+        return this.loadViewModels()[last];
       }.bind(this));
-
       
       var self = this;
-      this.loadStartedNumber = ko.observable(0);
-      this.loadEndedNumber = ko.observable(0);
-      this.showLoad = ko.observable(new QuerypointPanel.LoadModel());
+      this.showLoad = ko.observable({});
       this.showMessage = ko.observable(0);
+      this.loadStartedNumber = ko.computed(function() {
+        return this.loadViewModels().length;
+      }.bind(this));
+      this.loadEndedNumber = ko.observable(0);
 
       var sessionView = document.querySelector('.sessionView');  // Remove afer FIXME
       
-      this.displayLoad = function(loadModel){
-        var loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().loadNumber + '"]');
+      this.displayLoad = function(loadModel) {
+        var loadElement = document.querySelector('div.loadNumber[load="' + this.showLoad().loadNumber + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
-        self.showLoad(loadModel);
+        this.showLoad(loadModel);
 
-        loadElement = document.querySelector('div.loadNumber[load="' + self.showLoad().loadNumber + '"]');
+        loadElement = document.querySelector('div.loadNumber[load="' + this.showLoad().loadNumber + '"]');
         if (loadElement) loadElement.classList.add('selectedLoad');
 
-        sessionViewModel.turnScrubberViewModel.updateOnLoadSelection(self.currentLoadIsSelected(), loadModel);
+        sessionViewModel.turnScrubberViewModel.updateOnLoadSelection(this.currentLoadIsSelected(), loadModel);
         
         if (loadModel.messages.length) {
           var lastLogElement = loadModel.messages[loadModel.messages.length - 1].logView;
@@ -72,15 +90,15 @@
         }
       }
 
-      var nextLoad = document.querySelector('.nextLoad');
+      var nextLoadView = document.querySelector('.nextLoadView');
 
-      this.showNextLoad = ko.computed( function(){
+      this.shownextLoadView = ko.computed( function(){
           var loadNumber = self.showLoad().loadNumber;
           if (loadNumber === '-' || loadNumber == self.loadStartedNumber()) {
-              nextLoad.onmousedown = null;
+              nextLoadView.onmousedown = null;
               return '-';
           } else {
-              nextLoad.onmousedown = function() {
+              nextLoadView.onmousedown = function() {
                   var next = self.showLoad().next;
                   if (next) 
                     self.displayLoad(next);
@@ -100,6 +118,7 @@
       });
 
       var currentLoadView = document.querySelector('.currentLoadView');
+      var dropDown = document.querySelector('.turnView');
       currentLoadView.onmouseover = function(){
           dropDown.style.display = 'none';
           loadListView.style.display = 'block';
@@ -119,16 +138,19 @@
     },
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-      if (!runtimeInstalled) {
-        this.loadStartedNumber(0);    
-        this.loadEndedNumber(0);
-      }
     },
 
-    onBeginLoad: function(loadViewModel) {
+    onBeginLoad: function(loadNumber) {
+      var loadViewModel = new QuerypointPanel.LoadModel(loadNumber);
       this.showLoad().next = loadViewModel;
       this.showLoad(loadViewModel);
       this.loadViewModels.push(loadViewModel);
+      console.assert(this.loadViewModels().length === loadNumber);
+    },
+    
+    onEndLoad: function(loadNumber) {
+      console.assert(loadNumber === this.loadStartedNumber());
+      this.loadEndedNumber(loadNumber);
     }
   };
 }());

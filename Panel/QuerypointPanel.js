@@ -53,11 +53,6 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
 
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
-  
-  this.currentTurn = ko.computed(function() {
-    var turnEnded = panel.sessionViewModel.turnScrubberViewModel.turnEnded();
-    return turnEnded;
-  });
 
   this.commands = new QuerypointPanel.Commands(this);
   this._initModel();

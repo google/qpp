@@ -157,7 +157,11 @@
           }.bind(this));      
          }
       }
-      var previousTurn = sessionViewModel.turnScrubberViewModel.turnStarted() - 1;
+      var currentTurn = sessionViewModel.currentTurn();
+      if (!currentTurn)
+        return;
+        
+      var previousTurn = currentTurn.turnNumber - 1;
       var thisLoad = sessionViewModel.loadListViewModel.loadStartedNumber();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {

@@ -19,8 +19,6 @@
       
       var self = this;
       this.lastLoad = 0;
-      this.turnStarted = ko.observable(0);
-      this.turnEnded = ko.observable(0);
       this.showMessage = ko.observable(0);
 
       this.turnViewModel = QuerypointPanel.TurnViewModel;
@@ -392,8 +390,6 @@
     },
     
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-      this.turnStarted(0);
-      this.turnEnded(0);
       this.turnViewModel.showTurn(0);
       this.recorder.pageWasReloaded(runtimeInstalled, runtimeInstalling);
     }

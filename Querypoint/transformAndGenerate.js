@@ -30,7 +30,8 @@
       var generatedFileName = input.name ? (input.name  + ".js") : toBase64DataURI(generatedSource);
       var sourceURL =  '//@ sourceURL=' + generatedFileName + '\n';
       if (input.name) {
-        var turnIndicator = "window.__qp._theTurn = window.__qp.startTurn('ScriptBody', [{name: \"" + file.name + "\"}]);\n"
+        var startInfo = {name: file.name, generatedFileName: generatedFileName};
+        var turnIndicator = "window.__qp._theTurn = window.__qp.startTurn('ScriptBody', ["+JSON.stringify(startInfo)+"]);\n"
         var endTurnIndicator = "window.__qp.endTurn(window.__qp._theTurn);\n";
         return turnIndicator + generatedSource + endTurnIndicator + sourceURL;
       } else {

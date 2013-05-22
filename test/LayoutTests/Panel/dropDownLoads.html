@@ -21,7 +21,7 @@ function test_dropDown() {
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load');
   var objPropSelector = [
     {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
     {type: 'span.cm-property', text: 'prop'}
@@ -32,7 +32,7 @@ function test_dropDown() {
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load');
+  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load');
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
 
     var conditionValueSelector = [
@@ -48,8 +48,8 @@ function test_dropDown() {
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(){
     return "turnScrubber should show currentLoadNumber";
   });  
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load', function(){
-    return "nextLoad should be dash";
+  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load', function(){
+    return "nextLoadView should be dash";
   });     
   
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.loadNumber").dispatchEvent(new MouseEvent("mousedown"))', function(text){
@@ -58,18 +58,18 @@ function test_dropDown() {
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(){
     return "currentLoad should be one less now";
   });
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load', function(){
-    return "nextLoad should be previous currentLoad";
+  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load', function(){
+    return "nextLoadView should be previous currentLoad";
   });
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoad").dispatchEvent(new MouseEvent("mousedown"))', function(text){
-    return "mousedown on nextLoad";
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.nextLoadView").dispatchEvent(new MouseEvent("mousedown"))', function(text){
+    return "mousedown on nextLoadView";
   } );
   AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(){
     return "currentLoad returns to original value";
   });
-  AsyncMachine.pushOp(extractAttr, '.nextLoad','load', function(){
-    return "nextLoad should be dash";
+  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load', function(){
+    return "nextLoadView should be dash";
   });
   AsyncMachine.runOp();
 }

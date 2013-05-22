@@ -28,6 +28,19 @@
           loadListView.style.display = 'none';
       }.bind(this);
 
+      this.runtimeInstalled = ko.observable(false);
+
+      this.currentLoad = ko.computed(function(){
+        return this.loadListViewModel.lastLoad();
+      }.bind(this));
+
+      this.currentTurn = ko.computed(function() {
+        var currentLoad = this.currentLoad();
+        if (!currentLoad)
+          return;
+        return currentLoad.currentTurn();
+      }.bind(this));
+
       return this;
     },
     
@@ -48,10 +61,8 @@
       this.loadListViewModel.pageWasReloaded(runtimeInitialized, runtimeInstalling);
       this.turnScrubberViewModel.pageWasReloaded(runtimeInitialized, runtimeInstalling);
       this._log.pageWasReloaded(runtimeInitialized, runtimeInstalling);
-    },
-
-    turnEnded: function() {
-      return this.turnScrubberViewModel.turnEnded();
+      
+      this.runtimeInstalled(runtimeInitialized);
     },
 
     tooltip: function(turn){

@@ -50,7 +50,7 @@
     }.bind(this));
 
 
-    this._turnSubscription = panel.currentTurn.subscribe(function(newValue) {
+    this._turnSubscription = panel.sessionViewModel.currentTurn.subscribe(function(newValue) {
       if (newValue !== 0) {
         this.update(newValue);
       }
