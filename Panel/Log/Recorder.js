@@ -42,9 +42,10 @@
     this.progressMarkers = this.causalChains.map(function(causalChain) {
       return 0;
     });
+    this.replayTriggered = ko.observable(false);
     // when a turn ends, update
     this.currentTurnInReload = ko.computed(function() {
-      if (this._replayTriggered)
+      if (this.replayTriggered())
         return;
       var reloadModel = loadListViewModel.showLoad(); 
       if (reloadModel === loadModel)
@@ -58,7 +59,7 @@
           var turnEnded = turns[ended - 1];
           if (this.onTurnEnded(turnEnded)){
             this._onReoccurance();
-            this._replayTriggered = true;
+            this.replayTriggered(true);
           }
         }
       }
@@ -206,7 +207,8 @@
     },
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-      
+      if(this._replayTrigger)
+        this._replayTrigger.replayTriggered(false);
     }
 
   };
