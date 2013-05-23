@@ -52,10 +52,14 @@
          
       var turns = reloadModel.turns();
       if (turns.length) {
-        var turnEnded = turns[turns.length - 1];
-        if (this.onTurnEnded(turnEnded)){
-          this._onReoccurance();
-          this._replayTriggered = true;
+        var started = reloadModel.turnStarted();
+        var ended = reloadModel.turnEnded();
+        if (started === ended) { // wait until the turn ends before checking it.
+          var turnEnded = turns[ended - 1];
+          if (this.onTurnEnded(turnEnded)){
+            this._onReoccurance();
+            this._replayTriggered = true;
+          }
         }
       }
     }.bind(this));
@@ -64,11 +68,6 @@
   }
 
   QuerypointPanel.TurnReplayTrigger.prototype = {
-    fire: function() {
-      console.error("allCausesReoccurred!");
-      this._onReoccurance();
-    },
-
     onTurnEnded: function(turnInReload) {
       var allCausesReoccurred = false;
       // move the markers forward if this turnInReload looks like a cause in a chain
