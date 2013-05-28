@@ -169,7 +169,7 @@
     },
 
     close: function() {      
-      var turnViewModelInfo = document.querySelector('.turnViewModel');
+      var turnViewModelInfo = document.querySelector('.turnView');
       turnViewModelInfo.style.display = 'none';
     }
 

@@ -40,6 +40,7 @@ function onLoad() {
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);
   
+  
 chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/QuerypointPanel.html", function(panel) {
   view.panel = panel;
   var helpButton = panel.createStatusBarButton("Panel/QuerypointHelpIcon.png", "Querypoint Panel Help", false);

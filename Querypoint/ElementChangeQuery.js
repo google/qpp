@@ -107,7 +107,7 @@
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var previousTurn = sessionViewModel.turnScrubberViewModel.turnStarted() - 1;
+      var previousTurn = sessionViewModel.loadListViewModel.lastLoad().turnStarted() - 1;
       var thisLoad = sessionViewModel.loadListViewModel.loadStartedNumber();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {

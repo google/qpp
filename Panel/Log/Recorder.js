@@ -143,12 +143,13 @@
       this.end = allTurns.length;
       this._recordedTurns = allTurns.slice(this.start , this.end);
       this._turnScrubberViewModel.onStopRecording();
-
-      this._replayTrigger = new QuerypointPanel.TurnReplayTrigger(
-        this._recordedTurns,
-        this._loadListViewModel,
-        this._autoReplay.bind(this)
-      );
+      if (this._recordedTurns.length) {
+        this._replayTrigger = new QuerypointPanel.TurnReplayTrigger(
+          this._recordedTurns,
+          this._loadListViewModel,
+          this._autoReplay.bind(this)
+        );  
+      }
     },
 
     // 'recorded' -> 'play' -> 'recorded'

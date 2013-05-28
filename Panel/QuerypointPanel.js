@@ -49,7 +49,7 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
   var logView = document.querySelector('.logView');
   var dropDown = document.querySelector('.turnView');
 
-  this.sessionViewModel = QuerypointPanel.SessionViewModel.initialize(project);
+  this.sessionViewModel = QuerypointPanel.SessionViewModel.initialize(project, this.tracequeries);
 
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
