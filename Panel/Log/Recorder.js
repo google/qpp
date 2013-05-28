@@ -200,6 +200,7 @@
     },
 
     _autoReplay: function() {
+      console.log('Recorder autoReplay ' + this._recordedTurns.length + ' turns.');
       this._turnScrubberViewModel.onReplayBegins();
       this.play();
       // The eval commands for playback are now queued, 

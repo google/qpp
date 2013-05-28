@@ -51,7 +51,7 @@
 
 
     this._turnSubscription = panel.sessionViewModel.currentTurn.subscribe(function(newValue) {
-      if (newValue !== 0) {
+      if (newValue) {
         this.update(newValue);
       }
     }.bind(this));
@@ -76,6 +76,7 @@
 
     update: function(turn) {
       var tracequeries = this._panel.tracequeries();
+      console.log('Update on turn '+turn.turnNumber + ' with ' + tracequeries.length + ' tracequeries.');
       if (!tracequeries.length)
         return;
       

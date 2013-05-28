@@ -11,7 +11,7 @@
     Object.keys(runtimeData).forEach(function(key){
       this[key] = runtimeData[key];
     }.bind(this));
-    console.log("Turn runtimeData", runtimeData);
+    console.log("Turn " + runtimeData.turnNumber + " runtimeData", runtimeData);
     
     this.turnNumber = runtimeData.turnNumber;
     this.eventType = runtimeData.eventType;
