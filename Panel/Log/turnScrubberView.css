@@ -210,12 +210,10 @@
 
 .loadListView {
     position: absolute;
-    top: 15px;
+    top: 0px;
     height: auto;
     background-color: #75715E;
     width: 15px;
-    height: auto;
-    display: none;
 }
 
 .turnView {

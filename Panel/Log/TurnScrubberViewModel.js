@@ -9,10 +9,18 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+  ko.bindingHandlers.stopBinding = {
+      init: function() {
+          return { controlsDescendantBindings: true };
+      }
+  };
+  ko.virtualElements.allowedBindings.stopBinding = true;
+
   QuerypointPanel.TurnScrubberViewModel = {
     
     initialize: function(project, tracequeries, sessionViewModel) {
       this.sessionViewModel = sessionViewModel;
+      this.loadListViewModel = sessionViewModel.loadListViewModel;
       this.recorder = QuerypointPanel.Recorder.initialize(sessionViewModel.loadListViewModel, this);
       
       this.trackLatestMessage = ko.observable(true);
@@ -206,10 +214,6 @@
             turnIndicatorRule.style.width = width + 'px';
       }
 
-      this.showLoadNumber = ko.computed(function(){
-          return sessionViewModel.loadListViewModel.showLoad().loadNumber;
-      });
-
       // Method is currently *not* being used
       // It was replaced by compressMessages and _scaleMessages
       // Given a floating point value perPixel less than 1 and an array of messages
@@ -252,18 +256,11 @@
           dropDown.style.display = 'none';
       }
     
-      loadElement.onmouseout = function(event) {
-          var e = event.toElement || event.relatedTarget;
-          if (sessionViewModel.isOurRelatedTarget(e, loadElement)) return false;
-          loadElement.style.display = 'none';
-      }
-    
       logView.onmouseout = function(){
           dropDown.style.display = 'none';
-          loadElement.style.display = 'none';
       };
     
-      var turnScrubberView = document.querySelector('.turnScrubberView');
+      var turnScrubberView = document.querySelector('.overviewLog');
       ko.applyBindings(this, turnScrubberView);
 
       return this;
@@ -384,7 +381,6 @@
         var loadElement = document.querySelector('.loadListView');
         var messages = document.querySelector('.turnView .messages');
         dropDown.style.display = 'block';
-        loadElement.style.display = 'none';
         if (messages)
           messages.scrollTop = 15 * message.position;
     },

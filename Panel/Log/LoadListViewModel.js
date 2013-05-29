@@ -76,7 +76,10 @@
       this.displayLoad = function(loadModel) {
         var loadElement = document.querySelector('div.loadNumber[load="' + this.showLoad().loadNumber + '"]');
         if (loadElement) loadElement.classList.remove('selectedLoad');
+
         this.showLoad(loadModel);
+        // Shift the list to place the current number in line with the scrubber
+        loadListView.style.top = (loadModel.loadNumber * -15) + 'px';
 
         loadElement = document.querySelector('div.loadNumber[load="' + this.showLoad().loadNumber + '"]');
         if (loadElement) loadElement.classList.add('selectedLoad');
@@ -90,22 +93,16 @@
         }
       }
 
-      var nextLoadView = document.querySelector('.nextLoadView');
+      this.showLoadNumber = ko.computed(function(){
+          return this.showLoad().loadNumber || '-';
+      }.bind(this));
 
-      this.shownextLoadView = ko.computed( function(){
-          var loadNumber = self.showLoad().loadNumber;
-          if (loadNumber === '-' || loadNumber == self.loadStartedNumber()) {
-              nextLoadView.onmousedown = null;
+      this.showNextLoadNumber = ko.computed( function(){
+          var loadNumber = this.showLoadNumber();
+          if (loadNumber === '-' || loadNumber == this.loadStartedNumber()) {
               return '-';
           } else {
-              nextLoadView.onmousedown = function() {
-                  var next = self.showLoad().next;
-                  if (next) 
-                    self.displayLoad(next);
-                  else 
-                    self.displayLoad(new QuerypointPanel.LoadModel());
-              };
-              return self.showLoad().loadNumber + 1;
+              return loadNumber + 1;
           }
       }.bind(this));
 
@@ -116,18 +113,19 @@
       this.isPastLoad = ko.computed( function(){
         return self.loadStartedNumber() && (self.showLoad().loadNumber != self.loadStartedNumber());
       });
-
-      var currentLoadView = document.querySelector('.currentLoadView');
-      var dropDown = document.querySelector('.turnView');
-      currentLoadView.onmouseover = function(){
-          dropDown.style.display = 'none';
-          loadListView.style.display = 'block';
-      }
     
       var loadListView = document.querySelector('.loadListView');
       ko.applyBindings(this, loadListView);
 
       return this;
+    },
+
+    selectLoadByNumber: function(loadNumber) {
+      if (typeof loadNumber === 'number') {
+        var load = loadViewModels()[loadNumber];
+        if (load)
+          this.displayLoad(load);
+      }
     },
   
     selectLoad: function(node){

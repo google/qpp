@@ -121,13 +121,12 @@ body {
 }
 
 .helpInfo {
-    display: none;
+  display: none;
 }
 
 .showHelp .helpInfo {
     z-index: 200;
     position: absolute;
-
     display: inline;
     color: #d0d0d0;
     background-color: #75715e;

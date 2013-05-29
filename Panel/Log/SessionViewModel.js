@@ -22,12 +22,6 @@
       var sessionView = document.querySelector('.sessionView');
       var loadListView = document.querySelector('.loadListView');
        
-      sessionView.onmouseout = function(event) {
-          var e = event.toElement || event.relatedTarget;
-          if (this.isOurRelatedTarget(e, loadListView)) return false;
-          loadListView.style.display = 'none';
-      }.bind(this);
-
       this.runtimeInstalled = ko.observable(false);
 
       this.currentLoad = ko.computed(function(){

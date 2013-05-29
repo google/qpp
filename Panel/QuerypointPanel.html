@@ -115,10 +115,6 @@
         <span class="helpInfo">
           Log Scrubber: click or drag to change log viewport
         </span>
-        <div class="loadListView" data-bind="foreach: {data: loadViewModels, afterAdd: selectLoad}">
-            <div class="loadNumber" title="Reload Number" data-bind="attr: {load: loadNumber}, event:{mousedown: $parent.displayLoad.bind($parent)}">
-            </div>
-        </div>
         <div class="turnView" data-bind="if: turn">
             <p class="turnSummary" data-bind="text: turnSummary"> vvvvv </p>
             <ul class="turnInformation">
@@ -166,7 +162,10 @@
             </div>
         </div>
         <div class="turnScrubberView">
-          <div class="currentLoadView loadNumber" title="Reload Number" data-bind="attr: {load: showLoadNumber}"></div>
+            <div class="loadListView" data-bind="foreach: {data: loadViewModels, afterAdd: selectLoad}">
+              <div class="loadNumber" title="Reload Number" data-bind="attr: {load: loadNumber}, event: {click: $parent.selectLoadByNumber}">
+              </div>
+          </div>
           <div class="overviewLog">
               <!-- ko if: sessionViewModel.loadListViewModel.currentLoadIsSelected -->
               <!-- ko foreach: preMessages -->
@@ -187,7 +186,10 @@
               <!-- /ko -->
               <!-- /ko -->
           </div>
-          <div class="nextLoadView loadNumber" title="Reload Number" data-bind="attr: {load: sessionViewModel.loadListViewModel.shownextLoadView}"></div>
+          <div class="nextLoadView loadNumber" 
+                  title="Reload Number" 
+                  data-bind="attr: {load: showNextLoadNumber}, event: {click: selectLoadByNumber}">
+          </div>
       </div>
     </div>
     <div class="workSpace">
