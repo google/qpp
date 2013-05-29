@@ -74,15 +74,10 @@
       var sessionView = document.querySelector('.sessionView');  // Remove afer FIXME
       
       this.displayLoad = function(loadModel) {
-        var loadElement = document.querySelector('div.loadNumber[load="' + this.showLoad().loadNumber + '"]');
-        if (loadElement) loadElement.classList.remove('selectedLoad');
-
         this.showLoad(loadModel);
-        // Shift the list to place the current number in line with the scrubber
-        loadListView.style.top = (loadModel.loadNumber * -15) + 'px';
 
-        loadElement = document.querySelector('div.loadNumber[load="' + this.showLoad().loadNumber + '"]');
-        if (loadElement) loadElement.classList.add('selectedLoad');
+        var loadElement = document.querySelector('div.loadNumber[load="' + loadModel.loadNumber + '"]');
+        this.selectLoad(loadElement);
 
         sessionViewModel.turnScrubberViewModel.updateOnLoadSelection(this.currentLoadIsSelected(), loadModel);
         
@@ -120,11 +115,9 @@
       return this;
     },
 
-    selectLoadByNumber: function(loadNumber) {
-      if (typeof loadNumber === 'number') {
-        var load = loadViewModels()[loadNumber];
-        if (load)
-          this.displayLoad(load);
+    onClickLoad: function(loadModel) {
+      if (loadModel instanceof QuerypointPanel.LoadModel) {
+        this.displayLoad(loadModel);
       }
     },
   
@@ -133,6 +126,10 @@
         var element = document.querySelector('.selectedLoad');
         if(element) element.classList.remove('selectedLoad');
         node.classList.add('selectedLoad');
+        // Shift the list to place the current number in line with the scrubber
+        var loadNumber = this.showLoadNumber();
+        if (typeof loadNumber === 'number') 
+          node.parentElement.style.top = ((loadNumber - 1) * 15) + 'px';
     },
 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {

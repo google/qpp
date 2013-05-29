@@ -25,7 +25,6 @@
         callback(flag);
         delete this.flags[name];
       }
-      if (debugging) console.log("InspectorTest.info: " + name + ' ' + callback());
       return flag;
     },
 

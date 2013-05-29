@@ -162,8 +162,8 @@
             </div>
         </div>
         <div class="turnScrubberView">
-            <div class="loadListView" data-bind="foreach: {data: loadViewModels, afterAdd: selectLoad}">
-              <div class="loadNumber" title="Reload Number" data-bind="attr: {load: loadNumber}, event: {click: $parent.selectLoadByNumber}">
+            <div class="loadListView">
+              <div class="loadNumber selectedLoad" title="Reload Number" data-bind="attr: {load: showLoadNumber}">
               </div>
           </div>
           <div class="overviewLog">
@@ -185,10 +185,6 @@
               <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <!-- /ko -->
-          </div>
-          <div class="nextLoadView loadNumber" 
-                  title="Reload Number" 
-                  data-bind="attr: {load: showNextLoadNumber}, event: {click: selectLoadByNumber}">
           </div>
       </div>
     </div>

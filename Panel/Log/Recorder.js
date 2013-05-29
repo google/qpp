@@ -180,7 +180,8 @@
     },
 
     stopIfRecording: function() {
-      this.onBeginRecorded();
+      if (this.recordingState() === 'record')
+        this.onBeginRecorded();
     },
     
     _showDot: function() {

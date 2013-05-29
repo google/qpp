@@ -214,6 +214,17 @@
     height: auto;
     background-color: #75715E;
     width: 15px;
+    z-index: 50;
+}
+
+.loadListView .loadNumber {
+    display: none;
+}
+.loadListView:hover .loadNumber {
+    display: block;
+}
+.loadListView .selectedLoad {
+    display: block
 }
 
 .turnView {
@@ -442,6 +453,3 @@ ul.eventInfo_sideMenu li a{
     display: inline;
 }
 
-.selectedLoad{
-    background-color: red;
-}
