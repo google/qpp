@@ -20,8 +20,12 @@ function test_dropDown() {
   AsyncMachine.pushOp(evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
   AsyncMachine.pushOp(openQuerypointPanel);
   AsyncMachine.pushOp(openSourceFile, 'demo.js');
-  AsyncMachine.pushOp(extractAttr, '.currentLoad','load');
-  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load');
+  AsyncMachine.pushOp(extractAttr, '.currentLoad','load', function(text) {
+    return '.currentLoad[load]=' + text;
+  });
+  AsyncMachine.pushOp(extractAttr, '.nextLoadView','load', function(text) {
+    return '.nextLoadView[load]=' + text;
+  });
   var objPropSelector = [
     {type: 'span.cm-string', text:'\"I\'ve been clicked \"'},
     {type: 'span.cm-property', text: 'prop'}

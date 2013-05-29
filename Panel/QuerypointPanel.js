@@ -192,8 +192,9 @@ QuerypointPanel.Panel.prototype = {
   },
 
   pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-    this.sessionViewModel.pageWasReloaded(runtimeInstalled, runtimeInstalling)
-    QuerypointPanel.OnPanelOpen.open(runtimeInstalled);
+    this.sessionViewModel.pageWasReloaded(runtimeInstalled, runtimeInstalling);
+    if (!runtimeInstalling)
+      QuerypointPanel.OnPanelOpen.open(runtimeInstalled);
   },
 
   _initModel: function() {
