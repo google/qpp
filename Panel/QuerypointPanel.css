@@ -45,7 +45,7 @@ body {
   display: -webkit-flex;
 }
 
-.initialView .onPanelOpen {
+.initialView.onPanelOpen {
   display: block;
 }
 
@@ -53,6 +53,13 @@ body {
     padding: 1em;
     display: none;
     min-height: 200px;
+    z-index: 75;
+    background-color: #272822;
+    position: absolute;
+    width: 100%;
+    color: #75715e;
+    cursor: default;
+    top: 15px;
 }
 
 .IfQPNotInstalled {

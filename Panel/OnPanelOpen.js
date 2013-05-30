@@ -25,17 +25,17 @@
     },
     
     close: function() {
-      var logView = document.querySelector('div.logView');
-      logView.classList.remove('initialView');
+      var onPanelOpen = document.querySelector('div.onPanelOpen');
+      onPanelOpen.classList.remove('initialView');
     },
 
     open: function(runtimeInstalled) {
-      var logView = document.querySelector('div.logView');
-      logView.classList.add('initialView');
+      var onPanelOpen = document.querySelector('div.onPanelOpen');
+      onPanelOpen.classList.add('initialView');
       if (runtimeInstalled)
-        logView.classList.add('QPInstalled');
+        onPanelOpen.classList.add('QPInstalled');
       else
-        logView.classList.remove('QPInstalled');
+        onPanelOpen.classList.remove('QPInstalled');
     },
 
     // Functions wired to eg hint_overview
