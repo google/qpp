@@ -96,7 +96,6 @@
       // 'this' is an element in the array returned by turnChain or triggeredEvents
       this.switchTurn = function(){
         QuerypointPanel.loadListViewModelViewModel.turnViewModel.showTurn(this.turnNumber);
-        QuerypointPanel.loadListViewModelViewModel.showMessage(0);
       }
 
       this.elementQueryProvider = new QuerypointPanel.ElementQueryProvider(project);

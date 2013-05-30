@@ -17,7 +17,6 @@
 
   QuerypointPanel.LoadModel = function(loadNumber) { 
     this.loadNumber = loadNumber || '-';
-    this.messages = [];
     this.turns = ko.observableArray();
     this.turnStarted = ko.observable(0);
     this.turnEnded = ko.observable(0);
@@ -65,7 +64,6 @@
       
       var self = this;
       this.showLoad = ko.observable({});
-      this.showMessage = ko.observable(0);
       this.loadStartedNumber = ko.computed(function() {
         return this.loadViewModels().length;
       }.bind(this));
@@ -80,12 +78,6 @@
         this.selectLoad(loadElement);
 
         sessionViewModel.turnScrubberViewModel.updateOnLoadSelection(this.currentLoadIsSelected(), loadModel);
-        
-        if (loadModel.messages.length) {
-          var lastLogElement = loadModel.messages[loadModel.messages.length - 1].logView;
-          if (lastLogElement)
-            lastLogElement.scrollIntoView(false);
-        }
       }
 
       this.showLoadNumber = ko.computed(function(){

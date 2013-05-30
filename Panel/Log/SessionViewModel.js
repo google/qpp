@@ -17,7 +17,6 @@
       this.loadListViewModel = QuerypointPanel.LoadListViewModel.initialize(this);
       this.turnScrubberViewModel = QuerypointPanel.TurnScrubberViewModel.initialize(project, tracequeries, this);
       this._log = QuerypointPanel.Log.initialize(project, this.loadListViewModel, this.turnScrubberViewModel);
-      this.messageViewModel = QuerypointPanel.MessageViewModel.initialize(this._log, this.loadListViewModel, this.turnScrubberViewModel);
 
       var sessionView = document.querySelector('.sessionView');
       var loadListView = document.querySelector('.loadListView');

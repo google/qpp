@@ -28,7 +28,6 @@
 <script src="URISelector.js"></script>
 <script src="ElementQueryProvider.js"></script>
 <script src="Log/LoadListViewModel.js"></script>
-<script src="Log/MessageViewModel.js"></script>
 <script src="Log/Turn.js"></script>
 <script src="Log/TurnViewModel.js"></script>
 <script src="Log/Recorder.js"></script>
@@ -68,30 +67,6 @@
 <body class="cm-s-monokai">
   <div class="panelInitialization"><span class="largeMessage">Reloading previous state...</span></div>
   <div class="panel">
-    <div class="logView initialView">
-      <span class="helpInfo">console.log and tracing status output</span> 
-      <div class="messageView" style="height: 200px;">
-        <table class="messagesByLoadNumber">
-          <tbody data-bind="foreach: messagesByLoadNumber">
-          <tr>
-            <td class="loadNumber" title="Reload number" data-bind="text: loadNumber"></td>
-            <td>
-              <table>
-                <tbody class='turns' data-bind="foreach: turns">
-                  <tr>
-                    <td class="turnNumber" title="Event turn number" data-bind="text: turnNumber"></td>
-                    <td class="messages" title="console output" data-bind="foreach: {data: messages, afterRender: $root.setMessageLogElement}">
-                          <div data-bind="text: text, attr:{severity: severity}"></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-     </div>
-    </div>
     <div class="sessionView">
         <span class="helpInfo">
           Turn Scrubber: mouseover boxes to see turn info.
@@ -168,21 +143,21 @@
           </div>
           <div class="overviewLog">
               <!-- ko if: sessionViewModel.loadListViewModel.currentLoadIsSelected -->
-              <!-- ko foreach: preMessages -->
-              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- ko foreach: preIndicators -->
+              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <div class="beginRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{click: recorder.onBeginRecorded.bind(recorder) }">x</div>
-              <!-- ko foreach: recordedMessages -->
-               <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- ko foreach: recordedIndicators -->
+               <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <div class="endRecorded" data-bind="attr:{state:recorder.recordingState()}, event:{click: recorder.onEndRecorded.bind(recorder) }">&#9679;</div>
-              <!-- ko foreach: postMessages -->
-              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <!-- ko foreach: postIndicators -->
+              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <!-- /ko -->
               <!-- ko if: sessionViewModel.loadListViewModel.isPastLoad -->
               <!-- ko foreach: storedMessages -->
-              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mousedown: $root.focusLog, mouseover: $root.turnInfo}"> </div>
+              <div class="turnIndicator" data-bind="attr:{severity: severity, turn: turn.turnNumber}, event:{mouseover: $root.turnInfo}"> </div>
               <!-- /ko -->
               <!-- /ko -->
           </div>

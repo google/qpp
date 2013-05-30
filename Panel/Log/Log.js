@@ -12,8 +12,6 @@
   
   var messagePrototype = {
     tooltip: function() {
-     var logFloat = document.querySelector('.messageView');
-     this.scroll = logFloat.scrollHeight;
      totalLogs++;
      if (debug)
       console.log('Message.tooltip: total logs : '+totalLogs);
@@ -131,8 +129,7 @@
       messageSource.severity = messageSource.severity || messageSource.level;
       messageSource.position = this._turnInProgress.messages().length;
       this._turnInProgress.messages.push(messageSource);  // per turn view under turnScrubber
-      this.currentLoad.messages.push(messageSource);  // console-like view
-      this._turnScrubber._addMessage(messageSource);  // do we really need three!
+      this._turnScrubber.updateTurnIndicator(messageSource);
       if (debug){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this._turnInProgress.messages().length);
       }

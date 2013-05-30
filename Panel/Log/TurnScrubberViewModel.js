@@ -22,73 +22,56 @@
       this.sessionViewModel = sessionViewModel;
       this.loadListViewModel = sessionViewModel.loadListViewModel;
       this.recorder = QuerypointPanel.Recorder.initialize(sessionViewModel.loadListViewModel, this);
-      
-      this.trackLatestMessage = ko.observable(true);
-      
+            
       var self = this;
       this.lastLoad = 0;
-      this.showMessage = ko.observable(0);
 
       this.turnViewModel = QuerypointPanel.TurnViewModel;
       this.turnViewModel.initialize(sessionViewModel.loadListViewModel, project, tracequeries);
-
-      var logView = document.querySelector('.logView');
       
-      // TODO depends on resize of logView
-      this.rangeShowable = ko.computed(function(){
-        var height = logView.clientHeight;
-        var lineHeight = 13;
-        var lines = Math.ceil(height / lineHeight) + 1;
-        return lines;
-      }.bind(this));
-
       this._initMouse();
 
       var panel =  document.querySelector('.panel');
       var sessionView = document.querySelector('.sessionView');
-      var logFloat = document.querySelector('.messageView');
       var loadElement = document.querySelector('.loadListView');
       var dropDown = document.querySelector('.turnView');
       
-      this.preMessages = ko.observableArray();          // Messages before the play button
-      this.postMessages = ko.observableArray();         // Messages after record button
-      this.recordedMessages = ko.observableArray();     // Messages that occured in recorded turns
-      this.storedMessages = ko.observableArray();       // All messages in a load
-      this.messages = this.preMessages;                 // Points to message array where new messages go
+      this.preIndicators = ko.observableArray();          // Turns before the play button
+      this.postIndicators = ko.observableArray();         // Turns after record button
+      this.recordedIndicators = ko.observableArray();     // Turns that occured in recorded turns
+      this.indicators = this.preIndicators;                 // Points to message array where new indicators go
 
-      // To scale messages width of indicator decreases until they are 1 pixel wide
+      // To scale indicators width of indicator decreases until they are 1 pixel wide
       // If number of indicators exceed width of window, each indicator will represent more than one message
-      this._scale = 1;                                  // Number of messages in each indicator
-      this._addedMessages;                              // Number of messages added to the last indicator
+      this._scale = 1;                                  // Number of indicators in each indicator
+      this._addedMessages;                              // Number of indicators added to the last indicator
 
       this.updateOnLoadSelection = function(currentLoadIsSelected, load) { // TODO MDV
         this.recorder.stopIfRecording();
 
         if (currentLoadIsSelected) {
-          self.storedMessages([]);
           self.updateSize();
         } else {
-          self.storedMessages(self.compressMessages(load.messages));
-          var maxMessages = sessionView.offsetWidth - 30;           // FIXME
-          self._setMessageWidth( maxMessages / self.storedMessages().length );
+          var maxTurns = sessionView.offsetWidth - 30;           // FIXME
+          self._setMessageWidth( maxMessages / self.compressTurns(load.indicators).length );
         }
       }
 
-      // Method adds a message to the array messages
-      this._addMessage = function(message){
+      // Method adds a message to the array indicators
+      this.updateTurnIndicator = function(message){
         if (this._scale == 1) {
           // If scale is 1 then each message is an indicator, so it is added directly
-          self.messages().push(message);
+          self.indicators().push(message);
         } else {
           if (this._addedMessages == this._scale) {
-            // If number of messages in last indicator equals the scale factor then a new indicator needs to be added
-            self.messages().push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
+            // If number of indicators in last indicator equals the scale factor then a new indicator needs to be added
+            self.indicators().push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
             self._addedMessages = 0;
           } else {
             // If not, then merge the message with the last indicator
-            // The color of the indicator depends on the messages that represent the indicator. 'turn' has precedence before 'error' and 'warn' and 'error' has precedence over 'warn'.
+            // The color of the indicator depends on the indicators that represent the indicator. 'turn' has precedence before 'error' and 'warn' and 'error' has precedence over 'warn'.
             self._addedMessages += 1;
-            var lastMessage = self.messages()[self.messages().length - 1];
+            var lastMessage = self.indicators()[self.indicators().length - 1];
             if (message.severity === 'warn' && lastMessage.severity === 'log') lastMessage.severity = 'warn';
             if (message.severity === 'error' && lastMessage.severity !== 'turn') lastMessage.severity = 'error';
             if (message.turn === 'turn') {
@@ -100,17 +83,17 @@
         }
       }
 
-      // This method takes an array of messages and if these don't fit in the width of the screen
-      // then we merge messages together in such way to maximize the occupied space in scrubber bar
-      this.compressMessages = function(messages){
+      // This method takes an array of indicators and if these don't fit in the width of the screen
+      // then we merge indicators together in such way to maximize the occupied space in scrubber bar
+      this.compressMessages = function(indicators){
         var maxMessages = sessionView.offsetWidth - 30;
-        if(messages.length < maxMessages) return messages;
-        // perPixel is the ammount of messages that are going to be merged together
-        var perPixel = Math.floor(messages.length / maxMessages);
+        if(indicators.length < maxMessages) return indicators;
+        // perPixel is the ammount of indicators that are going to be merged together
+        var perPixel = Math.floor(indicators.length / maxMessages);
         var result = [];
         var message;
-        for (var i = 0; i < messages.length; i++) {
-          message = messages[i];
+        for (var i = 0; i < indicators.length; i++) {
+          message = indicators[i];
           if (i % perPixel == 0) { // every perPixel-th message whe create a new indicator
             result.push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
           } else {
@@ -130,9 +113,9 @@
       // Method calculates size of indicator, if the number of indicators exceed the width of the screen arrays get scaled
       // to half their size.
       this.updateSize = function(){
-        self.messages.valueHasMutated();
+        self.indicators.valueHasMutated();
         var maxMessages = sessionView.offsetWidth - 40;
-        var joinMessages = self.preMessages().length + self.recordedMessages().length + self.postMessages().length;
+        var joinMessages = self.preIndicators().length + self.recordedIndicators().length + self.postIndicators().length;
 
         if (joinMessages < maxMessages) {
           var width = Math.floor(maxMessages / joinMessages);
@@ -140,18 +123,18 @@
         } else {
           self._scale *= 2;
           self._addedMessages = 0;
-          if (self.messages !== self.preMessages) self._scaleMessages(self.preMessages);
-          if (self.messages !== self.recordedMessages) self._scaleMessages(self.recordedMessages);
-          self._scaleMessages(self.messages);
+          if (self.indicators !== self.preIndicators) self._scaleMessages(self.preIndicators);
+          if (self.indicators !== self.recordedIndicators) self._scaleMessages(self.recordedIndicators);
+          self._scaleMessages(self.indicators);
           this.updateSize();
         }
       }
 
-      // Method that takes an array of messages and reduces size to half by merging pair of messages together
-      this._scaleMessages = function(messages) {
-        var len = messages().length;
+      // Method that takes an array of indicators and reduces size to half by merging pair of indicators together
+      this._scaleMessages = function(indicators) {
+        var len = indicators().length;
         if (len % 2 == 1){
-            messages.push(messages()[len-1]);
+            indicators.push(indicators()[len-1]);
             len++;
         }
 
@@ -159,29 +142,29 @@
             var message = {severity: null, position: null, scroll: null, turn: null};
 
             message.severity = 'log';   // Defines color of indicator in scrubber bar turn>error>warn>log 
-            if (messages()[i * 2].severity === 'warn' || messages()[i * 2 + 1].severity === 'warn') message.severity = 'warn';
-            if (messages()[i * 2].severity === 'error' || messages()[i * 2 + 1].severity === 'error') message.severity = 'error';
-            if (messages()[i * 2].severity === 'turn') message.severity = 'turn';
+            if (indicators()[i * 2].severity === 'warn' || indicators()[i * 2 + 1].severity === 'warn') message.severity = 'warn';
+            if (indicators()[i * 2].severity === 'error' || indicators()[i * 2 + 1].severity === 'error') message.severity = 'error';
+            if (indicators()[i * 2].severity === 'turn') message.severity = 'turn';
 
-            message.position = messages()[i * 2].position;      // Position is the relative order of the messages among other messages, used to focus message on mouseover.
-            message.scroll = messages()[i * 2].scroll;          // Scroll is the element that gets focused in console when indicator is clicked
-            message.turn = messages()[i * 2].turn;              // Turn number of the indicator
-            if (messages()[i * 2 + 1].severity === 'turn'){     // If a message is a Turn then we'll take it as more relevant than previos messages
+            message.position = indicators()[i * 2].position;      // Position is the relative order of the indicators among other indicators, used to focus message on mouseover.
+            message.scroll = indicators()[i * 2].scroll;          // Scroll is the element that gets focused in console when indicator is clicked
+            message.turn = indicators()[i * 2].turn;              // Turn number of the indicator
+            if (indicators()[i * 2 + 1].severity === 'turn'){     // If a message is a Turn then we'll take it as more relevant than previos indicators
                 message.severity = 'turn';
                 message.position = 0;
-                message.turn = messages()[i * 2 + 1].turn;
+                message.turn = indicators()[i * 2 + 1].turn;
             }
-            messages()[i] = message;
+            indicators()[i] = message;
         }
-        messages.splice(messages().length / 2);
-        messages.valueHasMutated();
+        indicators.splice(indicators().length / 2);
+        indicators.valueHasMutated();
       }
 
       this._clearMessages = function(){  // TODO vs resetMessages
-          this.preMessages([]);
-          this.postMessages([]);
-          this.recordedMessages([]);
-          this.messages = self.preMessages;
+          this.preIndicators([]);
+          this.postIndicators([]);
+          this.recordedIndicators([]);
+          this.indicators = self.preIndicators;
       }
 
       // Method that changes css style to change width and border of indicators
@@ -216,7 +199,7 @@
 
       // Method is currently *not* being used
       // It was replaced by compressMessages and _scaleMessages
-      // Given a floating point value perPixel less than 1 and an array of messages
+      // Given a floating point value perPixel less than 1 and an array of indicators
       // Returns an array of indicators such that the number of indicators fit in the whole scrubber bar
       this._downSizeMessages = function(perPixel, joinMessages) {
         var last = 0, next = 0;
@@ -255,10 +238,6 @@
           if (sessionViewModel.isOurRelatedTarget(e, this)) return false;
           dropDown.style.display = 'none';
       }
-    
-      logView.onmouseout = function(){
-          dropDown.style.display = 'none';
-      };
     
       var turnScrubberView = document.querySelector('.overviewLog');
       ko.applyBindings(this, turnScrubberView);
@@ -331,58 +310,46 @@
     },
 
     _resetMessages: function() {
-      for (var i = 0; i < this.recordedMessages().length; i++) 
-        this.preMessages().push(this.recordedMessages()[i]);
-      for (var i = 0; i < this.postMessages().length; i++) 
-        this.preMessages().push(this.postMessages()[i]);
+      for (var i = 0; i < this.recordedIndicators().length; i++) 
+        this.preIndicators().push(this.recordedIndicators()[i]);
+      for (var i = 0; i < this.postIndicators().length; i++) 
+        this.preIndicators().push(this.postIndicators()[i]);
 
-      this.preMessages.valueHasMutated();
-      this.recordedMessages([]);
-      this.postMessages([]);
+      this.preIndicators.valueHasMutated();
+      this.recordedIndicators([]);
+      this.postIndicators([]);
       this.updateSize();
     },
 
     onStartRecording: function() {
       this._resetMessages();
-      this.messages = this.recordedMessages;
+      this.indicators = this.recordedIndicators;
     },
   
     onStopRecording: function() {
-      this.messages = this.postMessages;
+      this.indicators = this.postIndicators;
     },
 
    onReplayBegins: function() {
       this._resetMessages();
-      this.messages = this.recordedMessages;
+      this.indicators = this.recordedIndicators;
     },
 
     onReplayComplete: function() {
-      this.messages = this.postMessages;
+      this.indicators = this.postIndicators;
     },
 
     onEraseRecording: function() {
       this._resetMessages();
-      this.messages = this.preMessages;
-    },
-
-    focusLog: function (message) {
-      if (message.logView) {
-        message.logView.scrollIntoView(false);
-        var logFloat = document.querySelector('.messageView');
-        logFloat.scrollTop += logFloat.offsetHeight / 2 ;
-      }
+      this.indicators = this.preIndicators;
     },
   
     turnInfo: function(message){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
         QuerypointPanel.TurnScrubberViewModel.turnViewModel.showTurn(message.turn.turnNumber);
-        QuerypointPanel.TurnScrubberViewModel.showMessage(message.position);
         var dropDown = document.querySelector('.turnView');
         var loadElement = document.querySelector('.loadListView');
-        var messages = document.querySelector('.turnView .messages');
         dropDown.style.display = 'block';
-        if (messages)
-          messages.scrollTop = 15 * message.position;
     },
     
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
