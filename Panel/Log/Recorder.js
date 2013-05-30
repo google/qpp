@@ -11,7 +11,7 @@
 
   function buildCausalChain(allTurns, turn) {
     var chain = [];
-    console.log("buildCausalChain " + turn.turnNumber + " caused by " + turn.registrationTurnNumber);
+    if (debug) console.log("buildCausalChain " + turn.turnNumber + " caused by " + turn.registrationTurnNumber);
     if (turn.registrationTurnNumber) 
       chain = buildCausalChain(allTurns, allTurns[turn.registrationTurnNumber - 1]);
 
@@ -162,6 +162,7 @@
         command += 'event.initEvent("' + turn.eventType + '", ' + turn.eventBubbles + ', ' + turn.eventCancels + '); ';
         command += 'target.dispatchEvent(event); ';
         chrome.devtools.inspectedWindow.eval(command);
+        if (debug) console.log('Recorder.play ' + command);
       });
       chrome.devtools.inspectedWindow.eval('console.log("qp| replayComplete");');
       this.recordingState('recorded');
@@ -202,7 +203,7 @@
     },
 
     _autoReplay: function() {
-      console.log('Recorder autoReplay ' + this._recordedTurns.length + ' turns.');
+      if (debug) console.log('Recorder autoReplay ' + this._recordedTurns.length + ' turns.');
       this._turnScrubberViewModel.onReplayBegins();
       this.play();
       // The eval commands for playback are now queued, 

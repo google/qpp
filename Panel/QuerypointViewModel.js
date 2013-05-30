@@ -76,7 +76,7 @@
 
     update: function(turn) {
       var tracequeries = this._panel.tracequeries();
-      console.log('Update on turn '+turn.turnNumber + ' with ' + tracequeries.length + ' tracequeries.');
+      if (debug) console.log('Update on turn '+turn.turnNumber + ' with ' + tracequeries.length + ' tracequeries.');
       if (!tracequeries.length)
         return;
       

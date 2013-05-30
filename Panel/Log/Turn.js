@@ -5,13 +5,15 @@
 
   'use strict';   
 
-  var DEBUG = false;
+  var debug = DebugLogger.register('Turn', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
 
   QuerypointPanel.Turn = function(runtimeData) {
     Object.keys(runtimeData).forEach(function(key){
       this[key] = runtimeData[key];
     }.bind(this));
-    console.log("Turn " + runtimeData.turnNumber + " runtimeData", runtimeData);
+    if (debug) console.log("Turn " + runtimeData.turnNumber + " runtimeData", runtimeData);
     
     this.turnNumber = runtimeData.turnNumber;
     this.eventType = runtimeData.eventType;

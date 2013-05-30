@@ -5,12 +5,16 @@
 
   "use strict";
 
+  var debug = DebugLogger.register('StatusBar', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   var statusBarSelector = ".statusBar";
   
   QuerypointPanel.StatusBar = {
     initialize: function(panel, sessionViewModel) {
       this.runtimeNotInstalled = ko.computed(function() {
-        console.log('StatusBar runtimeInstalled: ' + sessionViewModel.runtimeInstalled());
+        if (debug) console.log('StatusBar runtimeInstalled: ' + sessionViewModel.runtimeInstalled());
         return !sessionViewModel.runtimeInstalled();
       });
       this.openURLs = ko.observableArray();
