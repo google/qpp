@@ -129,7 +129,7 @@
       messageSource.severity = messageSource.severity || messageSource.level;
       messageSource.position = this._turnInProgress.messages().length;
       this._turnInProgress.messages.push(messageSource);  // per turn view under turnScrubber
-      this._turnScrubber.updateTurnIndicator(messageSource);
+      this._turnScrubber.updateTurnIndicator(this._turnInProgress, messageSource.severity);
       if (debug){
         console.log('QuerypointPanel.Log._reformat messages.length ' + this._turnInProgress.messages().length);
       }

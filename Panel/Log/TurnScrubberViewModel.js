@@ -39,12 +39,8 @@
       this.preIndicators = ko.observableArray();          // Turns before the play button
       this.postIndicators = ko.observableArray();         // Turns after record button
       this.recordedIndicators = ko.observableArray();     // Turns that occured in recorded turns
-      this.indicators = this.preIndicators;                 // Points to message array where new indicators go
-
-      // To scale indicators width of indicator decreases until they are 1 pixel wide
-      // If number of indicators exceed width of window, each indicator will represent more than one message
-      this._scale = 1;                                  // Number of indicators in each indicator
-      this._addedMessages;                              // Number of indicators added to the last indicator
+      this.indicators = this.preIndicators;                 // Points to indicator array where new indicators go
+      this._currentIndicator = {};                    
 
       this.updateOnLoadSelection = function(currentLoadIsSelected, load) { // TODO MDV
         this.recorder.stopIfRecording();
@@ -53,61 +49,22 @@
           self.updateSize();
         } else {
           var maxTurns = sessionView.offsetWidth - 30;           // FIXME
-          self._setMessageWidth( maxMessages / self.compressTurns(load.indicators).length );
+          self._setMessageWidth( maxMessages / load.indicators.length );
         }
       }
 
-      // Method adds a message to the array indicators
-      this.updateTurnIndicator = function(message){
-        if (this._scale == 1) {
-          // If scale is 1 then each message is an indicator, so it is added directly
-          self.indicators().push(message);
+      this._severities = ['turn', 'log', 'warning', 'error'];
+
+      this.updateTurnIndicator = function(turn, severity){
+        if (this._currentIndicator.turn !== turn) {
+          this._currentIndicator = {severity: severity, turn: turn};
+          this.indicators().push(this._currentIndicator);
         } else {
-          if (this._addedMessages == this._scale) {
-            // If number of indicators in last indicator equals the scale factor then a new indicator needs to be added
-            self.indicators().push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
-            self._addedMessages = 0;
-          } else {
-            // If not, then merge the message with the last indicator
-            // The color of the indicator depends on the indicators that represent the indicator. 'turn' has precedence before 'error' and 'warn' and 'error' has precedence over 'warn'.
-            self._addedMessages += 1;
-            var lastMessage = self.indicators()[self.indicators().length - 1];
-            if (message.severity === 'warn' && lastMessage.severity === 'log') lastMessage.severity = 'warn';
-            if (message.severity === 'error' && lastMessage.severity !== 'turn') lastMessage.severity = 'error';
-            if (message.turn === 'turn') {
-                lastMessage.severity = 'turn';
-                lastMessage.turn = message.turn;
-                lastMessage.position = 0;
-            }
-          }
+          var index = this._severities.indexOf(severity);
+          var currentIndex = this._severities.indexOf(this._currentIndicator.severity);
+          if (index > currentIndex)
+            this._currentIndicator.severity = this._severities[index];
         }
-      }
-
-      // This method takes an array of indicators and if these don't fit in the width of the screen
-      // then we merge indicators together in such way to maximize the occupied space in scrubber bar
-      this.compressMessages = function(indicators){
-        var maxMessages = sessionView.offsetWidth - 30;
-        if(indicators.length < maxMessages) return indicators;
-        // perPixel is the ammount of indicators that are going to be merged together
-        var perPixel = Math.floor(indicators.length / maxMessages);
-        var result = [];
-        var message;
-        for (var i = 0; i < indicators.length; i++) {
-          message = indicators[i];
-          if (i % perPixel == 0) { // every perPixel-th message whe create a new indicator
-            result.push({severity: message.severity, turn: message.turn, scroll: message.scroll, position: message.position});
-          } else {
-            var lastMessage = result[result.length - 1];
-            if (message.severity === 'warn' && lastMessage.severity === 'log') lastMessage.severity = 'warn';
-            if (message.severity === 'error' && lastMessage.severity !== 'turn') lastMessage.severity = 'error';
-            if (message.turn === 'turn') {
-                lastMessage.severity = 'turn';
-                lastMessage.turn = message.turn;
-                lastMessage.position = 0;
-            }
-          }
-        }
-        return result;
       }
 
       // Method calculates size of indicator, if the number of indicators exceed the width of the screen arrays get scaled
@@ -122,7 +79,7 @@
           self._setMessageWidth(width);
         } else {
           self._scale *= 2;
-          self._addedMessages = 0;
+          self._currentIndicator = 0;
           if (self.indicators !== self.preIndicators) self._scaleMessages(self.preIndicators);
           if (self.indicators !== self.recordedIndicators) self._scaleMessages(self.recordedIndicators);
           self._scaleMessages(self.indicators);
@@ -139,28 +96,28 @@
         }
 
         for (var i = 0; i < len / 2; i++){
-            var message = {severity: null, position: null, scroll: null, turn: null};
+            var indicator = {severity: null, position: null, scroll: null, turn: null};
 
-            message.severity = 'log';   // Defines color of indicator in scrubber bar turn>error>warn>log 
-            if (indicators()[i * 2].severity === 'warn' || indicators()[i * 2 + 1].severity === 'warn') message.severity = 'warn';
-            if (indicators()[i * 2].severity === 'error' || indicators()[i * 2 + 1].severity === 'error') message.severity = 'error';
-            if (indicators()[i * 2].severity === 'turn') message.severity = 'turn';
+            indicator.severity = 'log';   // Defines color of indicator in scrubber bar turn>error>warn>log 
+            if (indicators()[i * 2].severity === 'warn' || indicators()[i * 2 + 1].severity === 'warn') indicator.severity = 'warn';
+            if (indicators()[i * 2].severity === 'error' || indicators()[i * 2 + 1].severity === 'error') indicator.severity = 'error';
+            if (indicators()[i * 2].severity === 'turn') indicator.severity = 'turn';
 
-            message.position = indicators()[i * 2].position;      // Position is the relative order of the indicators among other indicators, used to focus message on mouseover.
-            message.scroll = indicators()[i * 2].scroll;          // Scroll is the element that gets focused in console when indicator is clicked
-            message.turn = indicators()[i * 2].turn;              // Turn number of the indicator
-            if (indicators()[i * 2 + 1].severity === 'turn'){     // If a message is a Turn then we'll take it as more relevant than previos indicators
-                message.severity = 'turn';
-                message.position = 0;
-                message.turn = indicators()[i * 2 + 1].turn;
+            indicator.position = indicators()[i * 2].position;      // Position is the relative order of the indicators among other indicators, used to focus indicator on mouseover.
+            indicator.scroll = indicators()[i * 2].scroll;          // Scroll is the element that gets focused in console when indicator is clicked
+            indicator.turn = indicators()[i * 2].turn;              // Turn number of the indicator
+            if (indicators()[i * 2 + 1].severity === 'turn'){     // If a indicator is a Turn then we'll take it as more relevant than previos indicators
+                indicator.severity = 'turn';
+                indicator.position = 0;
+                indicator.turn = indicators()[i * 2 + 1].turn;
             }
-            indicators()[i] = message;
+            indicators()[i] = indicator;
         }
         indicators.splice(indicators().length / 2);
         indicators.valueHasMutated();
       }
 
-      this._clearMessages = function(){  // TODO vs resetMessages
+      this._clearIndicators = function(){  // TODO vs resetMessages
           this.preIndicators([]);
           this.postIndicators([]);
           this.recordedIndicators([]);
@@ -196,42 +153,6 @@
         else 
             turnIndicatorRule.style.width = width + 'px';
       }
-
-      // Method is currently *not* being used
-      // It was replaced by compressMessages and _scaleMessages
-      // Given a floating point value perPixel less than 1 and an array of indicators
-      // Returns an array of indicators such that the number of indicators fit in the whole scrubber bar
-      this._downSizeMessages = function(perPixel, joinMessages) {
-        var last = 0, next = 0;
-        var showMessages=[];
-        var hasError, hasTurn, hasWarn, lastTurn;
-
-        while (next != joinMessages.length) {
-            if (!hasTurn) {
-                hasError = hasTurn = hasWarn = false;
-            } else {
-                hasTurn = false;
-            }
-            if (last + perPixel > joinMessages.length)
-              last = joinMessages.length; 
-            else 
-              last = last + perPixel;
-
-            for (; next < last; next++) {
-                var severity = joinMessages[next].severity;
-                if (severity === 'turn') hasTurn = true;
-                if (severity === 'warn') hasWarn = true;
-                if (severity === 'error') hasError = true;
-            }
-            lastTurn = joinMessages[next-1].turn;
-            showMessages.push({
-              severity: hasTurn ? 'turn' : (hasWarn ? 'warn' : (hasError ? 'error' : 'log')), 
-              turn:lastTurn, 
-              scroll: joinMessages[next-1].scroll 
-            });
-        }
-      }
-
 
       dropDown.onmouseout = function(event) {
           var e = event.toElement || event.relatedTarget;
@@ -306,10 +227,10 @@
 
     onBeginLoad: function() {
       this._scale = 1;
-      this._clearMessages();
+      this._clearIndicators();
     },
 
-    _resetMessages: function() {
+    _resetIndicators: function() {
       for (var i = 0; i < this.recordedIndicators().length; i++) 
         this.preIndicators().push(this.recordedIndicators()[i]);
       for (var i = 0; i < this.postIndicators().length; i++) 
@@ -322,7 +243,7 @@
     },
 
     onStartRecording: function() {
-      this._resetMessages();
+      this._resetIndicators();
       this.indicators = this.recordedIndicators;
     },
   
@@ -331,7 +252,7 @@
     },
 
    onReplayBegins: function() {
-      this._resetMessages();
+      this._resetIndicators();
       this.indicators = this.recordedIndicators;
     },
 
@@ -340,15 +261,14 @@
     },
 
     onEraseRecording: function() {
-      this._resetMessages();
+      this._resetIndicators();
       this.indicators = this.preIndicators;
     },
   
-    turnInfo: function(message){
+    turnInfo: function(indicator){
         if (debug) console.log('QuerypointPanel.turnInfo: ', arguments);
-        QuerypointPanel.TurnScrubberViewModel.turnViewModel.showTurn(message.turn.turnNumber);
+        QuerypointPanel.TurnScrubberViewModel.turnViewModel.showTurn(indicator.turn.turnNumber);
         var dropDown = document.querySelector('.turnView');
-        var loadElement = document.querySelector('.loadListView');
         dropDown.style.display = 'block';
     },
     

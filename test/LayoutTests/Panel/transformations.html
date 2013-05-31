@@ -21,9 +21,10 @@ function test_lastChange() {
   AsyncMachine.pushOp(openSourceFile, 'tests.js');
   AsyncMachine.pushOp(clickSelector, '.initialOptions_reloadWithQP', '');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
+  AsyncMachine.pushOp(mouseOverSelector, 'div.turnIndicator[severity="warning"]', '');
   
-  AsyncMachine.pushOp(whenSelectorAll, 'td.messages', 'Tests complete');
-  AsyncMachine.pushOp(extractText, 'td div[severity="warning"]');
+  AsyncMachine.pushOp(whenSelectorAll, '.message', 'Tests complete');
+  AsyncMachine.pushOp(extractText, 'p.message[severity="warning"]');
 
   AsyncMachine.runOp();
 }
