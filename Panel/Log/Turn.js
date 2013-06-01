@@ -9,6 +9,12 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+  // Model of a JavaScript event 'turn', one synchronous call stack.
+  // Each turn has an entry point function, typically an event listener
+  // with a target element represented by a selector and an event type.
+  // All turns have a 'registration' turn that put the entry point into play,
+  // eg called addEventListener passing the entry point.
+ 
   QuerypointPanel.Turn = function(runtimeData) {
     Object.keys(runtimeData).forEach(function(key){
       this[key] = runtimeData[key];

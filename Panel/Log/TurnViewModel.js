@@ -9,7 +9,10 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
+  // Visualize a single JS turn selected by the index set in showTurn().
+
   QuerypointPanel.TurnViewModel = {
+    
     initialize: function(loadListViewModel, project, tracequeries) {
       this._project = project;
       var turnViewModel = this;

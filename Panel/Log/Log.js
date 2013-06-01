@@ -33,8 +33,14 @@
     }
   };
 
+  // Monitors devtools Console and creates nested models of:
+  //  loads, turns, and console messages.
+  // Loads and turns are created when console log messages prefixed
+  // by "qp|" arrive. They are send by the QPRuntime. 
+
   QuerypointPanel.Log = {
 
+    // Begin monitoring Console.
     initialize: function(project, loadListViewModel, turnScrubber) {
       this.project = project;
       this._loadListViewModel = loadListViewModel;
@@ -44,7 +50,17 @@
       return this;
     },
     
-    disconnect: function() {
+    // Call back 
+    pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
+      if (runtimeInstalled)
+        this.initialize(this.project, this._loadListViewModel, this._turnScrubber);
+      else
+        this._disconnect();
+    },
+    
+    //-----------------------------------------------------------------
+
+    _disconnect: function() {
       QuerypointPanel.Console.messageAdded = function(message) {}
     },
     
@@ -135,18 +151,6 @@
       }
     },
     
-    extractMessages: function(first, last) {  // TODO remove
-      var visibleMessages = [];
-      //messageSource.odd = (--visibleLines) % 2;
-      return this._loadListViewModel.loadViewModels();
-    },
-    
-    pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-      if (runtimeInstalled)
-        this.initialize(this.project, this._loadListViewModel, this._turnScrubber);
-      else
-        this.disconnect();
-    }
   };
 
 }());
