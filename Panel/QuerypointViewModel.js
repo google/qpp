@@ -79,9 +79,7 @@
       if (debug) console.log('Update on turn '+turn.turnNumber + ' with ' + tracequeries.length + ' tracequeries.');
       if (!tracequeries.length)
         return;
-      
-      this.tracepoints = ko.observableArray([]);
-        
+              
       tracequeries.forEach(function(tq){
         tq.extractTracepoints(this, function (tracepoint){
           if (tracepoint) {
