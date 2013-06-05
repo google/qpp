@@ -95,14 +95,17 @@
       this.editorImpl.scrollIntoView(startPos);
       this._container.classList.add('qp-fade');
       var mark = this.editorImpl.markText(startPos, endPos, {className: 'qp-highlight'});
-      this._currentRegion = {start: startIndex, end: endIndex};
       return mark; 
     },
     
     isShowingRegion: function(startIndex, endIndex) {
-      return this._currentRegion &&
-        this._currentRegion.start === startIndex &&
-        this._currentRegion.end == endIndex;
+      var pos = this.editorImpl.posFromIndex(startIndex);
+      var marks = this.editorImpl.findMarksAt(pos);
+      marks.forEach(function(mark) {
+        var range = mark.find();
+        console.log("mark range", range);
+      });
+      return !!marks.length;
     },
 
     //-------------------------
