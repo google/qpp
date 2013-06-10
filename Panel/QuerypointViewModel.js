@@ -1,7 +1,8 @@
  // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
-// Binds the tracuer SourceFile, Tree, and Trace data
+// Binds the tracuer SourceFile, Tree, and Trace data. It is shown in
+// the left hand side of a FileView
 
 (function() {
   'use strict';
@@ -13,8 +14,14 @@
   QuerypointPanel.QuerypointViewModel = function(panel, sourceFile, editorViewModel) {
     this._panel = panel;
     this._editorViewModel = editorViewModel;
+    this.project = panel.project;
     
-    this.sourceFile = ko.observable();
+    // Input
+
+    this.sourceFile = ko.observable();  // The selected file.
+
+    // Output
+
     this.treeRoot = ko.computed(function(){
       var sourceFile = this.sourceFile();
       var tree = {traceData: function(){}};
@@ -66,9 +73,7 @@
     this.tokenViewModel.initialize();
     this.sourceFile(sourceFile);
   }
-  
-  QuerypointPanel.QuerypointViewModel.debug = true;
-  
+    
   QuerypointPanel.QuerypointViewModel.prototype = {
     hoverDoorAttach: function(hoverDoorTarget) {
       this._hoverDoorTarget = hoverDoorTarget;

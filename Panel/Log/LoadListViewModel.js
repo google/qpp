@@ -18,7 +18,6 @@
   QuerypointPanel.LoadModel = function(loadNumber) { 
     this.loadNumber = loadNumber || '-';
     this.turns = ko.observableArray();
-    this.turnStarted = ko.observable(0);
     this.turnEnded = ko.observable(0);
     this.currentTurn = ko.computed(function() {
       return this.turns()[this.turnStarted() - 1];
