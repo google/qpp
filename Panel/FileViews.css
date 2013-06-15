@@ -90,3 +90,8 @@
    color: #000000 !important;
    font-size: larger;
 }
+.cm-s-monokai .qp-decorate {
+   border: 1px dotted rgb(255, 249, 227);
+   border-radius: 5px;
+
+}

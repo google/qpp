@@ -25,24 +25,24 @@
   QuerypointPanel.FileChainViewModel.prototype = {
 
     openChainedFileView: function(url, fromFileView) {
-      var linkTarget = this._nameAndOffsetsFromURL(url);
+      var sourceRegion = this._nameAndOffsetsFromURL(url);
       var editorViewModel;
       if (!fromFileView) {  // no link in the current chain contains this URL, start new chain
-           fileViewModel = this.openURL(linkTarget.name);
+           fileViewModel = this.openURL(sourceRegion.name);
            editorViewModel = fileViewModel.editorViewModel;
            this._createFileChain(fileViewModel);
       } else {  // we are opening a new link in an existing chain
         var fromFileViewModel = this.fileViewModels()[fromFileView.getAttribute('chainIndex')];
         var editor = fromFileViewModel.editor();
-        if (!editor.isShowingRegion(linkTarget.start, linkTarget.end)) {
-          var fileViewModel = this.openURL(linkTarget.name);   
+        if (!editor.isShowingRegion(sourceRegion.start, sourceRegion.end)) {
+          var fileViewModel = this.openURL(sourceRegion.name);   
           this._appendFileChain(fileViewModel, fromFileViewModel);
           editorViewModel = fileViewModel.editorViewModel;
         }  else { //  we are already showing it
           editorViewModel = fromFileViewModel.editorViewModel;
         }
       }
-      editorViewModel.mark(linkTarget);
+      editorViewModel.mark(sourceRegion);
     },
     /*
       @return true if we find the content matching @param url and open a view on it.

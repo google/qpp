@@ -20,7 +20,8 @@
     this.turns = ko.observableArray();
     this.turnEnded = ko.observable(0);
     this.currentTurn = ko.computed(function() {
-      return this.turns()[this.turnStarted() - 1];
+      if (this.turns().length)
+        return this.turns()[this.turnStarted() - 1];
     }.bind(this));
     this.turnStarted = ko.computed(function() {
       return this.turns().length;
