@@ -1,0 +1,21 @@
+{
+  "name": "ScreenSharing",
+  "version": "2",
+  "manifest_version": 2,
+  "description": "A Demonstration of projecting the contents of a page to remote clients.",
+  "icons": { "128": "icon_128.png" },
+  "permissions": ["http://*/*", "https://*/*", "tabs"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["mutation_summary.js", "tree_mirror.js", "content_script.js"]
+    }
+  ],
+  "browser_action": {
+    "default_icon": "icon_128.png"
+  },
+  "background": {
+    "scripts": ["bg.js"],
+    "persistent": false
+  }
+}

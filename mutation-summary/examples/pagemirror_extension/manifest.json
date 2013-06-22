@@ -1,0 +1,21 @@
+{
+  "name": "PageMirror",
+  "version": "2",
+  "manifest_version": 2,
+  "description": "A Demonstration of miroring an entire document using DOM Mutation Observers and the Mutation Summary JavaScript library.",
+  "icons": { "128": "icon_128.png" },
+  "permissions": ["http://*/*", "https://*/*", "tabs"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["mutation_summary.js", "tree_mirror.js", "content_script.js"]
+    }
+  ],
+  "browser_action": {
+    "default_icon": "icon_128.png"
+  },
+  "background": {
+    "scripts": ["bg.js"],
+    "persistent": false
+  }
+}
