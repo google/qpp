@@ -64,7 +64,7 @@
 <link rel="stylesheet" href="StatusBar/StatusBar.css"><!-- after codemirror.css -->
 <script src="../mirror/CodeMirror/mode/javascript/javascript.js"></script>
 
-<script src="../test/unit/Panel.js"></script>
+<script src="../test/unit/PanelTest.js"></script>
 </head>
 <body class="cm-s-monokai">
   <div class="panelInitialization">
@@ -89,12 +89,12 @@
               <div><button class="initialOptions_noReload">Do Not Reload</button></div>
             </div>
             <p class="noticeThis">Then reproduce your bug</p>
-          </div>  
+          </div>
           <div class="IfQPInstalled">
               <div><button class="initialOptions_reloadWithoutQP">Reload Page, remove Querypoint Runtime</button></div>
               <div><button class="initialOptions_noReload">Do Not Reload</button></div>
           </div>
-        </div> 
+        </div>
         <div class="turnView" data-bind="if: turn">
             <p class="turnSummary" data-bind="text: turnSummary"> vvvvv </p>
             <ul class="turnInformation">
@@ -118,7 +118,7 @@
               <div>Registered in
                   <!-- ko foreach: turnChain -->
                       <a data-bind="event: {mousedown: $parent.switchTurn}">Turn <span data-bind="text: turnNumber"></span></a>
-                  <!-- /ko -->    
+                  <!-- /ko -->
               </div>
               <!-- /ko -->
               <!-- ko if: turn().registeredEntryPoints.length -->
@@ -131,7 +131,7 @@
               <!-- ko if: triggeredEvents -->
               <div>Turns triggered by registered entry points
                   <!-- ko foreach: triggeredEvents -->
-                      <div class="turnList" data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></div>    
+                      <div class="turnList" data-bind="event: {mousedown: $parent.switchTurn}">Turn <a data-bind="text: turnNumber"></a></div>
                   <!-- /ko -->
               </div>
               <!-- /ko -->
@@ -191,7 +191,7 @@
                   <th title="Function call within event turn, linked to source expression">Activation</th>
                   <th title="Expression value during specific activation">Value</th>
                 </tr>
-                </thead> 
+                </thead>
                 <tbody class="traceBody" data-bind="foreach: {data: querypointViewModel.traceViewModel.currentTraces, afterRender: querypointViewModel.traceViewModel.afterRender}">
                 <tr >
                   <td class="activation">
@@ -200,7 +200,7 @@
                     </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
                   </td>
                   <td class="traceValue overflowMe" data-bind="text: value"></td>
-                </tr>  
+                </tr>
                 </tbody>
               </table>
             </div>
@@ -253,28 +253,28 @@
           class="turnNumber centeringHack"
           data-bind="text: '&#x21f5;' + currentTurnNumber()"
           ></span>
-        <span 
-          title="Files changed and not saved" 
-          class="unsavedChangedFiles centeringHack" 
+        <span
+          title="Files changed and not saved"
+          class="unsavedChangedFiles centeringHack"
           data-bind="text: '*' + unsavedEditors().length"
           >*1</span>
-        <span 
-          title="Files saved since the last reload" 
-          class="savedChangedFiles centeringHack" 
+        <span
+          title="Files saved since the last reload"
+          class="savedChangedFiles centeringHack"
           data-bind="text: '&#x2206;' + savedEditors().length"
           > 2</span>
-        <span 
-          title="Options changed from default values" 
-          class="changedOptions centeringHack" 
+        <span
+          title="Options changed from default values"
+          class="changedOptions centeringHack"
           ><span class='changedOptionsIcon'>&#x2699;</span></span>
-        <span 
-        title="Options changed from default values" 
-        class="changedOptions centeringHack" 
+        <span
+        title="Options changed from default values"
+        class="changedOptions centeringHack"
         ><span data-bind="text: '' +'0'"></span></span>
       </div>
     </div>
     <div class="splitter"></div>
     </tbody>
-  </div> 
+  </div>
 </body>
 </html>

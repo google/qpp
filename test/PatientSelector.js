@@ -32,7 +32,7 @@
             @param {function} errback: when failure, provides exception
         */
         whenSelectorAll: function(selector, textToMatch, callback, errback) {
-            errback = errback || function(exc) { console.error(exc); }
+            errback = errback || function(exc) { console.error(exc, exc.stack); }
             if (!checkEsClass(selector, 'String')) {
                 errback(this.usage()); 
                 return;
