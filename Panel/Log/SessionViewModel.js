@@ -14,7 +14,7 @@
   QuerypointPanel.SessionViewModel = {
     
     initialize: function(project, tracequeries) {
-      this.loadListViewModel = QuerypointPanel.LoadListViewModel.initialize(this);
+      this.loadListViewModel = QuerypointPanel.LoadListViewModel.initialize();
       this.turnScrubberViewModel = QuerypointPanel.TurnScrubberViewModel.initialize(project, tracequeries, this);
       this._log = QuerypointPanel.Log.initialize(project, this.loadListViewModel, this.turnScrubberViewModel);
 

@@ -34,6 +34,26 @@
         xhr.open('GET', url, true);
         xhr.send();
         return xhr;
+      },
+
+      loadScripts: function(scripts, onSource) {
+        var notLoaded = scripts.slice(0);
+        var srcs = [];
+        function loadOne(scriptURL) {
+          XHR.asyncLoadText(scriptURL, 
+            function(content){
+              srcs.push(content);
+              if (notLoaded.length) loadNext();
+              else onSource(srcs.join('\n'));
+            }, 
+            function errback(error){
+              console.error('QPPreprocessor._scriptSource FAILED on ' + scriptURL + ' with ' + error);
+            }); 
+        }
+        function loadNext() {
+          loadOne(notLoaded.shift());
+        }
+        loadNext();
       }
       
     };

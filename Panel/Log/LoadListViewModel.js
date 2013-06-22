@@ -51,7 +51,7 @@
 
   QuerypointPanel.LoadListViewModel = {
     
-    initialize: function(sessionViewModel) {
+    initialize: function() {
       this.loadViewModels = ko.observableArray();
 
       var loadListView = document.querySelector('.loadListView');
@@ -62,23 +62,13 @@
         return this.loadViewModels()[last];
       }.bind(this));
       
-      var self = this;
       this.showLoad = ko.observable({});
+      
       this.loadStartedNumber = ko.computed(function() {
         return this.loadViewModels().length;
       }.bind(this));
+
       this.loadEndedNumber = ko.observable(0);
-
-      var sessionView = document.querySelector('.sessionView');  // Remove afer FIXME
-      
-      this.displayLoad = function(loadModel) {
-        this.showLoad(loadModel);
-
-        var loadElement = document.querySelector('div.loadNumber[load="' + loadModel.loadNumber + '"]');
-        this.selectLoad(loadElement);
-
-        sessionViewModel.turnScrubberViewModel.updateOnLoadSelection(this.currentLoadIsSelected(), loadModel);
-      }
 
       this.showLoadNumber = ko.computed(function(){
           return this.showLoad().loadNumber || '-';
@@ -94,17 +84,23 @@
       }.bind(this));
 
       this.currentLoadIsSelected = ko.computed( function(){
-        return self.showLoad().loadNumber == self.loadStartedNumber();
-      });
+        return this.showLoad().loadNumber == this.loadStartedNumber();
+      }.bind(this));
 
       this.isPastLoad = ko.computed( function(){
-        return self.loadStartedNumber() && (self.showLoad().loadNumber != self.loadStartedNumber());
-      });
+        return this.loadStartedNumber() && (this.showLoad().loadNumber != this.loadStartedNumber());
+      }.bind(this));
     
       var loadListView = document.querySelector('.loadListView');
       ko.applyBindings(this, loadListView);
 
       return this;
+    },
+
+    displayLoad: function(loadModel) {
+      this.showLoad(loadModel);
+      var loadElement = document.querySelector('div.loadNumber[load="' + loadModel.loadNumber + '"]');
+      this.selectLoad(loadElement);
     },
 
     onClickLoad: function(loadModel) {

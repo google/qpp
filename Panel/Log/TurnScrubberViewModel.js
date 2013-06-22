@@ -42,16 +42,17 @@
       this.indicators = this.preIndicators;                 // Points to indicator array where new indicators go
       this._currentIndicator = {};                    
 
-      this.updateOnLoadSelection = function(currentLoadIsSelected, load) { // TODO MDV
+      this.updateOnLoadSelection = ko.computed(function(load) { // TODO MDV
         this.recorder.stopIfRecording();
-
+        var load = this.loadListViewModel.showLoad();
+        var currentLoadIsSelected = this.loadListViewModel.currentLoadIsSelected();
         if (currentLoadIsSelected) {
           self.updateSize();
         } else {
           var maxTurns = sessionView.offsetWidth - 30;           // FIXME
           self._setMessageWidth( maxMessages / load.indicators.length );
         }
-      }
+      }.bind(this));
 
       this._severities = ['turn', 'log', 'warning', 'error'];
 
