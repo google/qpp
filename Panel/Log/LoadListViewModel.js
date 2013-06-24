@@ -15,14 +15,18 @@
     return debug = (typeof flag === 'boolean') ? flag : debug;
   });
 
-  QuerypointPanel.LoadModel = function(loadNumber) { 
+  QuerypointPanel.LoadModel = function(loadNumber) {
     this.loadNumber = loadNumber || '-';
+
     this.turns = ko.observableArray();
+
     this.turnEnded = ko.observable(0);
+
     this.currentTurn = ko.computed(function() {
       if (this.turns().length)
         return this.turns()[this.turnStarted() - 1];
     }.bind(this));
+
     this.turnStarted = ko.computed(function() {
       return this.turns().length;
     }.bind(this));
@@ -50,20 +54,18 @@
   };
 
   QuerypointPanel.LoadListViewModel = {
-    
+
     initialize: function() {
       this.loadViewModels = ko.observableArray();
 
-      var loadListView = document.querySelector('.loadListView');
-      
       this.lastLoad = ko.computed(function() {
         var last = this.loadViewModels().length - 1;
         if (debug) console.log('LoadListViewModel.lastLoad ' +last + " loads");
         return this.loadViewModels()[last];
       }.bind(this));
-      
+
       this.showLoad = ko.observable({});
-      
+
       this.loadStartedNumber = ko.computed(function() {
         return this.loadViewModels().length;
       }.bind(this));
@@ -74,15 +76,6 @@
           return this.showLoad().loadNumber || '-';
       }.bind(this));
 
-      this.showNextLoadNumber = ko.computed( function(){
-          var loadNumber = this.showLoadNumber();
-          if (loadNumber === '-' || loadNumber == this.loadStartedNumber()) {
-              return '-';
-          } else {
-              return loadNumber + 1;
-          }
-      }.bind(this));
-
       this.currentLoadIsSelected = ko.computed( function(){
         return this.showLoad().loadNumber == this.loadStartedNumber();
       }.bind(this));
@@ -90,25 +83,19 @@
       this.isPastLoad = ko.computed( function(){
         return this.loadStartedNumber() && (this.showLoad().loadNumber != this.loadStartedNumber());
       }.bind(this));
-    
+
       var loadListView = document.querySelector('.loadListView');
       ko.applyBindings(this, loadListView);
 
       return this;
     },
 
-    displayLoad: function(loadModel) {
-      this.showLoad(loadModel);
-      var loadElement = document.querySelector('div.loadNumber[load="' + loadModel.loadNumber + '"]');
-      this.selectLoad(loadElement);
-    },
-
     onClickLoad: function(loadModel) {
       if (loadModel instanceof QuerypointPanel.LoadModel) {
-        this.displayLoad(loadModel);
+        this.selectLoadModel_(loadModel);
       }
     },
-  
+
     selectLoad: function(node){
         if (!node.classList) return;
         var element = document.querySelector('.selectedLoad');
@@ -116,7 +103,7 @@
         node.classList.add('selectedLoad');
         // Shift the list to place the current number in line with the scrubber
         var loadNumber = this.showLoadNumber();
-        if (typeof loadNumber === 'number') 
+        if (typeof loadNumber === 'number')
           node.parentElement.style.top = ((loadNumber - 1) * 15) + 'px';
     },
 
@@ -130,10 +117,19 @@
       this.loadViewModels.push(loadViewModel);
       console.assert(this.loadViewModels().length === loadNumber);
     },
-    
+
     onEndLoad: function(loadNumber) {
       console.assert(loadNumber === this.loadStartedNumber());
       this.loadEndedNumber(loadNumber);
-    }
+    },
+
+    selectLoadModel_: function(loadModel) {
+      this.showLoad(loadModel);
+      var loadElement = document.querySelector('div.loadNumber[load="' + loadModel.loadNumber + '"]');
+      this.selectLoad(loadElement);
+    },
+
+
+
   };
 }());

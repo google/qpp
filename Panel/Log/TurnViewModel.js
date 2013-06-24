@@ -12,13 +12,13 @@
   // Visualize a single JS turn selected by the index set in showTurn().
 
   QuerypointPanel.TurnViewModel = {
-    
+
     initialize: function(loadListViewModel, project, tracequeries) {
       this._project = project;
       var turnViewModel = this;
 
       this.showTurn = ko.observable(0);
-      
+
       this.turnSummary = ko.computed(function(){
         var info = 'Turn ' + turnViewModel.showTurn() + ' on load ' + loadListViewModel.showLoad().loadNumber + '.';
         return info;
@@ -27,7 +27,7 @@
       this.turn = ko.computed(function(){
         try {
             var currentTurnNumber = turnViewModel.showTurn(); // updated by user interaction
-            if (currentTurnNumber) {  
+            if (currentTurnNumber) {
               var load = loadListViewModel.showLoad();
               if (load.turns) {
                 var turn = load.turns()[currentTurnNumber - 1];
@@ -44,7 +44,7 @@
                   console.warn('loadListViewModelViewModel.turn no .turns in load', load);
                 }
               }
-            } 
+            }
         } catch(err) {
           console.warn('loadListViewModelViewModel.turn fails ' + err, err);
         }
@@ -69,7 +69,7 @@
 
       this.turnChain = ko.computed(function(){
         var currentTurn = turnViewModel.turn();
-        if (!currentTurn) return false; 
+        if (!currentTurn) return false;
         var result = [];
         var prev = currentTurn.previousTurn;
         if (!prev) return false;
@@ -106,6 +106,7 @@
 
       var turnView = document.querySelector('.turnView');
       ko.applyBindings(this, turnView);
+      return this;
     },
 
     createFileURL: function(eventInfo) {
@@ -127,13 +128,13 @@
 
     traceElement: function(turnViewModel){
       console.log("trace target of turn " + this.showTurn(), turnViewModel);
-      var currentTurn = turnViewModel.turn(); 
+      var currentTurn = turnViewModel.turn();
       var selector = currentTurn.targetSelector;
       var functionURL = currentTurn.url;
       this.query = this.elementQueryProvider.getQueriesBySelector(selector, functionURL)[0];
       if (this.query && !this.query.isActive()) {
         this.query.activate(this._tracequeries().length);
-        this._tracequeries.push(this.query);        
+        this._tracequeries.push(this.query);
       }
       // User has asked for an action, now show them where the results will appear.
       turnViewModel.close();
@@ -170,7 +171,7 @@
         chrome.devtools.protocol.DOM.prototype.hideHighlight( );
     },
 
-    close: function() {      
+    close: function() {
       var turnViewModelInfo = document.querySelector('.turnView');
       turnViewModelInfo.style.display = 'none';
     }

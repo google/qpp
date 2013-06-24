@@ -1,38 +1,44 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
-// Copyright 2012 Google Inc. johnjbarton@google.com
+// Copyright 2013 Google Inc. johnjbarton@google.com
 
-// Relative to project root
-var testScripts = [
-	'../mutation-summary/mutation_summary.js',
-	'../test/PatientSelector.js',
-	'../test/Async.js',
-	'../test/unit/EditorViewModelTest.js',
-	'../test/unit/LoadListViewModelTest.js',
-];
+// On URLs that end in #unittest, load the testScripts to run unit tests.
 
-function loadTestScripts() {
-	var remaining = testScripts.slice(0);
+(function() {
+	// Relative to project root
+	var testScripts = [
+		'../mutation-summary/mutation_summary.js',
+		'../test/PatientSelector.js',
+		'../test/Async.js',
+		'../test/unit/PanelTestData.js',
+		'../test/unit/EditorViewModelTest.js',
+		'../test/unit/TurnAndLoadModelTest.js',
+		'../test/unit/LoadListViewModelTest.js',
+		'../test/unit/TurnViewModelTest.js',
+	];
 
-	function loadOne() {
-		var src = remaining.shift();
-		if (src) {
-			var scriptElt = document.createElement('script');
-			scriptElt.src = src;
-			scriptElt.onload = loadOne;
-			console.log('append ' + src);
-			document.head.appendChild(scriptElt);
-		}
-	};
+	function loadTestScripts() {
+		var remaining = testScripts.slice(0);
 
-	loadOne();
-}
+		function loadOne() {
+			var src = remaining.shift();
+			if (src) {
+				var scriptElt = document.createElement('script');
+				scriptElt.src = src;
+				scriptElt.onload = loadOne;
+				document.head.appendChild(scriptElt);
+			}
+		};
 
-function checkForUnitTest() {
-	if (window.location.hash === '#unittest') {
-		document.querySelector('.panelInitialization').style.display = 'none';
-		loadTestScripts();
+		loadOne();
 	}
-}
 
-window.addEventListener('hashchange', checkForUnitTest);
-window.addEventListener('load', checkForUnitTest);
+	function checkForUnitTest() {
+		if (window.location.hash === '#unittest') {
+			document.querySelector('.panelInitialization').style.display = 'none';
+			loadTestScripts();
+		}
+	}
+
+	window.addEventListener('hashchange', checkForUnitTest);
+	window.addEventListener('load', checkForUnitTest);
+})();

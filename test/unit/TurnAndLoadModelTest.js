@@ -1,46 +1,37 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2013 Google Inc. johnjbarton@google.com
 
-var turnOneData = {
-	turnNumber: 1,
-	functionName: '[[Navigation]]',
-    filename: window.location.href,
-    offset: 0,
-};
+(function() {
 
-var turn0 = new QuerypointPanel.Turn(turnOneData);
+  'use strict';
 
-var turnTwoData = {
-	turnNumber: 2,
-	eventType: 'load',
-	targetSelector: 'window',
-	functionName: 'aFunction',
-    filename: window.location.href,
-    offset: 0,
-    registrationTurnNumber: 0
-};
+	var turnOneData = QuerypointPanel.TestData.turnOneData;
 
-var turn1 = new QuerypointPanel.Turn(turnTwoData);
+	var turn1 = new QuerypointPanel.Turn(turnOneData);
 
-console.assert(turn1.summary() === 'aFunction|load|window');
-console.assert(turn1.equivalentTo(turn1));
+	var turnTwoData = QuerypointPanel.TestData.turnTwoData;
 
-var loadModel = new QuerypointPanel.LoadModel(1);
-loadModel.onTurnStarted(turnOneData);
+	var turn2 = new QuerypointPanel.Turn(turnTwoData);
 
-console.assert(loadModel.turnStarted() === 1);
-console.assert(loadModel.currentTurn() === loadModel.turns()[0]);
+	console.assert(turn2.summary() === 'aFunction|load|window');
+	console.assert(turn2.equivalentTo(turn2));
 
-loadModel.onTurnEnded(1);
-loadModel.onTurnStarted(turnTwoData);
+	var loadModel = new QuerypointPanel.LoadModel(1);
+	loadModel.onTurnStarted(turnOneData);
 
-console.assert(loadModel.turnStarted() === 2);
-console.assert(loadModel.currentTurn() === loadModel.turns()[1]);
-console.assert(loadModel.currentTurn().summary() === 'aFunction|load|window');
+	console.assert(loadModel.turnStarted() === 1);
+	console.assert(loadModel.currentTurn() === loadModel.turns()[0]);
 
-var chain = loadModel.causalChain(loadModel.currentTurn());
-console.assert(chain.length === 1);
-console.assert(chain[0] === loadModel.turns()[0]);
+	loadModel.onTurnEnded(1);
+	loadModel.onTurnStarted(turnTwoData);
 
-// TODO verify that we can give adequate information about the registration
+	console.assert(loadModel.turnStarted() === 2);
+	console.assert(loadModel.currentTurn() === loadModel.turns()[1]);
+	console.assert(loadModel.currentTurn().summary() === 'aFunction|load|window');
 
+	var chain = loadModel.causalChain(loadModel.currentTurn());
+	console.assert(chain.length === 1);
+	console.assert(chain[0] === loadModel.turns()[0]);
+
+	// TODO verify that we can give adequate information about the registration
+}());
