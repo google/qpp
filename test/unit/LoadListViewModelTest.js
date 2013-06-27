@@ -14,5 +14,7 @@
 
 	console.assert(loadListViewModel.showLoad() === loadListViewModel.lastLoad());
 	console.assert(loadListViewModel.currentLoadIsSelected());
+
+	
 }());
 

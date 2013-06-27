@@ -19,11 +19,6 @@
 
       this.showTurn = ko.observable(0);
 
-      this.turnSummary = ko.computed(function(){
-        var info = 'Turn ' + turnViewModel.showTurn() + ' on load ' + loadListViewModel.showLoad().loadNumber + '.';
-        return info;
-      });
-
       this.turn = ko.computed(function(){
         try {
             var currentTurnNumber = turnViewModel.showTurn(); // updated by user interaction
@@ -55,7 +50,7 @@
           return currentTurn && (currentTurn.targetSelector !== 'none');
       });
 
-      this.turnMessages = ko.computed(function(){
+      this.messages = ko.computed(function(){
         var turns = loadListViewModel.showLoad().turns;
         var messages = [];
         if (turns) {

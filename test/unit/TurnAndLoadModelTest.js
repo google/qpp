@@ -6,12 +6,10 @@
   'use strict';
 
 	var turnOneData = QuerypointPanel.TestData.turnOneData;
-
-	var turn1 = new QuerypointPanel.Turn(turnOneData);
+	var turn1 = new QuerypointPanel.Turn(1, turnOneData);
 
 	var turnTwoData = QuerypointPanel.TestData.turnTwoData;
-
-	var turn2 = new QuerypointPanel.Turn(turnTwoData);
+	var turn2 = new QuerypointPanel.Turn(1, turnTwoData);
 
 	console.assert(turn2.summary() === 'aFunction|load|window');
 	console.assert(turn2.equivalentTo(turn2));

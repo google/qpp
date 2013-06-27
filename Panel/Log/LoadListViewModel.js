@@ -34,7 +34,7 @@
 
   QuerypointPanel.LoadModel.prototype = {
     onTurnStarted: function(turnInfo) {
-      this.turns.push(new QuerypointPanel.Turn(turnInfo));
+      this.turns.push(new QuerypointPanel.Turn(this.loadNumber, turnInfo));
       console.assert(this.turns().length = turnInfo.turnNumber);
     },
     onTurnEnded: function(turnNumber) {
@@ -88,6 +88,10 @@
       ko.applyBindings(this, loadListView);
 
       return this;
+    },
+
+    getTurnByLoad: function(loadNumber, turnNumber) {
+      return this.loadViewModels()[loadNumber - 1].turns()[turnNumber - 1];
     },
 
     onClickLoad: function(loadModel) {

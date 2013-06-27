@@ -45,12 +45,13 @@
   // All turns have a 'registration' turn that put the entry point into play,
   // eg called addEventListener passing the entry point.
 
-  QuerypointPanel.Turn = function(runtimeData) {
+  QuerypointPanel.Turn = function(loadNumber, runtimeData) {
     Object.keys(runtimeData).forEach(function(key){
       this[key] = runtimeData[key];
     }.bind(this));
     if (debug) console.log("Turn " + runtimeData.turnNumber + " runtimeData", runtimeData);
 
+    this.loadNumber = loadNumber;
     this.turnNumber = runtimeData.turnNumber;
     this.eventType = runtimeData.eventType;
     this.functionName = runtimeData.functionName;

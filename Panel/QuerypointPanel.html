@@ -96,7 +96,8 @@
           </div>
         </div>
         <div class="turnView" data-bind="if: turn">
-            <p class="turnSummary" data-bind="text: turnSummary"> vvvvv </p>
+            <p class="turnSummary">Turn<span data-bind="{text: showTurn}"></span> on load
+              <span data-bind="{text: turn().loadNumber}"></span>.</p>
             <ul class="turnInformation">
                 <li>Function <a data-bind="text: turn().functionName, attr:{'data-url': turn().url}"></a></li>
                 <li>registered on turn <a data-bind="text: turn().registrationTurnNumber, click: switchTurn"></a>, then</li>
@@ -136,8 +137,8 @@
               </div>
               <!-- /ko -->
             </div>
-            <div class="messagesHeader" data-bind="if: turnMessages().length">Messages In This Turn</div>
-            <div class="messages" data-bind="foreach: turnMessages">
+            <div class="messagesHeader" data-bind="if: messages().length">Messages In This Turn</div>
+            <div class="messages" data-bind="foreach: messages">
                 <p class="message" data-bind="text: text, attr:{severity: severity}"></p>
             </div>
         </div>
