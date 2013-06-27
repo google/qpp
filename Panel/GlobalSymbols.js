@@ -13,7 +13,8 @@
   // LHS for the compile context of the devtools script preprocessor,
   // RHS for the runtime context of the devtools script preprocessor...
   var global = ('global', eval)('this') || window;
+  global.Querypoint = {};
   global.QuerypointPanel = {};
   global.QuerypointModel = {};
-  
+
 }());

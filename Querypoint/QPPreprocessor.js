@@ -64,14 +64,14 @@
         console.log(transcoder('console.log("XXXXXXXXXXXXXXXXXXXXX success XXXXXXXXXXXXXXXXXXXXX");', 'foo'));
       }
       var transcoderTestSrc = '\n(' + transcoderTest + '());';
-      src += transcoderTestSrc; 
-      
+      src += transcoderTestSrc;
+
       iframe.setAttribute('src', toHTMLDataURL(Querypoint.toBase64DataURI(src)));
-      document.body.appendChild(iframe);          
+      document.body.appendChild(iframe);
     },
-    
+
     source: function(descriptors, onSource) {
-      if (Querypoint.QPPreprocessor.useAsyncPreprocessor) 
+      if (Querypoint.QPPreprocessor.useAsyncPreprocessor)
         onSource(this.asyncTranscoder + '');
       else
         this._combineSources(descriptors, this.scripts, onSource);
@@ -86,17 +86,17 @@
         // Hack for WebInspector evaluations
         wrapper += '  if (src.slice(0, 4) === "with") return src;'
         wrapper += '  var input = {name: name, contents: src}; \n';
-        wrapper += '  var window = {};\n';
+        wrapper += '  var global = (\'global\', eval)(\'this\') || window;\n';
         wrapper += '  var console = {};\n';
         wrapper += '  var traceur = this.traceur;\n';
         wrapper += '  if (!traceur) {  // once only\n';
         wrapper += '    traceur = this.traceur = {};\n';
         wrapper += concatentatedScripts + '\n';
         wrapper += '    this.traceur = traceur;\n';
-        wrapper += '  }\n';  
+        wrapper += '  }\n';
         wrapper += 'return Querypoint.transformAndGenerate(input, \'' + json + '\');\n';
         wrapper += '}\n';
-        
+
         onSource(wrapper);
       });
     },
@@ -105,22 +105,22 @@
       var notLoaded = scripts.slice(0);
       var srcs = [];
       function loadOne(scriptURL) {
-        XHR.asyncLoadText(scriptURL, 
+        XHR.asyncLoadText(scriptURL,
           function(content){
             srcs.push(content);
             if (notLoaded.length) loadNext();
             else onSource(srcs.join('\n'));
-          }, 
+          },
           function errback(error){
             console.error('QPPreprocessor._scriptSource FAILED on ' + scriptURL + ' with ' + error);
-          }); 
+          });
       }
       function loadNext() {
         loadOne(notLoaded.shift());
       }
       loadNext();
-    } 
-    
+    }
+
   };
 
   Querypoint.QPPreprocessor = QPPreprocessor
