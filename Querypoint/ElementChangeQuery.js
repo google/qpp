@@ -12,6 +12,7 @@
   }
 
   Querypoint.ElementChangeQuery.ifAvailableFor = function(project, selector, functionURL) {
+    this._project = project;
     var functionInfo = project.parseFileURL(functionURL);
     var tree = project.find(functionInfo.filename, functionInfo.startOffset - 1);
     if (tree)
@@ -95,13 +96,14 @@
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
-            var trace = change;
-            if (trace.valueType === 'undefined')
-              trace.value = 'undefined';
-            trace.query = query;
-            trace.loadNumber = fileViewModel.project.numberOfReloads;
-            trace.activation = change.activationCount;
-            onTracepoint(trace);  
+            var traceData = change;
+            if (traceData.valueType === 'undefined')
+              traceData.value = 'undefined';
+            traceData.query = query;
+            traceData.loadNumber = fileViewModel.project.numberOfReloads;
+            traceData.activation = change.activationCount;
+            traceData.project = this._project;
+            onTracepoint(traceData);  
           });      
         } else {
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 

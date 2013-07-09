@@ -153,6 +153,7 @@
             trace.query = this;
             trace.loadNumber = fileViewModel.project.numberOfReloads;
             trace.activation = change.activationCount;
+            trace.project = fileViewModel.project;
             onTracepoint(trace);  
           }.bind(this));      
          }

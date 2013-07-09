@@ -45,6 +45,7 @@
 <script src="LineNumberViewModel.js"></script>
 <script src="TokenViewModel.js"></script>
 <script src="TraceViewModel.js"></script>
+<script src="TracesViewModel.js"></script>
 <script src="QueryViewModel.js"></script>
 <script src="TokenQueryProvider.js"></script>
 <script src="QuerypointViewModel.js"></script>
@@ -185,7 +186,7 @@
               </div>
             </div>
             <div class='hbox'>
-              <table class="traceView vbox" data-bind="attr: {hasTraceData: querypointViewModel.traceViewModel.currentTraces() && !!querypointViewModel.traceViewModel.currentTraces().length}">
+              <table class="traceView vbox" data-bind="attr: {hasTraceData: querypointViewModel.tracesViewModel.currentTraces() && !!querypointViewModel.tracesViewModel.currentTraces().length}">
                 <caption>Trace Data</caption>
                 <thead>
                 <tr>
@@ -193,7 +194,7 @@
                   <th title="Expression value during specific activation">Value</th>
                 </tr>
                 </thead>
-                <tbody class="traceBody" data-bind="foreach: {data: querypointViewModel.traceViewModel.currentTraces, afterRender: querypointViewModel.traceViewModel.afterRender}">
+                <tbody class="traceBody" data-bind="foreach: {data: querypointViewModel.tracesViewModel.currentTraces, afterRender: querypointViewModel.tracesViewModel.afterRender}">
                 <tr >
                   <td class="activation">
                     <span class="command" data-bind="html: iconText, attr: {title: tooltip, 'data-url': url}"></span>

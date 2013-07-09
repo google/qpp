@@ -28,7 +28,7 @@
       if (sourceFile) {
         tree = panel.project.getTreeByName(sourceFile.name);
         if (tree && !tree.hasOwnProperty('traceData')) {
-            // Used by LineNumberViewModel and TraceViewModel, set by AllExpressionsTrace
+            // Used by LineNumberViewModel and TracesViewModel, set by AllExpressionsTrace
             tree.traceData = ko.observable();
         }
         this.tokenViewModel.followTokens(true);
@@ -41,17 +41,17 @@
     this.tracepoints = ko.observableArray(); // all of the query results for this file
 
     this.tokenViewModel = new QuerypointPanel.TokenViewModel(this, this._editorViewModel, panel);        // wired to editor token
-    this.traceViewModel = new QuerypointPanel.TraceViewModel(this, panel.sessionViewModel.loadListViewModel, panel.tracequeries);        // wired to token viewed
+    this.tracesViewModel = new QuerypointPanel.TracesViewModel(this, panel.sessionViewModel.loadListViewModel, panel.tracequeries);        // wired to token viewed
     this.queryProvider = new QuerypointPanel.TokenQueryProvider(this.tokenViewModel, this.project);  // wired to token viewed.
     this.queriesViewModel = new QuerypointPanel.QueriesViewModel(this.queryProvider, panel);  
     this.lineNumberViewModel = new QuerypointPanel.LineNumberViewModel(this, editorViewModel, panel);
 
     this.currentLocation = ko.computed(function() {
       var tokenViewLocation = this.tokenViewModel.currentLocation();
-      if (!this.traceViewModel.currentTraces())
+      if (!this.tracesViewModel.currentTraces())
         return tokenViewLocation;
 
-      var traceViewLocation = this.traceViewModel.currentLocation();
+      var traceViewLocation = this.tracesViewModel.currentLocation();
       if (traceViewLocation === tokenViewLocation) 
         return traceViewLocation;
     }.bind(this));
