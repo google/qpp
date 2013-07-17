@@ -53,7 +53,7 @@
         return QuerypointPanel.FileViewModel.openSourceFileView(sourceFile);
       } else {
         var fileViewModel;
-        var foundResource = this._panel.page.resources.some(function(resource){
+        var foundResource = this._panel.project.page.resources.some(function(resource){
             if (resource.url) 
               fileViewModel = QuerypointPanel.FileViewModel.openResourceView(resource);
         }.bind(this));

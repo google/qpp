@@ -14,6 +14,7 @@
 		'../test/unit/TurnAndLoadModelTest.js',
 		'../test/unit/LoadListViewModelTest.js',
 		'../test/unit/TurnViewModelTest.js',
+		'../test/unit/TraceViewModelTest.js',
 	];
 
 	function loadTestScripts() {

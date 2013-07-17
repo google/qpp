@@ -42,6 +42,36 @@
       this.indicators = this.preIndicators;                 // Points to indicator array where new indicators go
       this._currentIndicator = {};                    
 
+      // Method that changes css style to change width and border of indicators
+      // The modified rule is in a stylesheet by itself turnIndicator.css
+      this._setMessageWidth = function(width) {
+        var turnIndicatorSheet;
+        for (var i = 0; i < document.styleSheets.length; i++) {
+          var styleSheet = document.styleSheets[i]
+          if (styleSheet.href.indexOf('turnIndicator.css') !== -1) {
+            turnIndicatorSheet = styleSheet;
+            break;
+          }
+        }
+        var turnIndicatorRule;
+        for (var i = 0; i < turnIndicatorSheet.cssRules.length; i++) {
+            var cssRule = turnIndicatorSheet.cssRules[i];
+            if (cssRule.selectorText.indexOf('.turnIndicator') !== -1) {
+                turnIndicatorRule = cssRule;
+                break;
+            }
+        }
+        if (width < 3) 
+            turnIndicatorRule.style.borderLeftWidth = '0px';
+        else 
+            turnIndicatorRule.style.borderLeftWidth = '2px';
+            
+        if (width > 10)
+            turnIndicatorRule.style.width = '10px';
+        else 
+            turnIndicatorRule.style.width = width + 'px';
+      }
+
       this.updateOnLoadSelection = ko.computed(function(load) { // TODO MDV
         this.recorder.stopIfRecording();
         var load = this.loadListViewModel.showLoad();
@@ -49,8 +79,9 @@
         if (currentLoadIsSelected) {
           self.updateSize();
         } else {
-          var maxTurns = sessionView.offsetWidth - 30;           // FIXME
-          self._setMessageWidth( maxMessages / load.indicators.length );
+          var maxTurns = (load.indicators && load.indicators.length) || 100;
+          var width = this.availableViewWidth || 800;
+          self._setMessageWidth(this.availableViewWidth / maxTurns);
         }
       }.bind(this));
 
@@ -72,11 +103,11 @@
       // to half their size.
       this.updateSize = function(){
         self.indicators.valueHasMutated();
-        var maxMessages = sessionView.offsetWidth - 40;
+        this.availableViewWidth = sessionView.offsetWidth - 40;
         var joinMessages = self.preIndicators().length + self.recordedIndicators().length + self.postIndicators().length;
 
-        if (joinMessages < maxMessages) {
-          var width = Math.floor(maxMessages / joinMessages);
+        if (joinMessages < this.availableViewWidth) {
+          var width = Math.floor(this.availableViewWidth / joinMessages);
           self._setMessageWidth(width);
         } else {
           self._scale *= 2;
@@ -123,36 +154,6 @@
           this.postIndicators([]);
           this.recordedIndicators([]);
           this.indicators = self.preIndicators;
-      }
-
-      // Method that changes css style to change width and border of indicators
-      // The modified rule is in a stylesheet by itself turnIndicator.css
-      this._setMessageWidth = function(width) {
-        var turnIndicatorSheet;
-        for (var i = 0; i < document.styleSheets.length; i++) {
-          var styleSheet = document.styleSheets[i]
-          if (styleSheet.href.indexOf('turnIndicator.css') !== -1) {
-            turnIndicatorSheet = styleSheet;
-            break;
-          }
-        }
-        var turnIndicatorRule;
-        for (var i = 0; i < turnIndicatorSheet.cssRules.length; i++) {
-            var cssRule = turnIndicatorSheet.cssRules[i];
-            if (cssRule.selectorText.indexOf('.turnIndicator') !== -1) {
-                turnIndicatorRule = cssRule;
-                break;
-            }
-        }
-        if (width < 3) 
-            turnIndicatorRule.style.borderLeftWidth = '0px';
-        else 
-            turnIndicatorRule.style.borderLeftWidth = '2px';
-            
-        if (width > 10)
-            turnIndicatorRule.style.width = '10px';
-        else 
-            turnIndicatorRule.style.width = width + 'px';
       }
 
       dropDown.onmouseout = function(event) {

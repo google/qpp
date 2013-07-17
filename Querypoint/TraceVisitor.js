@@ -149,7 +149,8 @@
         value: trace,
         file: loc.start.source.name,
         startOffset: loc.start.offset,
-        endOffset: loc.end.offset
+        endOffset: loc.end.offset,
+        project: this._project
       };
       var traces = expressionTree.location.traces = expressionTree.location.traces || [];
       this.appendUnique(trace,traces);

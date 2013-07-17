@@ -27,5 +27,10 @@
   console.assert(traceViewModel.iconText() === 'iconText');
   console.assert(traceViewModel.tooltip() === 'title found in file.js');
   console.assert(traceViewModel.url() === 'file.js?startOffset=10&endOffset=20&');
+  /* TODO console.assert(traceViewModel.loadNumber() === 1);
+  console.assert(traceViewModel.turnNumber() === 1);
+  console.assert(traceViewModel.activationNumber() === 1);
+  console.assert(traceViewModel.value() === 4);
+  */
 
 }());

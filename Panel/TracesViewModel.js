@@ -108,7 +108,7 @@
           var traces = this.treeTraces();
           if (traces && traces.length) {
             var traceViewModels = traces.map(function(trace) {
-              return QuerypointPanel.TraceViewModel(trace);
+              return new QuerypointPanel.TraceViewModel(trace);
             });
             this.currentLocation(tree.location);
             return traceViewModels;

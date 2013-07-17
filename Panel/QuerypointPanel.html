@@ -44,6 +44,7 @@
 
 <script src="LineNumberViewModel.js"></script>
 <script src="TokenViewModel.js"></script>
+<script src="ValueViewModel.js"></script>
 <script src="TraceViewModel.js"></script>
 <script src="TracesViewModel.js"></script>
 <script src="QueryViewModel.js"></script>
@@ -197,11 +198,11 @@
                 <tbody class="traceBody" data-bind="foreach: {data: querypointViewModel.tracesViewModel.currentTraces, afterRender: querypointViewModel.tracesViewModel.afterRender}">
                 <tr >
                   <td class="activation">
-                    <span class="command" data-bind="html: iconText, attr: {title: tooltip, 'data-url': url}"></span>
-                    <span title="Load number" data-bind="text: loadNumber">
-                    </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turn"></span>:<span title="Function call number within turn" data-bind="text: activation"></span>
+                    <span class="command" data-bind="html: iconText(), attr: {title: tooltip(), 'data-url': url()}"></span>
+                    <span title="Load number" data-bind="text: loadNumber()">
+                    </span>:<span title="Event turn number, 0 means initial load" data-bind="text: turnNumber()"></span>:<span title="Function call number within turn" data-bind="text: activationNumber()"></span>
                   </td>
-                  <td class="traceValue overflowMe" data-bind="text: value"></td>
+                  <td class="traceValue overflowMe" data-bind="text: value()"></td>
                 </tr>
                 </tbody>
               </table>

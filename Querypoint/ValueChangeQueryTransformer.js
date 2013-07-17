@@ -82,7 +82,13 @@
                 createPropertyNameAssignment('startOffset', createStringLiteral(traceStart.toString())),
                 createPropertyNameAssignment('endOffset', createStringLiteral(traceEnd.toString())),
                 createPropertyNameAssignment('file', createStringLiteral(traceFile.toString())),
-                createPropertyNameAssignment('value', valueTree),
+                createPropertyNameAssignment('value', createCallExpression(
+                  createMemberExpression('window', '__qp','trace'),
+                    createArgumentList(
+                      valueTree
+                    )                    
+                  )
+                ),
               ])
             )
           )

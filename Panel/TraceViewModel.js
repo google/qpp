@@ -6,24 +6,49 @@
 (function() {
   "use strict";
   
-  QuerypointPanel.TraceViewModel = function(traceData, project) {
+  QuerypointPanel.TraceViewModel = function(traceData) {
+    this.traceData_ = {};
     Object.keys(traceData).forEach(function(prop) {
-        this[prop] = traceData[prop];
-      });
+        this.traceData_[prop] = traceData[prop];
+      }.bind(this));
   }
   
+  var valueViewModel = new QuerypointPanel.ValueViewModel();
+
   QuerypointPanel.TraceViewModel.prototype = {
+    query: function() {
+      return this.traceData_.query;
+    },
+    
     tooltip: function() {
-      return this.query.title() + ' found in ' + this.file;
+      return this.query().title() + ' found in ' + this.traceData_.file;
     },
     
     url: function() {
-      return  this.project.createFileURL(this.file, this.startOffset, this.endOffset);
+      if (this.traceData_.isPrompt)
+        return '';
+      return  this.traceData_.project.createFileURL(this.traceData_.file, this.traceData_.startOffset, this.traceData_.endOffset);
     },
     
     iconText: function() {
-      return this.query.iconText();
-    }
+      return this.query().iconText();
+    },
+
+    loadNumber: function() {
+      return this.traceData_.loadNumber;
+    },
+
+    turnNumber: function() {
+      return this.traceData_.turn;
+    },
+
+    activationNumber: function() {
+      return this.traceData_.activation;
+    },
+
+    value: function() {
+      return valueViewModel.inlineView(this.traceData_.value.stringRep, this.traceData_.value.valueType);
+    },
   };
 
 }());

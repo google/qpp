@@ -56,21 +56,27 @@
     }
 
     function trace(expr) {
-      if (typeof expr === 'object') {
+      var valueType = typeof expr;
+      var traceResult = {
+        valueType: valueType
+      };
+      if (valueType === 'object') {
         if (expr instanceof Node) {
-          return getSelectorUniqueToElement(expr);
+          traceResult.stringRepClass = 'Node';
+          traceResult.stringRep = getSelectorUniqueToElement(expr);
         }
         var objTrace = Object.keys(expr).map(function(key){
           return key+ ': ' + expr[key];
         }).join(',');
-        return '{' + objTrace + '}';
-      } else if (typeof expr === 'function') {
+        traceResult.stringRep = '{' + objTrace + '}';
+      } else if (valueType === 'function') {
         var src = expr + '';
         var brace = src.indexOf('{');
-        return src.substr(0, brace);
+        traceResult.stringRep = src.substr(0, brace);
       } else {
-        return expr + '';
+        traceResult.stringRep = expr + '';
       }
+      return traceResult;
     }
 
     var _FunctionPrototypeToString = Function.prototype.toString;
@@ -293,7 +299,6 @@
       // Defines the tracepoint API
       return {
         value: tp.value,
-        valueType: typeof tp.value, // JSON will not transmit undefined values correctly.
         functionOffset: tp.functionOffset,
         turn: tp.turn,
         activationCount: tp.activationCount,

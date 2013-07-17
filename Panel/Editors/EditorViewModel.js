@@ -24,7 +24,7 @@
     this.editor = ko.computed(function(){
       var fileEditorView = this.editorElement();
       var contents = this.editorContents();
-      if (fileEditorView && contents) {   
+      if (fileEditorView && contents && contents.content) {   
         var editor = new QuerypointPanel.EditorByCodeMirror(fileEditorView, contents.url, contents.content);
         editor.addListener('onChange', this._onChange.bind(this, editor));
         return editor;

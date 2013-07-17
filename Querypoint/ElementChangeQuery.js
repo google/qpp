@@ -97,8 +97,6 @@
           var changes = result.tracepoints;
           changes.forEach(function(change) {
             var traceData = change;
-            if (traceData.valueType === 'undefined')
-              traceData.value = 'undefined';
             traceData.query = query;
             traceData.loadNumber = fileViewModel.project.numberOfReloads;
             traceData.activation = change.activationCount;
