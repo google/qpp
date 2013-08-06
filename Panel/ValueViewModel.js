@@ -6,6 +6,10 @@
 (function() {
   "use strict";
   
+  var debug = DebugLogger.register('ValueViewModel', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   QuerypointPanel.ValueViewModel = function() {
     
   }
@@ -13,7 +17,7 @@
   QuerypointPanel.ValueViewModel.prototype = {
     inlineView: function(value, valueType) {
       var result = this['inline_' + valueType](value);
-      console.log('ValueViewModel ' + value + " type " + valueType + ' = ' + result);
+      if (debug) console.log('ValueViewModel ' + value + " type " + valueType + ' = ' + result);
       return result;
     },
     inline_string: function(value) {
