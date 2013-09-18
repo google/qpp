@@ -16,7 +16,11 @@ function onLoad() {
     model.devtoolsModel = new Querypoint.InspectedPage();  
     model.project = new Querypoint.QPProject(url); 
     model.project.page = model.devtoolsModel;
+    if (model.qpPanel)
+      model.qpPanel.disconnect();
+      
     model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.project);
+    model.qpPanel.connect();
     model.qpPanel.onShown();
   }
     

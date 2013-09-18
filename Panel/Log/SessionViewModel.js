@@ -37,6 +37,14 @@
       return this;
     },
     
+    connect: function() {
+      this._log.connect();
+    },
+    
+    disconnect: function() {
+      this._log.disconnect();
+    },
+    
     // Event mouseout triggers when mouse goes into child nodes
     // If we are looking to hide target, we must assure element isn't a descendant
     isOurRelatedTarget: function(element, target) {

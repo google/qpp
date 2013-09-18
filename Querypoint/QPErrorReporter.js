@@ -15,10 +15,10 @@
   }
 
   QPErrorReporter.prototype = {
-    __proto__: ErrorReporter.prototype, 
+    __proto__: ErrorReporter.prototype,
     reportMessageInternal: function(location, kind, format, args) {
-      var url = location.source.name + ':' + location.line + ':' + location.column;  
-      console[kind].apply(console, [url + ': ' +format].concat(args));
+      var url = location.source.name + ':' + location.line + ':' + location.column;
+      console.error([url + ': ' +format].concat(args));
     },
 
     hasMatchingError: function(expected) {
@@ -29,5 +29,5 @@
   };
 
   Querypoint.QPErrorReporter = QPErrorReporter;
-  
+
 }());

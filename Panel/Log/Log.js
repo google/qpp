@@ -20,18 +20,7 @@
     }
   };
   
-  QuerypointPanel.Console = {
-    __proto__: chrome.devtools.protocol.Console.prototype,
-    onMessageAdded: {
-      addListener: function(fnc) {
-        QuerypointPanel.Console.messageAdded = fnc;
-        if (!QuerypointPanel.Console._registered) {
-          QuerypointPanel.Console.addListeners();
-          QuerypointPanel.Console._registered = true;
-        }
-      }
-    }
-  };
+  QuerypointPanel.Console = chrome.devtools.protocol.Console;
 
   // Monitors devtools Console and creates nested models of:
   //  loads, turns, and console messages.
@@ -45,27 +34,27 @@
       this.project = project;
       this._loadListViewModel = loadListViewModel;
       this._turnScrubber = turnScrubber;
-      
-      QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
+      this._onMessageAddedHandler = this._onMessageAdded.bind(this);
       return this;
     },
-    
+
     // Call back 
     pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
-      if (runtimeInstalled)
-        this.initialize(this.project, this._loadListViewModel, this._turnScrubber);
-      else
-        this._disconnect();
+      console.warn('Log.pageWasReloaded was no-op');
     },
     
-    //-----------------------------------------------------------------
+    connect: function() {  
+      QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAddedHandler);
+    },
 
-    _disconnect: function() {
-      QuerypointPanel.Console.messageAdded = function(message) {}
+    //-----------------------------------------------------------------
+    
+    disconnect: function() {
+      QuerypointPanel.Console.onMessageAdded.removeListener(this._onMessageAddedHandler);
     },
     
-    _onMessageAdded: function(message) {
-      this._reformatMessage(this._parse(message));
+    _onMessageAdded: function(response) {
+      this._reformatMessage(this._parse(response.params.message));
     },
     
     _onReload: function(segments) {
@@ -112,6 +101,7 @@
     },
 
     _parse: function(messageSource) {
+      console.log("Log parse text " + messageSource.text);
       var mark = messageSource.text.indexOf('qp|');
       if (mark === 0) {
         messageSource.qp = true;
@@ -130,9 +120,13 @@
           default: console.error('Log._parse: unknown keyword: '+messageSource.text); break;
         }
       } else {  // not a qp message
+        if (!this.currentLoad) {
+          console.error("Log: message before load: " + messageSource.text, messageSource)
+        } else {
           var started = this.currentLoad.turnStarted();
-          if ( started && started === this.currentLoad.turnEnded()) 
-              console.error('QPRuntime error: No turn for message after turn %o', this._turnInProgress.turnNumber);
+          if (started && started === this.currentLoad.turnEnded()) 
+            console.error('QPRuntime error: No turn for message after turn %o', this._turnInProgress.turnNumber);    
+        }
       }
       messageSource.loadNumber = this._loadListViewModel.loadStartedNumber();
       messageSource.turn = this._turnInProgress;
