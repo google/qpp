@@ -16,9 +16,9 @@ servePathAtPort('../../webdev-examples', 7676);
 servePathAtPort('../../traceur-compiler', 7677);
 
 servePathAtPort(__dirname + "/../../devtoolsExtended/extension/", 9696);
-servePathAtPort(__dirname + "/../../devtoolsExtended/extension/WebInspectorKit", 8000);
 servePathAtPort(__dirname + "/..", 8686);
 servePathAtPort(__dirname + "/../../qpp-gh-pages", 8687);
+servePathAtPort(__dirname + '/../../blink/', 8004);
 
 //-----------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ jsDAV_CORS_Plugin.prototype = {
     console.log('headers', headers);
     Object.keys(headers).forEach(function(headerName) {
       console.log('header '+headerName);
-      resp.setHeader(headerName, headers[headerName]);  
+      resp.setHeader(headerName, headers[headerName]);
     });
   },
 
@@ -85,25 +85,25 @@ jsDAV_CORS_Plugin.prototype = {
       'access-control-allow-origin': acao,
     };
     console.log('cors_headers', cors_headers);
-    
+
     return cors_headers;
   },
 
   _defaultAccessControlAllowHeaders: [
-    "accept", 
-    "accept-charset", 
-    "accept-encoding", 
-    "accept-language", 
-    "authorization", 
-    "content-length", 
-    "content-type", 
-    "host", 
-    "origin", 
-    "proxy-connection", 
-    "referer", 
-    "user-agent", 
+    "accept",
+    "accept-charset",
+    "accept-encoding",
+    "accept-language",
+    "authorization",
+    "content-length",
+    "content-type",
+    "host",
+    "origin",
+    "proxy-connection",
+    "referer",
+    "user-agent",
     "x-requested-with"
-  ],  
+  ],
 };
 
 // setting debugMode to TRUE outputs a LOT of information to console

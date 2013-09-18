@@ -6,7 +6,8 @@
 (function() {
   "use strict";
   
-  QuerypointPanel.TraceViewModel = function(traceData) {
+  QuerypointPanel.TraceViewModel = function(traceData, project) {
+    this.project = project;
     this.traceData_ = {};
     Object.keys(traceData).forEach(function(prop) {
         this.traceData_[prop] = traceData[prop];
@@ -27,7 +28,7 @@
     url: function() {
       if (this.traceData_.isPrompt)
         return '';
-      return  this.traceData_.project.createFileURL(this.traceData_.file, this.traceData_.startOffset, this.traceData_.endOffset);
+      return  this.project.createFileURL(this.traceData_.file, this.traceData_.startOffset, this.traceData_.endOffset);
     },
     
     iconText: function() {

@@ -72,6 +72,12 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
 }
 
 QuerypointPanel.Panel.prototype = {
+  connect: function() {
+    this.sessionViewModel.connect();
+  },
+  disconnect: function() {
+    this.sessionViewModel.disconnect();
+  },
   onShown: function() {
     this._isShowing = true;
     this.keybindings.enter();
