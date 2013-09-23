@@ -28,20 +28,42 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
-
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:6:1');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:8:3');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
-
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:10:5');
-  AsyncMachine.pushOp(extractText, 'td.traceValue');
+  var getState = 'document.querySelector(".beginRecorded").getAttribute("state")';
+  var clickFirstRecorderButton = 'document.querySelector(".beginRecorded").dispatchEvent(new MouseEvent("click"))';
+  var clickSecondRecorderButton = 'document.querySelector(".endRecorded").dispatchEvent(new MouseEvent("click"))';
   
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+  // begin recording
+  AsyncMachine.pushOp(evaluateInPanel, clickFirstRecorderButton, function(text) {
+    if (text === true)
+      return 'record pressed';
+  });
+
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
+  // click twice
+  var clickUserButton = 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))';
+  AsyncMachine.pushOp(evaluateInPage, clickUserButton);
+  AsyncMachine.pushOp(evaluateInPage, clickUserButton);
+
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:7:1');
+  // Stop
+  AsyncMachine.pushOp(evaluateInPanel, clickFirstRecorderButton, function(text) {
+    if (text === true)
+      return 'stop pressed';
+  });
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
+  // Replay
+  AsyncMachine.pushOp(evaluateInPanel, clickFirstRecorderButton, function(text) {
+    if (text === true)
+      return 'play pressed';
+  });
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:9:3');
+  AsyncMachine.pushOp(extractText, 'td.traceValue');
+
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
 
   var conditionValueSelector = [
@@ -55,11 +77,11 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');  
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '2');
   
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '2:6:1');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '2:6');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '2:7:2');
+
+  AsyncMachine.pushOp(evaluateInPage, clickUserButton);
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '2:7');
 
   AsyncMachine.pushOp(clickSelector, '.explainTokenPanel', 'Click to Select Another');
 
@@ -73,7 +95,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(verifyTokenView, 'obj.prop');
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');  
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '3');
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '3:5:0');
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '3:6:0');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
 
   AsyncMachine.runOp();

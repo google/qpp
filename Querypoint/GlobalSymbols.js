@@ -6,13 +6,10 @@
  * for priming the global symbol table
  */
 
-(function() {
+(function(global) {
 
   'use strict';
 
-  // LHS for the compile context of the devtools script preprocessor,
-  // RHS for the runtime context of the devtools script preprocessor...
-  var global = ('global', eval)('this') || window;
 
   var globalSymbols = {};
 
@@ -41,4 +38,4 @@
     generateFileName: generateFileName,
   };
 
-}());
+}(this));

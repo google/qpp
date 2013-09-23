@@ -28,7 +28,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
-  AsyncMachine.pushOp(mouseOverSelector, 'div.eventIndicator[severity="error"]', '');
+  AsyncMachine.pushOp(mouseOverSelector, 'div.turnIndicator[severity="error"]', '');
   AsyncMachine.pushOp(mouseOverSelector, 'a.eventInfo_target', 'button');
   AsyncMachine.pushOp(clickSelector, 'li.eventInfo_target_trace', 'Trace');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '2');
@@ -37,7 +37,7 @@ function test_lastChange() {
   AsyncMachine.pushOp(extractText, 'td.traceValue');
   AsyncMachine.pushOp(extractAttr, 'span.command', 'data-url');
   // Verify issue 96, no duplicate traces
-  AsyncMachine.pushOp(mouseOverSelector, 'div.eventIndicator[severity="error"]', '');
+  AsyncMachine.pushOp(mouseOverSelector, 'div.turnIndicator[severity="error"]', '');
   AsyncMachine.pushOp(mouseOverSelector, 'a.eventInfo_target', 'button');
   AsyncMachine.pushOp(clickSelector, 'li.eventInfo_target_trace', 'Trace');
   AsyncMachine.pushOp(extractText, 'td.traceValue');

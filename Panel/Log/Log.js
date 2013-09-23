@@ -4,131 +4,104 @@
 (function() {
 
   'use strict';   
-
-  var DEBUG = false;
-
+ 
+  var debug = DebugLogger.register('Log', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
   var totalLogs = 0;
   
   var messagePrototype = {
     tooltip: function() {
-     var logFloat = document.querySelector('.logContainer');
-     var logScrubber = document.querySelector('.logScrubber');
-     this.scroll = logFloat.scrollHeight;
      totalLogs++;
-     if (DEBUG)
+     if (debug)
       console.log('Message.tooltip: total logs : '+totalLogs);
 
-     return 'load: ' + this.load + ' turn: ' + this.turn + '| ' + this.text;
+     return 'load: ' + this.loadNumber + ' turn: ' + this.turnNumber + '| ' + this.text;
     }
   };
   
-  QuerypointPanel.Console = {
-    __proto__: chrome.devtools.protocol.Console.prototype,
-    onMessageAdded: {
-      addListener: function(fnc) {
-        QuerypointPanel.Console.messageAdded = fnc;
-        if (!QuerypointPanel.Console._registered) {
-          QuerypointPanel.Console.addListeners();
-          QuerypointPanel.Console._registered = true;
-        }
-      }
-    }
-  };
+  QuerypointPanel.Console = chrome.devtools.protocol.Console;
+
+  // Monitors devtools Console and creates nested models of:
+  //  loads, turns, and console messages.
+  // Loads and turns are created when console log messages prefixed
+  // by "qp|" arrive. They are send by the QPRuntime. 
 
   QuerypointPanel.Log = {
 
-    currentReload: {},
-    currentTurn: {},
-
-    initialize: function(project, logScrubber) {
+    // Begin monitoring Console.
+    initialize: function(project, loadListViewModel, turnScrubber) {
       this.project = project;
-      this._logScrubber = logScrubber;
-      this.lastInitialTurn = -1;
-      this.lastMessage = -1;
-      this.finishedLoadingScripts = false;
-
-      QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAdded.bind(this));
-      this._reloadBase = this.project.numberOfReloads + 1;
-
-      this.currentReload.messages = [];
+      this._loadListViewModel = loadListViewModel;
+      this._turnScrubber = turnScrubber;
+      this._onMessageAddedHandler = this._onMessageAdded.bind(this);
       return this;
     },
-    
-    _onMessageAdded: function(message) {
-      this._reformatMessage(this._parse(message));
+
+    // Call back 
+    pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
+      console.warn('Log.pageWasReloaded was no-op');
     },
     
-    _currentEvent: 'none yet',
-    
-    _onLoadEvent: function(segments) {
-     this._logScrubber.loadEnded(parseInt(segments[2], 10));
-     this.finishedLoadingScripts = true;
-    },    
+    connect: function() {  
+      QuerypointPanel.Console.onMessageAdded.addListener(this._onMessageAddedHandler);
+    },
 
+    //-----------------------------------------------------------------
+    
+    disconnect: function() {
+      QuerypointPanel.Console.onMessageAdded.removeListener(this._onMessageAddedHandler);
+    },
+    
+    _onMessageAdded: function(response) {
+      this._reformatMessage(this._parse(response.params.message));
+    },
+    
     _onReload: function(segments) {
-      this._reloadCount = parseInt(segments[2], 10);
-      this._logScrubber.loadStarted(this._reloadCount);
-      this._logScrubber._scale = 1;
+      var loadNumber = parseInt(segments[2], 10);
+      this._loadListViewModel.onBeginLoad(loadNumber); 
+      this._turnScrubber.onBeginLoad(loadNumber);
+      this.currentLoad = this._loadListViewModel.lastLoad();
+    },  
+
+    _onLoadEvent: function(segments) {
+      var loadNumber = parseInt(segments[2], 10);
+      this._loadListViewModel.onEndLoad(loadNumber);
     },    
     
     _onStartTurn: function(segments, messageSource) {
       messageSource.qp = false;                       // Start turn message need will be displayed in console with severity 'turn'
       messageSource.severity = 'turn';
-      this._turn = parseInt(segments[2], 10);
-      this._logScrubber.turnStarted(this._turn);
-      this._currentEvent = {
-        functionName: segments[3],
-        filename: segments[4],
-        offset: segments[5],
-        eventType: segments[6],
-        target: segments[7],
-        eventBubbles: segments[8] === 'true',
-        eventCancels: segments[9] === 'true',
-        previousTurn: segments[10],
-        firedEvents: [],
-        addedEvents: []
-      };
+      this.currentLoad.onTurnStarted(JSON.parse(unescape(segments[2])));
+      this._turnInProgress = this.currentLoad.currentTurn();
 
-      // If previousTurn is a number, make the structure point to the respective turn and add the current turn to the previos turn's fired events list
-      // If there is no previous turn just set the previousTurn to null
-      if (this._currentEvent.previousTurn !== 'undefined' && this._currentEvent.previousTurn !== '-1') {
-          var previousTurn= this.currentReload.turns()[parseInt(this._currentEvent.previousTurn) - 1];
-          this._currentEvent.previousTurn = previousTurn; 
-          previousTurn.event.firedEvents.push(this._turn);
-      } else {
-          this._currentEvent.previousTurn = null;
-      }
+      if (this._turnInProgress.registrationTurnNumber)
+        this._turnInProgress.registrationTurn = this.currentLoad.turns()[this._turnInProgress.registrationTurnNumber];
+      else if (this._turnInProgress.turnNumber !== 1)
+        console.error("No registrationTurnNumber for turn " + this._turnInProgress.turnNumber, this._turnInProgress);
 
-      // Turn detail is a string summary of the current event
-      var turnDetail;
-      turnDetail = this._currentEvent.functionName + '|' + this._currentEvent.eventType;
-      if (this._currentEvent.target !== 'undefined') 
-          turnDetail += '|' + this._currentEvent.target;
-          
-      messageSource.text = 'Turn ' + this._turn + ' started. (' + turnDetail + ')';
-
-      // To play recorded events on new loads we need to know when all the scripts and onload functions finished running
-      // So we keep track of the last turn which needs to occur before playing the recorded events.
-      if (this.finishedLoadingScripts && this.lastInitialTurn == -1 && (this._currentEvent.target !== '#document' || this._currentEvent.eventType !== 'load')) {
-          this.lastInitialTurn = this._turn - 1;
-          this.lastMessage = this.currentTurn.messages && this.currentTurn.messages().length;
-      }
+      messageSource.text = 'Turn ' + this._turnInProgress.turnNumber + ' started. (' + this._turnInProgress.summary() + ')';
     },
 
     _onEndTurn: function(segments) {
-      this._logScrubber.turnEnded(parseInt(segments[2], 10));
-      this._logScrubber.updateSize();
+      this.currentLoad.onTurnEnded(parseInt(segments[2], 10));
+      this._turnScrubber.updateSize();
     },
 
     _onSetTimeout: function(segments) {
-      this._currentEvent.addedEvents.push('Timeout in ' + segments[2] + ' triggers ' + segments[3]);
+      this._turnInProgress.onSetTimeout( segments[2], segments[3] );
     },
 
     _onAddEventListener: function(segments) {
-      this._currentEvent.addedEvents.push('Listener added to ' + segments[3] + ' triggers on ' + segments[2]);      
+      this._turnInProgress.onAddEventListener( segments[2], segments[3] );      
+    },
+    
+    _onReplayComplete: function() {
+      this._turnScrubber.onReplayComplete();
     },
 
     _parse: function(messageSource) {
+      console.log("Log parse text " + messageSource.text);
       var mark = messageSource.text.indexOf('qp|');
       if (mark === 0) {
         messageSource.qp = true;
@@ -143,97 +116,35 @@
           case 'debug': break;
           case 'setTimeout': this._onSetTimeout(segments); break;
           case 'addEventListener': this._onAddEventListener(segments); break;
+          case 'replayComplete': this._onReplayComplete(); break;
           default: console.error('Log._parse: unknown keyword: '+messageSource.text); break;
         }
       } else {  // not a qp message
-          var started = this._logScrubber.turnStarted();
-          if ( started && started === this._logScrubber.turnEnded()) 
-              console.error('QPRuntime error: No turn for message after turn %o', this._turn);
+        if (!this.currentLoad) {
+          console.error("Log: message before load: " + messageSource.text, messageSource)
+        } else {
+          var started = this.currentLoad.turnStarted();
+          if (started && started === this.currentLoad.turnEnded()) 
+            console.error('QPRuntime error: No turn for message after turn %o', this._turnInProgress.turnNumber);    
+        }
       }
-      messageSource.load = this._reloadCount;
-      messageSource.turn = this._turn;
-      messageSource.event = this._currentEvent;
+      messageSource.loadNumber = this._loadListViewModel.loadStartedNumber();
+      messageSource.turn = this._turnInProgress;
       return messageSource; 
-    },
-
-    _reloadRow: function(messageSource) {
-      return {
-        load: messageSource.load, 
-        turns: ko.observableArray([this._turnRow(messageSource)]), 
-        messages: []
-      };
-    },
-    
-    _turnRow: function(messageSource) {
-      return {
-        turn: messageSource.turn, 
-        messages: ko.observableArray(),
-        event: messageSource.event
-      };
     },
 
     _reformatMessage: function(messageSource) {
       if (messageSource.qp) return;
-      if (typeof messageSource.load === 'undefined') messageSource.load = this._reloadBase;
-      if (typeof messageSource.turn === 'undefined') messageSource.turn = 0;
       messageSource.__proto__ = messagePrototype;
       messageSource.severity = messageSource.severity || messageSource.level;
-      
-      if (this.currentReload.load !== messageSource.load) {
-        this._logScrubber._clearMessages();
-        this.currentReload = this._reloadRow(messageSource);
-        this.currentTurn = this.currentReload.turns()[0];
-        this._logScrubber.showLoad().next = this.currentReload;
-        this._logScrubber.showLoad(this.currentReload);
-        this._logScrubber.loads.push(this.currentReload);
-        if (DEBUG){
-          console.log('QuerypointPanel.Log._reformat loads.length '+ this._logScrubber.loads().length);
-        }
-      }  
-      if (this.currentTurn.turn !== messageSource.turn) {
-        this.currentTurn = this._turnRow(messageSource)
-        this.currentReload.turns.push(this.currentTurn);
-        if(this.currentReload.load !== this._logScrubber.showLoad().load) this._logScrubber.displayLoad(this.currentReload);
-        if (DEBUG){
-          console.log('QuerypointPanel.Log._reformat turns.length ' + this.currentReload.turns.length);
-        }
-      } 
-      messageSource.position = this.currentTurn.messages().length;
-      this.currentTurn.messages.push(messageSource);
-      this.currentReload.messages.push(messageSource);
-      this._logScrubber._addMessage(messageSource);
-      if (DEBUG){
-        console.log('QuerypointPanel.Log._reformat messages.length ' + this.currentTurn.messages().length);
-      }
-
-      // If all scripts are loaded and all onload events where triggered, we play the recorded events if any
-      if (this.lastInitialTurn == this._turn && this.lastMessage == this.currentTurn.messages().length && this._logScrubber.recordData.load !== 0){
-          var logScrubber = this._logScrubber;
-
-          logScrubber.recordedMessages([]);
-          logScrubber.messages = logScrubber.recordedMessages;
-
-          logScrubber.recordData.play();
-
-          // Play events are sent by eval to the inspected window.
-          // We need to change where messages are stored after all play events occur.
-          setTimeout(function(){
-            logScrubber.messages = logScrubber.postMessages;
-            logScrubber.displayLoad(logScrubber.showLoad());
-          },100);
-
+      messageSource.position = this._turnInProgress.messages().length;
+      this._turnInProgress.messages.push(messageSource);  // per turn view under turnScrubber
+      this._turnScrubber.updateTurnIndicator(this._turnInProgress, messageSource.severity);
+      if (debug){
+        console.log('QuerypointPanel.Log._reformat messages.length ' + this._turnInProgress.messages().length);
       }
     },
     
-    extractMessages: function(first, last) {
-      var visibleMessages = [];
-      //messageSource.odd = (--visibleLines) % 2;
-      return this._logScrubber.loads();
-    },
-    
-    pageWasReloaded: function(runtimeInstalled) {
-      this.initialize(this.project, this._logScrubber);
-    }
   };
 
 }());

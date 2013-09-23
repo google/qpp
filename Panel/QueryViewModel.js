@@ -23,7 +23,7 @@
   QuerypointPanel.QueryViewModel.prototype = {
     tracePrompt: function() {
       var emptyTrace = {
-        load: '_',
+        loadNumber: '_',
         turn: '_',
         activation: '_',
         value: this.query.tracePromptText(),
@@ -35,11 +35,8 @@
 
     activateQuery: function(fileViewModel) {
       if (this.isActive()) return;
+      
       // tree -> query
-
-      // Stop recording if load changes.
-      if (this.panel.logScrubber.recordData.end == -1) this.panel.logScrubber.recordData.stopRecording();
-
       this.query.setQueryOnTree(this.query.targetTree(), this.query);
       
       this.query.activate(this.panel.tracequeries().length);

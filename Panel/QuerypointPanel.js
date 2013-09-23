@@ -46,29 +46,13 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
     runPage: this.project
   });
 
-  var logElement = document.querySelector('.logView');
-  var logScrubberElement = document.querySelector('.logScrubber');
-  var loadElement = document.querySelector('.loadList');
-  var dropDown = document.querySelector('.eventTurn');
-  var currentLoad = document.querySelector('.currentLoad');
-  var nextLoad = document.querySelector('.nextLoad');
-  var recordButton = document.querySelector('.recordIndicator');
-  var playButton = document.querySelector('.recordMarker');
+  var logView = document.querySelector('.logView');
+  var dropDown = document.querySelector('.turnView');
 
-  this.logScrubber = QuerypointPanel.LogScrubber.initialize(logElement, project, this.tracequeries);
-  this._log = QuerypointPanel.Log.initialize(this.project, this.logScrubber);
-  this.logViewModel = QuerypointPanel.LogViewModel.initialize(this._log, this.logScrubber);
-
-  ko.applyBindings(this.logScrubber , logScrubberElement);  // TODO move to logScrubber
-  ko.applyBindings(this, logElement);                                   // TODO remove with logElement
+  this.sessionViewModel = QuerypointPanel.SessionViewModel.initialize(project, this.tracequeries);
 
   // Turns in the current load are synced back to the project
   this.turns = ko.observableArray().extend({syncArray: this.project.turns});
-  
-  this.currentTurn = ko.computed(function() {
-    var turnEnded = panel.logScrubber.turnEnded();
-    return turnEnded;
-  });
 
   this.commands = new QuerypointPanel.Commands(this);
   this._initModel();
@@ -81,16 +65,19 @@ QuerypointPanel.Panel = function (extensionPanel, panel_window, project) {
         var fileView = target;
         while(fileView && !fileView.classList.contains('fileView'))
           fileView = fileView.parentElement;
-        if (fileView) {
-          panel.commands.openChainedEditor(url, fileView);
-        } else {
-          console.error("open editor for " + url);
-        }
+        panel.commands.openChainedEditor(url, fileView);
+        target.dispatchEvent(new CustomEvent('navigatedFrom', {bubbles: true})); 
       } // else the user did not click on something interesting.   
     });
 }
 
 QuerypointPanel.Panel.prototype = {
+  connect: function() {
+    this.sessionViewModel.connect();
+  },
+  disconnect: function() {
+    this.sessionViewModel.disconnect();
+  },
   onShown: function() {
     this._isShowing = true;
     this.keybindings.enter();
@@ -178,7 +165,7 @@ QuerypointPanel.Panel.prototype = {
   },
   
   _initEditors: function(panelModel) {
-    this._statusBar = QuerypointPanel.StatusBar.initialize(this);
+    this._statusBar = QuerypointPanel.StatusBar.initialize(this, this.sessionViewModel);
     this._editors = QuerypointPanel.Editors.initialize(panelModel.buffers, this._statusBar, this.commands);
     QuerypointPanel.FileViewModel.initialize(this._editors, this);
     var workspaceElement = document.querySelector('.workSpace');
@@ -210,10 +197,10 @@ QuerypointPanel.Panel.prototype = {
     return undefined;
   },
 
-  pageWasReloaded: function(runtimeInstalled) {
-    this._log.pageWasReloaded(runtimeInstalled);
-    this.logScrubber.pageWasReloaded(runtimeInstalled)
-    QuerypointPanel.OnPanelOpen.open(runtimeInstalled);
+  pageWasReloaded: function(runtimeInstalled, runtimeInstalling) {
+    this.sessionViewModel.pageWasReloaded(runtimeInstalled, runtimeInstalling);
+    if (!runtimeInstalling)
+      QuerypointPanel.OnPanelOpen.open(runtimeInstalled);
   },
 
   _initModel: function() {
@@ -228,10 +215,6 @@ QuerypointPanel.Panel.prototype = {
         panel._restore(new QuerypointModel.PanelModel(panel.project.url));
       }
     );
-  },
-
-  tooltip: function(turn){
-    return this._log.currentTurn.event;
   },
 
   clear: function() {

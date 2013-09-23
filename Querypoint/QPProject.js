@@ -20,7 +20,7 @@
   function QPProject(url, loads) {
     RemoteWebPageProject.call(this, url);
 
-    this.numberOfReloads = loads; 
+    this.numberOfReloads = 0; 
 
     // FIXME override parent __getter__ for reporter
     this.reporter_ = new Querypoint.QPErrorReporter();
@@ -190,10 +190,7 @@
     },
 
     onReload: function(callback) {
-      if (this.qpRuntimeInstalling)
-        return;
-     
-      callback(this.qpRuntimeInstalled);  // allow the UI to update
+      callback(this.qpRuntimeInstalled, this.qpRuntimeInstalling);  // allow the UI to update
     },
     
     // These functions hide features depending on traceur and running in this window from

@@ -1,0 +1,393 @@
+/*
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+*/
+
+.sessionView {
+    color: #272822; /* reverse from cm-s */
+    /*background: -webkit-radial-gradient(black 15%, transparent 16%) 0 0, -webkit-radial-gradient(black 15%, transparent 16%) 4px 4px, -webkit-radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 0 1px, -webkit-radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 4px 4.5px;
+    background-color:#272822;
+    background-size:8px 8px;
+    */
+    width: 100%;
+    height: 15px;
+    position: relative;
+    background-color: #75715E;
+    font-size: 0px; /* prevent whitespace */
+    line-height: normal;
+    white-space: nowrap;
+    -webkit-flex-shrink: 0;
+}
+
+.sessionView span {
+  display: inline-block;
+  line-height: normal;
+}
+
+.sessionView .messages span {  /* spans to have width and height */
+  height: 11px;
+  width: 9px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #75715E;
+}
+
+.sessionView .loadNumber:before {
+    content: attr(load);
+    font-size: 10px;
+    color: #d0d0d0;
+    background-color: #272822;
+    position: absolute;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #272822;
+    border-radius: 2em;
+    width: 1em;
+    padding-left: 2px;
+    margin-top: 1px;
+    top: 0px;
+}
+
+.sessionView span.hiddenTurn {
+    display: none;
+}
+
+/* http://colorschemedesigner.com/#1q11T6ieGw0w0 */
+.sessionView span.turnNumber:nth-child(even) {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #1D1E1B;
+}
+.sessionView span.turnNumber:nth-child(odd) {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #919483;
+}
+
+.sessionView span.turns {
+    border: none;
+    margin-left: 15px;
+}
+
+.sessionView .error {
+    background-color: red;
+}
+.sessionView .warning {
+    background-color: rgb(255, 208, 69);
+}
+.sessionView .log {
+  background-color: #272822;
+}
+.sessionView:hover span.scrubberIndicator {
+  position: absolute;
+  width: 30ex;
+  height: 15px;
+  padding: 0px;
+  top: 0px;
+  background-color: transparent;
+  border-color: purple;
+  border-width: 2px;
+  border-style: solid;
+  left: 400px;
+}
+.sessionView span.scrubberIndicator:hover {
+  opacity: .8;
+}
+
+.runNumber {
+    background: #272822; 
+    color: #f8f8f2;
+    border-radius: 999px; /* any value larger than the radius of the object gives a circle */
+    padding-left: .3em;
+    padding-right: .3em;
+}
+
+.loadNumber{
+    width: 15px;
+    position: relative;
+    height: 15px;
+    z-index: 1;
+}
+
+.overviewLog {
+    height: 15px;
+    background-color: #75715E;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.turnIndicator[severity="turn"]{
+    background-color: #f8f8f2;
+}
+
+.turnIndicator[severity="warning"] {
+    background-color: rgb(255, 208, 69);
+}
+
+.turnIndicator[severity="log"] {
+    background-color: #d0d0d0;
+}
+
+.turnIndicator[severity="error"] {
+    background-color: #F00;
+}
+
+.turnIndicator[severity="hide"] {
+    display: none;
+}
+
+.nextLoadView {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+.currentLoadView {
+    float: left;
+}
+
+.loadListView {
+    position: absolute;
+    top: 0px;
+    height: auto;
+    background-color: #75715E;
+    width: 15px;
+    z-index: 50;
+}
+
+.loadListView .loadNumber {
+    display: none;
+}
+.loadListView:hover .loadNumber {
+    display: block;
+}
+.loadListView .selectedLoad {
+    display: block
+}
+
+.turnView {
+    line-height: 15px;
+    position: absolute;
+    top: 15px;
+    background-color: #101010;
+    width: 100%;
+    min-height: 30px;
+    z-index: 50;
+    border-radius: 10px;
+    display: none;
+    margin-top: 3px;
+    color: #d0d0d0;
+    font-size: 13px;
+    padding: 8px;
+    font-style: italic;
+    font-family: "Arial", "Helvetica", sans-serif;
+    font-weight: lighter;
+}
+
+.turnView .registeredEntryPointsHeader {
+  color: #75715e;
+}
+
+.turnView .messagesHeader {
+  padding-top: 1ex;
+  color: #75715e;
+}
+
+.turnView .messages {
+    max-height: 150px;
+    overflow-y: scroll;
+    font-style: normal;
+    padding-left: 3ex;
+    font-family: monospace;
+}
+
+.turnView p.message {
+  margin: 0;
+  color: rgb(141, 141, 134);
+  font-size: small;
+}
+
+.turnView p.message[severity="turn"] {
+  display: none;
+}
+
+.turnView p.message[severity="error"] {
+  color: rgb(255, 0, 0);
+}
+
+.turnView p.message[severity="warning"] {
+  color: rgb(255, 208, 69);
+}
+
+.turnView .messages::-webkit-scrollbar{
+    width: 8px;
+    height: 16px;
+}
+
+.turnView .messages::-webkit-scrollbar-thumb{
+    background-color: rgba(248,248,242,0.5);
+    -webkit-box-shadow: inset 1px 1px 0 rgba(39,40,34,0.10),inset 0 -1px 0 rgba(39,40,34,0.07);
+}
+
+.turnView .messages::-webkit-scrollbar-button{
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.turnView .messages::-webkit-scrollbar-corner{
+    background-color: rgba(248,248,242,0.2);
+}
+
+table.messagesByLoadNumber {
+    margin-top: 500px;
+}
+
+.hoverMenuTrigger {
+  position: relative;
+}
+
+.hoverMenuTrigger > .hoverMenu  {
+  left: -9999px;
+  position: absolute;
+}
+
+.hoverMenuTrigger:hover > .hoverMenu {
+  left: 0px;
+  position: absolute;
+}
+
+.turnList {
+  margin-left: 3ex;
+}
+
+.turnList a {
+  color: #f8f8f2;
+}
+
+.turnInformation {
+    margin-bottom: 15px;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    z-index: 100;
+}
+
+.turnInformation > li {
+    display: inline;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+.turnInformation a {
+    color: #f8f8f2;
+    font-style: normal;
+}
+
+.turnInformation a:hover {
+    color: #f8f8f2;
+    text-decoration: underline;
+}
+
+.turnInformation > ul {
+    list-style: none;
+    position: absolute;
+    left: -9999px;
+    background: #272822;
+    border-radius: 5px;
+    padding: 1px;
+    padding-right: 10px;
+}
+
+.turnInformation ul li ul{
+    left: -9999px;
+}
+
+.turnInformation ul li {
+    padding-top: 1px;
+    float: none;
+}
+
+.turnInformation ul a {
+    white-space: nowrap;
+}
+
+.turnInformation>li:hover>ul {
+    left: 0px;
+}
+
+.turnInformation li ul li ul{
+    left: 0px;
+}
+
+/*.turnInformation li>ul>li:hover>ul.eventInfo_sideMenu {
+    left: 98px;
+}
+
+.turnInformation li:hover a {
+    text-decoration: none;
+}
+
+ul li ul .eventInfo_sideMenu {
+    left: -9999px;
+    z-index: 1;
+    top: -3px;
+    margin-right: 5px;
+}
+*/
+
+.eventInfo_menu {
+    list-style: none;
+    background: #272822;
+    border-radius: 5px;
+    padding: 7px;
+    padding-right: 10px;
+}
+
+ul.eventInfo_sideMenu li.previous {
+    color: red;
+}
+
+ul.eventInfo_sideMenu li.added {
+    color: yellow;
+}
+
+ul.eventInfo_sideMenu li.fired{
+    color: green;
+}
+
+ul.eventInfo_sideMenu li a{
+    color: inherit;
+}
+
+ul.eventInfo_sideMenu li a{
+    color: inherit;
+    cursor: default;
+}
+
+.turnInformation li ul a {
+    text-decoration: none;
+}
+
+.beginRecorded, .endRecorded {
+    float: left;
+    width: 10px;
+    height: 15px;
+    background-color: rgb(46, 156, 46);
+    top: 0px;
+    font-size: 14px;
+    line-height: 13px;
+    padding-left: 1px;
+    cursor: default;
+    color: #272822;
+}
+
+.endRecorded[state="off"] {
+    display: none;
+}
+
+.beginRecorded[state="record"], .endRecorded[state="record"]{
+    color: #F00;
+    display: inline;
+}
+

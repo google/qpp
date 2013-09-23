@@ -28,18 +28,48 @@ function test_lastChange() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
+  var clickFirstRecorderButton = 'document.querySelector(".beginRecorded").dispatchEvent(new MouseEvent("click"))';
+  
+  // Start a recording
+  AsyncMachine.pushOp(evaluateInPanel, clickFirstRecorderButton, function(text) {
+    if (text === true)
+      return 'record pressed';
+  });
 
+  var getState = 'document.querySelector(".beginRecorded").getAttribute("state")';
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
+  // Two events to be recorded
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
   AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))');
 
-  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '6');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordIndicator").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".recordMarker").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '7');
 
-  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:10:5');
+  // Stop recording
+  AsyncMachine.pushOp(evaluateInPanel, clickFirstRecorderButton, function(text) {
+    if (text === true)
+      return 'stop pressed';
+  });
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
+  // Playback
+  AsyncMachine.pushOp(evaluateInPanel, clickFirstRecorderButton, function(text) {
+    if (text === true)
+      return 'play pressed';
+  });
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
+  AsyncMachine.pushOp(whenSelectorAll, 'td.activation', '1:9:3');
   AsyncMachine.pushOp(extractText, 'td.traceValue');
+
+  var clickSecondRecorderButton = 'document.querySelector(".endRecorded").dispatchEvent(new MouseEvent("click"))';
+  // Erase
+  AsyncMachine.pushOp(evaluateInPanel, clickSecondRecorderButton, function(text) {
+    if (text === true)
+      return 'erase pressed';
+  });
+  AsyncMachine.pushOp(evaluateInPanel, getState);
+
   AsyncMachine.runOp();
 }
 

@@ -120,7 +120,7 @@
         ) return false;
         
         var same = 
-          trace.load === existingTrace.load && 
+          trace.loadNumber === existingTrace.loadNumber && 
           trace.turn === existingTrace.turn &&
           trace.activation === existingTrace.activation &&
           trace.value === trace.value;
@@ -143,13 +143,14 @@
       var loc = expressionTree.location;
       var trace = {
         query: this.query,
-        load: this._project.numberOfReloads,
+        loadNumber: this._project.numberOfReloads,
         turn: turn,
         activation: activationCount,
         value: trace,
         file: loc.start.source.name,
         startOffset: loc.start.offset,
-        endOffset: loc.end.offset
+        endOffset: loc.end.offset,
+        project: this._project
       };
       var traces = expressionTree.location.traces = expressionTree.location.traces || [];
       this.appendUnique(trace,traces);
@@ -162,39 +163,38 @@
   Querypoint.LineModelTraceVisitor = function(project, sourceFile) {
     Querypoint.TraceVisitor.call(this, project);
     this._sourceFile = sourceFile;
-    this.tracedOffsetsByLine = {};
-    this.latestTraceByOffset = {};
+    this.tracesByLine = [];
   }
   
-  Querypoint.LineModelTraceVisitor.prototype = Object.create(Querypoint.TraceVisitor.prototype);
+  Querypoint.LineModelTraceVisitor.prototype = {
+    __proto__: Querypoint.TraceVisitor.prototype,
+    
+    visitFunctionTraced: function(functionTree, activations) {
+      // latest only
+      this.visitActivationTraced(functionTree, activations[activations.length - 1]);
+    },
+    
+    visitActivationTraced: function(functionTree, activation) {
+      var functionDefinitionOffset = functionTree.location.start.offset;
+      if (functionDefinitionOffset < 0)
+        throw new Error("LineModelTraceVisitor.visitActivationTraced invalid functionTree offset " + functionDefinitionOffset);
+      var line = this._sourceFile.lineNumberTable.getLine(functionDefinitionOffset);
+      this.tracesByLine[line] = this.tracesByLine[line] || [];
+      this.tracesByLine[line].push({offset: functionDefinitionOffset, activation: activation});
+      Querypoint.TraceVisitor.prototype.visitActivationTraced.call(this, functionTree, activation);
+    },
+    
+    visitExpressionsTraced: function(expressionTree, turn, index, trace) {
+      var offset = expressionTree.location.end.offset - 1;  // last char of the expression
+      
+      if (offset < 0)
+        throw new Error("LineModelTraceVisitor.visitExpressionsTraced invalid offset " + offset);
+
+      var line = this._sourceFile.lineNumberTable.getLine(offset);
+      this.tracesByLine[line] = this.tracesByLine[line] || [];
+      // TODO change locals/args to mathc names
+      this.tracesByLine[line].push({endOffset: offset, turn: turn, index: index, value: trace});
+    },
+  }; 
   
-  Querypoint.LineModelTraceVisitor.prototype.visitFunctionTraced = function(functionTree, activations) {
-    // latest only
-    this.visitActivationTraced(functionTree, activations[activations.length - 1]);
-  }
-
-  Querypoint.LineModelTraceVisitor.prototype.visitActivationTraced = function(functionTree, activation) {
-    var functionDefinitionOffset = functionTree.location.start.offset;
-    if (functionDefinitionOffset < 0)
-      throw new Error("LineModelTraceVisitor.visitActivationTraced invalid functionTree offset " + functionDefinitionOffset);
-    var line = this._sourceFile.lineNumberTable.getLine(functionDefinitionOffset);
-    this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
-    
-    this.tracedOffsetsByLine[line].functionOffsets = this.tracedOffsetsByLine[line].functionOffsets || [];
-    this.tracedOffsetsByLine[line].functionOffsets.push(functionDefinitionOffset);
-    Querypoint.TraceVisitor.prototype.visitActivationTraced.call(this, functionTree, activation);
-  }
-  Querypoint.LineModelTraceVisitor.prototype.visitExpressionsTraced = function(expressionTree, turn, index, trace) {
-    var offset = expressionTree.location.end.offset - 1;  // last char of the expression
-    
-    if (offset < 0)
-      throw new Error("LineModelTraceVisitor.visitExpressionsTraced invalid offset " + offset);
-
-    var line = this._sourceFile.lineNumberTable.getLine(offset);
-    this.tracedOffsetsByLine[line] = this.tracedOffsetsByLine[line] || {};
-    this.tracedOffsetsByLine[line].expressionOffsets = this.tracedOffsetsByLine[line].expressionOffsets || [];
-    this.tracedOffsetsByLine[line].expressionOffsets.push(offset);
-    this.latestTraceByOffset[offset] = trace;
-  }
-
 }());

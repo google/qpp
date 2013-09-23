@@ -32,17 +32,17 @@
 
     // Call after every block of appendItem calls
     selectItem: function(thenCall) {
-      if (!this.itemSelector) {
-        this.itemSelector = this.panel.createItemSelector("SelectItem");
-        this.itemSelector.onSelectedItem.addListener(this._onSelectedItem.bind(this, thenCall));
-      }
-      this.itemSelector.addItems(this._items.slice(this._itemsSent));
-      this._itemsSent += this._items.length;
+      chrome.devtools.panels.createItemSelector("SelectItem", function(selector) {
+        selector.onItemSelected.addListener(this._onSelectedItem.bind(this, thenCall));
+        selector.addItems(this._items);
+        this._itemsSent += this._items.length;
+      }.bind(this)); 
     },
 
-    _onSelectedItem: function(thenCall, item) {
-      if (item) {
-        var action = this._actions[item.index];
+    _onSelectedItem: function(thenCall, itemIndex) {
+      if (typeof itemIndex === 'number') {
+        var item = this._items[itemIndex];
+        var action = this._actions[itemIndex];
         action(item);
       } else {
         if (thenCall)

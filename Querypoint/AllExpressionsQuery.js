@@ -12,6 +12,7 @@
   Querypoint.AllExpressionsQuery = function(tree, project) {
     Querypoint.Query.call(this);
     this.tree = tree;
+    this._project = project;
   }
 
   // global record of which files are traced.
@@ -109,6 +110,7 @@
           console.log("AllExpressionsQuery.extractTracepoints from " + fileName, traceData);
         if (!isException && traceData) {
           traceData.query = this;
+          traceData.project = this._project;
           fileViewModel.treeRoot().traceData(traceData);
           onTracepoint();  // We don't have trace data from another tree (unlike lastChange)
         }

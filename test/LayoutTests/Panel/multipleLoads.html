@@ -52,8 +52,8 @@ function test_lastChange() {
   AsyncMachine.pushOp(whenSelectorAll, 'td.traceValue', '0');
 
   AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".loadNumber").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".loadList .loadNumber").dispatchEvent(new MouseEvent("mousedown"))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelectorAll(".eventIndicator").length');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector(".loadListView .loadNumber").dispatchEvent(new MouseEvent("mousedown"))');
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelectorAll(".turnIndicator").length');
 
 
   AsyncMachine.runOp();

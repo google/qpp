@@ -11,10 +11,14 @@
   Querypoint.Query.prototype = {
     tracePrompt: function() {
       var emptyTrace = {
-        load: '_',
+        loadNumber: '_',
         turn: '_',
         activation: '_',
-        value: this.tracePromptText(),
+        value: {
+          stringRep: this.tracePromptText(),
+          valueType: 'string',
+          valueClass: 'prompt'
+        },
         query: this,
         isPrompt: true,
       };

@@ -12,6 +12,7 @@
   }
 
   Querypoint.ElementChangeQuery.ifAvailableFor = function(project, selector, functionURL) {
+    this._project = project;
     var functionInfo = project.parseFileURL(functionURL);
     var tree = project.find(functionInfo.filename, functionInfo.startOffset - 1);
     if (tree)
@@ -86,29 +87,28 @@
       return src;
     },
 
-    extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
+    extractTracepoints: function(fileViewModel, onTracepoint, sessionViewModel) {
       var query = this;
       function onEval(result, isException) {
-         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === logScrubber.loadStarted()) return;
+         if (query._lastEvaluated === result.turn && query._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStartedNumber()) return;
          query._lastEvaluated = result.turn;
-         query._lastLoadEvaluated = logScrubber.loadStarted();
+         query._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStartedNumber();
          if (!isException && result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
-            var trace = change;
-            if (trace.valueType === 'undefined')
-              trace.value = 'undefined';
-            trace.query = query;
-            trace.load = fileViewModel.project.numberOfReloads;
-            trace.activation = change.activationCount;
-            onTracepoint(trace);  
+            var traceData = change;
+            traceData.query = query;
+            traceData.loadNumber = fileViewModel.project.numberOfReloads;
+            traceData.activation = change.activationCount;
+            traceData.project = this._project;
+            onTracepoint(traceData);  
           });      
         } else {
           console.error("ValueChangeQuery extractTracepoints eval failed", isException, result); 
         }
       }
-      var previousTurn = logScrubber.turnStarted() - 1;
-      var thisLoad = logScrubber.loadStarted();
+      var previousTurn = sessionViewModel.loadListViewModel.lastLoad().turnStarted() - 1;
+      var thisLoad = sessionViewModel.loadListViewModel.loadStartedNumber();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = query._queryIndex;

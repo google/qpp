@@ -45,7 +45,7 @@ body {
   display: -webkit-flex;
 }
 
-.initialView .onPanelOpen {
+.initialView.onPanelOpen {
   display: block;
 }
 
@@ -53,6 +53,13 @@ body {
     padding: 1em;
     display: none;
     min-height: 200px;
+    z-index: 75;
+    background-color: #272822;
+    position: absolute;
+    width: 100%;
+    color: #75715e;
+    cursor: default;
+    top: 15px;
 }
 
 .IfQPNotInstalled {
@@ -120,14 +127,20 @@ body {
   font-family: arial,san-serif;
 }
 
+.unittest {
+  padding: 3em;
+  font-size: small;
+  font-family: arial, san-serif;
+  display: block;
+}
+
 .helpInfo {
-    display: none;
+  display: none;
 }
 
 .showHelp .helpInfo {
     z-index: 200;
     position: absolute;
-
     display: inline;
     color: #d0d0d0;
     background-color: #75715e;

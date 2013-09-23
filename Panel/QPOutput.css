@@ -125,13 +125,11 @@ pre.traceBackground {
 }
 .hoverDoor {
      height:9px;
-
      border-top: 9px solid #d0d0d0;
      z-index: 10;
 }
 .hoverSpacer {
   -webkit-flex: auto;
-  min-width: auto;
   border-top-color: transparent;
 }
 .hoverOpener {

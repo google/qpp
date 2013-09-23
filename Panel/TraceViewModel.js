@@ -1,139 +1,55 @@
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2013 Google Inc. johnjbarton@google.com
 
- // Google BSD license http://code.google.com/google_bsd_license.html
-// Copyright 2012 Google Inc. johnjbarton@google.com
+// One item of trace data
 
 (function() {
   "use strict";
   
-  QuerypointPanel.TraceViewModel = function(querypointViewModel, panel) {
-    this._querypointViewModel = querypointViewModel;
-    this._panel = panel;
-
-    this.rootTreeData = ko.computed(function(){
-      var treeRoot = querypointViewModel.treeRoot();
-      var traceData = treeRoot && treeRoot.traceData();
-      if (traceData) {
-        // TODO we should only visit the tree in view, not the entire tree
-        var treeHanger = this._treeHanger(querypointViewModel.project);
-        treeHanger.visitTrace(querypointViewModel.treeRoot(), traceData);
-      }
-      return traceData;
-    }.bind(this)).extend({ throttle: 1 });
-
-    this.currentTreeTrace = ko.computed(function(){
-      var currentTree =  querypointViewModel.tokenViewModel.tokenTree();
-      if (currentTree) {
-        var rootTreeData = this.rootTreeData();
-        if (rootTreeData) {
-          return currentTree.location.traces || [];
-        }
-      }
-      return [];
-    }.bind(this));
-    
-    this.treeTraces = ko.computed(function() {
-         var tracepoints;
-         if (this._panel.logScrubber.showLoad().load !== this._panel.logScrubber.loadStarted()){
-             if (!('tracepoints' in this._panel.logScrubber.showLoad())) return [];
-             tracepoints = this._panel.logScrubber.showLoad().tracepoints();
-         } else {
-             tracepoints = this._querypointViewModel.tracepoints();
-         }
-         var tree = querypointViewModel.tokenViewModel.tokenTree();
-         if (tree) {
-          
-          var treeTracepoints = [];
-          tracepoints.reduce(function(treeTracepoints, tracepoint) {
-              if (tracepoint.query.targetTree() === tree) treeTracepoints.push(tracepoint);
-              return treeTracepoints;
-          }, treeTracepoints);  
-          
-          var traces = this.currentTreeTrace();
-          traces = traces.concat(treeTracepoints);
-          
-          var prompts = [];
-          this._panel.tracequeries().reduce(function(prompts, query) {
-              if (query.targetTree() === tree) prompts.push(query.tracePrompt());
-              return prompts;
-          }, prompts);
-          
-          if (!traces.length) {
-            traces = prompts;
-          } else {
-            if (prompts.length) {
-              // Cull any prompts for querys that have completed once
-              traces.forEach(function(trace, traceIndex) {
-                  prompts.forEach(function(prompt, promptIndex) {
-                    if (prompt.query === trace.query) {
-                      prompts.splice(promptIndex, 1);
-                    }
-                  });
-              });
-              traces = traces.concat(prompts);
-            }
-          }
-          return traces;
-         }
-    }.bind(this)).extend({ throttle: 1 });
-
-    this.currentLocation = ko.observable(); // used to ensure that the UI is in sync during testing
-
-    function traceBodySpace(){
-        var hoverDoorTarget = document.querySelector('.hoverDoorTarget');
-        var tokenView = 110; // size depends on selected token
-        var explainTokenPanel = document.querySelector('.explainTokenPanel');
-        var queryView = document.querySelector('.queryView');
-        return hoverDoorTarget.offsetHeight - tokenView - explainTokenPanel.offsetHeight - queryView.offsetHeight;
-    }
-
-    window.onresize = function(){
-      this.afterRender();
-      panel.logScrubber.showLoad.valueHasMutated();
-    }.bind(this);
-
-    this.afterRender = function() {
-      // Set max height of trace table depend on window height
-      var traceBody = document.querySelector('.traceBody');
-      if (!this.maxSizeSet) {
-        traceBody.style.maxHeight = traceBodySpace() + 'px';
-        this.maxSizeSet = true;  
-      }
-      traceBody.scrollTop = 9999;
-    }
-
-    // Query results for the current token in this file.
-    this.currentTraces = ko.computed(function() {
-        var tree = querypointViewModel.tokenViewModel.tokenTree();
-
-        if (tree && panel.tracequeries().length) {
-          var traces = this.treeTraces();
-          if (traces && traces.length) {
-            var traceViewModels = traces.map(function(trace) {
-              var traceViewModel = {};
-              Object.keys(trace).forEach(function(prop) {
-                traceViewModel[prop] = trace[prop];
-              });
-              traceViewModel.tooltip = trace.query.title() + " found in " + trace.file;
-              traceViewModel.url = querypointViewModel.project.createFileURL(trace.file, trace.startOffset, trace.endOffset);
-              traceViewModel.iconText = trace.query.iconText();
-              return traceViewModel;
-            });
-            this.currentLocation(tree.location);
-            return traceViewModels;
-          }  
-        }
-      }.bind(this)).extend({ throttle: 100 });
+  QuerypointPanel.TraceViewModel = function(traceData, project) {
+    this.project = project;
+    this.traceData_ = {};
+    Object.keys(traceData).forEach(function(prop) {
+        this.traceData_[prop] = traceData[prop];
+      }.bind(this));
   }
   
+  var valueViewModel = new QuerypointPanel.ValueViewModel();
+
   QuerypointPanel.TraceViewModel.prototype = {
-          
-    _treeHanger: function(project) {
-      if (!this._treeHangerTraceVisitor) {
-        this._treeHangerTraceVisitor = project.treeHangerTraceVisitor();  
-      } 
-      return this._treeHangerTraceVisitor;
+    query: function() {
+      return this.traceData_.query;
+    },
+    
+    tooltip: function() {
+      return this.query().title() + ' found in ' + this.traceData_.file;
+    },
+    
+    url: function() {
+      if (this.traceData_.isPrompt)
+        return '';
+      return  this.project.createFileURL(this.traceData_.file, this.traceData_.startOffset, this.traceData_.endOffset);
+    },
+    
+    iconText: function() {
+      return this.query().iconText();
     },
 
+    loadNumber: function() {
+      return this.traceData_.loadNumber;
+    },
 
+    turnNumber: function() {
+      return this.traceData_.turn;
+    },
+
+    activationNumber: function() {
+      return this.traceData_.activation;
+    },
+
+    value: function() {
+      return valueViewModel.inlineView(this.traceData_.value.stringRep, this.traceData_.value.valueType);
+    },
   };
+
 }());

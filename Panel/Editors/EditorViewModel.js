@@ -10,26 +10,34 @@
 
   QuerypointPanel.EditorViewModel = function() {
 
-    // We don't know the element on creation, we need to get it from the ko template expansion
+    // Inputs (required)
+
+    // Set by editorBy(), called from the ko template expansion
     this.editorElement = ko.observable();
     this.editorContents = ko.observable();
+
+    // Optional inputs
     this.highlightRegion = ko.observable();
 
+    // Outputs
+    
     this.editor = ko.computed(function(){
       var fileEditorView = this.editorElement();
       var contents = this.editorContents();
-      if (fileEditorView && contents) {   
+      if (fileEditorView && contents && contents.content) {   
         var editor = new QuerypointPanel.EditorByCodeMirror(fileEditorView, contents.url, contents.content);
         editor.addListener('onChange', this._onChange.bind(this, editor));
         return editor;
       }    
     }.bind(this));
 
+    // View (tracks inputs)
+
     this.highlight = ko.computed(function(){
       var editor = this.editor();
-      var linkTarget = this.highlightRegion();
-      if (editor && linkTarget) {
-        this._markRegion(editor, linkTarget);
+      var sourceRegion = this.highlightRegion();
+      if (editor && sourceRegion) {
+        this._markRegion(editor, sourceRegion, 'qp-highlight');
       }
     }.bind(this)).extend({ throttle: 50 });
       
@@ -46,10 +54,24 @@
       return 'CodeMirror';
     },
 
-    _onChange: function(editor, changes) {
-      this.status('unsaved');
+    mark: function(sourceRegion) {
+      this.highlightRegion(sourceRegion);
     },
-
+    
+    decorationMarks_: [],
+    
+    appendDecoration: function(sourceRegion) {
+      this.decorationMarks_.push(
+        this.editor().showRegion(sourceRegion.start, sourceRegion.end, 'qp-decorate')
+      );
+    },
+    
+    clearDecorations: function() {
+      this.decorationMarks_.forEach(function(mark) {
+        mark.clear();
+      });
+    },
+    
     saveFile: function() {
       var content = this.editor().getContent();
       var url = this.editor().getName();
@@ -93,13 +115,13 @@
         }
       });
     },
+     
+    _onChange: function(editor, changes) {
+      this.status('unsaved');
+    },
     
-    mark: function(linkTarget) {
-      this.highlightRegion(linkTarget);
-    }, 
-    
-    _markRegion: function(editor, linkTarget){
-      var mark = editor.showRegion(linkTarget.start, linkTarget.end);
+    _markRegion: function(editor, sourceRegion, cssClass) {
+      var mark = editor.showRegion(sourceRegion.start, sourceRegion.end, cssClass);
       if (mark) {
        var clearMark = function(event) {
          mark.clear();

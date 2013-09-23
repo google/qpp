@@ -31,15 +31,15 @@ function test_clickMessage() {
   AsyncMachine.pushOp(clickQPOperation, 'lastChange');
   AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '1');
 
-  for(var i=0;i<30;i++) AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){} );
+  for(var i=0;i<29;i++) AsyncMachine.pushOp(evaluateInPage, 'document.querySelector("#myButton").dispatchEvent(new MouseEvent("click"))', function(text){} );
   AsyncMachine.pushOp(whenSelectorAll, 'span.turnNumber', '⇵34');
 
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.eventIndicator[severity=error][turn=\'10\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "";} );
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.turnIndicator[severity=error][turn=\'10\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "Clicked Error on Turn 10";} );
 
   function checkTurnNumber(turnNumber) {
     var turnNumberOffsetTop = document.querySelectorAll("td.turnNumber")[turnNumber].offsetTop;
-    var scrollTop = document.querySelector(".logContainer").scrollTop;
-    var offsetHeight = document.querySelector(".logContainer").offsetHeight;
+    var scrollTop = document.querySelector(".messageView").scrollTop;
+    var offsetHeight = document.querySelector(".messageView").offsetHeight;
     var offsetTop = document.querySelector(".messagesByLoadNumber").offsetTop;
     var delta  = turnNumberOffsetTop -  scrollTop + offsetTop;
     console.log("checkTurnNumber turnNumberOffsetTop " + turnNumberOffsetTop + " scrollTop " + scrollTop);
@@ -48,7 +48,7 @@ function test_clickMessage() {
   }
 
   AsyncMachine.pushOp(evaluateInPanel, '(' + checkTurnNumber + '(10))');
-  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.eventIndicator[severity=error][turn=\'20\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "";} );
+  AsyncMachine.pushOp(evaluateInPanel, 'document.querySelector("div.turnIndicator[severity=error][turn=\'20\']").dispatchEvent(new MouseEvent("mousedown"))', function(text){ return "Clicked Error on Turn 20";} );
   AsyncMachine.pushOp(evaluateInPanel, '(' + checkTurnNumber + '(20))');
 
   AsyncMachine.runOp();

@@ -1,0 +1,8 @@
+.turnIndicator {
+    height: 15px;
+    width: 1px;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-left-color: #272822;
+    float: left;
+}

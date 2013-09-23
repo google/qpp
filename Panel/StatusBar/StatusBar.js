@@ -5,19 +5,28 @@
 
   "use strict";
 
+  var debug = DebugLogger.register('StatusBar', function(flag){
+    return debug = (typeof flag === 'boolean') ? flag : debug;
+  });
+
   var statusBarSelector = ".statusBar";
   
   QuerypointPanel.StatusBar = {
-    initialize: function(panel) {
-      this.exploringMode = ko.observable(false);
+    initialize: function(panel, sessionViewModel) {
+      this.runtimeNotInstalled = ko.computed(function() {
+        if (debug) console.log('StatusBar runtimeInstalled: ' + sessionViewModel.runtimeInstalled());
+        return !sessionViewModel.runtimeInstalled();
+      });
       this.openURLs = ko.observableArray();
       this.unsavedEditors = ko.observableArray();
       // at start up we assume the web page has reloaded since our last edit....
       this.savedEditors = ko.observableArray();
       
       this.currentLoadNumber = ko.computed(function() {
-        var started = panel.logScrubber.loadStarted();
-        var ended = panel.logScrubber.loadEnded();
+        var started = sessionViewModel.loadListViewModel.loadStartedNumber();
+        if (!started)
+          return 0;
+        var ended = sessionViewModel.loadListViewModel.loadEndedNumber();
         if (started === ended)
           return started;
         else
@@ -25,7 +34,8 @@
       });  // don't throttle load, needed for testing 
 
       this.currentTurnNumber = ko.computed(function() {
-        return panel.logScrubber.turnStarted();
+        var currentTurn = sessionViewModel.currentTurn();   
+        return currentTurn ? currentTurn.turnNumber : 0;
       }).extend({ throttle: 50 });
 
       this.numberOfTracequeries = ko.computed(function(){

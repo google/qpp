@@ -1,6 +1,0 @@
-http://localhost:8686/test/console/consoleTest.html
-true
-log one
-true
-200
-

@@ -59,7 +59,7 @@
 }
 
 .statusBar .turnNumber[active='true'] {
-  background: color: black;
+  background-color: black;
 }
 
 .statusBar span.changedOptionsIcon {

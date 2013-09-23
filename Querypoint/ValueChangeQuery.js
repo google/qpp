@@ -132,33 +132,36 @@
     },
 
     // Pull trace results out of the page for this querypoint
-    extractTracepoints: function(fileViewModel, onTracepoint, logScrubber) {
+    extractTracepoints: function(fileViewModel, onTracepoint, sessionViewModel) {
       function onEval(result, exception) {
          if (exception) {
            console.error("ValueChangeQuery extractTracepoints eval failed", exception);
            return; 
          }
-         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === logScrubber.loadStarted()) 
+         if (this._lastEvaluated === result.turn && this._lastLoadEvaluated === sessionViewModel.loadListViewModel.loadStartedNumber()) 
            return;
            
          this._lastEvaluated = result.turn;
-         this._lastLoadEvaluated = logScrubber.loadStarted();
+         this._lastLoadEvaluated = sessionViewModel.loadListViewModel.loadStartedNumber();
          
          if (result.tracepoints && result.tracepoints instanceof Array) {
           var changes = result.tracepoints;
           changes.forEach(function(change) {
             var trace = change;
-            if (trace.valueType === 'undefined')
-              trace.value = 'undefined';
             trace.query = this;
-            trace.load = fileViewModel.project.numberOfReloads;
+            trace.loadNumber = fileViewModel.project.numberOfReloads;
             trace.activation = change.activationCount;
+            trace.project = fileViewModel.project;
             onTracepoint(trace);  
           }.bind(this));      
          }
       }
-      var previousTurn = logScrubber.turnStarted() - 1;
-      var thisLoad = logScrubber.loadStarted();
+      var currentTurn = sessionViewModel.currentTurn();
+      if (!currentTurn)
+        return;
+        
+      var previousTurn = currentTurn.turnNumber - 1;
+      var thisLoad = sessionViewModel.loadListViewModel.loadStartedNumber();
 
       if (!this._lastEvaluated || this._lastLoadEvaluated !== thisLoad || this._lastEvaluated === previousTurn) {
         var tracedObjectIndex = this._queryIndex;

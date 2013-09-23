@@ -1,0 +1,7 @@
+http://localhost:8686/test/qpd.html
+prop in   var message = "I've been clicked " + obj.prop + " times";
+Clicked Error on Turn 10
+true
+Clicked Error on Turn 20
+true
+

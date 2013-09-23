@@ -46,10 +46,12 @@ function test_lastChange() {
   // The trace should be gone
   AsyncMachine.pushOp(extractText, 'td.traceValue');
   // The onPanelOpen dialog should be up
-  AsyncMachine.pushOp(clickSelector, '.initialOptions_reloadWithoutQP', '');
-  // Wait for the reload
-  AsyncMachine.pushOp(whenSelectorAll, '.currentLoadNumber', '0');
-    // The qp runtime should still be loaded
+  AsyncMachine.pushOp(clickSelector, '.initialOptions_reloadWithoutQP', '', function(text) {
+    return "Pressed Reload without QP runtime";
+  });
+  // Wait for the reload.
+  AsyncMachine.pushOp(whenSelectorAll, '.runtimeStatus', 'QP runtime is not installed.');
+    // The qp runtime should not be loaded
   AsyncMachine.pushOp(evaluateInPage, 'window.__qp_reloads', function(text) {
     return 'window.__qp_reloads:' + (text ? text : "no text");
   });
