@@ -2,8 +2,10 @@
   
 function defunction(item) {
     if (typeof item === 'object') {
+      var called = item._fakeMaker_proxy_was_called;
+      delete item._fakeMaker_proxy_was_called;
       Object.keys(item).forEach(function(key) {
-        if (typeof item[key] === 'function')
+        if (typeof item[key] === 'function' && called.indexOf(key) !== -1)
           item[key] = {'_faker_maker_': key};
         else 
           item[key] = defunction(item[key]);
@@ -15,15 +17,13 @@ function defunction(item) {
     }
     return item;
   }
-
+  
 function FakeMaker() {
   // Co-indexed
   this._proxiedObjects = [];
   this._proxies = [];
 
   this._recording = [];
-  this._currentReplay = 0;
-
   this.working = [];
 }
 
@@ -39,7 +39,11 @@ FakeMaker.prototype = {
 
   lookupProxyObject: function(obj) {
     var index = this._proxiedObjects.indexOf(obj);
-    console.log('lookupProxyObject: ' + index + ' for ' + obj + 'typeof: ' + (typeof obj))
+    try {
+      console.log('lookupProxyObject: ' + index + ' for ' + obj + 'typeof: ' + (typeof obj));    
+    } catch (e) {
+      console.log('lookupProxyObject ' + e);
+    }
     if (index !== -1)
       return this._proxies[index];
   },
@@ -52,11 +56,7 @@ FakeMaker.prototype = {
   recording: function() {
     return this._recording.map(defunction);
   },
-
-  replay: function() {
-    return this._recording[this._currentReplay++];
-  },
-
+  
   proxyAny: function(name, proxy, theThis) {
     switch(typeof theThis[name]) {
       case 'function': proxy[name] = this.proxyFunction(name, proxy, theThis); break;
@@ -74,7 +74,11 @@ FakeMaker.prototype = {
   createProxyObject: function(obj) {
     var proxy = {};
     this.registerProxyObject(obj, proxy);
+    console.log("createProxyObject, building properties");
     Object.getOwnPropertyNames(obj).forEach(function(propertyName){
+      // Surprise: the names are duped in eg document
+      if (propertyName in proxy)
+        return;
       this.working.push(propertyName);
       console.log(this.working.join(','));
       this.proxyAny(propertyName, proxy, obj);
@@ -99,9 +103,9 @@ FakeMaker.prototype = {
       } catch(exc) {
         
       } finally {
-        wasCalled = proxy._fakerMaker_proxy_was_callled || [];
+        wasCalled = proxy._fakeMaker_proxy_was_called || [];
         wasCalled.push(fncName);
-        proxy._fakerMaker_proxy_was_callled = wasCalled;
+        proxy._fakeMaker_proxy_was_called = wasCalled;
       }
     }
   },
@@ -135,13 +139,59 @@ var objWithFunctionProxy = fakeMaker.makeFake(objWithFunction);
 console.assert(objWithFunctionProxy.baz() === objWithFunction.baz());
 console.assert(fakeMaker.recording().length === 2);
 var actual = fakeMaker.recording();
-var expected = [2];
+var expected = [{baz: {'_faker_maker_': 'baz'}}, 2];
 actual.forEach(function(record, index) {
-  console.assert(record === expected[index]);
+  console.assert(typeof record === typeof expected[index]);
 });
 
 var json = JSON.stringify(defunction(actual));
-console.assert(json === "[2]");
-console.log("=======  PASS  =======")
+console.assert(json === '[{"baz":{"_faker_maker_":"baz"}},2]');
 
+
+function FakePlayer(json) {
+  var ary = JSON.parse(json);
+  this._recording = ary.map(this.refunction.bind(this));
+  this._currentReplay = 0;
+}
+
+FakePlayer.prototype = {
+  startingObject: function () {
+    this._currentReplay = 0;
+    return this.replay();
+  },
+  
+  replay: function() {
+    return this._recording[this._currentReplay++];
+  },
+  
+  refunction: function(item) {
+    var fakePlayer = this;
+    if (typeof item === 'object') {
+      if (item._faker_maker_) {
+        return this.replay.bind(this);
+      } else {
+        Object.keys(item).forEach(function(key) {
+          item[key] = fakePlayer.refunction(item[key]);
+        });
+        return item;
+      }
+    } else {
+      return item;
+    }
+  }
+};
+
+fakePlayer = new FakeMaker();
+var objWitArrayOfObj = {ary:[{baz: function() {return 3;}}, {bax: function() {return 4}}]};
+var objWitArrayOfObjProxy = fakeMaker.makeFake(objWitArrayOfObj);
+
+var fakePlayer = new FakePlayer(json);
+console.assert(fakePlayer.startingObject().baz() === objWithFunction.baz());
+console.log("=======  PASS  =======");
+
+return;
+fakeMaker = new FakeMaker();
+var windowProxy = fakeMaker.makeFake(window);
+json = JSON.stringify(defunction(windowProxy));
+console.log(json);
 }())
