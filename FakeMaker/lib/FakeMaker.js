@@ -1,14 +1,16 @@
 (function(){
-  
+
 function defunction(item) {
-    if (typeof item === 'object') {
+    if (item && typeof item === 'object') {
       var called = item._fakeMaker_proxy_was_called;
       delete item._fakeMaker_proxy_was_called;
       Object.keys(item).forEach(function(key) {
-        if (typeof item[key] === 'function' && called.indexOf(key) !== -1)
-          item[key] = {'_faker_maker_': key};
-        else 
+        if (typeof item[key] === 'function') {
+          if(called && called.indexOf(key) !== -1)
+            item[key] = {'_faker_maker_': key};
+        } else {
           item[key] = defunction(item[key]);
+        }
       });
       if (item.__proto__)
         item.__proto__ = defunction(item.__proto__);
@@ -17,14 +19,14 @@ function defunction(item) {
     }
     return item;
   }
-  
+
 function FakeMaker() {
   // Co-indexed
   this._proxiedObjects = [];
   this._proxies = [];
 
   this._recording = [];
-  this.working = [];
+  this._currentPath = [];
 }
 
 FakeMaker.prototype = {
@@ -40,7 +42,7 @@ FakeMaker.prototype = {
   lookupProxyObject: function(obj) {
     var index = this._proxiedObjects.indexOf(obj);
     try {
-      console.log('lookupProxyObject: ' + index + ' for ' + obj + 'typeof: ' + (typeof obj));    
+      console.log('lookupProxyObject: ' + index + ' for ' + obj + 'typeof: ' + (typeof obj));
     } catch (e) {
       console.log('lookupProxyObject ' + e);
     }
@@ -52,11 +54,11 @@ FakeMaker.prototype = {
     this._recording.push(value);
     return value;
   },
-  
+
   recording: function() {
     return this._recording.map(defunction);
   },
-  
+
   proxyAny: function(name, proxy, theThis) {
     switch(typeof theThis[name]) {
       case 'function': proxy[name] = this.proxyFunction(name, proxy, theThis); break;
@@ -79,14 +81,25 @@ FakeMaker.prototype = {
       // Surprise: the names are duped in eg document
       if (propertyName in proxy)
         return;
-      this.working.push(propertyName);
-      console.log(this.working.join(','));
+      if (this._specialCase(propertyName, proxy, obj)) {
+        return;
+      }
+      this._currentPath.push(propertyName);
+      console.log(this._currentPath.join('.'));
       this.proxyAny(propertyName, proxy, obj);
-      this.working.pop();
+      this._currentPath.pop();
     }.bind(this));
     if (obj.__proto__)
       proxy.__proto__ = this.proxyObject(obj.__proto__);
     return proxy;
+  },
+
+  _specialCase: function(propertyName, proxy, obj) {
+    if (propertyName === 'enabledPlugin') {
+      if (this._currentPath.indexOf(propertyName) !== -1) {
+        return true;
+      }
+    }
   },
 
   proxyFunction: function(fncName, proxy, theThis) {
@@ -101,7 +114,7 @@ FakeMaker.prototype = {
           default: return fakeMaker.record(returnValue);
         }
       } catch(exc) {
-        
+
       } finally {
         wasCalled = proxy._fakeMaker_proxy_was_called || [];
         wasCalled.push(fncName);
@@ -159,11 +172,11 @@ FakePlayer.prototype = {
     this._currentReplay = 0;
     return this.replay();
   },
-  
+
   replay: function() {
     return this._recording[this._currentReplay++];
   },
-  
+
   refunction: function(item) {
     var fakePlayer = this;
     if (typeof item === 'object') {
@@ -189,7 +202,6 @@ var fakePlayer = new FakePlayer(json);
 console.assert(fakePlayer.startingObject().baz() === objWithFunction.baz());
 console.log("=======  PASS  =======");
 
-return;
 fakeMaker = new FakeMaker();
 var windowProxy = fakeMaker.makeFake(window);
 json = JSON.stringify(defunction(windowProxy));
