@@ -22,7 +22,7 @@ FakeMaker.prototype = {
   
   // Operate on the fake, the operations will be recorded.
   makeFake: function(obj) {
-    return this._record(this._proxyObject(obj));
+    return this._record(this._proxyObject(obj, obj));
   },
   
   // The record returned as JSON.
@@ -95,10 +95,10 @@ FakeMaker.prototype = {
     return value; 
   },
 
-  _proxyAny: function(name, proxy, obj, theThis) {
-    switch(typeof theThis[name]) {
-      case 'function': proxy[name] = this._proxyFunction(name, proxy, theThis); break;
-      case 'object': proxy[name] = this._proxyObject(obj[name]); break;
+  _proxyAny: function(name, proxy, theThis, obj) {
+    switch(typeof obj[name]) {
+      case 'function': proxy[name] = this._proxyFunction(name, proxy, theThis, obj); break;
+      case 'object': proxy[name] = this._proxyObject(theThis, obj[name]); break;
       default: this._proxyPrimitive(name, proxy, obj); break;
     }
   },
@@ -125,7 +125,7 @@ FakeMaker.prototype = {
       this._proxyPropertyNamePath.push(propertyName);
       if (debug_proxy)
         console.log(this._proxyPropertyNamePath.join('.'));
-      this._proxyAny(propertyName, proxy, obj, theThis);
+      this._proxyAny(propertyName, proxy, theThis, obj);
       this._proxyPropertyNamePath.pop();
     }.bind(this));
     if (obj.__proto__)
@@ -142,12 +142,12 @@ FakeMaker.prototype = {
     }
   },
 
-  _proxyFunction: function(fncName, proxy, theThis) {
+  _proxyFunction: function(fncName, proxy, theThis, obj) {
     var fakeMaker = this;
     return function() {
       var args = Array.prototype.slice.apply(arguments);
       try {
-        var returnValue = theThis[fncName].apply(theThis, args);
+        var returnValue = obj[fncName].apply(theThis, args);
         switch(typeof returnValue) {
           case 'function': throw new Error("FakeMaker did not expect functions as returnValues");
           case 'object': return fakeMaker.recordAndProxyObject(returnValue);
@@ -163,11 +163,11 @@ FakeMaker.prototype = {
     }
   },
 
-  _proxyPrimitive: function(name, proxy, theThis) {
+  _proxyPrimitive: function(name, proxy, obj) {
     var fakeMaker = this;
     Object.defineProperty(proxy, name, {
       get: function() {
-        return fakeMaker._record(theThis[name]);
+        return fakeMaker._record(obj[name]);
       }
     });
   },
