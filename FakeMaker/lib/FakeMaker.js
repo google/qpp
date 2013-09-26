@@ -37,8 +37,9 @@ FakeMaker.prototype = {
       recording: this._recording
     };
     try {
-      return JSON.stringify(fullRecord);    
+      return JSON.stringify(fullRecord, this._replacer);    
     } catch(e) {
+      console.error("JSON.stringify FAILS " + e + " Retry item at a time");
       jsonableProxiesOfObjects.forEach(function(jsonableProxiesOfObject) {
         JSON.stringify(jsonableProxiesOfObject);
       });
@@ -49,6 +50,15 @@ FakeMaker.prototype = {
   },
   
   //-------------------------------------------------------------
+  
+  _replacer: function(key, value) {
+    if (value === Infinity) {
+      return {'_fake_': 'Infinity'};
+    } else if (Number.isNaN(value)) {
+      return {'_fake_': 'NaN'};
+    }
+    return value;
+  },
   
   // Objects map uniquely to a proxy: create map entry.
   _registerProxyObject: function(obj, proxy) {
@@ -95,10 +105,10 @@ FakeMaker.prototype = {
     return value; 
   },
 
-  _proxyAny: function(name, proxy, theThis, obj) {
+  _proxyObjectProperty: function(name, proxy, theThis, obj) {
     switch(typeof obj[name]) {
       case 'function': proxy[name] = this._proxyFunction(name, proxy, theThis, obj); break;
-      case 'object': proxy[name] = this._proxyObject(theThis, obj[name]); break;
+      case 'object': proxy[name] = this._proxyObject(obj[name], obj[name]); break;
       default: this._proxyPrimitive(name, proxy, obj); break;
     }
   },
@@ -125,15 +135,24 @@ FakeMaker.prototype = {
       this._proxyPropertyNamePath.push(propertyName);
       if (debug_proxy)
         console.log(this._proxyPropertyNamePath.join('.'));
-      this._proxyAny(propertyName, proxy, theThis, obj);
+      this._proxyObjectProperty(propertyName, proxy, theThis, obj);
       this._proxyPropertyNamePath.pop();
     }.bind(this));
-    if (obj.__proto__)
-      proxy.__proto__ = this._proxyObject(theThis, obj.__proto__);
+    if (obj.__proto__)  // Since we are binding functions, we can't reuse prototypes
+      proxy.__proto__ = this._createProxyObject(theThis, obj.__proto__);
     return proxy;
   },
 
   _specialCase: function(propertyName, proxy, obj) {
+    if (propertyName === 'mimeTypes' && obj.toString() === "[object Navigator]") {
+      console.warn("Fixme, handle special case");
+      return true;
+    }
+    if (propertyName === 'plugins' && obj.toString() === "[object Navigator]") {
+      console.warn("Fixme, handle special case");
+      return true;
+    }
+    
     if (propertyName === 'enabledPlugin') {
       if (this._proxyPropertyNamePath.indexOf(propertyName) !== -1) {
         console.warn("Fixme, handle special case");
@@ -143,6 +162,7 @@ FakeMaker.prototype = {
   },
 
   _proxyFunction: function(fncName, proxy, theThis, obj) {
+    if (fncName === 'querySelector') console.log('_proxyFunction obj: %o theThis: %o', obj, theThis);
     var fakeMaker = this;
     return function() {
       var args = Array.prototype.slice.apply(arguments);
@@ -150,11 +170,11 @@ FakeMaker.prototype = {
         var returnValue = obj[fncName].apply(theThis, args);
         switch(typeof returnValue) {
           case 'function': throw new Error("FakeMaker did not expect functions as returnValues");
-          case 'object': return fakeMaker.recordAndProxyObject(returnValue);
+          case 'object': return fakeMaker._proxyObject(returnValue, returnValue);
           default: return fakeMaker._record(returnValue);
         }
       } catch(e) {
-        console.error('_proxyFunction ' + e, e.stack);
+        console.error('_proxyFunction obj:' + obj.constructor.toString() + ' theThis:' + theThis.toString(), e.stack);
       } finally {
         wasCalled = proxy._fakeMaker_proxy_was_called || [];
         wasCalled.push(fncName);
@@ -177,12 +197,14 @@ FakeMaker.prototype = {
     Object.getOwnPropertyNames(obj).forEach(function(key) {
       this._replaceObjectsAndFunctions(jsonable, obj, key);
     }.bind(this));
+    if (obj.__proto__)
+      jsonable['_fake_proto'] = this._prepareObjectForJSON(obj.__proto__);
     return jsonable;
   },
 
   _replaceObjectsAndFunctions: function(jsonable, obj, key) {
     var value = obj[key];
-    console.log("_replacer " + key, typeof value);
+    console.log("_replaceObjectsAndFunctions " + key, typeof value);
     if (key === '_fakeMaker_proxy_was_called') // drop our secret property on functions.
       return;
       
@@ -240,7 +262,6 @@ FakePlayer.prototype = {
         return undefined;
       } else {
         // was an object in recording
-        var fakePlayer = this;
         Object.keys(item).forEach(function(key) {
           if (typeof item[key] === 'object') {
             item[key] = fakePlayer.refunctionAndRefObjects(item[key]);
@@ -252,6 +273,9 @@ FakePlayer.prototype = {
             });
           }
         });
+        if (item._fake_proto) {
+          item.__proto__ = fakePlayer.refunctionAndRefObjects(item._fake_proto);
+        }
       }
     } else {
       return item;
