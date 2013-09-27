@@ -1,5 +1,5 @@
 (function(){
-  
+
 var debug_proxy = false;
 
 function FakeObjectRef(index) {
@@ -11,20 +11,20 @@ function FakeMaker() {
   // Co-indexed
   this._proxiedObjects = [];
   this._proxiesOfObjects = [];
-  
+
   this._recordedProxiesOfObjects = [];
   this._recording = []; // Number, String, Boolean. Objects are refs to _recordedProxiesOfObjects
-  
+
   this._proxyPropertyNamePath = [];
 }
 
 FakeMaker.prototype = {
-  
+
   // Operate on the fake, the operations will be recorded.
   makeFake: function(obj) {
     return this._record(this._proxyObject(obj, obj));
   },
-  
+
   // The record returned as JSON.
   toJSON: function() {
     var jsonableProxiesOfObjects = [];
@@ -33,11 +33,11 @@ FakeMaker.prototype = {
       jsonableProxiesOfObjects.push(this._prepareObjectForJSON(this._recordedProxiesOfObjects[i]));
     }
     var fullRecord = {
-      objects: jsonableProxiesOfObjects, 
+      objects: jsonableProxiesOfObjects,
       recording: this._recording
     };
     try {
-      return JSON.stringify(fullRecord, this._replacer);    
+      return JSON.stringify(fullRecord, this._replacer);
     } catch(e) {
       console.error("JSON.stringify FAILS " + e + " Retry item at a time");
       jsonableProxiesOfObjects.forEach(function(jsonableProxiesOfObject) {
@@ -48,9 +48,9 @@ FakeMaker.prototype = {
       });
     }
   },
-  
+
   //-------------------------------------------------------------
-  
+
   _replacer: function(key, value) {
     if (value === Infinity) {
       return {'_fake_': 'Infinity'};
@@ -59,7 +59,7 @@ FakeMaker.prototype = {
     }
     return value;
   },
-  
+
   // Objects map uniquely to a proxy: create map entry.
   _registerProxyObject: function(obj, proxy) {
     this._proxiedObjects.push(obj);
@@ -79,13 +79,13 @@ FakeMaker.prototype = {
     if (index !== -1)
       return this._proxiesOfObjects[index];
   },
-  
+
   _ensureRefRecorded: function(obj) {
     var index = this._recordedProxiesOfObjects.indexOf(obj);
     var ref;
-    if (index !== -1) { 
+    if (index !== -1) {
       ref = new FakeObjectRef(index);
-    } else { 
+    } else {
       ref = new FakeObjectRef(this._recordedProxiesOfObjects.length);
       this._recordedProxiesOfObjects.push(obj);
     }
@@ -102,7 +102,7 @@ FakeMaker.prototype = {
     } else {
       this._recording.push(value);
     }
-    return value; 
+    return value;
   },
 
   _proxyObjectProperty: function(name, proxy, theThis, obj) {
@@ -122,9 +122,9 @@ FakeMaker.prototype = {
   _createProxyObject: function(theThis, obj) {
     var proxy = {};
     this._registerProxyObject(obj, proxy);
-    if (debug_proxy) 
+    if (debug_proxy)
       console.log("_createProxyObject, building properties");
-      
+
     Object.getOwnPropertyNames(obj).forEach(function(propertyName){
       // Surprise: the names are duped in eg document
       if (propertyName in proxy)
@@ -152,7 +152,7 @@ FakeMaker.prototype = {
       console.warn("Fixme, handle special case");
       return true;
     }
-    
+
     if (propertyName === 'enabledPlugin') {
       if (this._proxyPropertyNamePath.indexOf(propertyName) !== -1) {
         console.warn("Fixme, handle special case");
@@ -207,9 +207,9 @@ FakeMaker.prototype = {
     console.log("_replaceObjectsAndFunctions " + key, typeof value);
     if (key === '_fakeMaker_proxy_was_called') // drop our secret property on functions.
       return;
-      
+
     if (value && typeof value === 'object') {
-      jsonable[key] = this._ensureRefRecorded(value);      
+      jsonable[key] = this._ensureRefRecorded(value);
     } else if (typeof value === 'function') {
       var called = obj._fakeMaker_proxy_was_called;
       if (called && called.indexOf(key) !== -1)
@@ -263,7 +263,11 @@ FakePlayer.prototype = {
       } else {
         // was an object in recording
         Object.keys(item).forEach(function(key) {
-          if (typeof item[key] === 'object') {
+          if (key === '_fake_proto') {
+            var theProto = fakePlayer.refunctionAndRefObjects(item._fake_proto);
+            item.__proto__ = theProto;
+            delete item._fake_proto;
+          } else if (typeof item[key] === 'object') {
             item[key] = fakePlayer.refunctionAndRefObjects(item[key]);
           } else { // must have been a primitive in recording.
             Object.defineProperty(item, key, {
@@ -273,9 +277,7 @@ FakePlayer.prototype = {
             });
           }
         });
-        if (item._fake_proto) {
-          item.__proto__ = fakePlayer.refunctionAndRefObjects(item._fake_proto);
-        }
+        return item;
       }
     } else {
       return item;
@@ -287,7 +289,7 @@ FakePlayer.prototype = {
 // Each test must take care to match calls on proxy with calls on replay
 
 var objWithPrimitive = {foo: 1};
-  
+
 (function testPrimitive() {
   var fakeMaker = new FakeMaker();
   var objWithPrimitiveProxy = fakeMaker.makeFake(objWithPrimitive);
@@ -303,7 +305,7 @@ var objWithPrimitive = {foo: 1};
   var objWithObj = {bar: objWithPrimitive};
   var objWithObjProxy = fakeMaker.makeFake(objWithObj);
   console.assert(objWithObjProxy.bar.foo === objWithObj.bar.foo);
-  
+
   var json = fakeMaker.toJSON();
   console.log('objWithObj:',json);
   var fakePlayer = new FakePlayer(json);
@@ -335,6 +337,35 @@ var objWithPrimitive = {foo: 1};
   console.assert(fakePlayer.startingObject().ary[0].baz() === objWithArrayOfObj.ary[0].baz());
 })();
 
+(function testMethodOnSubObject() {
+  var fakeMaker = new FakeMaker();
+  var objWithMethodOnSubObject = {foo: {baz: function() {return 3;}}};
+  var objWithMethodOnSubObjectProxy = fakeMaker.makeFake(objWithMethodOnSubObject);
+  console.assert(objWithMethodOnSubObjectProxy.foo.baz() === objWithMethodOnSubObject.foo.baz());
+
+  var json = fakeMaker.toJSON();
+  console.log('objWithMethodOnSubObject:',json);
+  var fakePlayer = new FakePlayer(json);
+  console.assert(objWithMethodOnSubObject.foo.baz() === fakePlayer.startingObject().foo.baz());
+})();
+
+(function testProto() {
+  var fakeMaker = new FakeMaker();
+  function Foo() {};
+  Foo.prototype = {
+    baz: function() {
+      return 4;
+    }
+  };
+  var objWithPrototype = new Foo();
+  var objWithPrototypeProxy = fakeMaker.makeFake(objWithPrototype);
+  console.assert(objWithPrototypeProxy.baz() === objWithPrototype.baz());
+
+  var json = fakeMaker.toJSON();
+  console.log('objWithPrototype:',json);
+  var fakePlayer = new FakePlayer(json);
+  console.assert(objWithPrototype.baz() === fakePlayer.startingObject().baz());
+})();
 
 console.log("=======  PASS  =======");
 
@@ -343,7 +374,7 @@ console.log("=======  PASS  =======");
   var windowProxy = fakeMaker.makeFake(window);
   console.assert(window.document.querySelector('body') === windowProxy.document.querySelector('body'));
   var json = fakeMaker.toJSON();
-  console.log('window', json); 
+  console.log('window', json);
   var fakePlayer = new FakePlayer(json);
   console.assert(window.document.querySelector('body') === fakePlayer.startingObject().document.querySelector('body'))
 })();
