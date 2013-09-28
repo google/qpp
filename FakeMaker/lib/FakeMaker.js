@@ -1,6 +1,7 @@
 (function(){
 
-var debug_proxy = false;
+var debug_maker = false;
+var debug_player = false;
 
 function FakeObjectRef(index) {
   this._fake_object_ref = index;
@@ -69,7 +70,7 @@ FakeMaker.prototype = {
   // Objects map uniquely to a proxy: lookup map entry.
   _lookupProxyObject: function(obj) {
     var index = this._proxiedObjects.indexOf(obj);
-    if (debug_proxy) {
+    if (debug_maker) {
       try {
         console.log('_lookupProxyObject: ' + index + ' for ' + obj + 'typeof: ' + (typeof obj));
       } catch (e) {
@@ -122,7 +123,7 @@ FakeMaker.prototype = {
   _createProxyObject: function(theThis, obj) {
     var proxy = {};
     this._registerProxyObject(obj, proxy);
-    if (debug_proxy)
+    if (debug_maker)
       console.log("_createProxyObject, building properties");
 
     Object.getOwnPropertyNames(obj).forEach(function(propertyName){
@@ -133,7 +134,7 @@ FakeMaker.prototype = {
         return;
       }
       this._proxyPropertyNamePath.push(propertyName);
-      if (debug_proxy)
+      if (debug_maker)
         console.log(this._proxyPropertyNamePath.join('.'));
       this._proxyObjectProperty(propertyName, proxy, theThis, obj);
       this._proxyPropertyNamePath.pop();
@@ -162,7 +163,6 @@ FakeMaker.prototype = {
   },
 
   _proxyFunction: function(fncName, proxy, theThis, obj) {
-    if (fncName === 'querySelector') console.log('_proxyFunction obj: %o theThis: %o', obj, theThis);
     var fakeMaker = this;
     return function() {
       var args = Array.prototype.slice.apply(arguments);
@@ -204,7 +204,7 @@ FakeMaker.prototype = {
 
   _replaceObjectsAndFunctions: function(jsonable, obj, key) {
     var value = obj[key];
-    console.log("_replaceObjectsAndFunctions " + key, typeof value);
+    if (debug_player) console.log("_replaceObjectsAndFunctions " + key, typeof value);
     if (key === '_fakeMaker_proxy_was_called') // drop our secret property on functions.
       return;
 
