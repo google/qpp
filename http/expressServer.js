@@ -8,11 +8,13 @@ function servePathAtPort(path, port) {
   console.log('serving ' + path + ' at ' + port);
 }
 
-
 servePathAtPort(__dirname + '/..', 8686);
-
-servePathAtPort('../../devtoolsExtended/extension/WebInspectorKit', 9696);
+servePathAtPort(__dirname + "/../../devtoolsExtended/extension/", 9696);
+servePathAtPort(__dirname + "/../../qpp-gh-pages", 8687);
+servePathAtPort(__dirname + '/../../blink/', 8004);
 
 servePathAtPort('../../webdev-examples', 7676);
 
 servePathAtPort('../../traceur-compiler', 7677);
+
+servePathAtPort('../../FakeMaker', 7679);
