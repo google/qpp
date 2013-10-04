@@ -1,7 +1,7 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2013 Google Inc. johnjbarton@google.com
 
-// Feature testing API, generally async queries that wait for matching elements to appear 
+// Feature testing API, generally async queries that wait for matching elements to appear
 
 (function(global){
 
@@ -9,7 +9,7 @@
         return debug = (typeof flag === 'boolean') ? flag : debug;
     })
 
-    
+
     function doc() {
         return document.location.pathname.split('/').pop();
     }
@@ -34,22 +34,22 @@
         whenSelectorAll: function(selector, textToMatch, callback, errback) {
             errback = errback || function(exc) { console.error(exc, exc.stack); }
             if (!checkEsClass(selector, 'String')) {
-                errback(this.usage()); 
+                errback(this.usage());
                 return;
             }
             if (!checkEsClass(textToMatch, 'String')) {
-                errback(this.usage()); 
+                errback(this.usage());
                 return;
             }
             if (!checkEsClass(callback, 'Function')) {
-                errback(this.usage()); 
+                errback(this.usage());
                 return;
             }
             if (!checkEsClass(errback, 'Function')) {
-                errback(this.usage()); 
+                errback(this.usage());
                 return;
             }
-                
+
             // Is the selection already in the document?
             PatientSelector.hits = PatientSelector._querySelectorAll(selector, textToMatch);
             if (PatientSelector.hits.length) {
@@ -63,7 +63,7 @@
                     else
                         console.error("....PatientSelector._setMutationObservers FAIL "+exc, exc);
                 }
-            } 
+            }
         },
 
         usage: function() {
@@ -80,7 +80,7 @@
             } else {
                 targets = [document];
             }
-           
+
             try {
                 var nodes = PatientSelector._selected = [];
                 var nodeList;
@@ -88,23 +88,23 @@
                     nodeList = target.querySelectorAll(selector);
                     for (var i = 0; i < nodeList.length; i++) {
                         PatientSelector._selected.push(nodeList[i]);
-                    }    
+                    }
                 }.bind(PatientSelector));
             } catch (exc) {
                 console.error("....PatientSelector._querySelectorAll query failed for " + selector + ": " + exc, targets);
             }
 
-            if (debug) 
+            if (debug)
                 console.log("....PatientSelector._querySelectorAll finds "+PatientSelector._selected.length+" matches for "+selector);
 
             if (opt_textToMatch) {
                 nodes = PatientSelector._textSelectorAll(nodes, opt_textToMatch);
                 if (debug)
                     console.log("....PatientSelector._querySelectorAll finds "+nodes.length+" matches for "+selector+" with text "+opt_textToMatch);
-            } 
+            }
             return PatientSelector.hits = nodes;
         },
-        
+
         _setMutationObservers: function(selector, textToMatch, callback) {
             PatientSelector._disconnectOnFind = function() {
                 if (PatientSelector._addedSelectionObserver)
@@ -130,7 +130,7 @@
                 }
                 PatientSelector._textChangeObservers = PatientSelector._selected.map(PatientSelector._createTextChangeObserver.bind(PatientSelector, textToMatch));
                 if (debug) console.log('....PatientSelector._setMutationObservers initial _totalTextChangeObservers ' + PatientSelector._totalTextChangeObservers, PatientSelector);
-            } 
+            }
             PatientSelector._addedSelectionObserver = new MutationSummary({
                 callback: PatientSelector._whenSelectorHits.bind(PatientSelector, textToMatch, PatientSelector._disconnectOnFind.bind(PatientSelector)),
                 queries: [
@@ -138,7 +138,7 @@
                 ]
             });
             if (debug) {
-                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());              
+                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());
             }
         },
 
@@ -186,14 +186,14 @@
                 PatientSelector._textChangeObservers.push(PatientSelector._createTextChangeObserver(textToMatch, element));
             }.bind(PatientSelector));
         },
-    }    
+    }
 
     // http://www.kirupa.com/html5/get_element_position_using_javascript.htm
     // modified
     function getPosition(element, toParent) {
         var xPosition = 0;
         var yPosition = 0;
-  
+
         while(element && element !== toParent) {
             xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
             yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
@@ -209,11 +209,11 @@
         _mouseEvent: function(type, elt, callback) {
             function onClick(event) {
                 elt.removeEventListener(type, onClick);
-                if (callback) {  
+                if (callback) {
                     // allow the click handler to fire before next test step
-                    setTimeout(function() {  
+                    setTimeout(function() {
                         callback([elt]);
-                    });    
+                    });
                 }
             }
             elt.addEventListener(type, onClick);
@@ -226,7 +226,7 @@
             if (debug) console.log("....PatientEvents."+type+"Selector(" + selector + ', ' + textToMatch + ')');
             PatientSelector.whenSelectorAll(selector, textToMatch, function() {
                 PatientEvents._mouseEvent(type, PatientSelector.hits[0], callback);
-                if (debug) 
+                if (debug)
                     console.log("....PatientEvents."+type+"Selector hit ", PatientSelector.hits[0])
             }.bind(PatientEvents));
         },
@@ -251,7 +251,7 @@
             if (debug) console.log("....PatientEvents.keySelector(" + selector + ', ' + keyDescriptor + ')');
             PatientSelector.whenSelectorAll(selector, textToMatch, function() {
                 PatientEvents._key(keyDescriptor, PatientSelector.hits[0], callback);
-                if (debug) 
+                if (debug)
                     console.log("....PatientEvents.keySelector hit ", PatientSelector.hits[0])
             }.bind(PatientEvents));
         },
@@ -262,9 +262,9 @@
                 // select in line
                 var hits = PatientSelector._querySelectorAll('| '+selector, text);
                 if (hits.length) {
-                    if (debug) console.log('....PatientEvents._moveLineNumber ' + selector + '&' + text + ' match ' + visibleSourceLines[lineNumber].textContent); 
-                    lineNumber++;  
-                    break;                            
+                    if (debug) console.log('....PatientEvents._moveLineNumber ' + selector + '&' + text + ' match ' + visibleSourceLines[lineNumber].textContent);
+                    lineNumber++;
+                    break;
                 } else {
                     lineNumber++;
                 }
@@ -283,7 +283,7 @@
                 PatientSelector.hits = [tokenElt];
                 // Allow the mousemove handler to fire before the next test step
                 setTimeout(function(){
-                    callback(target.textContent + ' in ' + target.parentElement.textContent);    
+                    callback(target.textContent + ' in ' + target.parentElement.textContent);
                 });
             }
             tokenElt.addEventListener('mousemove', onMouseMove);
@@ -291,8 +291,8 @@
             xy.x = xy.x + Math.round(tokenElt.offsetWidth/2) + 1;
             xy.y = xy.y + Math.round(tokenElt.offsetHeight/2);
             var mousemove = document.createEvent("MouseEvent");
-            mousemove.initMouseEvent('mousemove', true, true, window, 0, 
-                0, 0, xy.x, xy.y, 
+            mousemove.initMouseEvent('mousemove', true, true, window, 0,
+                0, 0, xy.x, xy.y,
                 false, false, false, false, 0, null);
             tokenElt.dispatchEvent(mousemove);
             if (debug) console.log('....PatientEvents._fireMouseMove mousemove(' + xy.x + ',' + xy.y + ') sent to %o', tokenElt);
@@ -328,12 +328,12 @@
                 var token = editorTokens.shift();
                 var selector = token.type;
                 var text = token.text;
-                    
+
                 if (editorTokens.length) {
                     lineNumber = PatientEvents._moveLineNumber(lineNumber, visibleSourceLines, selector, text);
                     if (lineNumber)
                         next(lineNumber);
-                    else 
+                    else
                         callback('err');
                 } else {
                     if (debug) console.log('....PatientEvents.selectTokenInSource seeking pre ancestor of ', PatientSelector.hits);
@@ -380,7 +380,7 @@
 
         evaluate: function(expr, callback) {
             try {
-                callback(eval(expr));  
+                callback(eval(expr));
             } catch (exc) {
                 console.error("....PatientRemoteOperations.evaluate(" + expr + ") exception " + exc, exc);
             }
@@ -458,9 +458,9 @@
                 if (handler) {
                     if (status === 'Error')
                         handler.onError(payload);
-                    else 
+                    else
                         handler.onResponse(payload);
-                    delete PatientSelector.proxyHandlers[postId];                    
+                    delete PatientSelector.proxyHandlers[postId];
                 } else {
                     console.error("....PatientRemoteOperations.createProxy.onMessage no handler for " + postId + ' in ' + doc(), message);
                 }
@@ -476,7 +476,7 @@
             var handler = PatientRemoteOperations.proxyHandlers[PatientRemoteOperations.postId];
             if (handler && !handler.sent) {
                 handler.sent = proxy.postMessage(handler.args);
-                if (debug) console.log("....PatientRemoteOperations.proxyTo.postMessage sent: " + handler.sent + " to " + handler.url, handler.args);                
+                if (debug) console.log("....PatientRemoteOperations.proxyTo.postMessage sent: " + handler.sent + " to " + handler.url, handler.args);
             }
         },
 
@@ -499,7 +499,7 @@
             }
         }
     };
-    
+
 
     global.PatientSelector = PatientSelector;
     global.PatientEvents = PatientEvents;

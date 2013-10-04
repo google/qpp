@@ -1,0 +1,42 @@
+<html>
+<body>
+<h1>Feature Test DevtoolsPage</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../../../DebugLogger.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../devtools-page-test.js"></script>
+
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function testScript() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+
+  function setup() {
+    try {
+      var InspectedPage = Querypoint.InspectedPage;
+      InspectedPage.onURLChanged.addListener(function() {
+        console.log("onURLChanged ", arguments);
+      });
+      InspectedPage.monitorNavigation();
+      InspectedPage.reload();
+    } catch (e) {
+      console.error('setup fails ' + e, e.stack);
+    }
+  }
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "window.location.href");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + setup +"());");
+  // Change the viewed page
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/switch.html"');
+  AsyncMachine.runOp();
+}
+
+</script>
+</html>

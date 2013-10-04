@@ -1,7 +1,7 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2013 Google Inc. johnjbarton@google.com
 
-// Feature testing API, generally async queries that wait for matching elements to appear 
+// Feature testing API, generally async queries that wait for matching elements to appear
 
 window.PatientSelector = (function(){
 
@@ -9,7 +9,7 @@ window.PatientSelector = (function(){
         return debug = (typeof flag === 'boolean') ? flag : debug;
     })
 
-    
+
     function doc() {
         return document.location.pathname.split('/').pop();
     }
@@ -19,7 +19,7 @@ window.PatientSelector = (function(){
     function getPosition(element, toParent) {
         var xPosition = 0;
         var yPosition = 0;
-  
+
         while(element && element !== toParent) {
             xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
             yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
@@ -29,7 +29,7 @@ window.PatientSelector = (function(){
     }
 
     var PatientSelector = {
-        
+
         _textSelectorAll: function(nodes, textToMatch) {
                return nodes.reduce(function findTextMatching(nodes, node) {
                     if (node.textContent.indexOf(textToMatch) !== -1)
@@ -47,7 +47,7 @@ window.PatientSelector = (function(){
             } else {
                 targets = [document];
             }
-           
+
             try {
                 var nodes = PatientSelector._selected = [];
                 var nodeList;
@@ -55,20 +55,20 @@ window.PatientSelector = (function(){
                     nodeList = target.querySelectorAll(selector);
                     for (var i = 0; i < nodeList.length; i++) {
                         PatientSelector._selected.push(nodeList[i]);
-                    }    
+                    }
                 }.bind(PatientSelector));
             } catch (exc) {
                 console.error("....PatientSelector._querySelectorAll query failed for " + selector + ": " + exc, targets);
             }
 
-            if (debug) 
+            if (debug)
                 console.log("....PatientSelector._querySelectorAll finds "+PatientSelector._selected.length+" matches for "+selector);
 
             if (textToMatch) {
                 nodes = PatientSelector._textSelectorAll(nodes, textToMatch);
                 if (debug)
                     console.log("....PatientSelector._querySelectorAll finds "+nodes.length+" matches for "+selector+" with text "+textToMatch);
-            } 
+            }
             return PatientSelector.hits = nodes;
         },
 
@@ -150,7 +150,7 @@ window.PatientSelector = (function(){
                 }
                 PatientSelector._textChangeObservers = PatientSelector._selected.map(PatientSelector._createTextChangeObserver.bind(PatientSelector, textToMatch));
                 if (debug) console.log('....PatientSelector._setMutationObservers initial _totalTextChangeObservers ' + PatientSelector._totalTextChangeObservers, PatientSelector);
-            } 
+            }
             PatientSelector._addedSelectionObserver = new MutationSummary({
                 callback: PatientSelector._whenSelectorHits.bind(PatientSelector, textToMatch, PatientSelector._disconnectOnFind.bind(PatientSelector)),
                 queries: [
@@ -158,7 +158,7 @@ window.PatientSelector = (function(){
                 ]
             });
             if (debug) {
-                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());              
+                console.log("....PatientSelector.whenSelectorAll waiting for \'" + selector + "\' with text " + textToMatch + ' in ' + doc());
             }
         },
 
@@ -172,17 +172,17 @@ window.PatientSelector = (function(){
                 } catch (exc) {
                     console.error("....PatientSelector._setMutationObservers FAIL "+exc, exc);
                 }
-            } 
+            }
         },
 
         _mouseEvent: function(type, elt, callback) {
             function onClick(event) {
                 elt.removeEventListener(type, onClick);
-                if (callback) {  
+                if (callback) {
                     // allow the click handler to fire before next test step
-                    setTimeout(function() {  
+                    setTimeout(function() {
                         callback();
-                    });    
+                    });
                 }
             }
             elt.addEventListener(type, onClick);
@@ -195,7 +195,7 @@ window.PatientSelector = (function(){
             if (debug) console.log("....PatientSelector."+type+"Selector(" + selector + ', ' + textToMatch + ')');
             PatientSelector.whenSelectorAll(selector, textToMatch, function() {
                 PatientSelector._mouseEvent(type, PatientSelector.hits[0], callback);
-                if (debug) 
+                if (debug)
                     console.log("....PatientSelector."+type+"Selector hit ", PatientSelector.hits[0])
             }.bind(PatientSelector));
         },
@@ -220,7 +220,7 @@ window.PatientSelector = (function(){
             if (debug) console.log("....PatientSelector.keySelector(" + selector + ', ' + keyDescriptor + ')');
             PatientSelector.whenSelectorAll(selector, textToMatch, function() {
                 PatientSelector._key(keyDescriptor, PatientSelector.hits[0], callback);
-                if (debug) 
+                if (debug)
                     console.log("....PatientSelector.keySelector hit ", PatientSelector.hits[0])
             }.bind(PatientSelector));
         },
@@ -231,9 +231,9 @@ window.PatientSelector = (function(){
                 // select in line
                 var hits = PatientSelector._querySelectorAll('| '+selector, text);
                 if (hits.length) {
-                    if (debug) console.log('....PatientSelector.selectTokenInSource ' + selector + '&' + text + ' match ' + visibleSourceLines[lineNumber].textContent); 
-                    lineNumber++;  
-                    break;                            
+                    if (debug) console.log('....PatientSelector.selectTokenInSource ' + selector + '&' + text + ' match ' + visibleSourceLines[lineNumber].textContent);
+                    lineNumber++;
+                    break;
                 } else {
                     lineNumber++;
                 }
@@ -252,7 +252,7 @@ window.PatientSelector = (function(){
                 PatientSelector.hits = [tokenElt];
                 // Allow the mousemove handler to fire before the next test step
                 setTimeout(function(){
-                    callback(target.textContent + ' in ' + target.parentElement.textContent);    
+                    callback(target.textContent + ' in ' + target.parentElement.textContent);
                 });
             }
             tokenElt.addEventListener('mousemove', onMouseMove);
@@ -260,8 +260,8 @@ window.PatientSelector = (function(){
             xy.x = xy.x + Math.round(tokenElt.offsetWidth/2) + 1;
             xy.y = xy.y + Math.round(tokenElt.offsetHeight/2);
             var mousemove = document.createEvent("MouseEvent");
-            mousemove.initMouseEvent('mousemove', true, true, window, 0, 
-                0, 0, xy.x, xy.y, 
+            mousemove.initMouseEvent('mousemove', true, true, window, 0,
+                0, 0, xy.x, xy.y,
                 false, false, false, false, 0, null);
             tokenElt.dispatchEvent(mousemove);
             if (debug) console.log('....PatientSelector._fireMouseMove mousemove(' + xy.x + ',' + xy.y + ') sent to %o', tokenElt);
@@ -276,12 +276,12 @@ window.PatientSelector = (function(){
                 var token = editorTokens.shift();
                 var selector = token.type;
                 var text = token.text;
-                    
+
                 if (editorTokens.length) {
                     lineNumber = PatientSelector._moveLineNumber(lineNumber, visibleSourceLines, selector, text);
                     if (lineNumber)
                         next(lineNumber);
-                    else 
+                    else
                         callback('err');
                 } else {
                     if (debug) console.log('....PatientSelector.selectTokenInSource seeking pre ancestor of ', PatientSelector.hits);
@@ -322,7 +322,9 @@ window.PatientSelector = (function(){
 
         evaluate: function(expr, callback) {
             try {
-                callback(eval(expr));  
+                console.log(window.location.href + " evaluate " + expr + ' then call ', callback);
+
+                callback(eval(expr));
             } catch (exc) {
                 console.error("....PatientSelector.evaluate(" + expr + ") exception " + exc, exc);
             }
@@ -400,9 +402,9 @@ window.PatientSelector = (function(){
                 if (handler) {
                     if (status === 'Error')
                         handler.onError(payload);
-                    else 
+                    else
                         handler.onResponse(payload);
-                    delete PatientSelector.proxyHandlers[postId];                    
+                    delete PatientSelector.proxyHandlers[postId];
                 } else {
                     console.error("....PatientSelector.createProxy.onMessage no handler for " + postId + ' in ' + doc(), message);
                 }
@@ -418,7 +420,7 @@ window.PatientSelector = (function(){
             var handler = PatientSelector.proxyHandlers[PatientSelector.postId];
             if (handler && !handler.sent) {
                 handler.sent = proxy.postMessage(handler.args);
-                if (debug) console.log("....PatientSelector.proxyTo.postMessage sent: " + handler.sent + " to " + handler.url, handler.args);                
+                if (debug) console.log("....PatientSelector.proxyTo.postMessage sent: " + handler.sent + " to " + handler.url, handler.args);
             }
         },
 
@@ -441,6 +443,6 @@ window.PatientSelector = (function(){
             }
         }
     };
-    
+
     return PatientSelector;
 }());

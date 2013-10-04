@@ -13,20 +13,21 @@ function onLoad() {
 
   function resetProject(url) {
     model = {};
-    model.devtoolsModel = new Querypoint.InspectedPage();  
-    model.project = new Querypoint.QPProject(url); 
+    Querypoint.InspectedPage.monitorResources();
+    model.devtoolsModel = Querypoint.InspectedPage;
+    model.project = new Querypoint.QPProject(url);
     model.project.page = model.devtoolsModel;
     if (model.qpPanel)
       model.qpPanel.disconnect();
-      
-    model.qpPanel = new view.window.QuerypointPanel.Panel(view.panel, view.window, model.project);
+
+    model.qpPanel = new view.panel.window.QuerypointPanel.Panel(view.panel, view.panel.window, model.project);
     model.qpPanel.connect();
     model.qpPanel.onShown();
   }
-    
+
   function onNavigated(url) {
-    if (!view.window)  // Then our panel was never opened.
-      return; 
+    if (!view.panel.window)  // Then our panel was never opened.
+      return;
     var QPRuntimeInstalled = model.project && model.project.qpRuntimeInstalled;
     if (!model.project || model.project.url !== url) {
       if (model.qpPanel)
@@ -34,7 +35,7 @@ function onLoad() {
       resetProject(url);
     } else {
       // Same url, but maybe the user reloaded the page without us.
-      model.project.onReload( 
+      model.project.onReload(
         model.qpPanel.pageWasReloaded.bind(model.qpPanel)
       );
     }
@@ -43,33 +44,33 @@ function onLoad() {
   }
 
   chrome.devtools.network.onNavigated.addListener(onNavigated);
-  
-  
-chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/QuerypointPanel.html", function(panel) {
-  view.panel = panel;
-  var helpButton = panel.createStatusBarButton("Panel/QuerypointHelpIcon.png", "Querypoint Panel Help", false);
-  helpButton.onClicked.addListener(function() {
-    if (!model.qpPanel) {
-       console.error("No model.qpPanel?");
-    } else {
-       model.qpPanel.toggleHelp();
-    }
+
+
+  chrome.devtools.panels.create("Querypoint", "Panel/QuerypointIcon.png", "Panel/QuerypointPanel.html", function(panel) {
+    view.panel = panel;
+    var helpButton = panel.createStatusBarButton("Panel/QuerypointHelpIcon.png", "Querypoint Panel Help", false);
+    helpButton.onClicked.addListener(function() {
+      if (!model.qpPanel) {
+         console.error("No model.qpPanel?");
+      } else {
+         model.qpPanel.toggleHelp();
+      }
+    });
+
+    panel.onShown.addListener(function (panel_window) {
+      view.panel.window = panel_window;
+      if (!model.project) {
+        chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
+      } else {
+        model.qpPanel.onShown();
+      }
+    });
+
+    panel.onHidden.addListener(function() {
+      if (model.qpPanel)
+        model.qpPanel.onHidden();
+    });
   });
-  
-  panel.onShown.addListener(function (panel_window) {
-    view.window = panel_window;
-    if (!model.project) {
-      chrome.devtools.inspectedWindow.eval('window.location.toString()', resetProject);
-    } else {
-      model.qpPanel.onShown();
-    }
-  });
-  
-  panel.onHidden.addListener(function() {
-    if (model.qpPanel)
-      model.qpPanel.onHidden();
-  });
-});
 
 }
 

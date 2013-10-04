@@ -1,0 +1,8 @@
+http://localhost:8686/test/qpd.html
+prop in     obj.prop = 0;
+true
+1|0
+http://localhost:8686/test/switch.html
+window.__qp_reloads:1
+Pressed Reload without QP runtime
+window.__qp_reloads:no text
