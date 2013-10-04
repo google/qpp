@@ -220,9 +220,11 @@ var $__21, $__22, $__23, $__24, $__25, $__26, $__27, $__28, $__29, $__30, $__31,
         descriptor = Object.create(descriptor, {enumerable: {value: false}});
       }
       $defineProperty(object, name[internalStringValueName], descriptor);
+      return object;
     } else {
       assertNotName(name);
       $defineProperty(object, name, descriptor);
+      return object;
     }
   }
   function $getPropertyDescriptor(obj, name) {
