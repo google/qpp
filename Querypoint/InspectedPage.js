@@ -110,7 +110,7 @@
             this._reloadRuntime();
         } else {  // user moved to new URL
           this._url = url;
-          this.onURLChanged.fireListeners();
+          this.onURLChanged.fireListeners(url);
         }
       }
 

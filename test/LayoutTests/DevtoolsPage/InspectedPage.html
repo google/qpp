@@ -21,20 +21,32 @@ function testScript() {
 
   function setup() {
     try {
+      Querypoint.testResults = [];
       var InspectedPage = Querypoint.InspectedPage;
-      InspectedPage.onURLChanged.addListener(function() {
-        console.log("onURLChanged ", arguments);
-      });
+      Querypoint.testListener = function() {
+        Querypoint.testResults.push('onURLChanged ' + arguments[0]);
+      };
+      InspectedPage.onURLChanged.addListener(Querypoint.testListener);
       InspectedPage.monitorNavigation();
       InspectedPage.reload();
     } catch (e) {
-      console.error('setup fails ' + e, e.stack);
+      Querypoint.testResults.push('setup fails ' + e + ' stack: ' + e.stack);
     }
   }
-  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "window.location.href");
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + setup +"());");
   // Change the viewed page
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/switch.html"');
+  function tearDown() {
+    Querypoint.InspectedPage.onURLChanged.removeListener(Querypoint.testListener);
+    Querypoint.testResults.push("Listener removed");
+  }
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + tearDown +"());");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  function report() {
+    return Querypoint.testResults.join('\n');
+  }
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());");
+
   AsyncMachine.runOp();
 }
 
