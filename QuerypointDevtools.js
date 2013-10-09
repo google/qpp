@@ -13,8 +13,8 @@ function onLoad() {
 
   function resetProject(url) {
     model = {};
-    Querypoint.InspectedPage.monitorResources();
-    model.devtoolsModel = Querypoint.InspectedPage;
+    DevtoolsExtended.InspectedWindow.monitorResources();
+    model.devtoolsModel = DevtoolsExtended.InspectedWindow;
     model.project = new Querypoint.QPProject(url);
     model.project.page = model.devtoolsModel;
     if (model.qpPanel)

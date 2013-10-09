@@ -31,7 +31,7 @@ function testScript() {
   function setup() {
     try {
       Querypoint.testResults = [];
-      var InspectedPage = Querypoint.InspectedPage;
+      var InspectedWindow = DevtoolsExtended.InspectedWindow;
       Querypoint.testListener = function() {
         // Put something in the console to ensure order of execution
         chrome.devtools.inspectedWindow.eval('console.log("onURLChanged ' + arguments[0] +'"), 16', function(result, isException) {
@@ -41,9 +41,9 @@ function testScript() {
               console.log("result " + result, isException);
         });
       };
-      InspectedPage.onURLChanged.addListener(Querypoint.testListener);
+      InspectedWindow.onURLChanged.addListener(Querypoint.testListener);
 
-      InspectedPage.monitorNavigation();
+      InspectedWindow.monitorNavigation();
       return "Listening for onURLChanged, reloaded."
     } catch (e) {
       return 'setup fails ' + e + ' stack: ' + e.stack;
@@ -59,14 +59,14 @@ function testScript() {
   });
 
   function verifyReload() {
-    Querypoint.InspectedPage.reload();
+    DevtoolsExtended.InspectedWindow.reload();
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + verifyReload +"());");
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());", function(text) {
     return "check no content: " + text;
   });
   function tearDown() {
-    Querypoint.InspectedPage.onURLChanged.removeListener(Querypoint.testListener);
+    DevtoolsExtended.InspectedWindow.onURLChanged.removeListener(Querypoint.testListener);
     return "Listener removed";
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + tearDown +"());");
@@ -76,7 +76,7 @@ function testScript() {
   });
 
   function testProcessing() {
-    var InspectedPage = Querypoint.InspectedPage;
+    var InspectedWindow = DevtoolsExtended.InspectedWindow;
     function injectedScript() {
       window.iAmInjected = true;
     }
@@ -85,9 +85,9 @@ function testScript() {
         'window.wasPreprocessed.push(\"' + url + '\");\n';
       return prefix + src + '\n//# sourceURL=' + url + '.js';
     }
-    InspectedPage.injectedScript = '(' + injectedScript + ')()';
-    InspectedPage.preprocessingScript = '(' + preprocessingScript + ')';
-    InspectedPage.reload();
+    InspectedWindow.injectedScript = '(' + injectedScript + ')()';
+    InspectedWindow.preprocessingScript = '(' + preprocessingScript + ')';
+    InspectedWindow.reload();
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + testProcessing +"());");
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location.href');

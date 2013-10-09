@@ -3,10 +3,10 @@
 
 // Model of the debuggee based on chrome.devtools callback data
 
-(function(){
+(function(global){
   'use strict';
 
-  var debug = DebugLogger.register('InspectedPage', function(flag){
+  var debug = DebugLogger.register('InspectedWindow', function(flag){
     return debug = (typeof flag === 'boolean') ? flag : debug;
   })
 
@@ -44,7 +44,7 @@
     return mixMe;
   }
 
-  var InspectedPage = Object.mixin(listenerFeature('onURLChanged'), {
+  var InspectedWindow = Object.mixin(listenerFeature('onURLChanged'), {
 
     // Array<chrome.devtools.inspectedWindow.Resource>
     get resources() {
@@ -115,7 +115,7 @@
       }
 
       if (debug)
-        console.log("InspectedPage.onURLChanged " + url + '----------------------------');
+        console.log("InspectedWindow.onURLChanged " + url + '----------------------------');
     },
 
     _addResource: function(resource) {
@@ -126,5 +126,7 @@
     },
   });
 
-  Querypoint.InspectedPage = InspectedPage;
-}());
+  global.DevtoolsExtended = global.DevtoolsExtended || {};
+  DevtoolsExtended.InspectedWindow = InspectedWindow;
+
+}(this));
