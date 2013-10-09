@@ -42,9 +42,9 @@
     },
 
     monitorNavigation: function() {
-      chrome.devtools.network.onNavigated.addListener(this._onURLChanged.bind(this));
+      chrome.devtools.network.onNavigated.addListener(this._checkURLChanged.bind(this));
       chrome.devtools.inspectedWindow.eval('window.location.href', function(url) {
-        this._onURLChanged(url);
+        this._checkURLChanged(url);
       }.bind(this));
     },
 
@@ -61,31 +61,41 @@
       this._loadingRuntime = true;
       var reloadOptions = {
         ignoreCache: true,
-        injectedScript:  this._injectedScript,
-        preprocessingScript: '(' + this._preprocessingScript + ')'
+        injectedScript:  this._injectedScript || undefined,
+        preprocessingScript: this._preprocessingScript ? '(' + this._preprocessingScript + ')' : undefined
       };
       if (debug) console.log("reloadOptions ", reloadOptions);
       chrome.devtools.inspectedWindow.reload(reloadOptions);
     },
 
-    _onURLChanged: function(url) {
+    _checkURLChanged: function(url) {
       this._resources = [];
-      if (this._loadingRuntime) { // reloaded by us
+      if (this._loadingRuntime) { // reloaded by our function
         console.assert(url === this._url);
-        this._runtimeInstalled = true;
+        this._checkRuntimeInstalled();
         delete this._loadingRuntime;
       } else {
-        if (url === this._url) { // reloaded by user
-          if (this._runtimeInstalled)  // force our runtime back, maybe annoying to user?
-            this._reloadRuntime();
-        } else {  // user moved to new URL
+        if (url !== this._url) {  // user moved to new URL
           this._url = url;
           this.onURLChanged.fireListeners(url);
         }
+        if (this._runtimeInstalled)  // force our runtime back, maybe annoying to user?
+          this._reloadRuntime();
       }
 
       if (debug)
         console.log("InspectedWindow.onURLChanged " + url + '----------------------------');
+    },
+
+    _checkRuntimeInstalled: function() {
+      var installedNewRuntime = this._injectedScript || this._preprocessingScript;
+      if (this._runtimeInstalled && !installedNewRuntime) {
+        this._runtimeInstalled = false;
+        this.onRuntimeChanged.fireListeners(this._runtimeInstalled);
+      } else if (!this._runtimeInstalled && installedNewRuntime) {
+        this._runtimeInstalled = true;
+        this.onRuntimeChanged.fireListeners(this._runtimeInstalled);
+      }  // else no change
     },
 
     _addResource: function(resource) {
@@ -97,6 +107,7 @@
   };
 
   InspectedWindow = DevtoolsExtended.mixinPropertyEvent(InspectedWindow, 'onURLChanged');
+  InspectedWindow = DevtoolsExtended.mixinPropertyEvent(InspectedWindow, 'onRuntimeChanged');
 
   DevtoolsExtended.InspectedWindow = InspectedWindow;
 

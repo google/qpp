@@ -24,8 +24,8 @@ function testScript() {
   AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'This is your first warning');
 
   function report() {
-    var results = Querypoint.testResults;
-    delete Querypoint.testResults;
+    var results = DevtoolsExtended.testResults;
+    delete DevtoolsExtended.testResults;
     return results ? results.join('\n') : "no content in testResults";
   }
   function setup() {
@@ -38,12 +38,12 @@ function testScript() {
         });
       }
       var InspectedWindow = DevtoolsExtended.InspectedWindow;
-      Querypoint.testListener = function(url) {
-        Querypoint.testResults = Querypoint.testResults  || [];
-        Querypoint.testResults.push("testListener fired for " + url);
+      DevtoolsExtended.testListener = function(url) {
+        DevtoolsExtended.testResults = DevtoolsExtended.testResults  || [];
+        DevtoolsExtended.testResults.push("testListener fired for " + url);
         notifyViaConsole('onURLChanged '+ arguments[0]);
       };
-      InspectedWindow.onURLChanged.addListener(Querypoint.testListener);
+      InspectedWindow.onURLChanged.addListener(DevtoolsExtended.testListener);
 
       InspectedWindow.monitorNavigation();
       notifyViaConsole('setupComplete');
@@ -72,7 +72,7 @@ function testScript() {
     return "check no content: " + text;
   });
   function tearDown() {
-    DevtoolsExtended.InspectedWindow.onURLChanged.removeListener(Querypoint.testListener);
+    DevtoolsExtended.InspectedWindow.onURLChanged.removeListener(DevtoolsExtended.testListener);
     return "Listener removed";
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + tearDown +"());");
@@ -90,6 +90,13 @@ function testScript() {
         });
       }
     var InspectedWindow = DevtoolsExtended.InspectedWindow;
+    DevtoolsExtended.testListener = function(runtimeInstalled) {
+      DevtoolsExtended.testResults = DevtoolsExtended.testResults  || [];
+      DevtoolsExtended.testResults.push("testListener sees runtimeInstalled " + runtimeInstalled);
+      notifyViaConsole('runtimeInstalled '+ arguments[0]);
+    };
+    InspectedWindow.onRuntimeChanged.addListener(DevtoolsExtended.testListener);
+
     function injectedScript() {
       window.iAmInjected = true;
     }
@@ -100,11 +107,16 @@ function testScript() {
     }
     InspectedWindow.injectedScript = '(' + injectedScript + ')()';
     InspectedWindow.preprocessingScript = '(' + preprocessingScript + ')';
-    InspectedWindow.reload();
     notifyViaConsole('sentPreprocessing')
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + testProcessing +"());");
   AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'sentPreprocessing');
+
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + verifyReload +"());");
+    AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'runtimeInstalled');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());", function(text) {
+    return "check runtime changed: " + text;
+  });
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location.href');
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.wasPreprocessed.join(",") + "," + window.iAmInjected');
 
