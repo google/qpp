@@ -13,12 +13,12 @@ function reProxy(api, url) {
       args.unshift(method);
       var callback = args.pop();
       DevtoolsWindowTestAPI.proxyTo(url, args, callback)
-    } 
+    }
   })
   return reAPI;
 }
-var ExtensionTestAPI = reProxy(PatientSelector, "QuerypointDevtoolsPage.html");        
-var ExtensionPanelTestAPI = reProxy(PatientSelector, "QuerypointPanel.html");        
+var ExtensionTestAPI = reProxy(PatientSelector, "QuerypointDevtoolsPage.html");
+var ExtensionPanelTestAPI = reProxy(PatientSelector, "QuerypointPanel.html");
 
 //-----------------------------------------------------------------------------
 
@@ -26,6 +26,12 @@ console.log("begin " + window.location);
 
 function reloadPage(then) {
   ExtensionTestAPI.reloadPage(then);
+}
+
+DevtoolsWindowTestAPI.openPanel = function(panelName, then) {
+  DevtoolsWindowTestAPI.clickSelector('div.toolbar-label', panelName, function(){
+    DevtoolsWindowTestAPI.whenSelectorAll('div.panel.visible.'+ panelName.toLowerCase(), '', then);
+  });
 }
 
 function openQuerypointPanel(then) {
@@ -42,7 +48,7 @@ function selectTokenInSource(editorTokens, then) {
   ExtensionPanelTestAPI.selectTokenInSource(editorTokens, then);
 }
 function verifyTokenView(textToMatch, then) {
-  ExtensionPanelTestAPI.whenSelectorAll('.currentExpression', textToMatch, then); 
+  ExtensionPanelTestAPI.whenSelectorAll('.currentExpression', textToMatch, then);
 }
 function clickTokenInSource(editorTokens, then) {
   ExtensionPanelTestAPI.clickTokenInSource(editorTokens, then);

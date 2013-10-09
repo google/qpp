@@ -8,7 +8,7 @@
 <script src="../../../DebugLogger.js"></script>
 <script src="../PatientSelector.js"></script>
 <script src="../devtools-page-test.js"></script>
-
+<script src="../panel-test.js"></script>
 <script>
 
 window.addEventListener('load', function() {
@@ -18,34 +18,80 @@ window.addEventListener('load', function() {
 function testScript() {
   console.log("------------test begins------------");
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.openPanel, 'Console');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'button.toggled-on', 'Console');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'console.log(window.location.href)');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'This is your first warning');
 
+  function report() {
+    var results = Querypoint.testResults;
+    delete Querypoint.testResults;
+    return results ? results.join('\n') : "no content in testResults";
+  }
   function setup() {
     try {
       Querypoint.testResults = [];
       var InspectedPage = Querypoint.InspectedPage;
       Querypoint.testListener = function() {
-        Querypoint.testResults.push('onURLChanged ' + arguments[0]);
+        // Put something in the console to ensure order of execution
+        chrome.devtools.inspectedWindow.eval('console.log("onURLChanged ' + arguments[0] +'"), 16', function(result, isException) {
+            if (result === 16)
+              Querypoint.testResults.push("testListener fired");
+            else
+              console.log("result " + result, isException);
+        });
       };
       InspectedPage.onURLChanged.addListener(Querypoint.testListener);
+
       InspectedPage.monitorNavigation();
-      InspectedPage.reload();
+      return "Listening for onURLChanged, reloaded."
     } catch (e) {
-      Querypoint.testResults.push('setup fails ' + e + ' stack: ' + e.stack);
+      return 'setup fails ' + e + ' stack: ' + e.stack;
     }
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + setup +"());");
+
   // Change the viewed page
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/switch.html"');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'onURLChanged');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());", function(text) {
+    return "check testListener: " + text;
+  });
+
+  function verifyReload() {
+    Querypoint.InspectedPage.reload();
+  }
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + verifyReload +"());");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());", function(text) {
+    return "check no content: " + text;
+  });
   function tearDown() {
     Querypoint.InspectedPage.onURLChanged.removeListener(Querypoint.testListener);
-    Querypoint.testResults.push("Listener removed");
+    return "Listener removed";
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + tearDown +"());");
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
-  function report() {
-    return Querypoint.testResults.join('\n');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());", function(text) {
+    return "check no content: " + text;
+  });
+
+  function testProcessing() {
+    var InspectedPage = Querypoint.InspectedPage;
+    function injectedScript() {
+      window.iAmInjected = true;
+    }
+    function preprocessingScript(src, url, fnc) {
+      var prefix = 'window.wasPreprocessed = window.wasPreprocessed || [];\n' +
+        'window.wasPreprocessed.push(\"' + url + '\");\n';
+      return prefix + src + '\n//# sourceURL=' + url + '.js';
+    }
+    InspectedPage.injectedScript = '(' + injectedScript + ')()';
+    InspectedPage.preprocessingScript = '(' + preprocessingScript + ')';
+    InspectedPage.reload();
   }
-  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + testProcessing +"());");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location.href');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.wasPreprocessed.join(",") + "," + window.iAmInjected');
 
   AsyncMachine.runOp();
 }

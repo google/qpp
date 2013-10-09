@@ -25,12 +25,14 @@
         callback(flag);
         delete this.flags[name];
       }
+      if (debugging) // Signal Testrunner
+        console.log("InspectorTest.info: " + name + ' ' + callback());
       return flag;
     },
 
     set: function(name, bool) {
       if (this.debuggables.hasOwnProperty(name)) {
-        this.debuggables[name].call(this, bool);  
+        this.debuggables[name].call(this, bool);
       } else {
         this.flags[name] = bool;
       }
@@ -39,7 +41,7 @@
     settings: function() {
       return Object.keys(this.debuggables).map(function(name) {
         return {
-          name: name, 
+          name: name,
           value: this.debuggables[name]()
         }
       }.bind(this));
@@ -47,7 +49,7 @@
   };
 
   debugFlags.forEach(function(name){
-    DebugLogger.set(name, true);  
+    DebugLogger.set(name, true);
   });
 
 }());

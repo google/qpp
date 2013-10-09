@@ -1,5 +1,11 @@
 http://localhost:8686/test/qpd.html
+Listening for onURLChanged, reloaded.
 http://localhost:8686/test/switch.html
-http://localhost:8686/test/qpd.html
-onURLChanged http://localhost:8686/test/qpd.html
+check testListener: testListener fired
+check no content: no content in testResults
 Listener removed
+http://localhost:8686/test/qpd.html
+check no content: no content in testResults
+http://localhost:8686/test/qpd.html
+http://localhost:8686/test/sample.js,http://localhost:8686/test/demo.js,http://localhost:8686/test/qpd.html,true
+

@@ -61,7 +61,7 @@
       this._injectedScript = scriptString;
     },
 
-    set preprocesingScript(scriptString) {
+    set preprocessingScript(scriptString) {
       console.assert(typeof scriptString === 'string');
       this._preprocessingScript = scriptString;
     },
