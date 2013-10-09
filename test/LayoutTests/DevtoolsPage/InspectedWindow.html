@@ -30,27 +30,33 @@ function testScript() {
   }
   function setup() {
     try {
-      Querypoint.testResults = [];
-      var InspectedWindow = DevtoolsExtended.InspectedWindow;
-      Querypoint.testListener = function() {
+      function notifyViaConsole(sentinal) {
         // Put something in the console to ensure order of execution
-        chrome.devtools.inspectedWindow.eval('console.log("onURLChanged ' + arguments[0] +'"), 16', function(result, isException) {
-            if (result === 16)
-              Querypoint.testResults.push("testListener fired");
-            else
-              console.log("result " + result, isException);
+        chrome.devtools.inspectedWindow.eval('console.log(\"' + sentinal + '\"), 16', function(result, isException) {
+            if (result !== 16)
+              console.error("notifyViaConsole FAILED " + result, isException);
         });
+      }
+      var InspectedWindow = DevtoolsExtended.InspectedWindow;
+      Querypoint.testListener = function(url) {
+        Querypoint.testResults = Querypoint.testResults  || [];
+        Querypoint.testResults.push("testListener fired for " + url);
+        notifyViaConsole('onURLChanged '+ arguments[0]);
       };
       InspectedWindow.onURLChanged.addListener(Querypoint.testListener);
 
       InspectedWindow.monitorNavigation();
+      notifyViaConsole('setupComplete');
       return "Listening for onURLChanged, reloaded."
     } catch (e) {
       return 'setup fails ' + e + ' stack: ' + e.stack;
     }
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + setup +"());");
-
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'setupComplete');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + report + "());", function(text) {
+    return "check testListener: " + text;
+  });
   // Change the viewed page
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/switch.html"');
   AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'onURLChanged');
@@ -76,6 +82,13 @@ function testScript() {
   });
 
   function testProcessing() {
+      function notifyViaConsole(sentinal) {
+        // Put something in the console to ensure order of execution
+        chrome.devtools.inspectedWindow.eval('console.log(\"' + sentinal + '\"), 16', function(result, isException) {
+            if (result !== 16)
+              console.error("notifyViaConsole FAILED " + result, isException);
+        });
+      }
     var InspectedWindow = DevtoolsExtended.InspectedWindow;
     function injectedScript() {
       window.iAmInjected = true;
@@ -88,8 +101,10 @@ function testScript() {
     InspectedWindow.injectedScript = '(' + injectedScript + ')()';
     InspectedWindow.preprocessingScript = '(' + preprocessingScript + ')';
     InspectedWindow.reload();
+    notifyViaConsole('sentPreprocessing')
   }
   AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + testProcessing +"());");
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'sentPreprocessing');
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location.href');
   AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.wasPreprocessed.join(",") + "," + window.iAmInjected');
 

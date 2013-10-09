@@ -43,7 +43,9 @@
 
     monitorNavigation: function() {
       chrome.devtools.network.onNavigated.addListener(this._onURLChanged.bind(this));
-      this._onURLChanged();
+      chrome.devtools.inspectedWindow.eval('window.location.href', function(url) {
+        this._onURLChanged(url);
+      }.bind(this));
     },
 
     monitorResources: function() {
