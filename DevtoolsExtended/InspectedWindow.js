@@ -1,50 +1,18 @@
 // Google BSD license http://code.google.com/google_bsd_license.html
-// Copyright 2011 Google Inc. johnjbarton@google.com
+// Copyright 2013 Google Inc. johnjbarton@google.com
 
 // Model of the debuggee based on chrome.devtools callback data
+
+// requires DebugLogger, mixinPropertyEvent
 
 (function(global){
   'use strict';
 
   var debug = DebugLogger.register('InspectedWindow', function(flag){
     return debug = (typeof flag === 'boolean') ? flag : debug;
-  })
+  });
 
-  function listenerFeature(propertyName) {
-    var mixMe = {};
-
-    mixMe[propertyName] = {
-
-      addListener: function(listenerCallback) {
-        if (typeof listenerCallback !== "function")
-            throw "addListener: listenerCallback must be a function";
-        this._listeners = this._listeners || [];
-        this._listeners.push(listenerCallback);
-      },
-
-      removeListener: function(listenerCallback) {
-        var listeners = this._listeners;
-
-        for (var i = 0; i < listeners.length; ++i) {
-            if (listeners[i] === listenerCallback) {
-                listeners.splice(i, 1);
-                break;
-            }
-        }
-      },
-
-      fireListeners: function()
-      {
-          var listeners = this._listeners.slice();
-          for (var i = 0; i < listeners.length; ++i)
-              listeners[i].apply(null, arguments);
-      },
-
-    };
-    return mixMe;
-  }
-
-  var InspectedWindow = Object.mixin(listenerFeature('onURLChanged'), {
+  var InspectedWindow = {
 
     // Array<chrome.devtools.inspectedWindow.Resource>
     get resources() {
@@ -124,9 +92,10 @@
       if (debug) console.log("addResource " + resource.url + ' to ' + this._resources.length + " resources");
       this._resources.push(resource);
     },
-  });
+  };
 
-  global.DevtoolsExtended = global.DevtoolsExtended || {};
+  InspectedWindow = DevtoolsExtended.mixinPropertyEvent(InspectedWindow, 'onURLChanged');
+
   DevtoolsExtended.InspectedWindow = InspectedWindow;
 
 }(this));

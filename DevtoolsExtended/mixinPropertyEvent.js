@@ -9,7 +9,7 @@
 
   var debug = DebugLogger.register('propertyEvent', function(flag){
     return debug = (typeof flag === 'boolean') ? flag : debug;
-  })
+  });
 
   function propertyEvent(propertyName) {
     var mixMe = {};
@@ -45,7 +45,19 @@
     return mixMe;
   }
 
+
+    function mixin(receiver, supplier) {
+      Object.keys(supplier).forEach(function(property) {
+        Object.defineProperty(receiver, property, Object.getOwnPropertyDescriptor(supplier, property));
+      });
+      return receiver;
+    }
+
+    function mixinPropertyEvent(receiver, propertyName) {
+      return mixin(receiver, propertyEvent(propertyName));
+    }
+
   global.DevtoolsExtended = global.DevtoolsExtended || {};
-  DevtoolsExtended.propertyEvent = propertyEvent;
+  DevtoolsExtended.mixinPropertyEvent = mixinPropertyEvent;
 
 }(this));
