@@ -70,15 +70,15 @@
 
     _checkURLChanged: function(url) {
       this._resources = [];
+      if (url !== this._url) {  // Start monitoring or user moved to new URL
+        this._url = url;
+        this.onURLChanged.fireListeners(url);
+      }
+
       if (this._loadingRuntime) { // reloaded by our function
-        console.assert(url === this._url);
         this._checkRuntimeInstalled();
         delete this._loadingRuntime;
       } else {
-        if (url !== this._url) {  // user moved to new URL
-          this._url = url;
-          this.onURLChanged.fireListeners(url);
-        }
         if (this._runtimeInstalled)  // force our runtime back, maybe annoying to user?
           this._reloadRuntime();
       }

@@ -27,35 +27,36 @@
         var listeners = this._listeners;
 
         for (var i = 0; i < listeners.length; ++i) {
-            if (listeners[i] === listenerCallback) {
-                listeners.splice(i, 1);
-                break;
-            }
+          if (listeners[i] === listenerCallback) {
+            listeners.splice(i, 1);
+            break;
+          }
         }
       },
 
       fireListeners: function()
       {
-          var listeners = this._listeners.slice();
-          for (var i = 0; i < listeners.length; ++i)
-              listeners[i].apply(null, arguments);
+        if (!this._listeners)
+          return;
+        var listeners = this._listeners.slice();
+        for (var i = 0; i < listeners.length; ++i)
+          listeners[i].apply(null, arguments);
       },
 
     };
     return mixMe;
   }
 
+  function mixin(receiver, supplier) {
+    Object.keys(supplier).forEach(function(property) {
+      Object.defineProperty(receiver, property, Object.getOwnPropertyDescriptor(supplier, property));
+    });
+    return receiver;
+  }
 
-    function mixin(receiver, supplier) {
-      Object.keys(supplier).forEach(function(property) {
-        Object.defineProperty(receiver, property, Object.getOwnPropertyDescriptor(supplier, property));
-      });
-      return receiver;
-    }
-
-    function mixinPropertyEvent(receiver, propertyName) {
-      return mixin(receiver, propertyEvent(propertyName));
-    }
+  function mixinPropertyEvent(receiver, propertyName) {
+    return mixin(receiver, propertyEvent(propertyName));
+  }
 
   global.DevtoolsExtended = global.DevtoolsExtended || {};
   DevtoolsExtended.mixinPropertyEvent = mixinPropertyEvent;
