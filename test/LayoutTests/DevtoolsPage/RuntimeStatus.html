@@ -1,0 +1,73 @@
+<html>
+<body>
+<h1>Feature Test DevtoolsPage</h1>
+</body>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/ChannelPlate.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/ChannelPlate/RemoteMethodCall.js"></script>
+<script src="chrome-extension://klmlfkibgfifmkanocmdenpieghpgifl/AsyncMachine.js"></script>
+<script src="../../../DebugLogger.js"></script>
+<script src="../PatientSelector.js"></script>
+<script src="../devtools-page-test.js"></script>
+<script src="../panel-test.js"></script>
+<script>
+
+window.addEventListener('load', function() {
+  testScript();
+});
+
+function testScript() {
+  console.log("------------test begins------------");
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.location="http://localhost:8686/test/qpd.html"');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.openPanel, 'Console');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'button.toggled-on', 'Console');
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'console.log(window.location.href)');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'This is your first warning');
+
+  function report() {
+    var results = DevtoolsExtended.testResults;
+    delete DevtoolsExtended.testResults;
+    return results ? results.join('\n') : "no content in testResults";
+  }
+  function setup() {
+    try {
+      function notifyViaConsole(sentinal) {
+        // Put something in the console to ensure order of execution
+        chrome.devtools.inspectedWindow.eval('console.log(\"' + sentinal + '\"), 16', function(result, isException) {
+            if (result !== 16)
+              console.error("notifyViaConsole FAILED " + result, isException);
+        });
+      }
+      window.testRuntimeStatus = new DevtoolsExtended.RuntimeStatus("testRuntime", "window.iAmATest = true;");
+      notifyViaConsole('setupComplete');
+      return "RuntimeStatus created."
+    } catch (e) {
+      return 'setup fails ' + e + ' stack: ' + e.stack;
+    }
+  }
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluate, "(" + setup +"());");
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.whenSelectorAll, 'span', 'setupComplete');
+
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.openPanel, 'Sources');
+  AsyncMachine.pushOp(DevtoolsWindowTestAPI.clickSelector, 'div.sidebar-pane-title', 'testRuntime');
+
+  var SidebarPaneTestAPI = reProxy(PatientSelector, "RuntimeStatusPage.html");
+
+  AsyncMachine.pushOp(SidebarPaneTestAPI.clickSelector, 'div.row input.install', '');
+  AsyncMachine.pushOp(SidebarPaneTestAPI.whenSelectorAll, 'div.row input.installed', '');
+
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.iAmATest', function(text) {
+    return "Runtime installed: " + text;
+  });
+
+  AsyncMachine.pushOp(SidebarPaneTestAPI.clickSelector, 'div.row input.install', '');
+  AsyncMachine.pushOp(SidebarPaneTestAPI.whenSelectorAll, 'input.unchecked', '');
+
+  AsyncMachine.pushOp(ExtensionTestAPI.evaluateInPage, 'window.iAmATest', function(text) {
+    return "Runtime installed: " + text;
+  });
+
+  AsyncMachine.runOp();
+}
+
+</script>
+</html>
