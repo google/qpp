@@ -14,7 +14,7 @@
     this._featureName = featureName;
     this._injectedScript = injectedScript;
     this._preprocessingScript = preprocessingScript;
-    this._receiveActivationRequest = this._receiveActivationRequest.bind(this)
+
     this._createUI(featureName);
   }
 
@@ -64,10 +64,10 @@
     },
 
     _onExtensionPaneWindow: function(win) {
-      win.addEventListener('message', this._receiveActivationRequest);
+      window.addEventListener('message', this._receiveActivationRequest.bind(this, win));
       var runtimeStatus = this;
       this._sendActivationStatus = function(runtimeActive) {
-        var messageObject = {runtimeActive: runtimeActive};
+        var messageObject = {runtimeActive: !!runtimeActive};
         win.postMessage(JSON.stringify(messageObject), '*');
         runtimeStatus._active = !!runtimeActive;
       };
@@ -77,7 +77,9 @@
       DevtoolsExtended.InspectedWindow.monitorNavigation();
     },
 
-    _receiveActivationRequest: function(event) {
+    _receiveActivationRequest: function(win, event) {
+      if (win !== event.source)
+        return;
       var json = event.data;
       var messageObject = JSON.parse(json);
       if ('activateRuntime' in messageObject) {

@@ -8,17 +8,23 @@ window.addEventListener('message', function(event) {
   var json = event.data;
   var messageObject = JSON.parse(json);
   if ('runtimeActive' in messageObject) {
-    var checkbox = document.querySelector('.row input.installed');
-    checkbox.checked = !!messageObject.runtimeActive;
-    checkbox.classList.toggle('unchecked');
+    var installed = document.querySelector('.row input.installed');
+    installed.checked = !!messageObject.runtimeActive;
+    installed.classList.toggle('unchecked');
+    installed.messageTarget = event.source;
   }
 });
 
 // To DevtoolsExtended.RuntimeStatus
 
 document.querySelector('div.row input.install').addEventListener('change', function(event) {
-  var messageObject = {activateRuntime: this.checked};
-  window.postMessage(JSON.stringify(messageObject), '*');
+  var installed = document.querySelector('.row input.installed');
+  if (installed.messageTarget) {
+    var messageObject = {activateRuntime: this.checked};
+    installed.messageTarget.postMessage(JSON.stringify(messageObject), '*');
+  } else {
+    this.checked = !this.checked;
+  }
 });
 
 document.querySelector('div.row input.installed').addEventListener('change', function(event) {
