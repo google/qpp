@@ -27,11 +27,13 @@
     set injectedScript(scriptString) {
       console.assert(typeof scriptString === 'string');
       this._injectedScript = scriptString;
+      this._synchronizedWithWindow = false;
     },
 
     set preprocessingScript(scriptString) {
       console.assert(typeof scriptString === 'string');
       this._preprocessingScript = scriptString;
+      this._synchronizedWithWindow = false;
     },
 
     reload: function() {
@@ -81,10 +83,9 @@
         this._url = url;
         this.onURLChanged.fireListeners(url);
       }
-
-      if (this._loadingRuntime) { // reloaded by our function
+      if (!this._synchronizedWithWindow) { // reloaded by our function
         this._checkRuntimeInstalled();
-        delete this._loadingRuntime;
+        this._synchronizedWithWindow = true;
       } else {
         if (this._runtimeInstalled)  // force our runtime back, maybe annoying to user?
           this._reloadRuntime();
@@ -96,13 +97,7 @@
 
     _checkRuntimeInstalled: function() {
       var installedNewRuntime = this._injectedScript || this._preprocessingScript;
-      if (this._runtimeInstalled && !installedNewRuntime) {
-        this._runtimeInstalled = false;
-        this.onRuntimeChanged.fireListeners(this._runtimeInstalled);
-      } else if (!this._runtimeInstalled && installedNewRuntime) {
-        this._runtimeInstalled = true;
-        this.onRuntimeChanged.fireListeners(this._runtimeInstalled);
-      }  // else no change
+      this.onRuntimeChanged.fireListeners(!!installedNewRuntime);
     },
 
     _addResource: function(resource) {

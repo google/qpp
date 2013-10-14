@@ -14,12 +14,33 @@ body {
   display: flex;
   align-items: center;
 }
+
+.remove {
+  display: none;
+}
+.install {
+  display: inline;
+}
+.runtimeInstalled .remove {
+  display: inline;
+}
+.runtimeInstalled .install {
+  display: none;
+}
+.installed {
+  color: silver;  
+}
+.runtimeInstalled .installed {
+  color: black;
+}
+ 
 </style>
 
 <body>
   <div class="row">
-    <input type="checkbox" class="install" name="checkbox"><span>Install</span>
-    <input type="checkbox" class="installed unchecked" name="checkbox"><span>Installed</span>
+    <button class="install">Install</button>
+    <button class="remove">Remove</button>
+    <span class="installed">Installed</span>
   </div>
 </body>
 
