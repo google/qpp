@@ -12,36 +12,12 @@
 
   function RuntimeStatus(featureName, injectedScript, preprocessingScript) {
     this._featureName = featureName;
-    this._injectedScript = injectedScript;
-    this._preprocessingScript = preprocessingScript;
+    this._runtimeModifier = new DevtoolsExtended.RuntimeModifier(injectedScript, preprocessingScript);
 
     this._createUI(featureName);
   }
 
   RuntimeStatus.prototype = {
-    get active() {
-      return this._active;
-    },
-
-    activate: function() {
-      if (!this._active)
-        this._activate();
-    },
-
-    deactivate: function() {
-      if (this._active)
-        this._deactivate();
-    },
-
-    set injectedScript(scriptString) {
-      console.assert(typeof scriptString === 'string');
-      this._injectedScript = scriptString;
-    },
-
-    set preprocessingScript(scriptString) {
-      console.assert(typeof scriptString === 'string');
-      this._preprocessingScript = scriptString;
-    },
 
     // For derived class overrides
     get pageURL() {
@@ -71,10 +47,9 @@
         win.postMessage(JSON.stringify(messageObject), '*');
         runtimeStatus._active = !!runtimeActive;
       };
-      DevtoolsExtended.InspectedWindow.onRuntimeChanged.addListener(this._sendActivationStatus);
+      this._runtimeModifier.onActivationChanged.addListener(this._sendActivationStatus);
 
-      this._sendActivationStatus(DevtoolsExtended.InspectedWindow.active);
-      DevtoolsExtended.InspectedWindow.monitorNavigation();
+      this._sendActivationStatus(false);
     },
 
     _receiveActivationRequest: function(win, event) {
@@ -84,31 +59,20 @@
       var messageObject = JSON.parse(json);
       if ('activateRuntime' in messageObject) {
         if (messageObject.activateRuntime)
-          this.activate();
+          this._activate();
         else
-          this.deactivate();
+          this._deactivate();
       }
     },
 
     _activate: function() {
-      if (!this._injectedScript && !this._preprocessingScript)
-        throw new Error("No runtime injectedScript or preprocessingScript defined.");
-
-      if (this._injectedScript)
-        DevtoolsExtended.InspectedWindow.injectedScript = this._injectedScript;
-      if (this._preprocessingScript)
-        DevtoolsExtended.InspectedWindow.preprocessingScript = this._preprocessingScript;
-
-      DevtoolsExtended.InspectedWindow.reload();
+      this._runtimeModifier.activate();
     },
 
     _deactivate: function() {
-      DevtoolsExtended.InspectedWindow.injectedScript = "";
-      DevtoolsExtended.InspectedWindow.preprocessingScript = "";
-      DevtoolsExtended.InspectedWindow.reload();
+      this._runtimeModifier.deactivate();
     },
   };
-
 
   global.DevtoolsExtended = global.DevtoolsExtended || {};
   DevtoolsExtended.RuntimeStatus = RuntimeStatus;

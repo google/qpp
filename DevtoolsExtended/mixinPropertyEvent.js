@@ -15,12 +15,17 @@
     var mixMe = {};
 
     mixMe[propertyName] = {
+      set metaListener(listenerCallback) {
+        this._metaListener = listenerCallback;
+      },
 
       addListener: function(listenerCallback) {
         if (typeof listenerCallback !== "function")
             throw "addListener: listenerCallback must be a function";
         this._listeners = this._listeners || [];
         this._listeners.push(listenerCallback);
+        if (this._metaListener && this._listeners.length === 1)
+          this._metaListener(true);
       },
 
       removeListener: function(listenerCallback) {
@@ -32,6 +37,8 @@
             break;
           }
         }
+        if (this._metaListener && !this._listeners.length)
+          this._metaListener(false);
       },
 
       fireListeners: function()

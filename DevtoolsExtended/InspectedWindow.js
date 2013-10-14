@@ -41,11 +41,18 @@
         chrome.devtools.inspectedWindow.reload();
     },
 
-    monitorNavigation: function() {
-      chrome.devtools.network.onNavigated.addListener(this._checkURLChanged.bind(this));
-      chrome.devtools.inspectedWindow.eval('window.location.href', function(url) {
-        this._checkURLChanged(url);
-      }.bind(this));
+    monitorOnListenersChanged: function(nowHaveOnURLChangedListeners) {
+      if (nowHaveOnURLChangedListeners) {
+        console.assert(!this._addedListener)
+        chrome.devtools.network.onNavigated.addListener(this._checkURLChanged);
+        this._addedListener = true;
+        chrome.devtools.inspectedWindow.eval('window.location.href', function(url) {
+          this._checkURLChanged(url);
+        }.bind(this));
+      } else {
+        chrome.devtools.network.onNavigated.removeListener(this._checkURLChanged);
+        delete this._addedListener;
+      }
     },
 
     monitorResources: function() {
@@ -106,8 +113,13 @@
     },
   };
 
+  InspectedWindow._checkURLChanged = InspectedWindow._checkURLChanged.bind(InspectedWindow);
+
   InspectedWindow = DevtoolsExtended.mixinPropertyEvent(InspectedWindow, 'onURLChanged');
   InspectedWindow = DevtoolsExtended.mixinPropertyEvent(InspectedWindow, 'onRuntimeChanged');
+
+  InspectedWindow.onURLChanged.metaListener = InspectedWindow.monitorOnListenersChanged.bind(InspectedWindow);
+  InspectedWindow.onRuntimeChanged.metaListener = InspectedWindow.monitorOnListenersChanged.bind(InspectedWindow);
 
   DevtoolsExtended.InspectedWindow = InspectedWindow;
 

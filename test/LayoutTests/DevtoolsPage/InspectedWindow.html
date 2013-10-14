@@ -45,10 +45,10 @@ function testScript() {
       };
       InspectedWindow.onURLChanged.addListener(DevtoolsExtended.testListener);
 
-      InspectedWindow.monitorNavigation();
       notifyViaConsole('setupComplete');
       return "Listening for onURLChanged, reloaded."
     } catch (e) {
+      console.error("setup fails ", e, e.stack);
       return 'setup fails ' + e + ' stack: ' + e.stack;
     }
   }
